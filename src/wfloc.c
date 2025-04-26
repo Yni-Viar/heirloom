@@ -21,15 +21,7 @@ typedef struct _FM_LANG {
 } FM_LANG;
 
 FM_LANG fmLCIDs[] = {
-    {TEXT("zh-CN"), MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED)}, // Chinese, Simplified
     {TEXT("en-US"), MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US)},         // English, United States
-    {TEXT("he-IL"), MAKELANGID(LANG_HEBREW, SUBLANG_HEBREW_ISRAEL)},       // Hebrew, Israel
-    {TEXT("ja-JP"), MAKELANGID(LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN)},    // Japanese, Japan
-    {TEXT("pl-PL"), MAKELANGID(LANG_POLISH, SUBLANG_POLISH_POLAND)},       // Polish, Poland
-    {TEXT("de-DE"), MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN)},              // German, Germany
-    {TEXT("tr-TR"), MAKELANGID(LANG_TURKISH, SUBLANG_TURKISH_TURKEY)},     // Turkish, Turkey
-    {TEXT("pt-PT"), MAKELANGID(LANG_PORTUGUESE, SUBLANG_PORTUGUESE)},      // Portuguese, Portugal
-    {TEXT("ko-KR"), MAKELANGID(LANG_KOREAN, SUBLANG_KOREAN)}               // Korean, Korea
 };
 
 LCID
