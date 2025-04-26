@@ -14,6 +14,7 @@
 #include "winfile.h"
 #include "lfn.h"
 #include "wnetcaps.h"         // WNetGetCaps()
+#include "wfdpi.h"           // Add DPI awareness header
 
 #include <ole2.h>
 #include <shlobj.h>
@@ -548,7 +549,10 @@ LoadBitmaps(VOID)
    DWORD                 rgbUnselected;
    UINT                  cbBitmapSize;
    LPBITMAPINFOHEADER    lpBitmapData;
-
+   HBITMAP               hbmTemp;
+   HDC                   hdcTemp;
+   int                   scaledWidth, scaledHeight;
+   
    rgbSelected = FlipColor(GetSysColor(COLOR_HIGHLIGHT));
    rgbUnselected = FlipColor(GetSysColor(COLOR_WINDOW));
 
@@ -611,19 +615,80 @@ LoadBitmaps(VOID)
    // Create a color bitmap compatible with the display device
    //
    hdc = GetDC(NULL);
-   if (hdcMem = CreateCompatibleDC(hdc)) {
-
-      if (hbmBitmaps = CreateDIBitmap(hdc, lpBitmapInfo, (DWORD)CBM_INIT, lpBits, (LPBITMAPINFO)lpBitmapInfo, DIB_RGB_COLORS))
-         hbmSave = SelectObject(hdcMem, hbmBitmaps);
-
+   
+   // Create a memory DC for the bitmap
+   hdcMem = CreateCompatibleDC(hdc);
+   if (!hdcMem) {
+      ReleaseDC(NULL, hdc);
+      LocalFree(lpBitmapInfo);
+      return FALSE;
    }
+   
+   // First create the original bitmap
+   hbmTemp = CreateDIBitmap(
+      hdc, 
+      lpBitmapInfo, 
+      (DWORD)CBM_INIT, 
+      lpBits, 
+      (LPBITMAPINFO)lpBitmapInfo, 
+      DIB_RGB_COLORS
+   );
+   
+   if (!hbmTemp) {
+      DeleteDC(hdcMem);
+      ReleaseDC(NULL, hdc);
+      LocalFree(lpBitmapInfo);
+      return FALSE;
+   }
+   
+   // Get the original dimensions
+   BITMAP bm;
+   GetObject(hbmTemp, sizeof(BITMAP), &bm);
+   
+   // Calculate scaled dimensions based on DPI
+   scaledWidth = ScaleByDpi(bm.bmWidth);
+   scaledHeight = ScaleByDpi(bm.bmHeight);
+   
+   // Create a second compatible DC for scaling
+   hdcTemp = CreateCompatibleDC(hdc);
+   if (!hdcTemp) {
+      DeleteObject(hbmTemp);
+      DeleteDC(hdcMem);
+      ReleaseDC(NULL, hdc);
+      LocalFree(lpBitmapInfo);
+      return FALSE;
+   }
+   
+   // Create the scaled bitmap
+   hbmBitmaps = CreateCompatibleBitmap(hdc, scaledWidth, scaledHeight);
+   if (!hbmBitmaps) {
+      DeleteObject(hbmTemp);
+      DeleteDC(hdcTemp);
+      DeleteDC(hdcMem);
+      ReleaseDC(NULL, hdc);
+      LocalFree(lpBitmapInfo);
+      return FALSE;
+   }
+   
+   // Select the bitmaps into their DCs
+   HBITMAP hbmTempOld = SelectObject(hdcTemp, hbmTemp);
+   hbmSave = SelectObject(hdcMem, hbmBitmaps);
+   
+   // Scale the bitmap
+   SetStretchBltMode(hdcMem, HALFTONE);
+   SetBrushOrgEx(hdcMem, 0, 0, NULL);
+   StretchBlt(
+      hdcMem, 0, 0, scaledWidth, scaledHeight,
+      hdcTemp, 0, 0, bm.bmWidth, bm.bmHeight,
+      SRCCOPY
+   );
+   
+   // Clean up temporary objects
+   SelectObject(hdcTemp, hbmTempOld);
+   DeleteObject(hbmTemp);
+   DeleteDC(hdcTemp);
+   
    ReleaseDC(NULL, hdc);
-
-#ifndef KKBUGFIX
-//It is not necessary to free a resource loaded by using the LoadResource function.
-   LocalUnlock(hRes);
-   FreeResource(hRes);
-#endif
 
    LocalFree(lpBitmapInfo);
 
@@ -938,6 +1003,12 @@ GetTextStuff(HDC hdc)
    dxDrive = dxDriveBitmap + tm.tmMaxCharWidth + (4*dyBorderx2);
    dyDrive = max(dyDriveBitmap + (4*dyBorderx2), dyText);
    dyFileName = max(dyText, dyFolder);  //  + dyBorder;
+   
+   // Add additional spacing for high-DPI displays
+   if (g_scale > 1.0f) {
+      dxDrive += ScaleByDpi(4);
+      dyDrive += ScaleByDpi(2);
+   }
 }
 
 UINT
@@ -1031,6 +1102,9 @@ InitFileManager(
    DWORD         dwRetval;
    DWORD         dwExStyle = 0L;
    LPWSTR        pszInitialDir = NULL;
+
+   // Initialize DPI awareness support
+   InitDPIAwareness();
 
    hThread = GetCurrentThread();
 
@@ -1159,23 +1233,35 @@ JAPANEND
 
    dwExStyle = MainWindowExStyle();
 
-   dyBorder = GetSystemMetrics(SM_CYBORDER);
+   dyBorder = ScaledSystemMetric(SM_CYBORDER);
    dyBorderx2 = dyBorder * 2;
-   dxFrame = GetSystemMetrics(SM_CXFRAME) - dyBorder;
+   dxFrame = ScaledSystemMetric(SM_CXFRAME) - dyBorder;
 
-   dxDriveBitmap = DRIVES_WIDTH;
-   dyDriveBitmap = DRIVES_HEIGHT;
-   dxFolder = FILES_WIDTH;
-   dyFolder = FILES_HEIGHT;
+   dxDriveBitmap = ScaleByDpi(DRIVES_WIDTH);
+   dyDriveBitmap = ScaleByDpi(DRIVES_HEIGHT);
+   dxFolder = ScaleByDpi(FILES_WIDTH);
+   dyFolder = ScaleByDpi(FILES_HEIGHT);
+   
+   // Update icon size variables based on DPI
+   dyIcon = ScaleByDpi(32);
+   dxIcon = ScaleByDpi(32);
+   
+   // Scale toolbar metrics
+   dyToolbar = ScaleByDpi(27);
+   dxButtonSep = ScaleByDpi(8);
+   dxButton = ScaleByDpi(24);
+   dyButton = ScaleByDpi(22);
+   dxDriveList = ScaleByDpi(205);
+   dyDriveItem = ScaleByDpi(17);
 
    LoadUxTheme();
 
    if (!LoadBitmaps())
       return FALSE;
 
-   hicoTree = LoadIcon(hAppInstance, (LPTSTR) MAKEINTRESOURCE(TREEICON));
-   hicoTreeDir = LoadIcon(hAppInstance, (LPTSTR) MAKEINTRESOURCE(TREEDIRICON));
-   hicoDir = LoadIcon(hAppInstance, (LPTSTR) MAKEINTRESOURCE(DIRICON));
+   hicoTree = LoadIconForCurrentDPI(hAppInstance, (LPTSTR) MAKEINTRESOURCE(TREEICON));
+   hicoTreeDir = LoadIconForCurrentDPI(hAppInstance, (LPTSTR) MAKEINTRESOURCE(TREEDIRICON));
+   hicoDir = LoadIconForCurrentDPI(hAppInstance, (LPTSTR) MAKEINTRESOURCE(DIRICON));
 
    chFirstDrive = CHAR_a;
 
@@ -1244,7 +1330,7 @@ JAPANEND
    wndClass.cbClsExtra     = 0;
    wndClass.cbWndExtra     = 0;
    wndClass.hInstance      = hInstance;
-   wndClass.hIcon          = LoadIcon(hInstance, (LPTSTR) MAKEINTRESOURCE(APPICON));
+   wndClass.hIcon          = LoadIconForCurrentDPI(hInstance, (LPTSTR) MAKEINTRESOURCE(APPICON));
    wndClass.hCursor        = hcurArrow;
    wndClass.hbrBackground  = (HBRUSH)(COLOR_APPWORKSPACE + 1); // COLOR_WINDOW+1;
    wndClass.lpszMenuName   = (LPTSTR) MAKEINTRESOURCE(FRAMEMENU);
@@ -1328,7 +1414,7 @@ JAPANEND
    wndClass.cbWndExtra     = GWL_LASTFOCUS + sizeof(LONG_PTR);
 
 // wndClass.hInstance      = hInstance;
-   wndClass.hIcon          = LoadIcon(hInstance, (LPTSTR) MAKEINTRESOURCE(DIRICON));
+   wndClass.hIcon          = LoadIconForCurrentDPI(hInstance, (LPTSTR) MAKEINTRESOURCE(DIRICON));
 // wndClass.hCursor        = NULL;
    wndClass.hbrBackground  = NULL;
 // wndClass.lpszMenuName   = NULL;
@@ -1345,7 +1431,7 @@ JAPANEND
    wndClass.cbWndExtra     = sizeof(LONG_PTR);
 
 // wndClass.hInstance      = hInstance;
-   wndClass.hIcon          = LoadIcon(hInstance, (LPTSTR) MAKEINTRESOURCE(DIRICON));
+   wndClass.hIcon          = LoadIconForCurrentDPI(hInstance, (LPTSTR) MAKEINTRESOURCE(DIRICON));
 // wndClass.hCursor        = NULL;
    wndClass.hbrBackground  = NULL;
 // wndClass.lpszMenuName   = NULL;

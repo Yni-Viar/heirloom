@@ -285,3 +285,5 @@ __pycache__/
 Makefile.depends
 *.exe
 tags
+
+obj/

@@ -12,6 +12,7 @@
 #include "lfn.h"
 #include <commctrl.h>
 #include <shlobj.h>
+#include "wfdpi.h"  // Add DPI awareness header
 
 //
 // Overall Window structure
@@ -494,6 +495,10 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
    BOOL     bRedoDriveBar;
 
    switch (wMsg) {
+   case WM_DPICHANGED:
+      // Handle DPI change
+      HandleDpiChange(hwnd, wParam, lParam);
+      break;
    case WM_TIMER:
 
       //

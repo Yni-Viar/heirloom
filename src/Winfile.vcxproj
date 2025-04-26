@@ -145,6 +145,7 @@
     <ClInclude Include="wfcopy.h" />
     <ClInclude Include="wfdlgs.h" />
     <ClInclude Include="wfdocb.h" />
+    <ClInclude Include="wfdpi.h" />
     <ClInclude Include="wfdrop.h" />
     <ClInclude Include="wfext.h" />
     <ClInclude Include="wfexti.h" />
@@ -217,6 +218,7 @@
     <ClCompile Include="wfdlgs2.c" />
     <ClCompile Include="wfdlgs3.c" />
     <ClCompile Include="wfdos.c" />
+    <ClCompile Include="wfdpi.c" />
     <ClCompile Include="wfdrives.c" />
     <ClCompile Include="wfdrop.c" />
     <ClCompile Include="wfext.c" />

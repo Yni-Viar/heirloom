@@ -37,6 +37,9 @@
     <ClCompile Include="winfile.c" />
     <ClCompile Include="wnetcaps.c" />
     <ClCompile Include="wfloc.c" />
+    <ClCompile Include="wfdpi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dbg.h" />
@@ -62,6 +65,9 @@
     <ClInclude Include="winfile.h" />
     <ClInclude Include="wnetcaps.h" />
     <ClInclude Include="res.h" />
+    <ClInclude Include="wfdpi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res.rc" />
@@ -152,6 +158,12 @@
   <ItemGroup>
     <Filter Include="lang">
       <UniqueIdentifier>{a74d83f3-58ec-46d3-bb3d-fadca6ac5743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{b6d9ed22-0cec-49eb-bc90-62f789e58b57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{e8fdd135-3f9a-4ae3-80b6-48ad9e23c7b7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
