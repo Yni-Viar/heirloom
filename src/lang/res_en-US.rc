@@ -38,10 +38,10 @@ BEGIN
     MENUITEM    "Select &Files...", IDM_SELECT
     POPUP       "Start (&.)"
     BEGIN
-    MENUITEM    "&Bash Shell...\tCtrl+B", IDM_STARTBASHSHELL
-    MENUITEM    "&Cmd Shell...\tCtrl+K", IDM_STARTCMDSHELL
-    MENUITEM    "&PowerShell...\tCtrl+P", IDM_STARTPOWERSHELL
-    MENUITEM    "&Explorer...\tCtrl+E", IDM_STARTEXPLORER
+    MENUITEM    "Open Bash\tCtrl+B", IDM_STARTBASHSHELL
+    MENUITEM    "Open Command Prompt\tCtrl+K", IDM_STARTCMDSHELL
+    MENUITEM    "Open PowerShell\tCtrl+P", IDM_STARTPOWERSHELL
+    MENUITEM    "Open Explorer\tCtrl+E", IDM_STARTEXPLORER
     END
     MENUITEM    "&Goto Directory...\tCtrl+G", IDM_GOTODIR
     MENUITEM    SEPARATOR
@@ -117,7 +117,7 @@ BEGIN
     END
     POPUP       "&Help"
     BEGIN
-    MENUITEM    "&About File Manager...",   IDM_ABOUT
+    MENUITEM    "&About File Manager",   IDM_ABOUT
     END
 
 END
@@ -129,22 +129,27 @@ BEGIN
     MENUITEM    "&New Window\tCtrl+Shift Enter",     IDM_NEWWINDOW
     MENUITEM    "&Open\tEnter",     IDM_OPEN
     MENUITEM    "Edit\tF12",        IDM_EDIT
+    MENUITEM    SEPARATOR
     MENUITEM    "&Move...\tF7",     IDM_MOVE
     MENUITEM    "&Copy...\tF8",     IDM_COPY
     MENUITEM    "S&ymlink...\tF11", IDM_SYMLINK
     MENUITEM    "Hardlin&k...\tShift+F11", IDM_HARDLINK
+    MENUITEM    SEPARATOR
     MENUITEM    "Copy to Clip&board\tCtrl+C", IDM_COPYTOCLIPBOARD
     MENUITEM    "Cut to Clipboard\tCtrl+X", IDM_CUTTOCLIPBOARD
     MENUITEM    "&Paste\tCtrl+V", IDM_PASTE
-    MENUITEM    "&Delete...\tDel",  IDM_DELETE
+    MENUITEM    SEPARATOR
+    MENUITEM    "&Delete\tDel",  IDM_DELETE
     MENUITEM    "Re&name...\tF2",   IDM_RENAME
-    MENUITEM    "Proper&ties...\tAlt+Enter",IDM_ATTRIBS
+    MENUITEM    SEPARATOR
     MENUITEM    "&Run...",          IDM_RUN
-    MENUITEM    "Start Bash Shell...", IDM_STARTBASHSHELL
-    MENUITEM    "Start Cmd She&ll...", IDM_STARTCMDSHELL
-    MENUITEM    "Start Po&werShell...", IDM_STARTPOWERSHELL
-    MENUITEM    "Start E&xplorer...", IDM_STARTEXPLORER
-    MENUITEM    "&Goto Directory...", IDM_GOTODIR
+    MENUITEM    SEPARATOR
+    MENUITEM    "Open in Bash", IDM_STARTBASHSHELL
+    MENUITEM    "Open in Command Prompt", IDM_STARTCMDSHELL
+    MENUITEM    "Open in Po&werShell", IDM_STARTPOWERSHELL
+    MENUITEM    "Open in E&xplorer", IDM_STARTEXPLORER
+    MENUITEM    SEPARATOR
+    MENUITEM    "Proper&ties\tAlt+Enter",IDM_ATTRIBS
     END
 END
 
