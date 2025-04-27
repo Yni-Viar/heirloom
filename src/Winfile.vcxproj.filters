@@ -73,17 +73,6 @@
     <ResourceCompile Include="res.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="lang\res_en-US.rc">
-      <Filter>lang</Filter>
-    </None>
-    <None Include="lang\suggest_en-US.db">
-      <Filter>lang</Filter>
-    </None>
-    <None Include="lang\winfile_en-US.dlg">
-      <Filter>lang</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="lang">
       <UniqueIdentifier>{a74d83f3-58ec-46d3-bb3d-fadca6ac5743}</UniqueIdentifier>
     </Filter>

@@ -169,9 +169,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="lang\res_en-US.rc" />
-    <None Include="lang\suggest_en-US.db" />
-    <None Include="lang\winfile_en-US.dlg" />
+    <None Include="suggest.db" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dbg.c" />
