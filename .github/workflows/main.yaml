@@ -1,0 +1,68 @@
+name: File Manager
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $global:ErrorActionPreference = "Stop"
+          $global:ProgressPreference = "SilentlyContinue"
+
+          Write-Host "Checking for vswhere.exe"
+          $vswhere = Join-Path "$env:ProgramFiles (x86)" "Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere))
+          {
+              throw "Could not find vswhere.exe"
+          }
+          Write-Host "vswhere: $vswhere"
+
+          Write-Host "Checking for msbuild.exe"
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
+          if (-not (Test-Path $msbuild))
+          {
+              throw "Could not find msbuild.exe"
+          }
+          Write-Host "msbuild: $msbuild"
+
+          Push-Location src
+
+          Write-Host "Building for ARM64"
+          & $msbuild winfile.vcxproj /p:Configuration=Release /p:Platform=ARM64
+          if ($LASTEXITCODE -ne 0)
+          {
+              throw "Failed to build for ARM64"
+          }
+
+          Write-Host "Building for x64"
+          & $msbuild winfile.vcxproj /p:Configuration=Release /p:Platform=x64
+          if ($LASTEXITCODE -ne 0)
+          {
+              throw "Failed to build for x64"
+          }
+
+          Pop-Location
+
+          Write-Host "Creating zip"
+          New-Item -ItemType Directory -Path . -Name stage
+          New-Item -ItemType Directory -Path stage -Name Arm64
+          New-Item -ItemType Directory -Path stage -Name x64
+          Copy-Item LICENSE stage\Arm64\LICENSE.txt
+          Copy-Item LICENSE stage\x64\LICENSE.txt
+          Copy-Item src\ARM64\Release\winfile.exe stage\Arm64\winfile.exe
+          Copy-Item src\x64\Release\winfile.exe stage\x64\winfile.exe
+
+          Compress-Archive -Path stage\* -DestinationPath winfile.zip
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: winfile
+          path: winfile.zip
