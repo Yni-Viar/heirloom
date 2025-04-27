@@ -23,13 +23,7 @@
 #include "dbg.h"
 
 TCHAR szNTlanman[] = TEXT("ntlanman.dll");
-TCHAR szHelv[] = TEXT("MS Shell Dlg");
-/*
-** 6/13/95 FloydR Note re: MS Gothic, MS Shell Dlg and System fonts for Japan.
-** For 3.51J, the "MS Shell Dlg" font is linked to the "MS Gothic" Japanese
-** TTF.  This means that all this stuff about using different fonts for
-** Japan (and Korea/China) is gone.
-*/
+TCHAR szHelv[] = TEXT("Segoe UI");
 
 HBITMAP hbmSave;
 
