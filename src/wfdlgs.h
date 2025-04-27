@@ -13,7 +13,6 @@
 #define SEARCHDLG     13
 #define MOVECOPYDLG      14
 #define DELETEDLG     15
-#define ATTRIBSDLG       16
 #define MAKEDIRDLG       17
 #define EXITDLG       18
 #define CHOOSEDRIVEDLG      19
@@ -45,7 +44,6 @@
 #define DRIVEDLG     45
 #define LFNTOFATDLG     46
 #define CHOOSESYSDRIVEDLG       47
-#define ATTRIBSDLGDIR         48
 #define FONTDLG              49    // was 145 and etc.
 #define CANCELDLG            50
 #define CONFIRMNOACCESS      51

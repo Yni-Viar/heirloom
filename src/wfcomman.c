@@ -1403,14 +1403,6 @@ AppCommandProc(DWORD id)
 		 }
          else if (count > 1)
             DialogBox(hAppInstance, (LPTSTR) MAKEINTRESOURCE(MULTIPLEATTRIBSDLG), hwndFrame, AttribsDlgProc);
-
-#if 0
-         else if (bDir)
-            DialogBox(hAppInstance, (LPTSTR) MAKEINTRESOURCE(ATTRIBSDLGDIR), hwndFrame, AttribsDlgProc);
-
-         else
-            DialogBox(hAppInstance, (LPTSTR) MAKEINTRESOURCE(ATTRIBSDLG), hwndFrame, AttribsDlgProc);
-#endif 
          break;
       }
 
