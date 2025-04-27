@@ -925,9 +925,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
    case WM_MENUSELECT:
       {
-         UINT uTemp;
-
-
          if (GET_WM_MENUSELECT_HMENU(wParam, lParam)) {
 
             // Save the menu the user selected

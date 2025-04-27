@@ -19,9 +19,6 @@ extern FLOAT g_scale;
 // Initialize DPI awareness for the application
 VOID InitDPIAwareness(VOID);
 
-// Get the current DPI value from a window handle
-UINT GetDpiForWindow(HWND hwnd);
-
 // Scale a value by the DPI scale factor
 INT ScaleByDpi(INT value);
 

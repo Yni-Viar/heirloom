@@ -19,8 +19,6 @@
 
 BITMAPS         BITMAP PRELOAD wbbitmap.bmp
 
-IDB_EXTRATOOLS  BITMAP PRELOAD xtratool.bmp
-
 APPICON     ICON   PRELOAD winfile.ico
 TREEICON    ICON   PRELOAD wftree.ico
 DIRICON     ICON   PRELOAD wfdir.ico

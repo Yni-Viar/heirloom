@@ -17,6 +17,8 @@ FLOAT g_scale = 1.0f;
 typedef HRESULT (WINAPI *GetDpiForMonitorFunc)(HMONITOR hmonitor, INT dpiType, UINT *dpiX, UINT *dpiY);
 typedef HRESULT (WINAPI *GetDpiForWindowFunc)(HWND hwnd);
 
+extern void ResizeControls(void);
+
 // Initialize DPI awareness
 VOID InitDPIAwareness(VOID)
 {
@@ -42,38 +44,6 @@ VOID InitDPIAwareness(VOID)
     }
     
     g_scale = GetDpiScaleFactor(g_dpi);
-}
-
-// Get the DPI value for a specific window
-UINT GetDpiForWindow(HWND hwnd)
-{
-    UINT dpi = g_dpi;
-    
-    // Try to use GetDpiForWindow from user32.dll on Windows 10+
-    HMODULE hUser32 = GetModuleHandle(TEXT("user32.dll"));
-    if (hUser32) {
-        GetDpiForWindowFunc pGetDpiForWindow = (GetDpiForWindowFunc)GetProcAddress(hUser32, "GetDpiForWindow");
-        if (pGetDpiForWindow) {
-            dpi = (UINT)pGetDpiForWindow(hwnd);
-            return dpi;
-        }
-    }
-    
-    // Try to use GetDpiForMonitor from Shcore.dll on Windows 8.1+
-    HMODULE hShcore = LoadLibrary(TEXT("Shcore.dll"));
-    if (hShcore) {
-        GetDpiForMonitorFunc pGetDpiForMonitor = (GetDpiForMonitorFunc)GetProcAddress(hShcore, "GetDpiForMonitor");
-        if (pGetDpiForMonitor) {
-            HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-            UINT dpiX, dpiY;
-            if (SUCCEEDED(pGetDpiForMonitor(hMonitor, 0 /* MDT_EFFECTIVE_DPI */, &dpiX, &dpiY))) {
-                dpi = dpiX;
-            }
-        }
-        FreeLibrary(hShcore);
-    }
-    
-    return dpi;
 }
 
 // Get the scale factor for a given DPI value

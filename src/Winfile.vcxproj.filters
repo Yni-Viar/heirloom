@@ -82,9 +82,6 @@
     <None Include="lang\winfile_en-US.dlg">
       <Filter>lang</Filter>
     </None>
-    <None Include="lang\res_pl-PL.rc" />
-    <None Include="lang\res_de-DE.rc" />
-    <None Include="lang\res_tr-TR.rc" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="lang">

@@ -63,7 +63,6 @@ VOID
 RedoDriveWindows(HWND hwndActive)
 {
    INT iCurDrive;
-   INT iDriveInd;
 
    if (hwndActive == NULL)
       hwndActive = (HWND) SendMessage(hwndMDIClient, WM_MDIGETACTIVE,0,0L);

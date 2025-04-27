@@ -208,8 +208,6 @@
 
 #define BITMAPS             100
 
-#define IDB_EXTRATOOLS  102
-
 #define FILES_WIDTH         16
 #define FILES_HEIGHT        16
 #define MINIDRIVE_WIDTH     16

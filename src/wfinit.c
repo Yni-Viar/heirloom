@@ -557,7 +557,7 @@ LoadBitmaps(VOID)
       return FALSE;
    }
 
-   CopyMemory( (PBYTE)lpBitmapInfo, (PBYTE)lpBitmapData, cbBitmapSize );
+   CopyMemory( (PBYTE)lpBitmapInfo, (PBYTE)lpBitmapData, cbBitmapSize );    
 
    //
    // Get a pointer into the color table of the bitmaps, cache the number of
