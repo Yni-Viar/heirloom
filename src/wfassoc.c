@@ -540,8 +540,6 @@ AssociateDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
       case IDD_NEW:
       case IDD_CONFIG:
          {
-            DWORD dwSave = dwContext;
-
             // Allocate space for dialog info
 
             ASSOCIATEFILEDLGINFO AssociateFileDlgInfo;
@@ -568,9 +566,6 @@ AssociateDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
             if (IDD_NEW == GET_WM_COMMAND_ID(wParam, lParam)) {
 
-               // Set the help context to us
-               dwContext = IDH_DLG_ASSOCIATEFILEDLG;
-
                AssociateFileDlgInfo.mode = IDD_NEW;
 DoConfigWinIni:
 
@@ -586,9 +581,6 @@ DoConfigWinIni:
 
             } else {
                AssociateFileDlgInfo.mode = IDD_CONFIG;
-
-               // Set the help context to us
-               dwContext = IDH_DLG_ASSOCIATEFILEDLGCONFIG;
 
                //
                // If we are configing a winini ext, fake it
@@ -612,9 +604,6 @@ DoConfigWinIni:
                (LPARAM) &AssociateFileDlgInfo);
 
             ValidateClass(hDlg);
-
-            // Restore help context
-            dwContext = dwSave;
 
             // If prev dialog requests build doc refresh, set our flag
 
@@ -928,13 +917,10 @@ Cancel:
       case IDD_BROWSE:
          {
             OPENFILENAME ofn;
-            DWORD dwSave = dwContext;
 
             TCHAR szFile[MAXPATHLEN + 2];
 
             LPTSTR p;
-
-            dwContext = IDH_ASSOC_BROWSE;
 
             LoadString(hAppInstance, IDS_PROGRAMS, szTemp, COUNTOF(szTemp));
             FixupNulls(szTemp);
@@ -975,8 +961,6 @@ Cancel:
 
                SetDlgItemText(hDlg, IDD_COMMAND, p);
             }
-
-            dwContext = dwSave;
          }
          break;
 
@@ -988,8 +972,6 @@ Cancel:
    default:
       if (wMsg == wHelpMessage || wMsg == wBrowseMessage) {
 DoHelp:
-         WFHelp(hDlg);
-
          return TRUE;
       } else
          return FALSE;
@@ -1151,8 +1133,6 @@ AssociateFileDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
    default:
       if (wMsg == wHelpMessage || wMsg == wBrowseMessage) {
-         WFHelp(hDlg);
-
          return TRUE;
       } else {
          return FALSE;
@@ -1215,10 +1195,6 @@ AssociateFileDlgCommand(HWND hDlg,
       default:
          break;
       }
-      break;
-
-   case IDD_HELP:
-      WFHelp(hDlg);
       break;
 
    case IDD_EXT:
@@ -1510,13 +1486,10 @@ Reload:
    case IDD_BROWSE:
       {
          OPENFILENAME ofn;
-         DWORD dwSave = dwContext;
          LPTSTR p;
 
          TCHAR szFile[MAXPATHLEN + 2];
          TCHAR szTemp2[MAXPATHLEN];
-
-         dwContext = IDH_ASSOC_BROWSE;
 
          LoadString(hAppInstance, IDS_PROGRAMS, szTemp2, COUNTOF(szTemp2));
          FixupNulls(szTemp2);
@@ -1558,8 +1531,6 @@ Reload:
 
             SetDlgItemText(hDlg, IDD_COMMAND, p);
          }
-
-         dwContext = dwSave;
       }
       break;
 

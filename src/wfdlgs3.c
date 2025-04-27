@@ -139,8 +139,6 @@ ChooseDriveDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
       if (wMsg == wHelpMessage) {
 DoHelp:
-         WFHelp(hDlg);
-
          return TRUE;
       } else
          return FALSE;
@@ -274,8 +272,6 @@ DiskLabelDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
       if (wMsg == wHelpMessage) {
 DoHelp:
-         WFHelp(hDlg);
-
          return TRUE;
       } else
          return FALSE;
@@ -288,20 +284,14 @@ VOID
 FormatDiskette(HWND hwnd, BOOL bModal)
 {
     INT res = 0;
-    DWORD dwSave;
-
+    
     // in case current drive is on floppy
 
     SwitchToSafeDrive();
 
-    dwSave = dwContext;
-    dwContext = IDH_FORMAT;
-
     CancelInfo.bModal = bModal;
 
     res = (INT)DialogBox(hAppInstance, (LPTSTR) MAKEINTRESOURCE(FORMATDLG), hwnd, FormatDlgProc);
-
-    dwContext = dwSave;
 }
 
 
@@ -726,7 +716,6 @@ FormatDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
       if (wMsg == wHelpMessage) {
 DoHelp:
-         WFHelp(hDlg);
          return TRUE;
       } else
          return FALSE;
@@ -1623,8 +1612,6 @@ DrivesDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
       if (wMsg == wHelpMessage) {
 DoHelp:
-         WFHelp(hDlg);
-
          return TRUE;
       } else {
          return FALSE;

@@ -987,17 +987,6 @@ NormalHelp:
           case IDC_TOOLBAR:
               switch (lpnmhdr->code)
                  {
-                 case TBN_CUSTHELP:
-                    {
-                       DWORD dwSave;
-
-                       dwSave = dwContext;
-                       dwContext = IDH_CTBAR;
-                       WFHelp(lpnmhdr->hwndFrom);
-                       dwContext = dwSave;
-                       break;
-                    }
-
                  case TBN_BEGINDRAG:
                     uID = lpTBNotify->iItem;
                     break;
@@ -1029,17 +1018,6 @@ NormalHelp:
                     // fall through
                  case TBN_TOOLBARCHANGE:
                     SaveRestoreToolbar(TRUE);
-                    break;
-
-                 case TBN_BEGINADJUST:
-
-                    dwSaveHelpContext = dwContext;
-                    dwContext = IDH_CTBAR;
-                    break;
-
-                 case TBN_ENDADJUST:
-
-                    dwContext = dwSaveHelpContext;
                     break;
 
                  case TBN_ENDDRAG:

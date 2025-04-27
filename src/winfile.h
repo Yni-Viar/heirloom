@@ -32,7 +32,6 @@
 #include "numfmt.h"
 
 #include "wfexti.h"
-#include "wfhelp.h"
 
 #include "wfdocb.h"
 #include "wfmem.h"
@@ -570,7 +569,6 @@ BOOL  IsCDRomDrive(DRIVE drive);
 BOOL  IsRamDrive(DRIVE drive);
 VOID  CleanupMessages();
 HWND  GetRealParent(HWND hwnd);
-VOID  WFHelp(HWND hwnd);
 LONG  WFRegGetValueW(HKEY hkey, LPCWSTR lpSubKey, LPCWSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
 LPTSTR GetFullPathInSystemDirectory(LPCTSTR FileName);
 HMODULE LoadSystemLibrary(LPCTSTR FileName);
@@ -1421,15 +1419,11 @@ Extern LARGE_INTEGER qTotalSpace;
 
 Extern HWND hwndStatus        EQ( NULL );
 
-Extern TCHAR szWinfileHelp[]  EQ( TEXT("WINFILE.HLP") );
-Extern WCHAR wszWinfileHelp[] EQ( L"WINFILE.HLP" );
-
 Extern INT iNumExtensions     EQ( 0 );
 Extern EXTENSION extensions[MAX_EXTENSIONS];
 
 Extern HHOOK hhkMsgFilter     EQ( NULL );
 
-Extern DWORD dwContext       EQ( 0 );
 Extern DWORD nLastDriveInd   EQ( 0 );
 Extern DWORD fFormatFlags    EQ( 0 );
 

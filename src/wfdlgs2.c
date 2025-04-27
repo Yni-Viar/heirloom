@@ -239,8 +239,6 @@ SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
    default:
       if (wMsg == wHelpMessage) {
       DoHelp:
-         WFHelp(hDlg);
-
          return TRUE;
       }
       else
@@ -346,8 +344,6 @@ RunDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
       default:
           if (wMsg == wHelpMessage || wMsg == wBrowseMessage) {
 DoHelp:
-                WFHelp(hDlg);
-
                 return TRUE;
           } else
                 return FALSE;
@@ -809,8 +805,6 @@ Error:
    default:
       if (wMsg == wHelpMessage) {
 DoHelp:
-         WFHelp(hDlg);
-
          return TRUE;
       } else {
          return FALSE;
@@ -1519,8 +1513,6 @@ FullPath:
    }
    else
    {
-      dwContext = IDH_GROUP_ATTRIBS;
-      
       if (!bFileCompression)
       {
           ShowWindow(GetDlgItem(hDlg, IDD_COMPRESSED), SW_HIDE);
@@ -1884,8 +1876,6 @@ AttributeError:
 
       if (wMsg == wHelpMessage) {
 DoHelp:
-         WFHelp(hDlg);
-
          return TRUE;
       } else
          return FALSE;
@@ -1997,8 +1987,6 @@ MakeDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
       if (wMsg == wHelpMessage) {
 DoHelp:
-         WFHelp(hDlg);
-
          return TRUE;
       } else
          return FALSE;

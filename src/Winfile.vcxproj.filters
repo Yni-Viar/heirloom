@@ -40,6 +40,7 @@
     <ClCompile Include="wfdpi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="resize.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dbg.h" />
@@ -58,7 +59,6 @@
     <ClInclude Include="wfext.h" />
     <ClInclude Include="wfexti.h" />
     <ClInclude Include="wfgwl.h" />
-    <ClInclude Include="wfhelp.h" />
     <ClInclude Include="wfinfo.h" />
     <ClInclude Include="wfmem.h" />
     <ClInclude Include="winexp.h" />
@@ -68,6 +68,7 @@
     <ClInclude Include="wfdpi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resize.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res.rc" />
@@ -82,6 +83,9 @@
     <None Include="lang\winfile_en-US.dlg">
       <Filter>lang</Filter>
     </None>
+    <None Include="lang\res_pl-PL.rc" />
+    <None Include="lang\res_de-DE.rc" />
+    <None Include="lang\res_tr-TR.rc" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="lang">

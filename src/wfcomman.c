@@ -930,8 +930,6 @@ AppCommandProc(DWORD id)
 
    hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
-   dwContext = IDH_HELPFIRST + id;
-
    switch (id) {
 
    case IDM_PERMISSIONS:
@@ -1785,7 +1783,7 @@ AppCommandProc(DWORD id)
       NotifyPause((UINT)-1, DRIVE_REMOTE);
 
       ret =  WNetConnectionDialog2(hwndFrame, RESOURCETYPE_DISK,
-         wszWinfileHelp, IDH_CONNECT);
+         NULL, 0);
 
       if (WN_SUCCESS == ret) {
 
@@ -1842,7 +1840,7 @@ DealWithNetError_NotifyResume:
        WAITNET();
 
        ret = WNetDisconnectDialog2(hwndFrame, RESOURCETYPE_DISK,
-          wszWinfileHelp, IDH_DISCONNECT);
+          NULL, 0);
 
        if (WN_SUCCESS == ret) {
 
@@ -1975,13 +1973,7 @@ ChangeDisplay:
 
     case IDM_TOOLBARCUST:
     {
-       DWORD dwSave;
-
-       dwSave = dwContext;
-       dwContext = IDH_CTBAR;
        SendMessage(hwndToolbar, TB_CUSTOMIZE, 0, 0L);
-       dwContext = dwSave;
-
        break;
     }
 
@@ -2006,7 +1998,6 @@ ChangeDisplay:
       break;
 
     case IDM_FONT:
-       dwContext = IDH_FONT;
        NewFont();
        break;
 
@@ -2139,24 +2130,6 @@ CHECK_OPTION:
 
           break;
        }
-
-    case IDM_HELPINDEX:
-       dwFlags = HELP_INDEX;
-       goto ACPCallHelp;
-
-    case IDM_HELPKEYS:
-       dwFlags = HELP_PARTIALKEY;
-       goto ACPCallHelp;
-
-    case IDM_HELPHELP:
-       dwFlags = HELP_HELPONHELP;
-       goto ACPCallHelp;
-
-ACPCallHelp:
-   	   SetCurrentDirectory(szOriginalDirPath);
-       if (!WinHelp(hwndFrame, szWinfileHelp, dwFlags, (ULONG_PTR)szNULL))
-          MyMessageBox(hwndFrame, IDS_WINFILE, IDS_WINHELPERR, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
-       break;
 
     case IDM_ABOUT:
        DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(ABOUTDLG), hwndFrame, AboutDlgProc);

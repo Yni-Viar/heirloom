@@ -119,10 +119,6 @@ BEGIN
     END
     POPUP       "&Help"
     BEGIN
-    MENUITEM    "&Contents",                IDM_HELPINDEX
-    MENUITEM    "&Search for Help on...",   IDM_HELPKEYS
-    MENUITEM    "&How to Use Help",         IDM_HELPHELP
-    MENUITEM    SEPARATOR
     MENUITEM    "&About File Manager...",   IDM_ABOUT
     END
 
@@ -451,7 +447,6 @@ JAPANEND
 
     IDS_ASSOCIATE               "Browse"
     IDS_RUN                     "Run"
-    IDS_WINHELPERR              "Unable to show Help information."
     IDS_NOEXEASSOC              "Files with the extension %s are programs and cannot be associated with another application."
     IDS_ASSOCNOTEXE             "%s is not a program and cannot be associated with a file extension."
     IDS_ASSOCNONE               "(None)"
@@ -534,7 +529,6 @@ BEGIN
     MH_POPUP+IDM_OPTIONS,       "Commands for setting options"
     MH_POPUP+IDM_SECURITY,      "Commands for manipulating file and directory security"
     MH_POPUP+IDM_WINDOW,        "Commands for arranging windows"
-    MH_POPUP+IDM_HELP,          "Commands for displaying File Manager Help"
 END
 
 
@@ -619,9 +613,6 @@ BEGIN
     MH_MYITEMS+IDM_AUDITING     "View or set auditing information on the selected item(s)"
     MH_MYITEMS+IDM_OWNER        "View or take ownership of the selected item(s)"
 
-    MH_MYITEMS+IDM_HELPINDEX,   "Displays contents for File Manager Help"
-    MH_MYITEMS+IDM_HELPKEYS,    "Searches for a topic in File Manager Help"
-    MH_MYITEMS+IDM_HELPHELP,    "Displays information about using Help"
     MH_MYITEMS+IDM_ABOUT,       "Displays information about File Manager"
 END
 

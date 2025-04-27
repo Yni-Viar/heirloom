@@ -835,9 +835,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
    case WM_DESTROY:
 
-      if (!WinHelp(hwndFrame, szWinfileHelp, HELP_QUIT, 0L)) {
-         MyMessageBox(hwndFrame, IDS_WINFILE, IDS_WINHELPERR, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
-      }
       hwndFrame = NULL;
       PostQuitMessage(0);
       DestroyWindow(hwndDriveBar);
@@ -1078,10 +1075,6 @@ DoDefault:
                //
                if (uMenuFlags & MF_SYSMENU || uMenuID >= 0xf000) {
 
-                  dwContext = bMDIFrameSysMenu ?
-                     IDH_SYSMENU :
-                     IDH_SYSMENUCHILD;
-
                } else {
 
                   INT iExt;
@@ -1108,28 +1101,14 @@ DoDefault:
 
                      return 0L;
                   }
-
-                  dwContext = uMenuID + IDH_HELPFIRST;
                }
 
-               WFHelp(hwnd);
             }
 
          }
          else if (GET_WM_COMMAND_ID(wParam, lParam) == MSGF_DIALOGBOX) {
-
-            // context range for message boxes
-
-            if ((dwContext >= IDH_MBFIRST && dwContext <= IDH_MBLAST) ||
-                (dwContext == IDH_CTBAR))
-            {
-               WFHelp(hwnd);
-            }
-            else
-            {
-               // let dialog box deal with it
-               PostMessage(GetRealParent((HWND)lParam), wHelpMessage, 0, 0L);
-            }
+            // let dialog box deal with it
+            PostMessage(GetRealParent((HWND)lParam), wHelpMessage, 0, 0L);
          }
 
       }

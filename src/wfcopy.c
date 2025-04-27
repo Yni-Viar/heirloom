@@ -1011,14 +1011,6 @@ ReplaceDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
       break;
 
    default:
-#if 0
-      if (wMsg == wHelpMessage) {
-DoHelp:
-         WFHelp(hDlg);
-
-         return TRUE;
-      } else
-#endif
          return FALSE;
    }
    return TRUE;
@@ -1041,10 +1033,6 @@ ConfirmDialog(
    INT nRetVal;
    PARAM_REPLACEDLG params;
    WCHAR szMessage[MAXMESSAGELEN];
-
-   DWORD dwSave = dwContext;
-
-   dwContext = 0;
 
    params.pFileDest = pFileDest;
    params.pFileSource = pFileSource;
@@ -1089,8 +1077,6 @@ ConfirmDialog(
 
    if (nRetVal == -1)
       nRetVal = DE_INSMEM;
-
-   dwContext = dwSave;
 
    return (DWORD)nRetVal;
 }
@@ -1316,7 +1302,6 @@ GetNameDlgProc(
         if (wMsg == wHelpMessage)
           {
 DoHelp:
-            WFHelp(hwnd);
             return TRUE;
           }
         return FALSE;

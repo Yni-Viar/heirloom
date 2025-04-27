@@ -150,7 +150,6 @@
     <ClInclude Include="wfext.h" />
     <ClInclude Include="wfexti.h" />
     <ClInclude Include="wfgwl.h" />
-    <ClInclude Include="wfhelp.h" />
     <ClInclude Include="wfinfo.h" />
     <ClInclude Include="wfmem.h" />
     <ClInclude Include="winexp.h" />

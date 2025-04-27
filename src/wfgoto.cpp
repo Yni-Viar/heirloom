@@ -721,8 +721,6 @@ GotoDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 	default:
 		if (wMsg == wHelpMessage) {
 		DoHelp:
-			WFHelp(hDlg);
-
 			return TRUE;
 		}
 		else

@@ -391,7 +391,6 @@
 #define IDS_ASSOCIATE       220
 #define IDS_RUN             221
 #define IDS_PRINTERRTITLE   222
-#define IDS_WINHELPERR      223
 #define IDS_NOEXEASSOC          224
 #define IDS_ASSOCNOTEXE         225
 #define IDS_ASSOCNONE           226

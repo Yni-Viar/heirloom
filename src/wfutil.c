@@ -453,15 +453,6 @@ GetRealParent(HWND hwnd)
    return hwnd;
 }
 
-VOID
-WFHelp(HWND hwnd)
-{
-   if (!WinHelp(hwnd, szWinfileHelp, HELP_CONTEXT, dwContext)) {
-      MyMessageBox(hwnd, IDS_WINFILE, IDS_WINHELPERR, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
-   }
-
-}
-
 // atoi with decimal comma separators
 //
 

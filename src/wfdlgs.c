@@ -212,8 +212,6 @@ OtherDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
           if (wMsg == wHelpMessage) {
 DoHelp:
-                WFHelp(hDlg);
-
                 return TRUE;
           } else
                 return FALSE;
@@ -326,8 +324,6 @@ IncludeDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
        default:
           if (wMsg == wHelpMessage) {
 DoHelp:
-                WFHelp(hDlg);
-
                 return TRUE;
           } else
                 return FALSE;
@@ -405,8 +401,6 @@ SelectDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
         default:
           if (wMsg == wHelpMessage) {
 DoHelp:
-                WFHelp(hDlg);
-
                 return TRUE;
           } else
                 return FALSE;
@@ -706,8 +700,6 @@ ConfirmDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
        default:
           if (wMsg == wHelpMessage) {
 DoHelp:
-                WFHelp(hDlg);
-
                 return TRUE;
           } else
                 return FALSE;
@@ -798,8 +790,6 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
         default:
             if (wMsg == wHelpMessage) {
 DoHelp:
-                WFHelp(hDlg);
-
                 return TRUE;
             }
             else
