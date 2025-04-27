@@ -139,6 +139,7 @@
     <ClInclude Include="numfmt.h" />
     <ClInclude Include="res.h" />
     <ClInclude Include="resize.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="spinlock.h" />
     <ClInclude Include="suggest.h" />
     <ClInclude Include="treectl.h" />
@@ -167,6 +168,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">WIN32_LEAN_AND_MEAN=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32_LEAN_AND_MEAN=1;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
+    <ResourceCompile Include="res_dummy.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="suggest.db" />

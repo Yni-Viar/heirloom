@@ -546,11 +546,7 @@ NewFont()
 
    uNew = (UINT)abs(lf.lfHeight);
 
-   if (bJAPAN && lf.lfCharSet != SHIFTJIS_CHARSET)
-      MyMessageBox(hwndFrame, IDS_WINFILE, IDS_WRNNOSHIFTJIS,
-                                             MB_OK|MB_ICONEXCLAMATION);
-
-   // Set wTextAttribs BOLD and ITALIC flags
+    // Set wTextAttribs BOLD and ITALIC flags
 
    if (lf.lfItalic != 0)
       wTextAttribs |= TA_ITALIC;

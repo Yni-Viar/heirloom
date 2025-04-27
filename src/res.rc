@@ -384,7 +384,7 @@ BEGIN
     IDS_PRINTERROR          "An error has occurred while printing.\n\nMake sure the printer is properly configured and selected."             /* 128 */
     IDS_PRINTONLYONE        "File Manager cannot print multiple files.\n\nSelect only one file, and then try again."                                               /* 128 */
 
-    IDS_CURDIRIS,           "Current Directory: %s"                                                                                                    /* 128 */
+    IDS_CURDIRIS,           "Current directory: %s"                                                                                                    /* 128 */
     IDS_CURDIRSARE,         "Other current directories: "
     IDS_COPY,               "Copy"                          /* 32 */
     IDS_RENAME,             "Rename"                        /* 32 */
@@ -480,25 +480,6 @@ BEGIN
     IDS_720KB                   "720K"
     IDS_288MB                   "2%s88 MB"
     IDS_2080MB                  "20%s8 MB"
-
-#if defined(JAPAN) && defined(i386)
-/* ADD KBNES. NEC MEDIATYPE START */
-JAPANBEGIN
-    IDS_125MB                   "1%s25 MB"
-    IDS_256KB                   "256K"
-    IDS_128MB                   "128 MB"
-JAPANEND
-/* ADD KBNES. NEC MEDIATYPE END */
-
-//
-// FMR jul.21.1994 JY
-// We added 640KB/1.23MB media types.
-//
-JAPANBEGIN
-    IDS_640KB                   "640K"
-    IDS_123MB                   "1%s23 MB"
-JAPANEND
-#endif
 
     IDS_DEVICECAP               "Drive Capacity"
     IDS_QSUPMEDIA               "File manager cannot obtain disk information.\n\nMake sure the disk is in the drive."
@@ -639,10 +620,6 @@ JAPANEND
     IDS_NEWFILETYPETITLE        "New File Type"
     IDS_COPYINGDISKTITLE        "Copying Disk"
     IDS_SEARCHING               "Searching..."
-
-JAPANBEGIN
-    IDS_WRNNOSHIFTJIS           "このフォントを使用すると漢字の表示が\nできなくなります。"
-JAPANEND
 
     IDS_INITUPDATEFAIL          "Unable to initialize background update support.  File Manager will exit.  "
     IDS_INITUPDATEFAILTITLE     "File Manager Initialization"
@@ -861,27 +838,18 @@ DIALOGRESIZECONTROL{ 100, 10, 0, 0 }
 CONTROL "Cancel", IDCANCEL, "button", BS_PUSHBUTTON | WS_TABSTOP | WS_CHILD, 155, 23, 40, 14
 END
 
-RUNDLG DIALOGEX 15, 12, 210, 63
+RUNDLG DIALOGEX 15, 12, 242, 99
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
 CAPTION "Run"
-FONT 8, "MS Shell Dlg"
-STYLE WS_BORDER | DS_MODALFRAME | WS_CAPTION | WS_THICKFRAME | WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN
+FONT 9, "Segoe UI", 400, 0, 0x0
 BEGIN
-DIALOGRESIZE{ 0, 125 }
-DIALOGRESIZECONTROL{ 0, 0, 100, 0 }
-CONTROL "", IDD_DIR, "static", SS_SIMPLE | SS_NOPREFIX | WS_CHILD, 3, 6, 162, 10
-DIALOGRESIZECONTROL{ 0, 10, 100, 0 }
-CONTROL "&Command Line:", IDD_TEXT, "static", SS_LEFTNOWORDWRAP | WS_GROUP | WS_CHILD, 3, 18, 60, 10
-DIALOGRESIZECONTROL{ 0, 20, 100, 0 }
-CONTROL "", IDD_NAME, "edit", ES_LEFT | ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP | WS_CHILD, 3, 29, 134, 12
-DIALOGRESIZECONTROL{ 0, 100, 0, 0 }
-CONTROL "Run &Minimized", IDD_LOAD, "button", BS_AUTOCHECKBOX | WS_TABSTOP | WS_CHILD, 3, 45, 71, 12
-DIALOGRESIZECONTROL{ 50, 100, 0, 0 }
-CONTROL "Run as &Admin", IDD_RUNAS, "button", BS_AUTOCHECKBOX | WS_TABSTOP | WS_CHILD, 78, 45, 71, 12
-DIALOGRESIZECONTROL{ 100, 0, 0, 0 }
-CONTROL "OK", 1, "button", BS_DEFPUSHBUTTON | WS_TABSTOP | WS_CHILD, 165, 6, 40, 14
-DIALOGRESIZECONTROL{ 100, 10, 0, 0 }
-CONTROL "Cancel", 2, "button", BS_PUSHBUTTON | WS_TABSTOP | WS_CHILD, 165, 23, 40, 14
-//    CONTROL "&Browse...", IDD_BROWSE, "button", BS_PUSHBUTTON | WS_TABSTOP | WS_CHILD, 165, 40, 40, 14
+    CONTROL         "<directory>",IDD_DIR,"Static",SS_SIMPLE | SS_NOPREFIX,7,7,228,8
+    CONTROL         "&Command line:",-1,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,7,25,51,8
+    EDITTEXT        IDD_NAME,7,35,224,12,ES_AUTOHSCROLL
+    CONTROL         "Run &minimized",IDD_LOAD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,56,66,10
+    CONTROL         "Run as &administrator",IDD_RUNAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,84,56,83,10
+    DEFPUSHBUTTON   "OK",1,126,77,50,14
+    PUSHBUTTON      "Cancel",2,182,77,50,14
 END
 
 SELECTDLG DIALOGEX 15, 12, 116, 83

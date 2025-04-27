@@ -68,9 +68,11 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resize.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res.rc" />
+    <ResourceCompile Include="res_dummy.rc" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="lang">
@@ -82,5 +84,8 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{e8fdd135-3f9a-4ae3-80b6-48ad9e23c7b7}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="suggest.db" />
   </ItemGroup>
 </Project>
