@@ -183,7 +183,6 @@
     <ClCompile Include="numfmt.c" />
     <ClCompile Include="resize.c" />
     <ClCompile Include="suggest.c" />
-    <ClCompile Include="tbar.c" />
     <ClCompile Include="treectl.c" />
     <ClCompile Include="wfassoc.c" />
     <ClCompile Include="wfchgnot.c" />

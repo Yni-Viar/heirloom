@@ -70,24 +70,6 @@ RedoDriveWindows(HWND hwndActive)
 
    iCurDrive = (INT)GetWindowLongPtr(hwndActive, GWL_TYPE);
 
-   if (iCurDrive >= 0) {
-      for (iDriveInd=0; iDriveInd<cDrives; iDriveInd++) {
-         if (rgiDrive[iDriveInd] == iCurDrive) {
-
-            // UpdateDriveList doesn't call filltoolbardrives.  do now.
-            // (change = add iCurDrive parm)
-
-            FillToolbarDrives(iCurDrive);
-            SelectToolbarDrive(iDriveInd);
-
-            break;
-         }
-      }
-   }
-
-   //
-   // No longer calls updatedrivelist and initdrivebitmaps
-   //
    MDIClientSizeChange(hwndActive,DRIVEBAR_FLAG);
 }
 
@@ -572,7 +554,6 @@ CreateDirWindow(
             // if not already selected, do so now
             if (i != SendMessage(hwndDriveList, CB_GETCURSEL, i, 0L))
             {
-               SelectToolbarDrive(i);
                bDriveChanged = TRUE;
             }
             break;
@@ -788,8 +769,6 @@ MDIClientSizeChange(HWND hwndActive,INT iFlags)
 
    if (bDriveBar && (iFlags & DRIVEBAR_FLAG))
       InvalidateRect(hwndDriveBar, NULL, TRUE);
-   if (bToolbar && (iFlags & TOOLBAR_FLAG))
-      InvalidateRect(hwndToolbar, NULL, TRUE);
 
    UpdateWindow(hwndFrame);
 }
@@ -1883,16 +1862,11 @@ DealWithNetError_NotifyResume:
        break;
 
     case IDM_VNAME:
-       CheckTBButton(id);
-
        dwFlags = VIEW_NAMEONLY | (GetWindowLongPtr(hwndActive, GWL_VIEW) & VIEW_NOCHANGE);
        id = CD_VIEW;
        goto ChangeDisplay;
 
     case IDM_VDETAILS:
-
-       CheckTBButton(id);
-
        dwFlags = VIEW_EVERYTHING | (GetWindowLongPtr(hwndActive, GWL_VIEW) & VIEW_NOCHANGE);
        id = CD_VIEW;
        goto ChangeDisplay;
@@ -1901,9 +1875,6 @@ DealWithNetError_NotifyResume:
        DialogBox(hAppInstance, (LPTSTR) MAKEINTRESOURCE(OTHERDLG), hwndFrame, OtherDlgProc);
 
        dwFlags = GetWindowLongPtr(hwndActive, GWL_VIEW) & VIEW_EVERYTHING;
-       if (dwFlags != VIEW_NAMEONLY && dwFlags != VIEW_EVERYTHING)
-          CheckTBButton(id);
-
        break;
 
     case IDM_BYNAME:
@@ -1911,9 +1882,6 @@ DealWithNetError_NotifyResume:
     case IDM_BYSIZE:
     case IDM_BYDATE:
     case IDM_BYFDATE:
-
-       CheckTBButton(id);
-
        dwFlags = (id - IDM_BYNAME) + IDD_NAME;
        id = CD_SORT;
 
@@ -1946,7 +1914,7 @@ ChangeDisplay:
        WritePrivateProfileBool(szStatusBar, bStatusBar);
 
        ShowWindow(hwndStatus, bStatusBar ? SW_SHOW : SW_HIDE);
-       MDIClientSizeChange(hwndActive,TOOLBAR_FLAG|DRIVEBAR_FLAG);
+       MDIClientSizeChange(hwndActive,DRIVEBAR_FLAG);
 
        goto CHECK_OPTION;
        break;
@@ -1956,46 +1924,14 @@ ChangeDisplay:
        WritePrivateProfileBool(szDriveBar, bDriveBar);
 
        ShowWindow(hwndDriveBar, bDriveBar ? SW_SHOW : SW_HIDE);
-       MDIClientSizeChange(hwndActive,DRIVEBAR_FLAG|TOOLBAR_FLAG);
+       MDIClientSizeChange(hwndActive,DRIVEBAR_FLAG);
 
-       goto CHECK_OPTION;
-       break;
-
-    case IDM_TOOLBAR:
-       bTemp = bToolbar = !bToolbar;
-       WritePrivateProfileBool(szToolbar, bToolbar);
-
-       ShowWindow(hwndToolbar, bToolbar ? SW_SHOW : SW_HIDE);
-       MDIClientSizeChange(hwndActive,TOOLBAR_FLAG|DRIVEBAR_FLAG);
-
-       goto CHECK_OPTION;
-       break;
-
-    case IDM_TOOLBARCUST:
-    {
-       SendMessage(hwndToolbar, TB_CUSTOMIZE, 0, 0L);
-       break;
-    }
-
-    case IDM_NEWWINONCONNECT:
-       bTemp = bNewWinOnConnect = !bNewWinOnConnect;
-       WritePrivateProfileBool(szNewWinOnNetConnect, bNewWinOnConnect);
        goto CHECK_OPTION;
        break;
 
     case IDM_DRIVELISTJUMP:
-
-      if (!bToolbar)
-         break;
-
-      if (SendMessage(hwndDriveList, CB_GETDROPPEDSTATE, 0, 0L)) {
-         SendMessage(hwndDriveList, CB_SHOWDROPDOWN, FALSE, 0L);
-      } else {
-         SetFocus(hwndDriveList);
-         SendMessage(hwndDriveList, CB_SHOWDROPDOWN, TRUE, 0L);
-      }
-
-      break;
+       // Drive list functionality removed
+       break;
 
     case IDM_FONT:
        NewFont();
@@ -2123,8 +2059,6 @@ CHECK_OPTION:
           //
           SPC_SET_INVALID(qFreeSpace);
           UpdateStatus(hwndActive);
-
-          EnableDisconnectButton();
 
 		  StartBuildingDirectoryTrie();
 

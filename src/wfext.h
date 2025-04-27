@@ -26,7 +26,6 @@ extern "C" {
 #define FMEVENT_INITMENU        102
 #define FMEVENT_USER_REFRESH    103
 #define FMEVENT_SELCHANGE       104
-#define FMEVENT_TOOLBARLOAD     105
 #define FMEVENT_HELPSTRING      106
 #define FMEVENT_HELPMENUITEM    107
 
@@ -130,23 +129,6 @@ typedef struct _FMS_LOADW {
 #define LPFMS_LOAD LPFMS_LOADA
 #endif
 
-
-// Toolbar definitions
-
-typedef struct tagEXT_BUTTON {
-   WORD idCommand;                 /* menu command to trigger */
-   WORD idsHelp;                   /* help string ID */
-   WORD fsStyle;                   /* button style */
-} EXT_BUTTON, FAR *LPEXT_BUTTON;
-
-typedef struct tagFMS_TOOLBARLOAD {
-   DWORD dwSize;                   /* for version checks */
-   LPEXT_BUTTON lpButtons;         /* output */
-   WORD cButtons;                  /* output, 0==>no buttons */
-   WORD cBitmaps;                  /* number of non-sep buttons */
-   WORD idBitmap;                  /* output */
-   HBITMAP hBitmap;                /* output if idBitmap==0 */
-} FMS_TOOLBARLOAD, FAR *LPFMS_TOOLBARLOAD;
 
 typedef struct tagFMS_HELPSTRINGA {
    INT   idCommand;       /* input, -1==>the menu was selected */

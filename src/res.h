@@ -156,13 +156,11 @@
 #define IDM_EXPANDTREE      506
 
 #define IDM_DRIVEBAR      507   /* Options->Drivebar */
-#define IDM_TOOLBAR     508   /* Options->Toolbar */
 #define IDM_NEWWINONCONNECT 509  /* Options->New Window On Connect */
 
 #define IDM_FONT            510
 #define IDM_SAVESETTINGS    511
 
-#define IDM_TOOLBARCUST     512
 #define IDM_SAVENOW         513
 
 #define IDM_INDEXONLAUNCH   514
@@ -203,7 +201,6 @@
 
 
 /* Control ID's; these must not conflict with an IDM_* */
-#define IDC_TOOLBAR  3000
 #define IDC_STATUS   3001
 #define IDC_DRIVES   3002
 #define IDC_EXTENSIONS  3003
@@ -211,7 +208,6 @@
 
 #define BITMAPS             100
 
-#define IDB_TOOLBAR  101
 #define IDB_EXTRATOOLS  102
 
 #define FILES_WIDTH         16

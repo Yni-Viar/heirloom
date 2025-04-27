@@ -1744,11 +1744,7 @@ NetLoad(VOID)
 
       if (hNtshrui) {
          lpfnShowShareFolderUI = (PVOID)GetProcAddress(hNtshrui, "ShowShareFolderUI");
-         if (lpfnShowShareFolderUI)
-            PostMessage(hwndToolbar, TB_ENABLEBUTTON, IDM_SHAREAS, TRUE);
-         else {
-
-            PostMessage(hwndToolbar, TB_ENABLEBUTTON, IDM_SHAREAS, FALSE);
+         if (!lpfnShowShareFolderUI) {
             EnableMenuItem(GetMenu(hwndFrame), IDM_SHAREAS, MF_BYCOMMAND | MF_GRAYED);
          }
 
@@ -1760,7 +1756,6 @@ NetLoad(VOID)
          //
          bNetShareLoad = TRUE;
 
-         PostMessage(hwndToolbar, TB_ENABLEBUTTON, IDM_STOPSHARE, FALSE);
          EnableMenuItem(GetMenu(hwndFrame), IDM_STOPSHARE, MF_BYCOMMAND | MF_GRAYED);
       }
 
@@ -1800,8 +1795,6 @@ NetLoad(VOID)
       DeleteMenu(hMenuFrame, MapIDMToMenuPos(IDM_SECURITY), MF_BYPOSITION);
       bSecMenuDeleted = TRUE;
       DrawMenuBar(hwndFrame);
-
-      PostMessage(hwndToolbar, TB_ENABLEBUTTON, IDM_PERMISSIONS, FALSE);
    }
 
    SetEvent(hEventAcledit);

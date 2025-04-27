@@ -362,9 +362,6 @@ FreeExtensions()
    INT i;
    HMENU hMenuFrame;
 
-   FreeToolbarExtensions();
-
-
    hMenuFrame = GetMenu(hwndFrame);
 
    // we are going to delete all extensions and thus each one to delete is at the same place
@@ -393,16 +390,9 @@ ExtensionMsgProc(UINT wMsg, WPARAM wParam, LPARAM lParam)
    case FM_RELOAD_EXTENSIONS:
       SendMessage(hwndFrame, WM_CANCELMODE, 0, 0L);
 
-      SaveRestoreToolbar(TRUE);
-      SendMessage(hwndToolbar, WM_SETREDRAW, FALSE, 0L);
-
       FreeExtensions();
 
       InitExtensions();
-      SaveRestoreToolbar(FALSE);
-
-      SendMessage(hwndToolbar, WM_SETREDRAW, TRUE, 0L);
-      InvalidateRect(hwndToolbar, NULL, TRUE);
 
       DrawMenuBar(hwndFrame);
       break;

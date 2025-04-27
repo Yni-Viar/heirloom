@@ -157,8 +157,6 @@ InitExtensions()
                extensions[iNumExtensions].hModule = hMod;
                extensions[iNumExtensions].hMenu = hMenu;
                extensions[iNumExtensions].bUnicode = bUnicode;
-
-               // these are set when FMEVENT_TOOLBARLOAD is called
                extensions[iNumExtensions].hbmButtons = NULL;
                extensions[iNumExtensions].idBitmap = 0;
                extensions[iNumExtensions].iStartBmp = 0;
@@ -220,7 +218,6 @@ GetSettings()
    bMirrorContent       = GetPrivateProfileInt(szSettings, szMirrorContent,    DefaultLayoutRTL(), szTheINIFile);
 
    bDriveBar       = GetPrivateProfileInt(szSettings, szDriveBar,      bDriveBar,      szTheINIFile);
-   bToolbar        = GetPrivateProfileInt(szSettings, szToolbar,       bToolbar,       szTheINIFile);
 
    bNewWinOnConnect = GetPrivateProfileInt(szSettings, szNewWinOnNetConnect, bNewWinOnConnect, szTheINIFile);
    bConfirmDelete  = GetPrivateProfileInt(szSettings, szConfirmDelete, bConfirmDelete, szTheINIFile);
@@ -382,8 +379,6 @@ InitMenus()
 
    if (bDriveBar)
       CheckMenuItem(hMenu, IDM_DRIVEBAR, MF_BYCOMMAND | MF_CHECKED);
-   if (bToolbar)
-      CheckMenuItem(hMenu, IDM_TOOLBAR, MF_BYCOMMAND | MF_CHECKED);
 
    if (bNewWinOnConnect)
       CheckMenuItem(hMenu, IDM_NEWWINONCONNECT, MF_BYCOMMAND | MF_CHECKED);
@@ -393,8 +388,6 @@ InitMenus()
    // Init menus after the window/menu has been created
    //
    InitExtensions();
-
-   InitToolbarButtons();
 
    //
    // Redraw the menu bar since it's already displayed
@@ -1240,8 +1233,6 @@ JAPANEND
    dyIcon = ScaleByDpi(32);
    dxIcon = ScaleByDpi(32);
    
-   // Scale toolbar metrics
-   dyToolbar = ScaleByDpi(27);
    dxButtonSep = ScaleByDpi(8);
    dxButton = ScaleByDpi(24);
    dyButton = ScaleByDpi(22);
@@ -1651,7 +1642,6 @@ JAPANEND
    //
    // Now draw drive list box
    //
-   FillToolbarDrives(0);
    SendMessage(hwndDriveList,WM_SETREDRAW,(WPARAM)TRUE,0l);
    InvalidateRect(hwndDriveList, NULL, TRUE);
 
@@ -1703,13 +1693,6 @@ JAPANEND
          hwnd = GetWindow(hwnd, GW_HWNDNEXT);
       }
    }
-
-   // ProfStop();
-
-   // drive refresh taken out of update drive list, must be manually
-   // placed here for screen init.  Do last.
-   // Commented out (unnecessary)
-   //    FillToolbarDrives(GetSelectedDrive());
 
    SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 

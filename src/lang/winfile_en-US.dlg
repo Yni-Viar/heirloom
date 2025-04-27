@@ -886,7 +886,6 @@ BEGIN
    CONTROL "Editor Path:", IDD_TEXT, "static", SS_LEFT | WS_CHILD | WS_VISIBLE | WS_GROUP, 15, 17, 37, 14
    CONTROL "", IDD_EDITOR, "edit", ES_AUTOHSCROLL | ES_LEFT | WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP, 54, 14, 140, 14
    CONTROL "...", IDC_EDITOR, "button", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 195, 14, 20, 14
-   CONTROL "Disable toolbar visual styling", IDC_VSTYLE, "button", BS_AUTOCHECKBOX | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 16, 38, 119, 14
    CONTROL "Create &Goto Index on Launch", IDC_GOTO, "button", BS_AUTOCHECKBOX | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 16, 50, 119, 14
    CONTROL "Mirror application content", IDC_MIRROR, "button", BS_AUTOCHECKBOX | WS_CHILD /* | WS_VISIBLE | WS_TABSTOP */, 0, 0, 0, 0    // invisible, not a tabsop; here to satisfy VerifyResources tool.
    CONTROL "Language:", IDD_TEXT, "static", SS_LEFT | WS_CHILD | WS_VISIBLE | WS_GROUP, 15, 70, 35, 14

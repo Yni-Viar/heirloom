@@ -512,7 +512,7 @@ BOOL  CompactPath(HDC hdc, LPTSTR szPath, DWORD dx);
 VOID  ResizeWindows(HWND hwndParent, INT dxWindow, INT dyWindow);
 VOID  GetTreeWindows(HWND hwnd, PHWND phwndTree, PHWND phwndDir);
 HWND  GetTreeFocus(HWND hWnd);
-VOID  SwitchDriveSelection(HWND hwndActive, BOOL bSelectToolbarDrive);
+VOID  SwitchDriveSelection(HWND hwndActive);
 
 
 // WFINIT.C
@@ -647,23 +647,6 @@ BOOL DefaultLayoutRTL();
 DWORD MainWindowExStyle(VOID);
 VOID PreserveBitmapInRTL(HDC hdc);
 
-// TBAR.C
-
-VOID  CreateFMToolbar(VOID);
-DWORD DriveListMessage(UINT wMsg, WPARAM wParam, LPARAM lParam, UINT* puiRetVal);
-
-VOID  SelectToolbarDrive(DRIVEIND DriveInd);
-VOID  FillToolbarDrives(DRIVE drive);
-VOID  EnableCheckTBButtons(HWND hwndActive);
-VOID  CheckTBButton(DWORD idCommand);
-VOID  InitToolbarButtons(VOID);
-VOID  EnableDisconnectButton(VOID);
-VOID  EnableStopShareButton(VOID);
-BOOL  InitToolbarExtension(INT iExt);
-VOID  FreeToolbarExtensions(VOID);
-
-VOID  SaveRestoreToolbar(BOOL bSave);
-VOID  BuildDriveLine(LPTSTR* lpszTemp, INT i, BOOL fGetFloppyLabel, DWORD dwType);
 
 
 // LFN.C
@@ -984,7 +967,6 @@ typedef struct _DRIVE_INFO {
 #define SE_ERR_NOASSOC          31
 
 #define NONE             0
-#define TOOLBAR_FLAG     1
 #define DRIVEBAR_FLAG    2
 
 
@@ -1215,7 +1197,6 @@ Extern BOOL bIndexHiddenSystem   EQ( FALSE );
 Extern BOOL bStatusBar           EQ( TRUE );
 
 Extern BOOL bDriveBar            EQ( TRUE );
-Extern BOOL bToolbar             EQ( TRUE );
 Extern BOOL bNewWinOnConnect     EQ( TRUE );
 Extern BOOL bDisableVisualStyles EQ( FALSE );
 Extern BOOL bMirrorContent       EQ( FALSE );
@@ -1246,7 +1227,6 @@ Extern TCHAR        szDirClass[]            EQ( TEXT("WFS_Dir") );
 Extern TCHAR        szSearchClass[]         EQ( TEXT("WFS_Search") );
 
 Extern TCHAR        szDriveBar[]            EQ( TEXT("DriveBar") );
-Extern TCHAR        szToolbar[]             EQ( TEXT("ToolBar") );
 Extern TCHAR        szNewWinOnNetConnect[]  EQ( TEXT("NewWinOnNetConnect") );
 Extern TCHAR        szDisableVisualStyles[] EQ( TEXT("DisableVisualStyles") );
 Extern TCHAR        szUILanguage[]          EQ( TEXT("UILanguage") );
@@ -1355,7 +1335,6 @@ Extern INT   dxClickRect;
 Extern INT   dyClickRect;
 Extern INT   iNumWindows     EQ( 0 );
 
-Extern INT   dyToolbar        EQ( 27 );
 Extern INT   dxButtonSep      EQ( 8 );
 Extern INT   dxButton         EQ( 24 );
 Extern INT   dyButton         EQ( 22 );
@@ -1387,7 +1366,6 @@ Extern HWND    hwndSearch      EQ( NULL );
 Extern HWND    hwndDragging    EQ( NULL );
 
 Extern HWND  hwndDriveBar      EQ( NULL );
-Extern HWND  hwndToolbar       EQ( NULL );
 Extern HWND  hwndDriveList     EQ( NULL );
 Extern HWND  hwndDropChild     EQ( NULL );  // for tree windows forwarding to drivebar
 Extern HWND  hwndFormatSelect  EQ( NULL );

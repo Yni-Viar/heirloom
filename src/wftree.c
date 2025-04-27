@@ -275,14 +275,13 @@ ResizeSplit(HWND hwnd, INT dxSplit)
    SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)GetTreeIcon(hwnd));
 
    UpdateStatus(hwnd);
-   EnableCheckTBButtons(hwnd);
 
    return TRUE;
 }
 
 
 VOID
-SwitchDriveSelection(HWND hwndChild, BOOL bSelectToolbarDrive)
+SwitchDriveSelection(HWND hwndChild)
 {
    DRIVE drive;
    DRIVEIND i, driveIndOld, driveIndOldFocus;
@@ -332,10 +331,6 @@ SwitchDriveSelection(HWND hwndChild, BOOL bSelectToolbarDrive)
 
       UpdateWindow(hwndDriveBar);
    }
-
-   // made optional to prevent extra refreshing.
-   if (bSelectToolbarDrive)
-      SelectToolbarDrive(i);
 }
 
 
@@ -648,9 +643,6 @@ TreeWndProc(
          // we are receiving the activation
          //
          if (GET_WM_MDIACTIVATE_FACTIVATE(hwnd, wParam, lParam)) {
-
-            EnableCheckTBButtons(hwnd);
-
             SPC_SET_INVALID(qFreeSpace);
 
             UpdateStatus(hwnd);
@@ -658,7 +650,7 @@ TreeWndProc(
             hwndFocus = (HWND)GetWindowLongPtr(hwnd, GWL_LASTFOCUS);
             SetFocus(hwndFocus);
 
-            SwitchDriveSelection(hwnd, TRUE);
+            SwitchDriveSelection(hwnd);
          }
          else if (hwndDriveBar)
             SendMessage(hwndDriveBar, uMsg, wParam, lParam);

@@ -215,7 +215,6 @@ DiskLabelDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
             DWORD dwError;
 
             DRIVE drive;
-            DRIVEIND driveInd;
 
             GetDlgItemText(hDlg, IDD_NAME, szNewVol, COUNTOF(szNewVol));
 
@@ -238,16 +237,6 @@ DiskLabelDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
             // invalidate VolInfo[drive] to refresh off disk
             //
             I_VolInfo(drive);
-
-            //
-            // Scan through to fine Ind.
-            //
-            for ( driveInd=0; driveInd < cDrives; driveInd++ ) {
-               if ( rgiDrive[driveInd] == drive ) {
-                  SelectToolbarDrive( driveInd );
-                  break;
-               }
-            }
 
             for (hwnd = GetWindow(hwndMDIClient, GW_CHILD);
                hwnd;
@@ -1519,33 +1508,18 @@ UpdateConnections(BOOL bUpdateDriveList)
       i = DRIVEID(SearchInfo.szSearch);
    }
 
-   FillToolbarDrives(i);
+   SwitchDriveSelection(hwndDrive);
 
-   //
-   // don't refresh, done in FillToolbarDrives
-   //
-   SwitchDriveSelection(hwndDrive,FALSE);
-
-   //
-   // Don't refresh toolbar... it doesn't change!
-   //
    MDIClientSizeChange(NULL,DRIVEBAR_FLAG); /* update/resize drive bar */
 
    ShowCursor(FALSE);
    SetCursor(hCursor);
-
-   //
-   // Update disco btn/menu item
-   //
-   EnableDisconnectButton();
-
 }
 
 INT_PTR
 CALLBACK
 DrivesDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 {
-   DRIVEIND driveInd;
    INT iSel;
    HWND hwndActive;
 
@@ -1554,28 +1528,6 @@ DrivesDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
    }
 
    switch (wMsg) {
-   case WM_INITDIALOG:
-      {
-         INT nCurDrive;
-         DRIVEIND nIndex;
-         LPTSTR lpszVolShare;
-
-         nCurDrive = GetSelectedDrive();
-         nIndex = 0;
-
-         for (driveInd=0; driveInd < cDrives; driveInd++) {
-
-            BuildDriveLine(&lpszVolShare, driveInd, FALSE, ALTNAME_SHORT);
-
-            if (nCurDrive == rgiDrive[driveInd])
-               nIndex = driveInd;
-
-            SendDlgItemMessage(hDlg, IDD_DRIVE, LB_ADDSTRING, 0, (LPARAM)lpszVolShare);
-         }
-         SendDlgItemMessage(hDlg, IDD_DRIVE, LB_SETCURSEL, nIndex, 0L);
-         break;
-      }
-
    case WM_COMMAND:
 
       switch (GET_WM_COMMAND_ID(wParam, lParam)) {

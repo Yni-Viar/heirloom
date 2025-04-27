@@ -706,9 +706,6 @@ SearchWndProc(
       // we are receiving the activation
       //
       if (GET_WM_MDIACTIVATE_FACTIVATE(hwnd, wParam, lParam)) {
-
-         EnableCheckTBButtons(hwnd);
-
          //
          // update status bar
          // and inform SearchList to update the status bar
@@ -1224,7 +1221,6 @@ SearchProgDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             UpdateStatus(hwndSearch);
 
-            SelectToolbarDrive(i);
             InvalidateRect(hwndDriveBar, NULL, TRUE);
             UpdateWindow(hwndDriveBar);
          }

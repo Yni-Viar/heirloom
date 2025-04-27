@@ -615,8 +615,6 @@ DrivesSetDrive(
       return;
    }
 
-   SelectToolbarDrive(driveInd);
-
    //
    // do again after in case a dialog cause the drive bar
    // to repaint

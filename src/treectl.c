@@ -1917,8 +1917,6 @@ InvalidateAllNetTypes(VOID)
 
    if (hwndSearch)
       InvalidateRect(hwndSearch, NULL, FALSE);
-
-   EnableStopShareButton();
 }
 
 

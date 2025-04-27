@@ -89,10 +89,8 @@ BEGIN
     BEGIN
     MENUITEM    "&Confirmation...",     IDM_CONFIRM
     MENUITEM    "&Font...",             IDM_FONT
-    MENUITEM    "Customize Tool&bar...", IDM_TOOLBARCUST
     MENUITEM    "Additional &Preferences...", IDM_PREF
     MENUITEM    SEPARATOR
-    MENUITEM    "&Toolbar",                 IDM_TOOLBAR
     MENUITEM    "&Drivebar",                IDM_DRIVEBAR
     MENUITEM    "&Status Bar",              IDM_STATUSBAR
     MENUITEM    SEPARATOR
@@ -592,8 +590,6 @@ BEGIN
     MH_MYITEMS+IDM_CONFIRM,     "Controls confirmation messages"
     MH_MYITEMS+IDM_FONT,        "Changes the File Manager font"
 
-    MH_MYITEMS+IDM_TOOLBARCUST, "Customizes the toolbar"
-    MH_MYITEMS+IDM_TOOLBAR,     "Displays or hides the toolbar"
     MH_MYITEMS+IDM_DRIVEBAR,    "Displays or hides the drivebar"
     MH_MYITEMS+IDM_STATUSBAR,   "Displays or hides the status bar"
     MH_MYITEMS+IDM_NEWWINONCONNECT,     "Opens a new window when you connect"

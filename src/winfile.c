@@ -18,8 +18,6 @@
 // Overall Window structure
 //
 // Frame Window (FrameWndProc(), global hwndFrame)
-// Toolbar Window (?, global hwndToolbar)
-//    Combo Box for drive list (n/a, global hwndDriveList)
 // Drives bar (DrivesWndproc(), global hwndDriveBar)
 // MDI Client (n/a, global hwndMDIClient)
 //    Tree window (TreeWndProc(), <hwndActive> looked up)
@@ -116,7 +114,6 @@ ResizeControls(VOID)
 {
    static INT nViews[] = {
       1, 0,                // placeholder for the main menu handle
-      1, IDC_TOOLBAR,
       1, IDC_STATUS,
       0, 0                // signify the end of the list
    };
@@ -139,8 +136,6 @@ ResizeControls(VOID)
       InvalidateRect(hwndDriveBar,NULL, FALSE);
    }
    InvalidateRect(hwndMDIClient,NULL, FALSE);
-
-   SendMessage(hwndToolbar, WM_SIZE, 0, 0L);
 
    GetEffectiveClientRect(hwndFrame, &rc, nViews);
    rc.right -= rc.left;
@@ -476,8 +471,7 @@ InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive)
       EnableMenuItem(hMenu, IDM_ADDPLUSES, uMenuFlags);
       EnableMenuItem(hMenu, IDM_EXPANDTREE, uMenuFlags);
 
-      uMenuFlags = bToolbar ? MF_BYCOMMAND|MF_ENABLED : MF_BYCOMMAND|MF_GRAYED;
-      EnableMenuItem(hMenu, IDM_TOOLBARCUST, uMenuFlags);
+      uMenuFlags = MF_BYCOMMAND|MF_GRAYED;
    }
 
    return TRUE;
@@ -577,12 +571,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
       if (bRedoDriveBar) {
          RedoDriveWindows(NULL);
       }
-
-      //
-      // Now update the DisconnectButton
-      //
-
-      EnableDisconnectButton();
 
       break;
 
@@ -761,12 +749,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
             0, 0, 0, 0, hwndFrame, 0, hAppInstance, NULL);
 
          if (!hwndDriveBar)
-            return -1L;
-
-         // make toolbar window
-
-         CreateFMToolbar();
-         if (!hwndToolbar)
             return -1L;
 
          hwndStatus = CreateStatusWindow(
@@ -965,8 +947,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
             bMDIFrameSysMenu = (hMenu == GetSystemMenu(hwndFrame, FALSE));
 
          }
-
-         DriveListMessage(wMsg, wParam, lParam, &uTemp);
       }
 
       break;
@@ -996,25 +976,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
       }
       break;
 
-   case WM_NOTIFY:
-      {
-         UINT uRetVal;
-         DriveListMessage(wMsg, wParam, lParam, &uRetVal);
-
-         return uRetVal;
-      }
-
-
-   case WM_DRAWITEM:
-   case WM_MEASUREITEM:
-      {
-         UINT uRetVal;
-         DriveListMessage(wMsg, wParam, lParam, &uRetVal);
-
-         if (uRetVal) break;
-
-         goto DoDefault;
-      }
    case WM_CLOSE:
 
       wParam = IDM_EXIT;
@@ -1022,16 +983,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
       /*** FALL THROUGH to WM_COMMAND ***/
 
    case WM_COMMAND:
-      {
-         UINT uRetVal;
-         DWORD dwTemp;
-
-         dwTemp = DriveListMessage(wMsg, wParam, lParam, &uRetVal);
-         if (uRetVal)
-            return(dwTemp);
-
-      }
-
       if (AppCommandProc(GET_WM_COMMAND_ID(wParam, lParam)))
          break;
       if (GET_WM_COMMAND_ID(wParam, lParam) == IDM_EXIT) {

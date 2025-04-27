@@ -19,7 +19,6 @@
 
 BITMAPS         BITMAP PRELOAD wbbitmap.bmp
 
-IDB_TOOLBAR     BITMAP PRELOAD toolbar.bmp
 IDB_EXTRATOOLS  BITMAP PRELOAD xtratool.bmp
 
 APPICON     ICON   PRELOAD winfile.ico
