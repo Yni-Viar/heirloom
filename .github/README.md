@@ -1,6 +1,6 @@
 <h1 align="center"><img src="icon.png" width=64><br>File Manager</h1>
 
-<p align="center"><img src="screenshot.png" width=1180></p>
+<p align="center"><img src="screenshot.png" width=590></p>
 
 This fork of [microsoft/winfile](https://github.com/microsoft/winfile) changes the following:
 
