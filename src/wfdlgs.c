@@ -409,44 +409,6 @@ DoHelp:
 }
 
 
-UINT_PTR
-CALLBACK
-FontHookProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-   UNREFERENCED_PARAMETER(lParam);
-
-   switch (wMsg) {
-   case WM_INITDIALOG:
-
-      // Delete the Vertical Font Face Name in Font Dialog Box of File Manager  by Sabgilj 01.14.93
-
-      CheckDlgButton(hDlg, chx3, wTextAttribs & TA_LOWERCASE);
-
-      CheckDlgButton(hDlg, chx4, wTextAttribs & TA_LOWERCASEALL);
-      break;
-
-   case WM_COMMAND:
-      switch (wParam) {
-      case pshHelp:
-         SendMessage(hwndFrame, wHelpMessage, 0, 0L);
-         break;
-
-      case IDOK:
-         if (IsDlgButtonChecked(hDlg, chx3))
-            wTextAttribs |= TA_LOWERCASE;
-         else
-            wTextAttribs &= ~TA_LOWERCASE;
-
-         if (IsDlgButtonChecked(hDlg, chx4))
-            wTextAttribs |= TA_LOWERCASEALL;
-         else
-            wTextAttribs &= ~TA_LOWERCASEALL;
-         break;
-      }
-   }
-   return FALSE;
-}
-
 VOID
 RepaintDrivesForFontChange(HWND hwndChild)
 {
@@ -483,15 +445,12 @@ NewFont()
    cf.hwndOwner      = hwndFrame;
    cf.lpLogFont      = &lf;
    cf.hInstance      = hAppInstance;
-   cf.lpTemplateName = (LPTSTR) MAKEINTRESOURCE(FONTDLG);
-   cf.lpfnHook       = FontHookProc;
    cf.nSizeMin       = 4;
    cf.nSizeMax       = 36;
 
    cf.Flags          = CF_SCREENFONTS | CF_SHOWHELP |
-                       CF_ENABLEHOOK | CF_ENABLETEMPLATE |
-                       CF_INITTOLOGFONTSTRUCT | CF_LIMITSIZE |
-                       CF_ANSIONLY;
+                       CF_INITTOLOGFONTSTRUCT |
+                       CF_LIMITSIZE | CF_ANSIONLY;
 
    if (!LoadComdlg()) {
       return;
