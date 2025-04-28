@@ -1251,11 +1251,6 @@ FastMoveSkipDir:
 
 ProcessSearchResult:
 
-#ifndef UNICODE
-         if (pDTA->fd.cAlternateFileName[0] && StrChr(pDTA->fd.cFileName, CHAR_DEFAULT)) {
-            lstrcpy(pDTA->fd.cFileName, pDTA->fd.cAlternateFileName);
-         }
-#endif
          //
          // Got a file or dir in the DTA which matches the wild card
          // originally passed in...

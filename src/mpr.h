@@ -141,11 +141,7 @@ WNetGetDirectoryTypeW (
     BOOL    bFlushCache
     );
 
-#ifdef UNICODE
 #define WNetGetDirectoryType   WNetGetDirectoryTypeW
-#else
-#define WNetGetDirectoryType   WNetGetDirectoryTypeA
-#endif  // UNICODE
 
 
 DWORD
@@ -162,11 +158,7 @@ WNetDirectoryNotifyW (
     DWORD   dwOper
     );
 
-#ifdef UNICODE
 #define WNetDirectoryNotify   WNetDirectoryNotifyW
-#else
-#define WNetDirectoryNotify   WNetDirectoryNotifyA
-#endif  // UNICODE
 
 
 DWORD
@@ -187,11 +179,7 @@ WNetPropertyDialogW (
     DWORD nType
     );
 
-#ifdef UNICODE
 #define WNetPropertyDialog    WNetPropertyDialogW
-#else
-#define WNetPropertyDialog    WNetPropertyDialogA
-#endif  // UNICODE
 
 
 DWORD
@@ -214,11 +202,7 @@ WNetGetPropertyTextW (
     DWORD  nType
     );
 
-#ifdef UNICODE
 #define WNetGetPropertyText   WNetGetPropertyTextW
-#else
-#define WNetGetPropertyText   WNetGetPropertyTextA
-#endif  // UNICODE
 
 typedef struct _WNET_CONNECTINFOA
 {
@@ -232,13 +216,8 @@ typedef struct _WNET_CONNECTINFOW
     LPWSTR lpProvider ;
 } WNET_CONNECTIONINFOW, *LPWNET_CONNECTIONINFOW ;
 
-#ifdef UNICODE
 #define WNET_CONNECTIONINFO   WNET_CONNECTIONINFOW
 #define LPWNET_CONNECTIONINFO LPWNET_CONNECTIONINFOW
-#else
-#define WNET_CONNECTIONINFO WNET_CONNECTIONINFOA
-#define LPWNET_CONNECTIONINFO LPWNET_CONNECTIONINFOA
-#endif  // UNICODE
 
 //
 //  Used in conjunction with WNET_CONNECTIONINFO, gets the net provider name
@@ -258,11 +237,7 @@ WNetGetConnection2W(
     LPDWORD lpBufferSize    // In bytes!
     ) ;
 
-#ifdef UNICODE
 #define WNetGetConnection2 WNetGetConnection2W
-#else
-#define WNetGetConnection2 WNetGetConnection2A
-#endif  // UNICODE
 
 //
 // Versions of the dialog with the ability to supply help.
@@ -386,8 +361,6 @@ DWORD WNetFMXGetPermHelp( LPWSTR  lpDriveName,
 #define WNNC_DLG_DISCONNECT     0x0008
 #define WNNC_DLG_CONNECT        0x0004
 
-#ifdef UNICODE
-
 #define MPR_MRU_FILE_SECTION        L"NET_Files"
 #define MPR_MRU_PRINT_SECTION       L"NET_Printers"
 #define MPR_MRU_ORDER_KEY       L"Order"
@@ -399,22 +372,6 @@ DWORD WNetFMXGetPermHelp( LPWSTR  lpDriveName,
 
 #define MPR_YES_VALUE           L"yes"
 #define MPR_NO_VALUE            L"no"
-
-#else
-
-#define MPR_MRU_FILE_SECTION        "NET_Files"
-#define MPR_MRU_PRINT_SECTION       "NET_Printers"
-#define MPR_MRU_ORDER_KEY       "Order"
-
-#define MPR_NETWORK_SECTION     "Network"
-#define MPR_SAVECONNECTION_KEY      "SaveConnections"
-#define MPR_RESTORECONNECTION_KEY   "RestoreConnections"
-#define MPR_EXPANDLOGONDOMAIN_KEY       "ExpandLogonDomain"
-
-#define MPR_YES_VALUE           "yes"
-#define MPR_NO_VALUE            "no"
-
-#endif  // UNICODE
 
 
 //

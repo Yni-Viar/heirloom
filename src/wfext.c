@@ -45,15 +45,16 @@ GetExtSelection(
    BOOL bLFNAware,
    BOOL bUnicode)
 {
+   // This function used to support ANSI but now we only support Unicode.
+   if (!bUnicode)
+      exit(-1);
+
 #define lpSelW ((LPFMS_GETFILESELW)lParam)
-#define lpSelA ((LPFMS_GETFILESELA)lParam)
 
    LPXDTALINK lpStart;
    LPXDTA lpxdta = NULL;
    UINT uSel, i;
    HWND hwndLB;
-   WCHAR szPath[COUNTOF(lpSelW->szName)];
-   BOOL bUsedDefaultChar;
    HWND hwndView;
    LPINT  lpExtSelItems;
    LPWSTR pszAlternateFileName;
@@ -158,25 +159,14 @@ GetExtSelection(
 
    pszAlternateFileName = MemGetAlternateFileName(lpxdta);
 
-   if (bUnicode) {
+   //
+   // lpxdta setup up above
+   //
+   lpSelW->bAttr = (BYTE)lpxdta->dwAttrs;
+   lpSelW->ftTime = lpxdta->ftLastWriteTime;
+   lpSelW->dwSize = lpxdta->qFileSize.LowPart;
 
-      //
-      // lpxdta setup up above
-      //
-      lpSelW->bAttr = (BYTE)lpxdta->dwAttrs;
-      lpSelW->ftTime = lpxdta->ftLastWriteTime;
-      lpSelW->dwSize = lpxdta->qFileSize.LowPart;
-
-      pszFileName = lpSelW->szName;
-
-   } else {
-
-      lpSelA->bAttr = (BYTE)lpxdta->dwAttrs;
-      lpSelA->ftTime = lpxdta->ftLastWriteTime;
-      lpSelA->dwSize = lpxdta->qFileSize.LowPart;
-
-      pszFileName = szPath;
-   }
+   pszFileName = lpSelW->szName;
 
    if (bSearch) {
 
@@ -213,30 +203,6 @@ GetExtSelection(
                     MemGetFileName(lpxdta));
       }
 
-   }
-
-   if (!bUnicode) {
-
-      //
-      // Not unicode, must do the thunking now
-      // from our temp buffer to lpSelA
-      //
-      bUsedDefaultChar = FALSE;
-
-      if (!WideCharToMultiByte(CP_ACP, 0, szPath, -1, lpSelA->szName,
-         COUNTOF(lpSelA->szName), NULL, &bUsedDefaultChar)) {
-
-            lpSelA->szName[0] = CHAR_NULL;
-      }
-
-      if (bUsedDefaultChar) {
-
-         if (!WideCharToMultiByte(CP_ACP, 0, szPath, -1, lpSelA->szName,
-            COUNTOF(lpSelA->szName), NULL, &bUsedDefaultChar)) {
-
-            lpSelA->szName[0] = CHAR_NULL;
-         }
-      }
    }
 
    return (LONG)uSel;

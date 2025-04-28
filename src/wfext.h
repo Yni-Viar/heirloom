@@ -48,15 +48,9 @@ extern "C" {
 #define FM_GETFILESELW        (WM_USER + 0x0214)
 #define FM_GETFILESELLFNW     (WM_USER + 0x0215)  /* LFN versions are odd */
 
-#ifdef UNICODE
 #define FM_GETDRIVEINFO    FM_GETDRIVEINFOW
 #define FM_GETFILESEL      FM_GETFILESELW
 #define FM_GETFILESELLFN   FM_GETFILESELLFNW
-#else
-#define FM_GETDRIVEINFO    FM_GETDRIVEINFOA
-#define FM_GETFILESEL      FM_GETFILESELA
-#define FM_GETFILESELLFN   FM_GETFILESELLFNA
-#endif
 
 
 typedef struct _FMS_GETFILESELA {
@@ -73,13 +67,8 @@ typedef struct _FMS_GETFILESELW {
    WCHAR szName[260];          // always fully qualified
 } FMS_GETFILESELW, FAR *LPFMS_GETFILESELW;
 
-#ifdef UNICODE
 #define FMS_GETFILESEL   FMS_GETFILESELW
 #define LPFMS_GETFILESEL LPFMS_GETFILESELW
-#else
-#define FMS_GETFILESEL   FMS_GETFILESELA
-#define LPFMS_GETFILESEL LPFMS_GETFILESELA
-#endif
 
 
 typedef struct _FMS_GETDRIVEINFOA {      // for drive
@@ -98,13 +87,8 @@ typedef struct _FMS_GETDRIVEINFOW {      // for drive
    WCHAR szShare[128];                   // if this is a net drive
 } FMS_GETDRIVEINFOW, FAR *LPFMS_GETDRIVEINFOW;
 
-#ifdef UNICODE
 #define FMS_GETDRIVEINFO   FMS_GETDRIVEINFOW
 #define LPFMS_GETDRIVEINFO LPFMS_GETDRIVEINFOW
-#else
-#define FMS_GETDRIVEINFO   FMS_GETDRIVEINFOA
-#define LPFMS_GETDRIVEINFO LPFMS_GETDRIVEINFOA
-#endif
 
 
 typedef struct _FMS_LOADA {
@@ -121,13 +105,8 @@ typedef struct _FMS_LOADW {
    UINT  wMenuDelta;                    // input
 } FMS_LOADW, FAR *LPFMS_LOADW;
 
-#ifdef UNICODE
 #define FMS_LOAD   FMS_LOADW
 #define LPFMS_LOAD LPFMS_LOADW
-#else
-#define FMS_LOAD   FMS_LOADA
-#define LPFMS_LOAD LPFMS_LOADA
-#endif
 
 
 typedef struct tagFMS_HELPSTRINGA {
@@ -142,22 +121,13 @@ typedef struct tagFMS_HELPSTRINGW {
    WCHAR szHelp[128];     /* output, the help string */
 } FMS_HELPSTRINGW, FAR *LPFMS_HELPSTRINGW;
 
-#ifdef UNICODE
 #define FMS_HELPSTRING   FMS_HELPSTRINGW
 #define LPFMS_HELPSTRING LPFMS_HELPSTRINGW
-#else
-#define FMS_HELPSTRING   FMS_HELPSTRINGA
-#define LPFMS_HELPSTRING LPFMS_HELPSTRINGA
-#endif
 
 
 typedef DWORD (APIENTRY *FM_EXT_PROC)(HWND, WPARAM, LPARAM);
 
-#ifdef UNICODE
 LONG WINAPI FMExtensionProcW(HWND hwnd, WPARAM wEvent, LPARAM lParam);
-#else
-LONG WINAPI FMExtensionProc(HWND hwnd, WPARAM wEvent, LPARAM lParam);
-#endif
 
 #ifdef __cplusplus
 }                  /* End of extern "C" { */

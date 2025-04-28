@@ -456,51 +456,25 @@ FindMetadataFromChildren( HWND hChildWnd, LPARAM lParam )
     //  we're Unicode.
     //
 
-    if (IsWindowUnicode( hChildWnd )) {
+    CharsCopied = GetClassNameW( hChildWnd, (PWCHAR)szText, sizeof( szText ) / sizeof( WCHAR ));
 
-        CharsCopied = GetClassNameW( hChildWnd, (PWCHAR)szText, sizeof( szText ) / sizeof( WCHAR ));
+    //
+    //  If we couldn't get this into our buffer, assume it's not our
+    //  class, but keep enumerating.
+    //
 
-        //
-        //  If we couldn't get this into our buffer, assume it's not our
-        //  class, but keep enumerating.
-        //
+    if (CharsCopied == 0 || CharsCopied >= (sizeof( szText ) / sizeof( WCHAR ))) {
+        return TRUE;
+    }
 
-        if (CharsCopied == 0 || CharsCopied >= (sizeof( szText ) / sizeof( WCHAR ))) {
-            return TRUE;
-        }
+    //
+    //  We only need to find one per-dialog metadata class.  If we
+    //  find it, we're done.
+    //
 
-        //
-        //  We only need to find one per-dialog metadata class.  If we
-        //  find it, we're done.
-        //
-
-        if (wcscmp( (PWCHAR)szText, DIALOGRESIZEDATACLASSW ) == 0) {
-            SendMessage( hChildWnd, WM_GETDIALOGMETADATA, 0, lParam );
-            return FALSE;
-        }
-
-    } else {
-
-        CharsCopied = GetClassNameA( hChildWnd, (PCHAR)szText, sizeof( szText ) / sizeof( CHAR ));
-
-        //
-        //  If we couldn't get this into our buffer, assume it's not our
-        //  class, but keep enumerating.
-        //
-
-        if (CharsCopied == 0 || CharsCopied >= (sizeof( szText ) / sizeof( CHAR ))) {
-            return TRUE;
-        }
-
-        //
-        //  We only need to find one per-dialog metadata class.  If we
-        //  find it, we're done.
-        //
-
-        if (strcmp( (PCHAR)szText, DIALOGRESIZEDATACLASSA ) == 0) {
-            SendMessage( hChildWnd, WM_GETDIALOGMETADATA, 0, lParam );
-            return FALSE;
-        }
+    if (wcscmp( (PWCHAR)szText, DIALOGRESIZEDATACLASSW ) == 0) {
+        SendMessage( hChildWnd, WM_GETDIALOGMETADATA, 0, lParam );
+        return FALSE;
     }
 
     return TRUE;
@@ -622,39 +596,19 @@ ProcessResizeOnChildren( HWND hChildWnd, LPARAM lParam )
     //  we're Unicode.
     //
 
-    if (IsWindowUnicode( hChildWnd )) {
+    CharsCopied = GetClassNameW( hChildWnd, (PWCHAR)szText, sizeof( szText ) / sizeof( WCHAR ));
 
-        CharsCopied = GetClassNameW( hChildWnd, (PWCHAR)szText, sizeof( szText ) / sizeof( WCHAR ));
+    //
+    //  If we couldn't get this into our buffer, assume it's not our
+    //  class, but keep enumerating.
+    //
 
-        //
-        //  If we couldn't get this into our buffer, assume it's not our
-        //  class, but keep enumerating.
-        //
+    if (CharsCopied == 0 || CharsCopied >= (sizeof( szText ) / sizeof( WCHAR ))) {
+        return TRUE;
+    }
 
-        if (CharsCopied == 0 || CharsCopied >= (sizeof( szText ) / sizeof( WCHAR ))) {
-            return TRUE;
-        }
-
-        if (wcscmp( (PWCHAR)szText, DIALOGRESIZECONTROLCLASSW ) == 0) {
-            SendMessage( hChildWnd, WM_RESIZEPARENT, 0, lParam );
-        }
-
-    } else {
-
-        CharsCopied = GetClassNameA( hChildWnd, (PCHAR)szText, sizeof( szText ) / sizeof( CHAR ));
-
-        //
-        //  If we couldn't get this into our buffer, assume it's not our
-        //  class, but keep enumerating.
-        //
-
-        if (CharsCopied == 0 || CharsCopied >= (sizeof( szText ) / sizeof( CHAR ))) {
-            return TRUE;
-        }
-
-        if (strcmp( (PCHAR)szText, DIALOGRESIZECONTROLCLASSA ) == 0) {
-            SendMessage( hChildWnd, WM_RESIZEPARENT, 0, lParam );
-        }
+    if (wcscmp( (PWCHAR)szText, DIALOGRESIZECONTROLCLASSW ) == 0) {
+        SendMessage( hChildWnd, WM_RESIZEPARENT, 0, lParam );
     }
 
     return TRUE;
@@ -872,11 +826,9 @@ BOOL
 ResizeDialogInitialize( HINSTANCE hInst )
 {
     WNDCLASSW ResizeDialogClassW;
-    WNDCLASSA ResizeDialogClassA;
 
     //
-    //  Here we register our resize helper control class - twice.
-    //  Once for unicode, once for non-unicode systems.
+    //  Here we register our resize helper control class.
     //  This control is used to define how buddy controls should
     //  be manipulated when resizes occur.
     //
@@ -896,21 +848,6 @@ ResizeDialogInitialize( HINSTANCE hInst )
 
     RegisterClassW( &ResizeDialogClassW );
 
-    ZeroMemory( &ResizeDialogClassA, sizeof( ResizeDialogClassA ));
-
-    ResizeDialogClassA.style = 0;
-    ResizeDialogClassA.lpfnWndProc = ResizeDialogControlWindowProc;
-    ResizeDialogClassA.cbClsExtra = 0;
-    ResizeDialogClassA.cbWndExtra = sizeof(PVOID);
-    ResizeDialogClassA.hInstance = hInst;
-    ResizeDialogClassA.hIcon = NULL;
-    ResizeDialogClassA.hCursor = NULL;
-    ResizeDialogClassA.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    ResizeDialogClassA.lpszMenuName = NULL;
-    ResizeDialogClassA.lpszClassName = DIALOGRESIZECONTROLCLASSA;
-
-    RegisterClassA( &ResizeDialogClassA );
-
     ZeroMemory( &ResizeDialogClassW, sizeof( ResizeDialogClassW ));
 
     ResizeDialogClassW.style = 0;
@@ -925,21 +862,6 @@ ResizeDialogInitialize( HINSTANCE hInst )
     ResizeDialogClassW.lpszClassName = DIALOGRESIZEDATACLASSW;
 
     RegisterClassW( &ResizeDialogClassW );
-
-    ZeroMemory( &ResizeDialogClassA, sizeof( ResizeDialogClassA ));
-
-    ResizeDialogClassA.style = 0;
-    ResizeDialogClassA.lpfnWndProc = ResizeDialogDataWindowProc;
-    ResizeDialogClassA.cbClsExtra = 0;
-    ResizeDialogClassA.cbWndExtra = sizeof(PVOID);
-    ResizeDialogClassA.hInstance = hInst;
-    ResizeDialogClassA.hIcon = NULL;
-    ResizeDialogClassA.hCursor = NULL;
-    ResizeDialogClassA.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    ResizeDialogClassA.lpszMenuName = NULL;
-    ResizeDialogClassA.lpszClassName = DIALOGRESIZEDATACLASSA;
-
-    RegisterClassA( &ResizeDialogClassA );
 
     return TRUE;
 }

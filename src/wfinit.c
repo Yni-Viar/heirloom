@@ -98,7 +98,6 @@ InitExtensions()
    INT iMenuBase;
    HMENU hMenuFrame;
    INT iMenuOffset=0;
-   BOOL bUnicode;
 
    hMenuFrame = GetMenu(hwndFrame);
 
@@ -115,12 +114,6 @@ InitExtensions()
 
       if (hMod) {
          fp = (FM_EXT_PROC)GetProcAddress(hMod, FM_EXT_PROC_ENTRYW);
-         if (fp) {
-            bUnicode = TRUE;
-         } else {
-            fp = (FM_EXT_PROC)GetProcAddress(hMod, FM_EXT_PROC_ENTRYA);
-            bUnicode = FALSE;
-         }
 
          if (fp) {
             UINT bias;
@@ -139,24 +132,20 @@ InitExtensions()
             // This is why we added 1 in the above line to compute
             // NOTE: IDMs 0000-0099 are not used for menu 0.
 
-            if (bUnicode)
-               lsW.wMenuDelta = bias;
-            else
-               lsA.wMenuDelta = bias;
+            lsW.wMenuDelta = bias;
 
-            if ((*fp)(hwndFrame, FMEVENT_LOAD, bUnicode ? (LPARAM)&lsW : (LPARAM)&lsA)) {
+            if ((*fp)(hwndFrame, FMEVENT_LOAD, (LPARAM)&lsW)) {
 
-               if ((bUnicode ? lsW.dwSize : lsA.dwSize)
-                  != (bUnicode ? sizeof(FMS_LOADW) : sizeof(FMS_LOADA)))
+               if (lsW.dwSize != sizeof(FMS_LOADW))
                   goto LoadFail;
 
-               hMenu = bUnicode ? lsW.hMenu : lsA.hMenu;
+               hMenu = lsW.hMenu;
 
                extensions[iNumExtensions].ExtProc = fp;
                extensions[iNumExtensions].Delta = bias;
                extensions[iNumExtensions].hModule = hMod;
                extensions[iNumExtensions].hMenu = hMenu;
-               extensions[iNumExtensions].bUnicode = bUnicode;
+               extensions[iNumExtensions].bUnicode = TRUE;
                extensions[iNumExtensions].hbmButtons = NULL;
                extensions[iNumExtensions].idBitmap = 0;
                extensions[iNumExtensions].iStartBmp = 0;
@@ -165,17 +154,10 @@ InitExtensions()
                if (hMenu) {
                   BiasMenu(hMenu, bias);
 
-                  if (bUnicode) {
-                     InsertMenuW(hMenuFrame,
-                        iMenuBase + iMenuOffset,
-                        MF_BYPOSITION | MF_POPUP,
-                        (UINT_PTR) hMenu, lsW.szMenuName);
-                  } else {
-                     InsertMenuA(hMenuFrame,
-                        iMenuBase + iMenuOffset,
-                        MF_BYPOSITION | MF_POPUP,
-                        (UINT_PTR) hMenu, lsA.szMenuName);
-                  }
+                  InsertMenuW(hMenuFrame,
+                     iMenuBase + iMenuOffset,
+                     MF_BYPOSITION | MF_POPUP,
+                     (UINT_PTR) hMenu, lsW.szMenuName);
                   iMenuOffset++;
                }
 

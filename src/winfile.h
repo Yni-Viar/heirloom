@@ -43,7 +43,6 @@
 
 #define STKCHK()
 
-#ifdef UNICODE
 #ifdef atoi
 #undef atoi
 #endif
@@ -58,11 +57,7 @@
 
 #define WM_LBTRACKPOINT                 0x0131
 
-#ifdef  UNICODE                     // r_winnt
 typedef WCHAR TUCHAR, *PTUCHAR;
-#else   /* UNICODE */               // r_winnt
-typedef unsigned char TUCHAR, *PTUCHAR;
-#endif /* UNICODE */                // r_winnt
 
 
 //
@@ -106,7 +101,6 @@ typedef unsigned char TUCHAR, *PTUCHAR;
 
 #define atoi atoiW
 INT atoiW(LPWSTR sz);
-#endif //UNICODE
 
 #define SIZENOMDICRAP       944
 #define MAX_TAB_COLUMNS     10
