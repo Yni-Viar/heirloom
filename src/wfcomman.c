@@ -32,7 +32,6 @@ VOID AddNetMenuItems(VOID);
 VOID InitNetMenuItems(VOID);
 
 INT UpdateConnectionsOnConnect(VOID);
-VOID LockFormatDisk(INT iDrive1, INT iDrive2, DWORD dwMessage, DWORD dwCommand, BOOL bLock);
 
 VOID
 NotifySearchFSC(

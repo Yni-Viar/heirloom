@@ -85,37 +85,7 @@ WNetStat(INT nIndex)
       }
 
       if (bNetwork) {
-#if 0
-         //
-         // Check the registry to see if the user can make connections
-         //
-         dwError = RegOpenKey(HKEY_CURRENT_USER,
-            TEXT("Software\\Microsoft\\Windows NT\\CurrentVersion\\File Manager\\Settings"),
-            &hKey);
-
-         if (dwError != ERROR_SUCCESS) {
-            bConnect = TRUE;
-         } else {
-
-            cb = sizeof(dwTemp);
-            dwTemp = 0;
-
-            dwError = RegQueryValueEx(hKey, TEXT("Network"),
-               NULL, NULL, (LPBYTE)&dwTemp, &cb);
-
-            if (dwError != ERROR_SUCCESS || dwTemp)
-               bConnect = TRUE;
-
-            RegCloseKey(hKey);
-         }
-
-
-         if (bConnect) {
-            fdwRet |= NS_CONNECTDLG|NS_CONNECT;
-         }
-#else
          fdwRet |= NS_CONNECTDLG|NS_CONNECT;
-#endif
       }
 
       //

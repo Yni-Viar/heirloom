@@ -810,55 +810,6 @@ DiskNotThere:
 
       LoadString(hAppInstance, IDS_COPYERROR + dwFunc, szTitle, COUNTOF(szTitle));
 
-      // If NOT copying or formatting now,
-      // AND we are removable, then put up format dlg
-
-      if (!CancelInfo.hCancelDlg && IsRemovableDrive(drive)) {
-         LoadString(hAppInstance, IDS_UNFORMATTED, szTemp, COUNTOF(szTemp));
-         wsprintf(szMessage, szTemp, drive + CHAR_A);
-
-         if (MessageBox(hwnd, szMessage, szTitle, MB_ICONEXCLAMATION| MB_YESNO) == IDYES) {
-
-            // No more hwndSave stuff since format no longer uses the same
-            // dialog box (ala hdlgProgress).  There IS a global CancelInfo,
-            // but it is shared only between disk:copy and disk:format.
-            // Neither of these routines will call FormatDiskette()
-            // after they have started (naturally, disk:format will call it once).
-            //
-            // nLastDriveInd is replaced by CancelInfo
-
-            CancelInfo.Info.Format.fFlags = FF_PRELOAD | FF_ONLYONE;  // do preload
-            CancelInfo.Info.Format.iFormatDrive = drive;   // present drive
-            CancelInfo.Info.Format.fmMediaType = -1;       // no premedia selection
-            CancelInfo.Info.Format.szLabel[0] = CHAR_NULL; // no label
-
-            FormatDiskette(hwnd, bModal);
-
-            // If we were modal, let us retry.
-
-            if (bModal && CancelInfo.fmifsSuccess)
-               goto Retry;
-
-            // No matter what, return 0.
-            // originally checked CancelInfo.fmifsSuccess and
-            // goto'd Retry on success, but since it's now modeless,
-            // return error to abort copy or disk change
-            // If we returned success, the would confuse the user.
-
-            return 0;
-
-         } else {
-
-            //
-            // Tweak: no extra error dialog
-            //
-            return 0;
-         }
-      }
-
-      // Either already formatting/copying or not removable!
-      // put up error & ret 0.
-
       FormatError(TRUE, szTemp, COUNTOF(szTemp), ERROR_UNRECOGNIZED_VOLUME);
       MessageBox(hwnd, szTemp, szTitle, MB_OK | MB_ICONSTOP);
 

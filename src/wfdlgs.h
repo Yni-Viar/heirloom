@@ -15,17 +15,9 @@
 #define DELETEDLG     15
 #define MAKEDIRDLG       17
 #define EXITDLG       18
-#define CHOOSEDRIVEDLG      19
 #define DISKCOPYDLG      20
 #define DISKCOPY2DLG     21
-#define DISKCOPYPROGRESSDLG 22
-#define DISKLABELDLG     23
-#define FORMATDLG     24
 #define FORMAT2DLG       25
-#define FORMATPROGRESSDLG   26
-#define SYSDISKPROGRESSDLG  27
-#define CONNECTDLG       28
-#define PREVIOUSDLG      29
 #define OTHERDLG      30
 #define SORTBYDLG     31
 #define INCLUDEDLG       32
@@ -61,7 +53,6 @@
 
 #define GOTODIRDLG              60
 #define ABOUTDLG                61
-#define FORMATSELECTDLG         62
 
 #define IDD_TEXT      -1
 #define IDD_TEXT1     100

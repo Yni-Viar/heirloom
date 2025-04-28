@@ -353,9 +353,6 @@ typedef struct _SELINFO *PSELINFO;
 
 // WFDLGS3.C
 
-VOID FormatDiskette(HWND hwnd, BOOL bModal);
-VOID CopyDiskEnd(VOID);
-VOID FormatEnd(VOID);
 VOID DestroyCancelWindow(VOID);
 VOID  UpdateConnections(BOOL bUpdateDriveList);
 
@@ -598,7 +595,6 @@ Extern VOID (*lpfnFormat)(PWSTR,FMIFS_MEDIA_TYPE,PWSTR,PWSTR,BOOLEAN,FMIFS_CALLB
 Extern VOID (*lpfnDiskCopy)(PWSTR,PWSTR,BOOLEAN,FMIFS_CALLBACK);
 Extern BOOLEAN (*lpfnSetLabel)(PWSTR,PWSTR);
 Extern BOOLEAN (*lpfnQuerySupportedMedia)(PWSTR,PFMIFS_MEDIA_TYPE,DWORD,PDWORD);
-BOOL Callback_Function(FMIFS_PACKET_TYPE PacketType, DWORD PacketLength, PVOID PacketData);
 
 INT_PTR CALLBACK CancelDlgProc  (HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK DrivesDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
@@ -611,10 +607,6 @@ INT_PTR CALLBACK SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam
 INT_PTR CALLBACK AttribsDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK MakeDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK ExitDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK DiskLabelDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK ChooseDriveDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK FormatDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK FormatSelectDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK OtherDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
 INT_PTR CALLBACK ProgressDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
