@@ -34,13 +34,6 @@ typedef enum _FMIFS_PACKET_TYPE {
     FmIfsIoError,
     FmIfsFinished,
     FmIfsBadLabel,
-#if defined( DBLSPACE_ENABLED )
-    FmIfsDblspaceCreateFailed,
-    FmIfsDblspaceMountFailed,
-    FmIfsDblspaceDriveLetterFailed,
-    FmIfsDblspaceCreated,
-    FmIfsDblspaceMounted,
-#endif // DBLSPACE_ENABLED
     FmIfsCheckOnReboot,
     FmIfsTextMessage,
     FmIfsHiddenStatus
@@ -283,54 +276,6 @@ VOID
     IN FMIFS_CALLBACK  Callback
     );
 
-#if defined( DBLSPACE_ENABLED )
-typedef
-VOID
-(*PFMIFS_DOUBLESPACE_DELETE_ROUTINE)(
-    IN PWSTR           DblspaceDriveName,
-    IN FMIFS_CALLBACK  Callback
-    );
-
-typedef
-VOID
-(*PFMIFS_DOUBLESPACE_MOUNT_ROUTINE)(
-    IN PWSTR           HostDriveName,
-    IN PWSTR           CvfName,
-    IN PWSTR           NewDriveName,
-    IN FMIFS_CALLBACK  Callback
-    );
-
-typedef
-VOID
-(*PFMIFS_DOUBLESPACE_DISMOUNT_ROUTINE)(
-    IN PWSTR           DblspaceDriveName,
-    IN FMIFS_CALLBACK  Callback
-    );
-
-typedef
-BOOLEAN
-(*PFMIFS_DOUBLESPACE_QUERY_INFO_ROUTINE)(
-    IN  PWSTR       DosDriveName,
-    OUT PBOOLEAN    IsRemovable,
-    OUT PBOOLEAN    IsFloppy,
-    OUT PBOOLEAN    IsCompressed,
-    OUT PBOOLEAN    Error,
-    OUT PWSTR       NtDriveName,
-    IN  ULONG       MaxNtDriveNameLength,
-    OUT PWSTR       CvfFileName,
-    IN  ULONG       MaxCvfFileNameLength,
-    OUT PWSTR       HostDriveName,
-    IN  ULONG       MaxHostDriveNameLength
-    );
-
-typedef
-BOOLEAN
-(*PFMIFS_DOUBLESPACE_SET_AUTMOUNT_ROUTINE)(
-    IN  BOOLEAN EnableAutomount
-    );
-
-#endif // DBLSPACE_ENABLED
-
 
 VOID
 Format(
@@ -418,52 +363,6 @@ DoubleSpaceCreate(
     IN PWSTR           NewDriveName,
     IN FMIFS_CALLBACK  Callback
     );
-
-#if defined( DBLSPACE_ENABLED )
-
-VOID
-DoubleSpaceDelete(
-    IN PWSTR           DblspaceDriveName,
-    IN FMIFS_CALLBACK  Callback
-    );
-
-VOID
-DoubleSpaceMount(
-    IN PWSTR           HostDriveName,
-    IN PWSTR           CvfName,
-    IN PWSTR           NewDriveName,
-    IN FMIFS_CALLBACK  Callback
-    );
-
-VOID
-DoubleSpaceDismount(
-    IN PWSTR           DblspaceDriveName,
-    IN FMIFS_CALLBACK  Callback
-    );
-
-// Miscellaneous prototypes:
-//
-BOOLEAN
-FmifsQueryDriveInformation(
-    IN  PWSTR       DosDriveName,
-    OUT PBOOLEAN    IsRemovable,
-    OUT PBOOLEAN    IsFloppy,
-    OUT PBOOLEAN    IsCompressed,
-    OUT PBOOLEAN    Error,
-    OUT PWSTR       NtDriveName,
-    IN  ULONG       MaxNtDriveNameLength,
-    OUT PWSTR       CvfFileName,
-    IN  ULONG       MaxCvfFileNameLength,
-    OUT PWSTR       HostDriveName,
-    IN  ULONG       MaxHostDriveNameLength
-    );
-
-BOOLEAN
-FmifsSetAutomount(
-    IN  BOOLEAN EnableAutomount
-    );
-
-#endif
 
 
 #endif // _FMIFS_DEFN_
