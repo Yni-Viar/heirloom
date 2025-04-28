@@ -1738,29 +1738,6 @@ NetLoad(VOID)
       bNetLoad = TRUE;
    }
 
-   if (WNetStat(NS_SHAREDLG)) {
-
-      hNtshrui = LoadSystemLibrary(NTSHRUI_DLL);
-
-      if (hNtshrui) {
-         lpfnShowShareFolderUI = (PVOID)GetProcAddress(hNtshrui, "ShowShareFolderUI");
-         if (!lpfnShowShareFolderUI) {
-            EnableMenuItem(GetMenu(hwndFrame), IDM_SHAREAS, MF_BYCOMMAND | MF_GRAYED);
-         }
-
-         //
-         // If bNetShareLoad is FALSE, then we know that the share stuff
-         // is not available.  Therefore, we won't try to use
-         // WNetGetDirectoryType below, which leaves bNetTypeLoad FALSE,
-         // which prevents future use of WNetGetDirectoryType.
-         //
-         bNetShareLoad = TRUE;
-
-         EnableMenuItem(GetMenu(hwndFrame), IDM_STOPSHARE, MF_BYCOMMAND | MF_GRAYED);
-      }
-
-   }
-
    SetEvent(hEventNetLoad);
    bNetDone = TRUE;
 

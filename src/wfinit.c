@@ -320,52 +320,8 @@ VOID
 InitMenus()
 {
    HMENU hMenu;
-   TCHAR szValue[MAXPATHLEN];
-   HMENU hMenuOptions;
 
-   //
-   // use submenu because we are doing this by position
-   //
-   hMenu = GetSubMenu(GetMenu(hwndFrame), MapIDMToMenuPos(IDM_DISK));
-
-   if (WNetStat(NS_CONNECTDLG)) {  // Network Connections...
-
-      InsertMenu(hMenu, 4, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
-
-      LoadString(hAppInstance, IDS_NEWWINONCONNECT, szValue, COUNTOF(szValue));
-      hMenuOptions = GetSubMenu(GetMenu(hwndFrame), 4);
-      InsertMenu(hMenuOptions, 8, MF_BYPOSITION | MF_STRING, IDM_NEWWINONCONNECT, szValue);
-
-      LoadString(hAppInstance, IDS_CONNECT, szValue, COUNTOF(szValue));
-      InsertMenu(hMenu, 5, MF_BYPOSITION | MF_STRING, IDM_CONNECT, szValue);
-
-      LoadString(hAppInstance, IDS_DISCONNECT, szValue, COUNTOF(szValue));
-      InsertMenu(hMenu, 6, MF_BYPOSITION | MF_STRING, IDM_DISCONNECT, szValue);
-
-   }
-
-   // Shared Directories
-   if (WNetStat(NS_SHAREDLG)) {
-
-      InsertMenu(hMenu, 7, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
-
-      LoadString(hAppInstance, IDS_SHAREAS, szValue, COUNTOF(szValue));
-      InsertMenu(hMenu, 8, MF_BYPOSITION | MF_STRING, IDM_SHAREAS, szValue);
-
-      // IDM_STOPSHARE not shown anymore, because there is no way to open then 'Stop Share Dialog' with W7/10/11 
-      // LoadString(hAppInstance, IDS_STOPSHARE, szValue, COUNTOF(szValue));
-      // InsertMenu(hMenu, 9, MF_BYPOSITION | MF_STRING, IDM_STOPSHARE, szValue);
-   }
-
-   //
-   // Init the Disk menu.
-   //
    hMenu = GetMenu(hwndFrame);
-
-   if (nFloppies == 0) {
-      EnableMenuItem(hMenu, IDM_DISKCOPY, MF_BYCOMMAND | MF_GRAYED);
-   }
-
 
    if (bStatusBar)
       CheckMenuItem(hMenu, IDM_STATUSBAR, MF_BYCOMMAND | MF_CHECKED);

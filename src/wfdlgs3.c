@@ -25,10 +25,7 @@ DWORD WINAPI CopyDiskette( IN PVOID ThreadParameter );
 VOID SwitchToSafeDrive(VOID);
 VOID MDIClientSizeChange(HWND hwndActive, INT iFlags);
 
-VOID CopyDiskEnd(VOID);
-VOID FormatEnd(VOID);
 VOID CancelDlgQuit(VOID);
-VOID LockFormatDisk(INT iDrive1, INT iDrive2, DWORD dwMessage, DWORD dwCommand, BOOL bLock);
 
 BOOL GetProductVersion(WORD * pwMajor, WORD * pwMinor, WORD * pwBuild, WORD * pwRevision);
 
@@ -50,81 +47,17 @@ INT_PTR
 CALLBACK
 ChooseDriveDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 {
-   TCHAR szDrive[5];
-
    UNREFERENCED_PARAMETER(lParam);
 
    switch (wMsg) {
-   case WM_INITDIALOG:
-      {
-         INT   i;
-         HWND  hwndLB;
-         lstrcpy(szDrive, SZ_ACOLON);
-
-         hwndLB = GetDlgItem(hDlg, IDD_DRIVE);
-
-         switch (dwSuperDlgMode) {
-         case IDM_DISKCOPY:
-            {
-               HWND hwndLB2;
-
-               hwndLB2 = GetDlgItem(hDlg, IDD_DRIVE1);
-
-               for (i = 0; i < cDrives; i++) {
-                  if (IsRemovableDrive(rgiDrive[i])) {
-                     DRIVESET(szDrive,rgiDrive[i]);
-                     SendMessage(hwndLB, CB_ADDSTRING, 0, (LPARAM)szDrive);
-                     SendMessage(hwndLB2, CB_ADDSTRING, 0, (LPARAM)szDrive);
-                  }
-               }
-
-               SendMessage(hwndLB, CB_SETCURSEL, 0, 0L);
-               SendMessage(hwndLB2, CB_SETCURSEL, 0, 0L);
-            }
-            break;
-         }
-         break;
-      }
-
    case WM_COMMAND:
       switch (GET_WM_COMMAND_ID(wParam, lParam)) {
       case IDD_HELP:
          goto DoHelp;
 
       case IDOK:
-         {
-            TCHAR szTemp[128];
-
-            if (dwSuperDlgMode == IDM_DISKCOPY) {
-
-               if (bConfirmFormat) {
-                  LoadString(hAppInstance, IDS_DISKCOPYCONFIRMTITLE, szTitle, COUNTOF(szTitle));
-                  LoadString(hAppInstance, IDS_DISKCOPYCONFIRM, szMessage, COUNTOF(szMessage));
-                  if (MessageBox(hDlg, szMessage, szTitle, MB_ICONEXCLAMATION | MB_YESNO | MB_DEFBUTTON1) != IDYES)
-                     break;
-               }
-
-               GetDlgItemText( hDlg, IDD_DRIVE1, szTemp, COUNTOF(szTemp) -1 );
-               CancelInfo.Info.Copy.iSourceDrive = DRIVEID(szTemp);
-
-               GetDlgItemText( hDlg, IDD_DRIVE, szTemp, COUNTOF(szTemp) -1 );
-               CancelInfo.Info.Copy.iDestDrive = DRIVEID(szTemp);
-
-               //
-               // lock drives
-               //
-               LockFormatDisk(CancelInfo.Info.Copy.iSourceDrive,
-                  CancelInfo.Info.Copy.iDestDrive,IDS_DRIVEBUSY_COPY,
-                  IDM_FORMAT, TRUE);
-
-               EndDialog(hDlg, TRUE);
-
-               CreateDialog(hAppInstance, (LPTSTR) MAKEINTRESOURCE(CANCELDLG), hwndFrame, CancelDlgProc);
-            } else {
-               EndDialog(hDlg, TRUE);
-            }
-            break;
-         }
+         EndDialog(hDlg, TRUE);
+         break;
 
       case IDCANCEL:
          EndDialog(hDlg, FALSE);
@@ -676,11 +609,6 @@ FormatDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
             if (MessageBox(hDlg, szMessage, szTitle, MB_ICONEXCLAMATION | MB_YESNO | MB_DEFBUTTON1) != IDYES)
                break;
          }
-
-         //
-         // Lock our drive and gray out formatdisk
-         //
-         LockFormatDisk(CancelInfo.Info.Format.iFormatDrive, -1, IDS_DRIVEBUSY_FORMAT, IDM_DISKCOPY, TRUE);
 
          EndDialog(hDlg,TRUE);
 
@@ -1516,64 +1444,6 @@ UpdateConnections(BOOL bUpdateDriveList)
    SetCursor(hCursor);
 }
 
-INT_PTR
-CALLBACK
-DrivesDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-   INT iSel;
-   HWND hwndActive;
-
-   if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
-      return TRUE;
-   }
-
-   switch (wMsg) {
-   case WM_COMMAND:
-
-      switch (GET_WM_COMMAND_ID(wParam, lParam)) {
-      case IDD_HELP:
-         goto DoHelp;
-
-      case IDD_DRIVE:
-         if (GET_WM_COMMAND_CMD(wParam, lParam) != LBN_DBLCLK)
-            break;
-
-         // fall through
-      case IDOK:
-         iSel = (INT)SendDlgItemMessage(hDlg, IDD_DRIVE, LB_GETCURSEL, 0, 0L);
-         EndDialog(hDlg, TRUE);
-
-         hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
-
-         if (hwndDriveBar) {
-
-            //
-            // If same drive, don't steal (lparam)
-            //
-            SendMessage(hwndDriveBar, FS_SETDRIVE, iSel, 1L);
-         }
-         break;
-
-      case IDCANCEL:
-         EndDialog(hDlg, FALSE);
-         break;
-
-      }
-      break;
-   default:
-
-      if (wMsg == wHelpMessage) {
-DoHelp:
-         return TRUE;
-      } else {
-         return FALSE;
-      }
-   }
-   return TRUE;
-}
-
-
-
 
 
 /////////////////////////////////////////////////////////////////////
@@ -1621,144 +1491,6 @@ CancelDlgQuit()
    SendMessage(hwndFrame, FS_CANCELEND,0,0L);
 
    ExitThread(0L);
-}
-
-VOID
-CopyDiskEnd()
-{
-
-   //
-   // Now resume notifications
-   //
-   NotifyResume(CancelInfo.Info.Copy.iDestDrive, DRIVE_REMOVABLE);
-
-   LockFormatDisk(CancelInfo.Info.Copy.iSourceDrive,
-      CancelInfo.Info.Copy.iDestDrive, 0, IDM_FORMAT, FALSE);
-
-   // If not successful, and the user _didn't_ hit cancel, throw up
-   // an error message (as implemented, hitting cancel does not return
-   // a dialog box.
-
-   if (!CancelInfo.fmifsSuccess && !CancelInfo.bCancel) {
-      //
-      // Get reason and display intelligent message.
-      LoadString(hAppInstance, IDS_COPYDISKERR, szTitle, COUNTOF(szTitle));
-      LoadString(hAppInstance, CancelInfo.dReason, szMessage, COUNTOF(szMessage));
-
-      MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONSTOP);
-   }
-}
-
-
-VOID
-FormatEnd()
-{
-   TCHAR szBuf[128];
-   HWND hwnd, hwndActive;
-
-   //
-   // Now resume notifications
-   //
-   NotifyResume(CancelInfo.Info.Format.iFormatDrive, DRIVE_REMOVABLE);
-
-   LockFormatDisk(CancelInfo.Info.Format.iFormatDrive, -1, 0, IDM_DISKCOPY, FALSE);
-
-   // Update information only if successful
-   // (What about if cancel?)
-
-   if (CancelInfo.fmifsSuccess) {
-
-      //
-      // refresh all windows open on this drive
-      //
-      // Originally, we updated everything, but now just invalidate
-      //
-
-      I_VolInfo(CancelInfo.Info.Format.iFormatDrive);
-
-      for (hwnd = GetWindow(hwndMDIClient, GW_CHILD);
-         hwnd;
-         hwnd = GetWindow(hwnd, GW_HWNDNEXT)) {
-
-         // refresh windows on this drive
-
-         if (CancelInfo.Info.Format.iFormatDrive == (INT)GetWindowLongPtr(hwnd, GWL_TYPE))
-            RefreshWindow(hwnd, FALSE, FALSE);
-
-      }
-      hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
-      // update the drives windows
-
-      // FS_CHANGEDRIVES (via RedoDriveWindows)
-      // no longer calls UpdateDriveList or InitDriveBitmaps.
-      // But that's good, since neither changes in a format!
-
-      SendMessage(hwndActive, FS_CHANGEDRIVES, 0, 0L);
-
-      // use fFlags and check ONLYONE, then clear it.
-
-      LoadString(hAppInstance, IDS_FORMATCOMPLETE, szTitle, COUNTOF(szTitle));
-      LoadString(hAppInstance, IDS_FORMATANOTHER, szMessage, COUNTOF(szMessage));
-
-      wsprintf(szBuf, szMessage, ulTotalSpace, ulSpaceAvail);
-
-      if ( !(CancelInfo.Info.Format.fFlags & FF_ONLYONE)   &&
-         IDYES == MessageBox(hwndFrame, szBuf, szTitle, MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2)) {
-
-
-         CancelInfo.Info.Format.fFlags |= FF_PRELOAD;
-         PostMessage(hwndFrame,WM_COMMAND,GET_WM_COMMAND_MPS(IDM_FORMAT,0,0L));
-      }
-
-      // now clear ONLYONE!
-      CancelInfo.Info.Format.fFlags &= ~FF_ONLYONE;
-
-   } else if (!CancelInfo.bCancel) {
-
-      // Display reason only if user didn't hit cancel.
-
-      // Get reason and display intelligent message.
-      LoadString(hAppInstance, IDS_FORMATERR, szTitle, COUNTOF(szTitle));
-
-      LoadString(hAppInstance, CancelInfo.dReason, szMessage, COUNTOF(szMessage));
-      MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONSTOP);
-
-   }
-}
-
-
-// Locks the format disk(s) and grays out format/copy disk
-// IN: 2 drives to block (-1 = ignore)
-//     IDM_ that's us.
-// OUT: VOID
-// PRECOND: none
-// POSTCOND: drives will be grayed out on drivebar and menu items disabled.
-
-VOID
-LockFormatDisk(DRIVE drive1, DRIVE drive2,
-   DWORD dwMessage, DWORD dwCommand, BOOL bLock)
-{
-   HMENU hMenu;
-
-   // Gray out menu item dwCommand
-   hMenu = GetMenu(hwndFrame);
-
-   // Special case for IDM_FORMAT, as it no longer invokes FormatDiskette,
-   // it can be safely left enabled even when copying diskettes.
-   // This change is made here rather than removing the calls to
-   // LockFormatDisk with IDM_FORMAT since LockFormatDisk also
-   // changes the state of aDriveInfo.
-   if (dwCommand != IDM_FORMAT)
-   {
-       EnableMenuItem(hMenu, dwCommand,
-           bLock ? MF_BYCOMMAND | MF_GRAYED : MF_BYCOMMAND | MF_ENABLED);
-   }
-
-   //
-   // Fix up aDriveInfo
-   //
-   if (-1 != drive1) aDriveInfo[drive1].iBusy = bLock ? dwMessage : 0;
-   if (-1 != drive2) aDriveInfo[drive2].iBusy = bLock ? dwMessage : 0;
 }
 
 

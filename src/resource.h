@@ -85,21 +85,6 @@
 // This IDM_ is reserved for IDH_GROUP_ATTRIBS
 #define IDM_GROUP_ATTRIBS   199
 
-#define IDM_DISK            1
-#define IDM_DISKCOPY        201
-#define IDM_LABEL           202
-#define IDM_FORMAT          203
-//#define IDM_SYSDISK         204
-#define IDM_CONNECT         205
-#define IDM_DISCONNECT      206
-#define IDM_DRIVESMORE      251
-#define IDM_CONNECTIONS     252
-#define IDM_SHAREDDIR       253
-
-// AS added to end
-#define IDM_SHAREAS         254
-#define IDM_STOPSHARE       255
-
 #define IDM_TREE            2
 #define IDM_EXPONE          301
 #define IDM_EXPSUB          302

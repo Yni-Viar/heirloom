@@ -168,9 +168,7 @@ InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive)
    DWORD     dwView;
    UINT      uMenuFlags, uCompFlags;
    HWND      hwndTree, hwndDir;
-   DRIVE     drive;
    BOOL      bLFN;
-   INT       i;
    DWORD     dwFlags;
 
 
@@ -363,36 +361,6 @@ InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive)
 
       EnableMenuItem(hMenu, IDM_COMPRESS, uCompFlags);
       EnableMenuItem(hMenu, IDM_UNCOMPRESS, uMenuFlags);
-
-      if (uMenus & (1<<IDM_DISK)) {
-
-         // be sure not to allow disconnect while any trees
-         // are still being read (iReadLevel != 0)
-
-         if (bConnectable) {
-
-            uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
-
-            if (!iReadLevel) {
-               for (i=0; i < cDrives; i++) {
-                  drive = rgiDrive[i];
-
-                  if ( !IsCDRomDrive(drive) && IsRemoteDrive(drive) ) {
-
-                     uMenuFlags = MF_BYCOMMAND | MF_ENABLED;
-                     break;
-                  }
-               }
-            }
-            EnableMenuItem(hMenu, IDM_DISCONNECT, uMenuFlags);
-
-         } else {
-            if (iReadLevel)
-               EnableMenuItem(hMenu, IDM_CONNECTIONS, MF_BYCOMMAND | MF_GRAYED);
-            else
-               EnableMenuItem(hMenu, IDM_CONNECTIONS, MF_BYCOMMAND | MF_ENABLED);
-         }
-      }
    }
 
    if (uMenus & (1<<IDM_TREE)) {
@@ -659,16 +627,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
       DestroyCancelWindow();
 
-      switch (CancelInfo.eCancelType) {
-      case CANCEL_FORMAT:
-         FormatEnd();
-         break;
-      case CANCEL_COPY:
-         CopyDiskEnd();
-         break;
-      default:
-         break;
-      }
       return 0L;
 
    case FS_SEARCHEND:

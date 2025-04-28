@@ -1079,11 +1079,8 @@ DrivesWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
                 nDriveDoubleClick = -1;
 
                // the double click is valid
-               if (nDrive >= 0)
-                    NewTree(rgiDrive[nDrive], hwndChild);
-               else
-                   PostMessage(hwndFrame,WM_COMMAND, GET_WM_COMMAND_MPS(IDM_DRIVESMORE, 0, 0));
-           }
+               NewTree(rgiDrive[nDrive], hwndChild);
+            }
 
 
            // invalidate the single click action
