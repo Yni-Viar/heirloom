@@ -456,12 +456,7 @@ BuildDocumentStringWorker()
 
    FillDocType(ppDocBucket, L"Documents", szNULL);
 
-#ifdef NEC_98
-    uLen = 96;      // 96 = 128 - 32.  Trying to match code added to wfinit.c
-                    // in FE merge in Win95 source base.  ** for PC-7459 **
-#else
-    uLen = 0;
-#endif
+   uLen = 0;
 
    do {
 
