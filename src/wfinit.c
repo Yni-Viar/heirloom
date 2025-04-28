@@ -235,7 +235,7 @@ GetSettings()
                            szSize,
                            bJAPAN ?
                               TEXT("14") :
-                              TEXT("8"),
+                              TEXT("9"),
                            szTemp,
                            COUNTOF(szTemp),
                            szTheINIFile);
