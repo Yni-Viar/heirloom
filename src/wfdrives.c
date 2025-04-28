@@ -17,10 +17,10 @@
 #include <commctrl.h>
 #include <shlobj.h>
 
-VOID RectDrive(INT nDrive, BOOL bFocusOn);
+VOID RectDrive(DRIVEIND driveInd, BOOL bDraw);
 VOID InvalidateDrive(DRIVEIND driveInd);
 INT  DriveFromPoint(HWND hwnd, POINT pt);
-VOID DrawDrive(HDC hdc, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus);
+VOID DrawDrive(HDC hdc, UINT dpi, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus);
 INT  KeyToItem(HWND hWnd, WORD nDriveLetter);
 int GetDragStatusText(int iOperation);
 
@@ -298,6 +298,7 @@ RectDrive(DRIVEIND driveInd, BOOL bDraw)
 //
 // in:
 //      hdc             dc to draw to
+//      dpi             window DPI
 //      x, y            position to start (dxDrive, dyDrive are the extents)
 //      nDrive          the drive to paint
 //      bCurrent        draw as the current drive (pushed in)
@@ -305,7 +306,7 @@ RectDrive(DRIVEIND driveInd, BOOL bDraw)
 //
 
 VOID
-DrawDrive(HDC hdc, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus)
+DrawDrive(HDC hdc, UINT dpi, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus)
 {
    RECT rc;
    TCHAR szTemp[2];
@@ -346,8 +347,7 @@ DrawDrive(HDC hdc, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus)
    TextOut(hdc, x + dxDriveBitmap+(dyBorder*6), y + (dyDrive - dyText) / 2, szTemp, 1);
    SetTextColor(hdc, rgb);
 
-   BitBlt(hdc, x + 4*dyBorder, y + (dyDrive - dyDriveBitmap) / 2, dxDriveBitmap, dyDriveBitmap,
-      hdcMem, aDriveInfo[drive].iOffset, 2 * dyFolder, SRCCOPY | NOMIRRORBITMAP);
+   PngDraw(hdc, dpi, x + 4 * dyBorder, y + (dyDrive - dyDriveBitmap) / 2, PNG_TYPE_DRIVE, aDriveInfo[drive].iOffset);
 }
 
 
@@ -412,7 +412,7 @@ CheckDrive(HWND hwnd, DRIVE drive, DWORD dwFunc)
 
          if (err != WN_SUCCESS) {
 
-            aDriveInfo[drive].iOffset = dxDriveBitmap * 5;
+            aDriveInfo[drive].iOffset = 5;
             InvalidateDrive(driveInd);
 
             if (hCursor)
@@ -444,7 +444,7 @@ CheckDrive(HWND hwnd, DRIVE drive, DWORD dwFunc)
 
    case 1:
 
-      aDriveInfo[drive].iOffset = dxDriveBitmap * 4;
+      aDriveInfo[drive].iOffset = 4;
       InvalidateDrive(driveInd);
       break;
 
@@ -514,6 +514,8 @@ DrivesPaint(HWND hWnd, INT nDriveFocus, INT nDriveCurrent)
    HANDLE hOld;
    INT cDriveRows, cDrivesPerRow;
 
+   UINT dpi = GetDpiForWindow(hWnd);
+
    GetClientRect(hWnd, &rc);
 
    hdc = BeginPaint(hWnd, &ps);
@@ -540,7 +542,7 @@ DrivesPaint(HWND hWnd, INT nDriveFocus, INT nDriveCurrent)
       if (GetFocus() != hWnd)
          nDriveFocus = -1;
 
-      DrawDrive(hdc, x, y, nDrive, nDriveCurrent == nDrive, nDriveFocus == nDrive);
+      DrawDrive(hdc, dpi, x, y, nDrive, nDriveCurrent == nDrive, nDriveFocus == nDrive);
       x += dxDrive;
 
       if (x + dxDrive > rc.right) {

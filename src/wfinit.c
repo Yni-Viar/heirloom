@@ -117,7 +117,6 @@ InitExtensions()
 
          if (fp) {
             UINT bias;
-            FMS_LOADA lsA;
             FMS_LOADW lsW;
 
             bias = ((IDM_EXTENSIONS + iNumExtensions + 1)*100);
@@ -266,22 +265,22 @@ GetDriveOffset(DRIVE drive)
    if (IsRemoteDrive(drive)) {
 
       if (aDriveInfo[drive].bRemembered)
-         return dxDriveBitmap * 5;
+         return 5;
       else
-         return dxDriveBitmap * 4;
+         return 4;
    }
 
 
    if (IsRemovableDrive(drive))
-      return dxDriveBitmap * 1;
+      return 1;
 
    if (IsRamDrive(drive))
-      return dxDriveBitmap * 3;
+      return 3;
 
    if (IsCDRomDrive(drive))
-      return dxDriveBitmap * 0;
+      return 0;
 
-   return dxDriveBitmap * 2;
+   return 2;
 }
 
 
@@ -1171,6 +1170,8 @@ InitFileManager(
    if (!LoadBitmaps())
       return FALSE;
 
+   PngStartup();
+
    hicoTree = LoadIconForCurrentDPI(hAppInstance, (LPTSTR) MAKEINTRESOURCE(TREEICON));
    hicoTreeDir = LoadIconForCurrentDPI(hAppInstance, (LPTSTR) MAKEINTRESOURCE(TREEDIRICON));
    hicoDir = LoadIconForCurrentDPI(hAppInstance, (LPTSTR) MAKEINTRESOURCE(DIRICON));
@@ -1609,6 +1610,8 @@ DeleteBitmaps()
          DeleteObject(hbmBitmaps);
       DeleteDC(hdcMem);
    }
+
+   PngShutdown();
 }
 
 

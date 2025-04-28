@@ -1409,3 +1409,13 @@ Extern RtlSetProcessPlaceholderCompatibilityMode_t pfnRtlSetProcessPlaceholderCo
 #undef Extern
 #undef EQ
 
+// WFPNG.C
+
+typedef enum {
+   PNG_TYPE_DRIVE,
+   PNG_TYPE_ICON
+} PNG_TYPE;
+
+void PngStartup(void);
+void PngShutdown(void);
+void PngDraw(HDC hdc, UINT dpi, int x, int y, PNG_TYPE type, int index);

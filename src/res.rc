@@ -19,6 +19,32 @@
 
 
 BITMAPS         BITMAP PRELOAD wbbitmap.bmp
+IDR_PNG_DRIVE_00 RCDATA "images\drive_00.png"
+IDR_PNG_DRIVE_01 RCDATA "images\drive_01.png"
+IDR_PNG_DRIVE_02 RCDATA "images\drive_02.png"
+IDR_PNG_DRIVE_03 RCDATA "images\drive_03.png"
+IDR_PNG_DRIVE_04 RCDATA "images\drive_04.png"
+IDR_PNG_DRIVE_05 RCDATA "images\drive_05.png"
+IDR_PNG_ICON_00 RCDATA "images\icon_00.png"
+IDR_PNG_ICON_01 RCDATA "images\icon_01.png"
+IDR_PNG_ICON_02 RCDATA "images\icon_02.png"
+IDR_PNG_ICON_03 RCDATA "images\icon_03.png"
+IDR_PNG_ICON_04 RCDATA "images\icon_04.png"
+IDR_PNG_ICON_05 RCDATA "images\icon_05.png"
+IDR_PNG_ICON_06 RCDATA "images\icon_06.png"
+IDR_PNG_ICON_07 RCDATA "images\icon_07.png"
+IDR_PNG_ICON_08 RCDATA "images\icon_08.png"
+IDR_PNG_ICON_09 RCDATA "images\icon_09.png"
+IDR_PNG_ICON_10 RCDATA "images\icon_10.png"
+IDR_PNG_ICON_11 RCDATA "images\icon_11.png"
+IDR_PNG_ICON_12 RCDATA "images\icon_12.png"
+IDR_PNG_ICON_13 RCDATA "images\icon_13.png"
+IDR_PNG_ICON_14 RCDATA "images\icon_14.png"
+IDR_PNG_ICON_15 RCDATA "images\icon_15.png"
+IDR_PNG_ICON_16 RCDATA "images\icon_16.png"
+IDR_PNG_ICON_17 RCDATA "images\icon_17.png"
+
+
 
 APPICON     ICON   PRELOAD winfile.ico
 TREEICON    ICON   PRELOAD wftree.ico
