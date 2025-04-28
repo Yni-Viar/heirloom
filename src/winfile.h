@@ -258,9 +258,7 @@ typedef struct _CANCEL_INFO {
       CANCEL_FORMAT,
       CANCEL_COPY,
       CANCEL_BACKUP,
-      CANCEL_RESTORE,
-      CANCEL_COMPRESS,
-      CANCEL_UNCOMPRESS
+      CANCEL_RESTORE
    } eCancelType;
    BOOL bModal;
    struct _INFO {
@@ -628,7 +626,6 @@ VOID SearchEnd(VOID);
 
 
 // WFFILE.C
-BOOL WFCheckCompress(HWND hDlg, LPTSTR szNameSpec, DWORD dwNewAttrs, BOOL bPropertyDlg, BOOL *bIgnoreAll);
 BOOL GetRootPath(LPTSTR szPath, LPTSTR szReturn);
 
 //WFLOC.C

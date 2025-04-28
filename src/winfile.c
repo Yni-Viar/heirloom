@@ -36,8 +36,6 @@
 BOOL EnablePropertiesMenu(HWND hwnd, LPWSTR pszSel);
 BOOL bDialogMessage(PMSG pMsg);
 
-extern BOOL bCompressReEntry;
-
 INT APIENTRY
 WinMain(
    HINSTANCE hInst,
@@ -166,11 +164,9 @@ InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive)
 {
    DWORD     dwSort;
    DWORD     dwView;
-   UINT      uMenuFlags, uCompFlags;
+   UINT      uMenuFlags;
    HWND      hwndTree, hwndDir;
    BOOL      bLFN;
-   DWORD     dwFlags;
-
 
    hwndTree = HasTreeWindow(hwndActive);
    hwndDir = HasDirWindow(hwndActive);
@@ -273,94 +269,7 @@ InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive)
          uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
       EnableMenuItem (hMenu, IDM_ATTRIBS, uMenuFlags);
 
-      //
-      // Check for Compress/Uncompress menu item enabling.
-      //
-      uCompFlags = MF_BYCOMMAND | MF_GRAYED;          // Compress...
-      uMenuFlags = MF_BYCOMMAND | MF_GRAYED;          // Uncompress...
-
-      if (pSel && !bCompressReEntry)
-      {
-         WCHAR     szDrv[6];      //  Enough to hold root pathname
-
-         //
-         //  Path is already fully qualified by passing in bit 4 to the
-         //  FS_GETSELECTION call, so simply null terminate the string
-         //  after the root path.  However, GetRootPath() will take care
-         //  quoted paths.
-         //
-
-         // get a buffer big enough for a quoted path
-         TCHAR szTemp[MAXPATHLEN + 2 * sizeof(TCHAR)];
-
-         lstrcpy( szTemp, pSel);
-
-         GetRootPath (szTemp, szDrv);
-
-         //
-         //  See if the volume allows file compression.
-         //
-         if (GetVolumeInformation(szDrv, NULL, 0L, NULL, NULL, &dwFlags, NULL, 0L) &&
-             (dwFlags & FS_FILE_COMPRESSION) )
-         {
-            if (hwndTree == GetTreeFocus(hwndActive))
-            {
-               //
-               //  Always enable the compress and decompress menu items
-               //  when the tree control side is highlighted, since it
-               //  only contains directories.
-               //
-               uCompFlags = MF_BYCOMMAND | MF_ENABLED;     // Compress...
-               uMenuFlags = MF_BYCOMMAND | MF_ENABLED;     // Uncompress...
-            }
-            else
-            {
-               switch ((UINT)SendMessage(hwndActive, FS_GETSELECTION, 64, 0L))
-               {
-                  case ( 3 ) :
-                  {
-                     //
-                     //  Enable both the compress and decompress menu items.
-                     //
-                     uCompFlags = MF_BYCOMMAND | MF_ENABLED;
-
-                     // FALL THROUGH...
-                  }
-                  case ( 2 ) :
-                  {
-                     //
-                     //  Enable the uncompress menu item and disable the
-                     //  compress menu item.
-                     //
-                     uMenuFlags = MF_BYCOMMAND | MF_ENABLED;
-                     break;
-                  }
-                  case ( 1 ) :
-                  {
-                     //
-                     //  Enable the compress menu item and disable the
-                     //  uncompress menu item.
-                     //
-                     uCompFlags = MF_BYCOMMAND | MF_ENABLED;
-                     break;
-                  }
-                  case ( 0 ) :
-                  default :
-                  {
-                     //
-                     //  Disable both the compress and decompress menu items.
-                     //
-                     break;
-                  }
-               }
-            }
-         }
-
-         LocalFree((HLOCAL)pSel);
-      }
-
-      EnableMenuItem(hMenu, IDM_COMPRESS, uCompFlags);
-      EnableMenuItem(hMenu, IDM_UNCOMPRESS, uMenuFlags);
+      uMenuFlags = MF_BYCOMMAND;
    }
 
    if (uMenus & (1<<IDM_TREE)) {

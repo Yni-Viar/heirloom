@@ -1611,7 +1611,7 @@ FullPath:
    {
       SetWindowLongPtr( GetDlgItem(hDlg, IDD_COMPRESSED),
                      GWL_STYLE,
-                     WS_VISIBLE | BS_AUTO3STATE | WS_CHILD);
+                     WS_VISIBLE | BS_AUTO3STATE | WS_CHILD | WS_DISABLED);
    }
    if (ATTR_ENCRYPTED & dwAttribs3State)
    {
@@ -1777,15 +1777,6 @@ AttribsDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
             }
          }
 
-         if ((state = IsDlgButtonChecked(hDlg, IDD_COMPRESSED)) < 2)
-         {
-            dwChangeMask |= ATTR_COMPRESSED;
-            if (state == 1)
-            {
-               dwAttribsNew |= ATTR_COMPRESSED;
-            }
-         }
-
          //
          // Free old version buffer
          // (Ok to call even if no version info present.)
@@ -1825,19 +1816,9 @@ AttribsDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
                dwAttribs = (dwChangeMask & dwAttribsNew) | (~dwChangeMask & dwAttribs);
 
                //
-               //  Process the IDD_COMPRESSED attribute setting and then
-               //  set the attributes on the file or directory.
+               //  Set the attributes on the file or directory.
                //
                lstrcpy(szTemp, szName);
-               if (!WFCheckCompress(hDlg, szTemp, dwAttribs, TRUE, &bIgnoreAll))
-               {
-                  //
-                  //  WFCheckCompress will only be FALSE if the user
-                  //  chooses to Abort the compression.
-                  //
-                  bRet = FALSE;
-                  break;
-               }
                if (WFSetAttr(szName, dwAttribs))
                {
 AttributeError:

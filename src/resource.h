@@ -65,8 +65,6 @@
 #define IDM_SELECT          116
 // was IDM_UNDELETE         117
 #define IDM_COPYTOCLIPBOARD 118
-#define IDM_COMPRESS        119
-#define IDM_UNCOMPRESS      120
 #define IDM_PASTE           121
 #define IDM_EDIT            122
 #define IDM_CUTTOCLIPBOARD  123
@@ -340,7 +338,6 @@
 #define IDS_ASSOCNONE           226
 #define IDS_NOFILES             227
 #define IDS_PRINTONLYONE        228
-//#define IDS_COMPRESSEDEXE       229
 #define IDS_INVALIDDLL          230
 #define IDS_SHAREERROR          231
 #define IDS_CREATELONGDIR       232
@@ -485,12 +482,6 @@
 #define IDS_INITUPDATEFAIL       424
 #define IDS_INITUPDATEFAILTITLE  425
 #define IDS_READING              426
-
-#define IDS_COMPRESSDIR          427
-#define IDS_UNCOMPRESSDIR        428
-#define IDS_COMPRESS_ATTRIB_ERR  429
-#define IDS_NTLDRCOMPRESSERR     430
-#define IDS_MULTICOMPRESSERR     431
 
 #define IDS_EDITFILTER           432
 

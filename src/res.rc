@@ -163,9 +163,6 @@ BEGIN
     MENUITEM    "Re&name...\tF2",   IDM_RENAME
     MENUITEM    "Proper&ties...\tAlt+Enter",IDM_ATTRIBS
     MENUITEM    SEPARATOR
-    MENUITEM    "Compre&ss...",     IDM_COMPRESS
-    MENUITEM    "&Uncompress...",   IDM_UNCOMPRESS
-    MENUITEM    SEPARATOR
     MENUITEM    "&Run...",          IDM_RUN
     MENUITEM    "Pr&int...",        IDM_PRINT
     MENUITEM    "&Associate...",    IDM_ASSOCIATE
@@ -326,7 +323,6 @@ BEGIN
 //    IDS_NEWWINDOWSMSG       "This application requires a newer version of Microsoft Windows."                                                          /* 128 */
 //    IDS_PMODEONLYMSG        "This application requires Windows."                                                             /* 128 */
     IDS_DDEFAIL             "An error occurred in sending the command to the application."                                                                /* 128 */
-//    IDS_COMPRESSEDEXE       "This program or one of its components is compressed.\n\nUse the MS-DOS expand utility to copy the file from the setup disks."
     IDS_INVALIDDLL          "One of the library files needed to run this application is damaged. Please reinstall this application."
     IDS_SHAREERROR          "This file is in use by some other application."
 
@@ -593,12 +589,6 @@ BEGIN
     IDS_INITUPDATEFAIL          "Unable to initialize background update support.  File Manager will exit.  "
     IDS_INITUPDATEFAILTITLE     "File Manager Initialization"
 
-    IDS_COMPRESSDIR             "Do you want to Compress all of the files and sub-directories in %s also?"
-    IDS_UNCOMPRESSDIR           "Do you want to Uncompress all of the files and sub-directories in %s also?"
-    IDS_COMPRESS_ATTRIB_ERR     "File Manager cannot change compress attributes for %s."
-    IDS_NTLDRCOMPRESSERR        "The file %s will not be compressed.  Compressing this file may render your system unbootable."
-    IDS_MULTICOMPRESSERR        "File Manager is currently in the process of compressing/uncompressing files.\nYou must wait until this is complete before attempting to compress/uncompress additional files."
-
     IDS_EDITFILTER              "Programs (*.exe)\0*.exe\0"
 
 END
@@ -628,8 +618,6 @@ BEGIN
     MH_MYITEMS+IDM_COPYTOCLIPBOARD, "Copies one or more files to the clipboard"
     MH_MYITEMS+IDM_CUTTOCLIPBOARD, "Cuts one or more files to the clipboard"
     MH_MYITEMS+IDM_PASTE,       "Paste file from clipboard to current directory"
-    MH_MYITEMS+IDM_COMPRESS,    "Compresses a file or directory"
-    MH_MYITEMS+IDM_UNCOMPRESS,  "Uncompresses a file or directory"
     MH_MYITEMS+IDM_DELETE,      "Deletes files and directories"
     MH_MYITEMS+IDM_RENAME,      "Renames a file or directory"
     MH_MYITEMS+IDM_ATTRIBS,     "Sets file attributes and displays properties"
@@ -1064,69 +1052,11 @@ CONTROL "&Read Only", IDD_READONLY, "button", WS_GROUP | WS_TABSTOP | BS_AUTOCHE
 CONTROL "H&idden", IDD_HIDDEN, "button", BS_AUTOCHECKBOX | WS_CHILD, 72, 40, 52, 12
 CONTROL "&Archive", IDD_ARCHIVE, "button", BS_AUTOCHECKBOX | WS_CHILD, 10, 52, 52, 12
 CONTROL "&System", IDD_SYSTEM, "button", BS_AUTOCHECKBOX | WS_CHILD, 72, 52, 52, 12
-CONTROL "&Compressed", IDD_COMPRESSED, "button", BS_AUTOCHECKBOX | WS_CHILD, 10, 64, 52, 12
+CONTROL "&Compressed", IDD_COMPRESSED, "button", BS_AUTOCHECKBOX | WS_CHILD | WS_DISABLED, 10, 64, 52, 12
 CONTROL "&Encrypted", IDD_ENCRYPTED, "button", BS_AUTOCHECKBOX | WS_CHILD | WS_DISABLED, 72, 64, 52, 12
 CONTROL "OK", 1, "button", WS_GROUP | BS_DEFPUSHBUTTON | WS_TABSTOP | WS_CHILD, 150, 6, 50, 14
 CONTROL "Cancel", 2, "button", BS_PUSHBUTTON | WS_TABSTOP | WS_CHILD, 150, 23, 50, 14
 END
-
-
-COMPRESSPROGDLG DIALOG 20, 20, 207, 117
-STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
-CAPTION "Compress Files Progress"
-FONT 8, "MS Shell Dlg"
-BEGIN
-LTEXT           "File being compressed:", -1, 6, 8, 79, 8
-LTEXT           "filename.xxx", IDD_COMPRESS_FILE, 86, 8, 90, 8
-LTEXT           "Directory:", -1, 6, 20, 39, 8
-LTEXT           "d:\\aa\\bb\\......\\xx\\yy\\zz\\", IDD_COMPRESS_DIR, 43,
-20, 150, 8
-LTEXT           "Directories compressed:", -1, 6, 32, 102, 8
-LTEXT           "1,888,888,999", IDD_COMPRESS_TDIRS, 90, 32, 60, 8
-LTEXT           "Files compressed:", -1, 6, 44, 62, 8
-LTEXT           "1,888,888,999", IDD_COMPRESS_TFILES, 74, 44, 58, 8
-LTEXT           "Total size of files before compression:", -1, 6, 56,
-124, 8
-LTEXT           "9,999,999,999,999", IDD_COMPRESS_USIZE, 134, 56, 68, 8
-LTEXT           "Total size of files after compression:", -1, 6, 68, 123,
-8
-LTEXT           "9,999,999,999,999", IDD_COMPRESS_CSIZE, 134, 69, 68, 8
-LTEXT           "File compression ratio:", -1, 6, 80, 78, 8
-LTEXT           "100%", IDD_COMPRESS_RATIO, 91, 80, 27, 8
-PUSHBUTTON      "Cancel", IDCANCEL, 76, 97, 55, 14
-END
-
-UNCOMPRESSPROGDLG DIALOG 20, 20, 197, 84
-STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
-CAPTION "Uncompress Files Progress"
-FONT 8, "MS Shell Dlg"
-BEGIN
-LTEXT           "File being uncompressed:", -1, 6, 8, 83, 8
-LTEXT           "filename.xxx", IDD_UNCOMPRESS_FILE, 93, 8, 66, 8
-LTEXT           "Directory:", -1, 6, 20, 39, 8
-LTEXT           "d:\\aa\\bb\\..........\\xx\\yy\\zz\\",
-IDD_UNCOMPRESS_DIR, 45, 20, 144, 8
-LTEXT           "Directories uncompressed:", -1, 6, 32, 91, 8
-LTEXT           "1,999,999,999", IDD_UNCOMPRESS_TDIRS, 99, 32, 70, 8
-LTEXT           "Files uncompressed:", -1, 6, 44, 86, 8
-LTEXT           "1,999,999,999", IDD_UNCOMPRESS_TFILES, 92, 44, 78, 8
-PUSHBUTTON      "Cancel", IDCANCEL, 74, 64, 49, 14
-END
-
-COMPRESSERRDLG DIALOG 20, 20, 245, 65
-CAPTION "Compression Error"
-FONT 8, "MS Shell Dlg"
-STYLE WS_BORDER | DS_MODALFRAME | WS_CAPTION | WS_DLGFRAME | WS_POPUP | WS_SYSMENU
-BEGIN
-ICON 32515, -1, 8, 8, 21, 20
-LTEXT "", IDD_TEXT1, 35, 8, 190, 20
-
-DEFPUSHBUTTON "&Ignore", IDIGNORE, 33, 47, 40, 14, WS_TABSTOP | WS_CHILD | WS_GROUP
-PUSHBUTTON    "I&gnore All", IDD_IGNOREALL, 79, 47, 40, 14, WS_TABSTOP | WS_CHILD
-PUSHBUTTON    "&Retry", IDRETRY, 125, 47, 40, 14, WS_TABSTOP | WS_CHILD
-PUSHBUTTON    "&Abort", IDABORT, 171, 47, 40, 14, WS_TABSTOP | WS_CHILD
-END
-
 
 
 MAKEDIRDLG DIALOGEX 20, 20, 200, 63

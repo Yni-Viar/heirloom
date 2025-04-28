@@ -47,10 +47,6 @@
 #define ASSOCIATEFILEDLG        55
 #define ASSOCIATEFILEDLGCONFIG  56   // Same dialog
 
-#define COMPRESSPROGDLG         57  //  Compression progress dialogs
-#define UNCOMPRESSPROGDLG       58
-#define COMPRESSERRDLG          59  //  Compression Error Dialog
-
 #define GOTODIRDLG              60
 #define ABOUTDLG                61
 
@@ -184,18 +180,6 @@
 #define IDD_DDENOTRUNTEXT      322
 #define IDD_DDETOPICTEXT       323
 #define IDD_DDEOPTIONALTEXT    324
-
-#define IDD_COMPRESS_FILE      341
-#define IDD_COMPRESS_DIR       342
-#define IDD_COMPRESS_TDIRS     343
-#define IDD_COMPRESS_TFILES    344
-#define IDD_COMPRESS_USIZE     345
-#define IDD_COMPRESS_CSIZE     346
-#define IDD_COMPRESS_RATIO     347
-#define IDD_UNCOMPRESS_FILE    351
-#define IDD_UNCOMPRESS_DIR     352
-#define IDD_UNCOMPRESS_TDIRS   353
-#define IDD_UNCOMPRESS_TFILES  354
 
 #define IDD_GOTODIR        355
 #define IDD_GOTOLIST       356

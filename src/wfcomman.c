@@ -1393,54 +1393,6 @@ AppCommandProc(DWORD id)
          break;
       }
 
-   case IDM_COMPRESS:
-   case IDM_UNCOMPRESS:
-      {
-         LPTSTR pSel, p;
-         DWORD  dwAttr;
-         BOOL bDir = FALSE;
-         BOOL bIgnoreAll = FALSE;
-
-         //
-         //  Should do the multiple or single file properties.
-         //
-         pSel = GetSelection(0, &bDir);
-
-         if (!pSel)
-            break;
-
-         p = pSel;
-
-         dwAttr = (id == IDM_COMPRESS) ? ATTR_COMPRESSED : 0x0000;
-
-         SendMessage(hwndFrame, FS_DISABLEFSC, 0, 0L);
-
-         while (p = GetNextFile(p, szPath, COUNTOF(szPath)))
-         {
-            QualifyPath(szPath);
-
-            if (!WFCheckCompress(hwndActive, szPath, dwAttr, FALSE, &bIgnoreAll))
-            {
-               //
-               //  WFCheckCompress will only be FALSE if the user
-               //  chooses to Abort the compression.
-               //
-               break;
-            }
-
-            //
-            //  Clear all the FSC messages from the message queue.
-            //
-            wfYield();
-         }
-
-         SendMessage(hwndFrame, FS_ENABLEFSC, 0, 0L);
-
-         LocalFree((HANDLE)pSel);
-
-         break;
-      }
-
    case IDM_MAKEDIR:
       DialogBox(hAppInstance, (LPTSTR) MAKEINTRESOURCE(MAKEDIRDLG), hwndFrame, MakeDirDlgProc);
       break;
