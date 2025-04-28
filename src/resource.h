@@ -133,10 +133,8 @@
 
 #define IDM_PREF            515
 
+// No longer exists but the logic uses it to convert between IDM and menu positions.
 #define IDM_SECURITY        5
-#define IDM_PERMISSIONS     605      // !! WARNING HARD CODED !!
-#define IDM_AUDITING        606
-#define IDM_OWNER           607
 
 #define IDM_EXTENSIONS      6
 // iExt 0, command ids 700-799

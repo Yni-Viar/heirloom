@@ -755,12 +755,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
          hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
          uMenu = MapMenuPosToIDM((UINT)LOWORD(lParam));
 
-         if (uMenu == IDM_SECURITY) {
-
-            if (lpfnAcledit)
-               (*lpfnAcledit)(hwndFrame, FMEVENT_INITMENU, (LPARAM)(HMENU)wParam);
-
-         } else if ((uMenu >= IDM_EXTENSIONS) && (uMenu < ((UINT)iNumExtensions + IDM_EXTENSIONS))) {
+         if ((uMenu >= IDM_EXTENSIONS) && (uMenu < ((UINT)iNumExtensions + IDM_EXTENSIONS))) {
 
             index = uMenu - IDM_EXTENSIONS;
             (extensions[index].ExtProc)(hwndFrame, FMEVENT_INITMENU, (LPARAM)(HMENU)wParam);

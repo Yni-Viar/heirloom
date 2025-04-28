@@ -228,12 +228,6 @@ BEGIN
     MENUITEM    SEPARATOR
     MENUITEM    "Save Settings &Now",       IDM_SAVENOW
     END
-    POPUP       "&Security"
-    BEGIN
-    MENUITEM    "&Permissions...",  IDM_PERMISSIONS
-    MENUITEM    "&Auditing...",     IDM_AUDITING
-    MENUITEM    "&Owner...",        IDM_OWNER
-    END
     POPUP       "&Window"
     BEGIN
     MENUITEM    "&New Window\tCtrl+Shift Enter",          IDM_NEWWINDOW
@@ -699,10 +693,6 @@ BEGIN
     MH_MYITEMS+IDM_TILE,        "Tiles windows vertically"
     MH_MYITEMS+IDM_ARRANGE,     "Arranges icons"
     MH_MYITEMS+IDM_REFRESH,     "Updates the contents of a window"
-
-    MH_MYITEMS+IDM_PERMISSIONS  "View or set permission information on the selected item(s)"
-    MH_MYITEMS+IDM_AUDITING     "View or set auditing information on the selected item(s)"
-    MH_MYITEMS+IDM_OWNER        "View or take ownership of the selected item(s)"
 
     MH_MYITEMS+IDM_ABOUT,       "Displays information about File Manager"
 END

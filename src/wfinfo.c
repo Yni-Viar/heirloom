@@ -1682,8 +1682,6 @@ BOOL
 NetLoad(VOID)
 {
    HMENU hMenuFrame;
-   FMS_LOAD ls;
-   const WORD bias = (IDM_SECURITY + 1) * 100;
 
    HWND hwnd, hwndT;
    DWORD dwType;
@@ -1749,30 +1747,7 @@ NetLoad(VOID)
 
    hMenuFrame = GetMenu(hwndFrame);
 
-   if (hAcledit) {
-
-      lpfnAcledit = (FM_EXT_PROC) GetProcAddress(hAcledit, FM_EXT_PROC_ENTRYW);
-      if (!lpfnAcledit)
-         lpfnAcledit = (FM_EXT_PROC) GetProcAddress(hAcledit, FM_EXT_PROC_ENTRYA);
-
-      ls.wMenuDelta = bias;
-      ls.hMenu = GetSubMenu(hMenuFrame, IDM_SECURITY);
-
-      if (!lpfnAcledit ||
-         !(*lpfnAcledit)(hwndFrame, FMEVENT_LOAD, (LPARAM)(LPFMS_LOAD)&ls)) {
-
-         FreeLibrary(hAcledit);
-
-         lpfnAcledit = NULL;
-      }
-   }
-
-   if (!lpfnAcledit) {
-
-      DeleteMenu(hMenuFrame, MapIDMToMenuPos(IDM_SECURITY), MF_BYPOSITION);
-      bSecMenuDeleted = TRUE;
-      DrawMenuBar(hwndFrame);
-   }
+   bSecMenuDeleted = TRUE;
 
    SetEvent(hEventAcledit);
    bNetAcleditDone = TRUE;

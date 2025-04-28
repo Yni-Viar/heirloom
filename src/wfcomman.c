@@ -910,18 +910,6 @@ AppCommandProc(DWORD id)
 
    switch (id) {
 
-   case IDM_PERMISSIONS:
-   case IDM_AUDITING:
-   case IDM_OWNER:
-
-      WAITACLEDIT();
-
-      if (!lpfnAcledit)
-         break;
-
-      (*lpfnAcledit)(hwndFrame, (WPARAM)(id % 100), 0L);
-      break;
-
    case IDM_SPLIT:
       SendMessage(hwndActive, WM_SYSCOMMAND, SC_SPLIT, 0L);
       break;
