@@ -37,7 +37,6 @@
 #define LFNTOFATDLG     46
 #define CHOOSESYSDRIVEDLG       47
 #define FONTDLG              49    // was 145 and etc.
-#define CANCELDLG            50
 #define CONFIRMNOACCESS      51
 #define CONFIRMNOACCESSDEST  52
 #define SEARCHPROGDLG        53
