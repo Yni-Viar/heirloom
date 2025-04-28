@@ -16,18 +16,10 @@ Global
 		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
-		DebugXPStatic|ARM64 = DebugXPStatic|ARM64
-		DebugXPStatic|Win32 = DebugXPStatic|Win32
-		DebugXPStatic|x64 = DebugXPStatic|x64
-		DebugXPStatic|x86 = DebugXPStatic|x86
 		Release|ARM64 = Release|ARM64
 		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-		ReleaseXPStatic|ARM64 = ReleaseXPStatic|ARM64
-		ReleaseXPStatic|Win32 = ReleaseXPStatic|Win32
-		ReleaseXPStatic|x64 = ReleaseXPStatic|x64
-		ReleaseXPStatic|x86 = ReleaseXPStatic|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{028400E7-500A-4FB9-877F-F6C7AE24F109}.Debug|ARM64.ActiveCfg = Debug|ARM64
@@ -38,14 +30,6 @@ Global
 		{028400E7-500A-4FB9-877F-F6C7AE24F109}.Debug|x64.Build.0 = Debug|x64
 		{028400E7-500A-4FB9-877F-F6C7AE24F109}.Debug|x86.ActiveCfg = Debug|Win32
 		{028400E7-500A-4FB9-877F-F6C7AE24F109}.Debug|x86.Build.0 = Debug|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.DebugXPStatic|ARM64.ActiveCfg = DebugXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.DebugXPStatic|ARM64.Build.0 = DebugXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.DebugXPStatic|Win32.ActiveCfg = DebugXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.DebugXPStatic|Win32.Build.0 = DebugXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.DebugXPStatic|x64.ActiveCfg = DebugXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.DebugXPStatic|x64.Build.0 = DebugXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.DebugXPStatic|x86.ActiveCfg = DebugXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.DebugXPStatic|x86.Build.0 = DebugXPStatic|Win32
 		{028400E7-500A-4FB9-877F-F6C7AE24F109}.Release|ARM64.ActiveCfg = Release|ARM64
 		{028400E7-500A-4FB9-877F-F6C7AE24F109}.Release|ARM64.Build.0 = Release|ARM64
 		{028400E7-500A-4FB9-877F-F6C7AE24F109}.Release|Win32.ActiveCfg = Release|Win32
@@ -54,14 +38,6 @@ Global
 		{028400E7-500A-4FB9-877F-F6C7AE24F109}.Release|x64.Build.0 = Release|x64
 		{028400E7-500A-4FB9-877F-F6C7AE24F109}.Release|x86.ActiveCfg = Release|Win32
 		{028400E7-500A-4FB9-877F-F6C7AE24F109}.Release|x86.Build.0 = Release|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.ReleaseXPStatic|ARM64.ActiveCfg = ReleaseXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.ReleaseXPStatic|ARM64.Build.0 = ReleaseXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.ReleaseXPStatic|Win32.ActiveCfg = ReleaseXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.ReleaseXPStatic|Win32.Build.0 = ReleaseXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.ReleaseXPStatic|x64.ActiveCfg = ReleaseXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.ReleaseXPStatic|x64.Build.0 = ReleaseXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.ReleaseXPStatic|x86.ActiveCfg = ReleaseXPStatic|Win32
-		{028400E7-500A-4FB9-877F-F6C7AE24F109}.ReleaseXPStatic|x86.Build.0 = ReleaseXPStatic|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

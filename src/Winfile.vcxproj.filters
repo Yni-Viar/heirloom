@@ -40,6 +40,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="resize.c" />
+    <ClCompile Include="wfpng.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dbg.h" />
