@@ -504,12 +504,10 @@ VOID  SwitchDriveSelection(HWND hwndActive);
 // WFINIT.C
 
 VOID  GetInternational(VOID);
-BOOL  LoadBitmaps(VOID);
 BOOL  InitFileManager(HANDLE hInstance, LPTSTR lpCmdLine, INT nCmdShow);
 VOID  InitDriveBitmaps(VOID);
 VOID  InitExtensions(VOID);
 VOID  FreeFileManager(VOID);
-VOID  DeleteBitmaps(VOID);
 BOOL  CreateSavedWindows(LPCWSTR pszInitialDir);
 VOID  InitExtensions(VOID);
 INT   GetDriveOffset(DRIVE drive);

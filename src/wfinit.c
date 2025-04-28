@@ -425,193 +425,6 @@ BoilThatDustSpec(TCHAR *pStart, BOOL bLoadIt)
 }
 
 
-//
-// BOOL LoadBitmaps()
-//
-// this routine loads DIB bitmaps, and "fixes up" their color tables
-// so that we get the desired result for the device we are on.
-//
-// this routine requires:
-//      the DIB is a 16 color DIB authored with the standard windows colors
-//      bright green (FF 00 00) is converted to the background color!
-//      light grey  (C0 C0 C0) is replaced with the button face color
-//      dark grey   (80 80 80) is replaced with the button shadow color
-//
-// this means you can't have any of these colors in your bitmap
-//
-
-#define BACKGROUND      0x0000FF00      // bright green
-#define BACKGROUNDSEL   0x00FF00FF      // bright red
-#define BUTTONFACE      0x00C0C0C0      // bright grey
-#define BUTTONSHADOW    0x00808080      // dark grey
-
-DWORD
-FlipColor(DWORD rgb)
-{
-   return RGB(GetBValue(rgb), GetGValue(rgb), GetRValue(rgb));
-}
-
-
-BOOL
-LoadBitmaps(VOID)
-{
-   HDC                   hdc;
-   HANDLE                h;
-   DWORD FAR             *p;
-   LPBYTE                lpBits;
-   HANDLE                hRes;
-   LPBITMAPINFOHEADER    lpBitmapInfo;
-   INT                   numcolors;
-   DWORD                 rgbSelected;
-   DWORD                 rgbUnselected;
-   UINT                  cbBitmapSize;
-   LPBITMAPINFOHEADER    lpBitmapData;
-   HBITMAP               hbmTemp;
-   HDC                   hdcTemp;
-   int                   scaledWidth, scaledHeight;
-   
-   rgbSelected = FlipColor(GetSysColor(COLOR_HIGHLIGHT));
-   rgbUnselected = FlipColor(GetSysColor(COLOR_WINDOW));
-
-   h = FindResource(hAppInstance, (LPTSTR) MAKEINTRESOURCE(BITMAPS), RT_BITMAP);
-   hRes = LoadResource(hAppInstance, h);
-
-   // Lock the bitmap data and make a copy of it for the mask and the bitmap.
-   //
-   cbBitmapSize = SizeofResource( hAppInstance, h );
-   lpBitmapData  = (LPBITMAPINFOHEADER)( hRes );
-
-   lpBitmapInfo = (LPBITMAPINFOHEADER) LocalAlloc(LMEM_FIXED, cbBitmapSize);
-
-   if (!lpBitmapInfo) {
-      return FALSE;
-   }
-
-   CopyMemory( (PBYTE)lpBitmapInfo, (PBYTE)lpBitmapData, cbBitmapSize );    
-
-   //
-   // Get a pointer into the color table of the bitmaps, cache the number of
-   // bits per pixel
-   //
-   p = (DWORD FAR *)((PBYTE)(lpBitmapInfo) + lpBitmapInfo->biSize);
-
-   //
-   // Search for the Solid Blue entry and replace it with the current
-   // background RGB.
-   //
-   numcolors = 16;
-
-   while (numcolors-- > 0) {
-      if (*p == BACKGROUND)
-         *p = rgbUnselected;
-      else if (*p == BACKGROUNDSEL)
-         *p = rgbSelected;
-      else if (*p == BUTTONFACE)
-         *p = FlipColor(GetSysColor(COLOR_BTNFACE));
-      else if (*p == BUTTONSHADOW)
-         *p = FlipColor(GetSysColor(COLOR_BTNSHADOW));
-
-      p++;
-   }
-
-   //
-   // Now create the DIB.
-   //
-
-   //
-   // First skip over the header structure
-   //
-   lpBits = (LPBYTE)(lpBitmapInfo + 1);
-
-   //
-   //  Skip the color table entries, if any
-   //
-   lpBits += (DWORD)(1 << (lpBitmapInfo->biBitCount)) * sizeof(RGBQUAD);
-
-   //
-   // Create a color bitmap compatible with the display device
-   //
-   hdc = GetDC(NULL);
-   
-   // Create a memory DC for the bitmap
-   hdcMem = CreateCompatibleDC(hdc);
-   if (!hdcMem) {
-      ReleaseDC(NULL, hdc);
-      LocalFree(lpBitmapInfo);
-      return FALSE;
-   }
-   
-   // First create the original bitmap
-   hbmTemp = CreateDIBitmap(
-      hdc, 
-      lpBitmapInfo, 
-      (DWORD)CBM_INIT, 
-      lpBits, 
-      (LPBITMAPINFO)lpBitmapInfo, 
-      DIB_RGB_COLORS
-   );
-   
-   if (!hbmTemp) {
-      DeleteDC(hdcMem);
-      ReleaseDC(NULL, hdc);
-      LocalFree(lpBitmapInfo);
-      return FALSE;
-   }
-   
-   // Get the original dimensions
-   BITMAP bm;
-   GetObject(hbmTemp, sizeof(BITMAP), &bm);
-   
-   // Calculate scaled dimensions based on DPI
-   scaledWidth = ScaleByDpi(bm.bmWidth);
-   scaledHeight = ScaleByDpi(bm.bmHeight);
-   
-   // Create a second compatible DC for scaling
-   hdcTemp = CreateCompatibleDC(hdc);
-   if (!hdcTemp) {
-      DeleteObject(hbmTemp);
-      DeleteDC(hdcMem);
-      ReleaseDC(NULL, hdc);
-      LocalFree(lpBitmapInfo);
-      return FALSE;
-   }
-   
-   // Create the scaled bitmap
-   hbmBitmaps = CreateCompatibleBitmap(hdc, scaledWidth, scaledHeight);
-   if (!hbmBitmaps) {
-      DeleteObject(hbmTemp);
-      DeleteDC(hdcTemp);
-      DeleteDC(hdcMem);
-      ReleaseDC(NULL, hdc);
-      LocalFree(lpBitmapInfo);
-      return FALSE;
-   }
-   
-   // Select the bitmaps into their DCs
-   HBITMAP hbmTempOld = SelectObject(hdcTemp, hbmTemp);
-   hbmSave = SelectObject(hdcMem, hbmBitmaps);
-   
-   // Scale the bitmap
-   SetStretchBltMode(hdcMem, HALFTONE);
-   SetBrushOrgEx(hdcMem, 0, 0, NULL);
-   StretchBlt(
-      hdcMem, 0, 0, scaledWidth, scaledHeight,
-      hdcTemp, 0, 0, bm.bmWidth, bm.bmHeight,
-      SRCCOPY
-   );
-   
-   // Clean up temporary objects
-   SelectObject(hdcTemp, hbmTempOld);
-   DeleteObject(hbmTemp);
-   DeleteDC(hdcTemp);
-   
-   ReleaseDC(NULL, hdc);
-
-   LocalFree(lpBitmapInfo);
-
-   return TRUE;
-}
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1167,9 +980,6 @@ InitFileManager(
 
    LoadUxTheme();
 
-   if (!LoadBitmaps())
-      return FALSE;
-
    PngStartup();
 
    hicoTree = LoadIconForCurrentDPI(hAppInstance, (LPTSTR) MAKEINTRESOURCE(TREEICON));
@@ -1599,21 +1409,6 @@ InitFileManager(
 }
 
 
-VOID
-DeleteBitmaps()
-{
-   if (hdcMem) {
-
-      SelectObject(hdcMem, hbmSave);
-
-      if (hbmBitmaps)
-         DeleteObject(hbmBitmaps);
-      DeleteDC(hdcMem);
-   }
-
-   PngShutdown();
-}
-
 
 //--------------------------------------------------------------------------
 //
@@ -1651,7 +1446,7 @@ FreeFileManager()
    DocDestruct(ppDocBucket);
    DocDestruct(ppProgBucket);
 
-   DeleteBitmaps();
+   PngShutdown();
 
    if (hFont)
       DeleteObject(hFont);

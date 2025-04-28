@@ -18,7 +18,6 @@
 #include "resize.h"
 
 
-BITMAPS         BITMAP PRELOAD wbbitmap.bmp
 IDR_PNG_DRIVE_00 RCDATA "images\drive_00.png"
 IDR_PNG_DRIVE_01 RCDATA "images\drive_01.png"
 IDR_PNG_DRIVE_02 RCDATA "images\drive_02.png"

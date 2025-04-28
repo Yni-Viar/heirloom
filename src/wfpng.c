@@ -241,16 +241,7 @@ void PngDraw(HDC hdc, UINT dpi, int x, int y, PNG_TYPE type, int index)
         return;
     }
 
-    // First draw a white filled rectangle
-    RECT rect = { x, y, x + png->scaledCX, y + png->scaledCY };
-    HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
-    if (!hBrush) {
-        return;
-    }
-    FillRect(hdc, &rect, hBrush);
-    DeleteObject(hBrush);
-
-    // Now draw the scaled bitmap
+    // Draw the scaled bitmap with alpha blending
     HDC hdcMemScaled = CreateCompatibleDC(hdc);
     if (!hdcMemScaled) {
         return;

@@ -198,15 +198,9 @@ DrawItem(
          {
              i = lpxdta->byBitmap;
 
-             BitBlt(hDC,
-                    x + dyBorder,
-                    y-(dyFolder/2),
-                    dxFolder,
-                    dyFolder,
-                    hdcMem,
-                    i * dxFolder,
-                    (bHasFocus && bDrawSelected) ? dyFolder : 0,
-                    SRCCOPY);
+             UINT dpi = GetDpiForWindow(hwnd);
+
+             PngDraw(hDC, dpi, x + dyBorder, y-(dyFolder/2), PNG_TYPE_ICON, i);
          }
    }
 

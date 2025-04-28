@@ -1768,8 +1768,13 @@ TCWP_DrawItem(
                                 iBitmap = BM_IND_CLOSEPLUS;
                 }
             }
-            BitBlt(hdc, x + dxText + dyBorder, y-(dyFolder/2), dxFolder, dyFolder,
-                hdcMem, iBitmap * dxFolder, (bHasFocus && bDrawSelected) ? dyFolder : 0, SRCCOPY);
+
+            // BitBlt(hdc, x + dxText + dyBorder, y-(dyFolder/2), dxFolder, dyFolder,
+            //     hdcMem, iBitmap * dxFolder, (bHasFocus && bDrawSelected) ? dyFolder : 0, SRCCOPY);
+
+             UINT dpi = GetDpiForWindow(hWnd);
+
+             PngDraw(hdc, dpi, x + dxText + dyBorder, y-(dyFolder/2), PNG_TYPE_ICON, iBitmap);
       }
 
       // restore text stuff and draw rect as required

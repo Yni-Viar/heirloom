@@ -726,9 +726,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
       // win.ini section [colors]
       if (!lParam || !lstrcmpi((LPTSTR)lParam, TEXT("colors"))) {
 
-         DeleteBitmaps();
-         LoadBitmaps();
-
          // we need to recreate the drives windows to change
          // the bitmaps
 
