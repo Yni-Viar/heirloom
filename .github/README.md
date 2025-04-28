@@ -2,9 +2,10 @@
 
 <p align="center"><img src="screenshot.png" width=728></p>
 
-This fork of [microsoft/winfile](https://github.com/microsoft/winfile) adds the following:
+This fork of [microsoft/winfile](https://github.com/microsoft/winfile) changes the following:
 
 - High-DPI support.
+- Removed features that are irrelevant in the modern world.
 
 ## License
 
