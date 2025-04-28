@@ -242,7 +242,6 @@ QualifyPath(LPTSTR lpszPath)
     LPTSTR lpszDot;
     UINT uLen;
 
-JAPANBEGIN
     //
     // Adapted from [#1743 28-Aug-93 v-katsuy]
     //
@@ -266,8 +265,6 @@ JAPANBEGIN
     // part done individually, so 8 chars is enough).
     //
     LPSTR pOrigA = NULL;
-    CHAR szOrigA[8*2];
-JAPANEND
 
     //
     // Save it away.
@@ -475,20 +472,6 @@ AddComponent:
 
           } else {
 
-             if (bJAPAN) {
-                if (!WideCharToMultiByte(CP_ACP,
-                                         0,
-                                         pOrig,
-                                         8,
-                                         szOrigA,
-                                         sizeof(szOrigA),
-                                         NULL,
-                                         NULL)) {
-                   return FALSE;
-                }
-                pOrigA = szOrigA;
-             }
-
              //
              // copy the filename (up to 8 chars)
              //
@@ -497,25 +480,12 @@ AddComponent:
                 CHAR_DOT != *pOrig && nSpaceLeft > 0;
                 pOrig++) {
 
-                if (bJAPAN && IsDBCSLeadByte(*pOrigA)) {
-
-                   if (cb < 7) {
-
-                      cb+=2;
-                      *pT++ = *pOrig;
-                      nSpaceLeft-=2;
-                   }
-                   pOrigA+=2;
-
-                } else {
-
-                   if (cb < 8) {
-                      cb++;
-                      *pT++ = *pOrig;
-                      nSpaceLeft--;
-                   }
-                   pOrigA++;
-                }
+               if (cb < 8) {
+                  cb++;
+                  *pT++ = *pOrig;
+                  nSpaceLeft--;
+               }
+               pOrigA++;
              }
 
              //
@@ -527,20 +497,6 @@ AddComponent:
                 nSpaceLeft--;
                 pOrig++;
 
-                if (bJAPAN) {
-                   if (!WideCharToMultiByte(CP_ACP,
-                                            0,
-                                            pOrig,
-                                            3,
-                                            szOrigA,
-                                            sizeof(szOrigA),
-                                            NULL,
-                                            NULL)) {
-                      return FALSE;
-                   }
-                   pOrigA = szOrigA;
-                }
-
                 for (cb = 0;
                    *pOrig && CHAR_BACKSLASH != *pOrig && nSpaceLeft > 0;
                    pOrig++) {
@@ -548,25 +504,12 @@ AddComponent:
                    if (CHAR_DOT == *pOrig)
                       cb = 3;
 
-                   if (bJAPAN && IsDBCSLeadByte(*pOrigA)) {
-
-                      if (cb < 2) {
-
-                         cb+=2;
-                         *pT++ = *pOrig;
-                         nSpaceLeft-=2;
-                      }
-                      pOrigA+=2;
-
-                   } else {
-
-                      if (cb < 3) {
-                         cb++;
-                         *pT++ = *pOrig;
-                         nSpaceLeft--;
-                      }
-                      pOrigA++;
+                   if (cb < 3) {
+                      cb++;
+                      *pT++ = *pOrig;
+                      nSpaceLeft--;
                    }
+                   pOrigA++;
                 }
 
                 //
@@ -871,17 +814,10 @@ SetDlgItemPath(HWND hDlg, INT id, LPTSTR pszPath)
 
    hdc = GetDC(hDlg);
 
-   if (bJAPAN) {
-
+   hFont = (HANDLE)SendMessage(hwnd, WM_GETFONT, 0, 0L);
+   if (hFont = SelectObject(hdc, hFont)) {
       CompactPath(hdc, szPath, rc.right);
-
-   } else {
-
-      hFont = (HANDLE)SendMessage(hwnd, WM_GETFONT, 0, 0L);
-      if (hFont = SelectObject(hdc, hFont)) {
-         CompactPath(hdc, szPath, rc.right);
-         SelectObject(hdc, hFont);
-      }
+      SelectObject(hdc, hFont);
    }
 
    ReleaseDC(hDlg, hdc);

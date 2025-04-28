@@ -106,15 +106,9 @@ FillDriveCapacity(HWND hDlg, INT nDrive, FMIFS_MEDIA_TYPE fmSelect, BOOL fDoPopu
          break;
 
       case FmMediaF5_360_512:      // 5.25", 360KB,  512 bytes/sector
-#if defined(JAPAN) && defined(i386)
-         if (! ISNECPC98(gdwMachineId)) {
-#endif
          LoadString(hAppInstance, IDS_360KB, szTitle, COUNTOF(szTitle));
          SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_INSERTSTRING, index, (LPARAM)szTitle);
          SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_SETITEMDATA, index++, MAKELONG(FmMediaF5_360_512,0));
-#if defined(JAPAN) && defined(i386)
-         }
-#endif
          break;
 
       case FmMediaF5_320_512:      // 5.25", 320KB,  512 bytes/sector
@@ -149,84 +143,6 @@ FillDriveCapacity(HWND hDlg, INT nDrive, FMIFS_MEDIA_TYPE fmSelect, BOOL fDoPopu
          SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_INSERTSTRING, index, (LPARAM)szTitle);
          SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_SETITEMDATA, index++, MAKELONG(FmMediaF3_20Pt8_512,0));
          break;
-
-#if defined(JAPAN) && defined(i386)
-      //
-      // FMR jul.21.1994 JY
-      // add 5.25" 1.23MB media type
-      //
-      case FmMediaF5_1Pt23_1024:    // 5.25",  1.23MB, 1024 bytes/sector
-         if (ISNECPC98(gdwMachineId))
-             LoadString(hAppInstance, IDS_125MB, szTemp, COUNTOF(szTemp));
-         else
-             LoadString(hAppInstance, IDS_123MB, szTemp, COUNTOF(szTemp));
-         wsprintf(szTitle, szTemp, szDecimal);
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_INSERTSTRING, index, (LPARAM)szTitle);
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_SETITEMDATA, index++, MAKELONG(FmMediaF5_1Pt23_1024,0));
-         break;
-
-      //
-      // add 3.5" 1.23MB media type
-      //
-      case FmMediaF3_1Pt23_1024:    // 3.5",  1.23MB, 1024 bytes/sector
-         if (ISNECPC98(gdwMachineId))
-             LoadString(hAppInstance, IDS_125MB, szTemp, COUNTOF(szTemp));
-         else
-             LoadString(hAppInstance, IDS_123MB, szTemp, COUNTOF(szTemp));
-         wsprintf(szTitle, szTemp, szDecimal);
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_INSERTSTRING, index, (LPARAM)szTitle);
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_SETITEMDATA, index++, MAKELONG(FmMediaF3_1Pt23_1024,0));
-         break;
-
-      //
-      // add 3.5" 1.2MB media type
-      //
-      case FmMediaF3_1Pt2_512:     // 3.5", 1.2MB,  512 bytes/sector
-         LoadString(hAppInstance, IDS_12MB, szTemp, COUNTOF(szTemp));
-         wsprintf(szTitle, szTemp, szDecimal);
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_INSERTSTRING, index, (LPARAM)szTitle);
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_SETITEMDATA, index++, MAKELONG(FmMediaF3_1Pt2_512,0));
-         break;
-
-      //
-      // add 5.25" 640KB media type
-      //
-      case FmMediaF5_640_512:      // 5.25", 640KB,  512 bytes/sector
-         LoadString(hAppInstance, IDS_640KB, szTitle, COUNTOF(szTitle));
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_INSERTSTRING, index, (LPARAM)szTitle);
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_SETITEMDATA, index++, MAKELONG(FmMediaF5_640_512,0));
-         break;
-
-      //
-      // add 3.5" 640KB media type
-      //
-      case FmMediaF3_640_512:      // 3.5", 640KB,  512 bytes/sector
-         LoadString(hAppInstance, IDS_640KB, szTitle, COUNTOF(szTitle));
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_INSERTSTRING, index, (LPARAM)szTitle);
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_SETITEMDATA, index++, MAKELONG(FmMediaF3_640_512,0));
-         break;
-
-      //
-      // FMR jul.21.1994 JY
-      // add 5.25" 720KB media type
-      //
-      case FmMediaF5_720_512:      // 5.25",  720KB,  512 bytes/sector
-         LoadString(hAppInstance, IDS_720KB, szTitle, COUNTOF(szTitle));
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_INSERTSTRING, index, (LPARAM)szTitle);
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_SETITEMDATA, index++, MAKELONG(FmMediaF5_720_512,0));
-         break;
-
-/* ADD KBNES. NEC MEDIATYPE START */
-      case FmMediaF8_256_128:      // 8"1s , 256KB,  128 bytes/sector
-         break;
-
-      case FmMediaF3_128Mb_512:    // 3.5" , 128MB,  512 bytes/sector  3.5"MO
-         LoadString(hAppInstance, IDS_128MB, szTitle, COUNTOF(szTitle));
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_INSERTSTRING, index, (LPARAM)szTitle);
-         SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_SETITEMDATA, index++, MAKELONG(FmMediaF3_128Mb_512,0));
-         break;
-/* ADD KBNES. NEC MEDIATYPE END */
-#endif
 
       default:
          break;
@@ -581,10 +497,6 @@ ProgressDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
       // The dialog title defaults to "Moving..."
       if (pCopyInfo->dwFunc == FUNC_COPY) {
 
-         if (bJAPAN) {
-            // Use "Copying..." instead of "Moving..."
-            SetDlgItemText(hdlgProgress, IDD_TOSTATUS, szNULL);
-         }
          LoadString(hAppInstance,
                     IDS_COPYINGTITLE,
                     szTitle,

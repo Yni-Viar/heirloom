@@ -51,10 +51,6 @@ WinMain(
 #endif
    pszCmdLine = GetCommandLine();
 
-#if defined(JAPAN) && defined(i386)
-   RegGetMachineIdentifierValue( &gdwMachineId );
-#endif // defined(JAPAN) && defined(i386)
-
    if (!InitFileManager(hInst, pszNextComponent(pszCmdLine), nCmdShow)) {
       FreeFileManager();
       return FALSE;
@@ -632,25 +628,11 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
             nInch = GetDeviceCaps(hDC, LOGPIXELSX);
             ReleaseDC(NULL, hDC);
 
-            // use the smaller font for Status bar so that messages fix in it.
-            if (bJAPAN)
-            {
-               nParts[0] = nInch * 8 / 4 + (nInch * 7 / 8);
-               nParts[1] = nParts[0] + nInch * 11 / 4 + nInch * 7 / 8;
-               nParts[2] = -1;
+            nParts[0] = nInch * 9 / 4 + (nInch * 7 / 8);
+            nParts[1] = nParts[0] + nInch * 5 / 2 + nInch * 7 / 8;
+            nParts[2] = -1;
 
-               SendMessage(hwndStatus, SB_SETPARTS, 3, (LPARAM)(LPINT)nParts);
-
-               SendMessage(hwndStatus, WM_SETFONT, (WPARAM)hFontStatus, 0L);
-            }
-            else
-            {
-               nParts[0] = nInch * 9 / 4 + (nInch * 7 / 8);
-               nParts[1] = nParts[0] + nInch * 5 / 2 + nInch * 7 / 8;
-               nParts[2] = -1;
-
-               SendMessage(hwndStatus, SB_SETPARTS, 3, (LPARAM)(LPINT)nParts);
-            }
+            SendMessage(hwndStatus, SB_SETPARTS, 3, (LPARAM)(LPINT)nParts);
          }
          break;
       }

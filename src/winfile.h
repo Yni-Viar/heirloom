@@ -40,9 +40,6 @@
 #ifdef HEAPCHECK
 #include "heap.h"
 #endif
-//
-// Japan markers:
-//
 
 #define STKCHK()
 
@@ -1145,11 +1142,6 @@ Extern BOOL    bNetShareLoad              EQ( FALSE );
 Extern BOOL    bNetDone                   EQ( FALSE );
 Extern BOOL    bNetAcleditDone            EQ( FALSE );
 
-#if defined(JAPAN) && defined(i386) // cf. DBCS
-#include "machine.h"
-Extern DWORD   gdwMachineId               EQ( MACHINEID_MICROSOFT );
-#endif // defined(JAPAN) && defined(JAPAN)
-
 //----------------------------
 //
 //  aDriveInfo support
@@ -1175,10 +1167,6 @@ Extern PPDOCBUCKET ppProgBucket;
 Extern CRITICAL_SECTION CriticalSectionPath;
 
 Extern LCID   lcid;
-
-JAPANBEGIN
-Extern BOOL   bJapan      EQ( FALSE );
-JAPANEND
 
 Extern BOOL bMinOnRun            EQ( FALSE );
 Extern BOOL bIndexOnLaunch       EQ( TRUE );
@@ -1255,9 +1243,7 @@ Extern TCHAR        szSize[]                EQ( TEXT("Size") );
 Extern TCHAR        szLowerCase[]           EQ( TEXT("LowerCase") );
 Extern TCHAR        szFaceWeight[]          EQ( TEXT("FaceWeight") );
 
-JAPANBEGIN
 Extern TCHAR        szSaveCharset[]         EQ( TEXT("Charset") );
-JAPANEND
 
 Extern TCHAR        szAddons[]              EQ( TEXT("AddOns") );
 

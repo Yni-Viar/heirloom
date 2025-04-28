@@ -413,13 +413,6 @@ UINT_PTR
 CALLBACK
 FontHookProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 {
-KOREAJAPANBEGIN
-   // Steal from PBrush source to remove @font in the list - SangilJ
-   TCHAR str[LF_FULLFACESIZE], sel[LF_FULLFACESIZE];
-   INT index;
-   INT cnt;
-KOREAJAPANEND
-
    UNREFERENCED_PARAMETER(lParam);
 
    switch (wMsg) {
@@ -427,23 +420,6 @@ KOREAJAPANEND
 
       // Delete the Vertical Font Face Name in Font Dialog Box of File Manager  by Sabgilj 01.14.93
 
-      if (bKOREAJAPAN) {
-
-         cnt = (INT)SendDlgItemMessage(hDlg, cmb1, CB_GETCOUNT, 0, 0L);
-         index = (INT)SendDlgItemMessage(hDlg, cmb1, CB_GETCURSEL, 0, 0L);
-         SendDlgItemMessage(hDlg, cmb1, CB_GETLBTEXT, index, (LPARAM)sel);
-
-         for (index = 0 ; index < cnt ; ) {
-            SendDlgItemMessage( hDlg, cmb1, CB_GETLBTEXT, index, (LPARAM)str);
-            if (str[0] == TEXT('@'))
-               cnt = (INT)SendDlgItemMessage(hDlg,cmb1,CB_DELETESTRING,index,0L);
-            else
-               index++;
-         }
-         index = (INT)SendDlgItemMessage(hDlg, cmb1, CB_FINDSTRING, (WPARAM)-1, (LPARAM)sel);
-         SendDlgItemMessage(hDlg, cmb1, CB_SETCURSEL, index, 0L);
-
-      }
       CheckDlgButton(hDlg, chx3, wTextAttribs & TA_LOWERCASE);
 
       CheckDlgButton(hDlg, chx4, wTextAttribs & TA_LOWERCASEALL);
@@ -501,18 +477,6 @@ NewFont()
    // that we can get default size on system, we may haven't got real font
    // height yet. mskk.
    //
-   if (bJAPAN && lf.lfHeight == 0) {
-      TEXTMETRIC tm;
-
-      hdc = GetDC(NULL);
-      hOld = SelectObject(hdc, hFont);
-      GetTextMetrics(hdc,&tm);
-      if (hOld)
-         SelectObject(hdc, hOld);
-      ReleaseDC(NULL, hdc);
-      lf.lfHeight = -(tm.tmHeight-tm.tmInternalLeading);
-   }
-
    uOld = (UINT)abs(lf.lfHeight);
 
    cf.lStructSize    = sizeof(cf);
@@ -524,14 +488,10 @@ NewFont()
    cf.nSizeMin       = 4;
    cf.nSizeMax       = 36;
 
-   cf.Flags          = bJAPAN ?
-                          CF_SCREENFONTS | CF_SHOWHELP |
-                             CF_ENABLEHOOK | CF_ENABLETEMPLATE |
-                             CF_INITTOLOGFONTSTRUCT | CF_LIMITSIZE :
-                          CF_SCREENFONTS | CF_SHOWHELP |
-                             CF_ENABLEHOOK | CF_ENABLETEMPLATE |
-                             CF_INITTOLOGFONTSTRUCT | CF_LIMITSIZE |
-                             CF_ANSIONLY;
+   cf.Flags          = CF_SCREENFONTS | CF_SHOWHELP |
+                       CF_ENABLEHOOK | CF_ENABLETEMPLATE |
+                       CF_INITTOLOGFONTSTRUCT | CF_LIMITSIZE |
+                       CF_ANSIONLY;
 
    if (!LoadComdlg()) {
       return;
@@ -557,9 +517,6 @@ NewFont()
    WritePrivateProfileString(szSettings, szSize, szBuf, szTheINIFile);
    WritePrivateProfileBool(szLowerCase, wTextAttribs);
    WritePrivateProfileBool(szFaceWeight, lf.lfWeight);
-
-   if (bJAPAN)
-      WritePrivateProfileBool(szSaveCharset, lf.lfCharSet);
 
    hOldFont = hFont;
 

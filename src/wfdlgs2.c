@@ -430,9 +430,7 @@ SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
    TCHAR  szTo[2*MAXPATHLEN];
    static BOOL   bTreeHasFocus;
 
-JAPANBEGIN
    TCHAR         szStr[256];
-JAPANEND
 
    static PCOPYINFO pCopyInfo;
 

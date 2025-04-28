@@ -233,9 +233,7 @@ GetSettings()
 
    GetPrivateProfileString(szSettings,
                            szSize,
-                           bJAPAN ?
-                              TEXT("14") :
-                              TEXT("9"),
+                           TEXT("9"),
                            szTemp,
                            COUNTOF(szTemp),
                            szTheINIFile);
@@ -250,12 +248,7 @@ GetSettings()
                            szTheINIFile);
 
 
-   bfCharset = bJAPAN ?
-                  GetPrivateProfileInt(szSettings,
-                                       szSaveCharset,
-                                       SHIFTJIS_CHARSET,
-                                       szTheINIFile) :
-                  ANSI_CHARSET;
+   bfCharset = ANSI_CHARSET;
 
    hFont = CreateFont(size,
                       0, 0, 0, weight,
@@ -1101,10 +1094,6 @@ InitFileManager(
 
    lcid = GetThreadLocale();
 
-JAPANBEGIN
-   bJapan = (PRIMARYLANGID(LANGIDFROMLCID(lcid)) == LANG_JAPANESE);
-JAPANEND
-
    //
    // Constructors for info system.
    // Must always do since these never fail and we don't test for
@@ -1230,29 +1219,13 @@ JAPANEND
                                0, 400, 0,
                                0,
                                0,
-                               bJAPAN ?
-                                 SHIFTJIS_CHARSET :
-                                 ANSI_CHARSET,
+                               ANSI_CHARSET,
                                OUT_DEFAULT_PRECIS,
                                CLIP_DEFAULT_PRECIS,
                                DEFAULT_QUALITY,
                                VARIABLE_PITCH | FF_SWISS,
                                szTemp);
 
-    // use the smaller font for Status bar so that messages fix in it.
-   if( bJAPAN) {
-       hFontStatus = CreateFont(GetHeightFromPointsString(TEXT("10")),
-                               0, 0,
-                               0, 400, 0,
-                               0,
-                               0,
-                               SHIFTJIS_CHARSET,
-                               OUT_DEFAULT_PRECIS,
-                               CLIP_DEFAULT_PRECIS,
-                               DEFAULT_QUALITY,
-                               VARIABLE_PITCH,
-                               szHelv );
-    }
    ReleaseDC(NULL, hdcScreen);
 
    /* Load the accelerator table. */
@@ -1718,12 +1691,6 @@ FreeFileManager()
 
    if (hfontDriveList)
       DeleteObject(hfontDriveList);
-
-    // use the smaller font for Status bar so that messages fix in it.
-    if( bJAPAN ) {
-        if (hFontStatus)
-            DeleteObject(hFontStatus);
-    }
 
    //
    // Free the fmifs junk

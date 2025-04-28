@@ -1811,19 +1811,7 @@ CreateTime(
      *  Need to subtract one from the return from GetTimeFormatW
      *  to exclude the null terminator.
      */
-    return ( (bJapan) ? ( GetTimeFormatW( lcid,
-                                          TIME_FORCE24HOURFORMAT | TIME_NOTIMEMARKER,
-                                          lpst,
-                                          NULL,
-                                          szOutStr,
-                                          MAXPATHLEN ) - 1 )
-                      : ( GetTimeFormatW( lcid,
-                                          0,
-                                          lpst,
-                                          NULL,
-                                          szOutStr,
-                                          MAXPATHLEN ) - 1 ) );
-
+    return GetTimeFormatW( lcid, 0, lpst, NULL, szOutStr, MAXPATHLEN ) - 1;
 }
 
 

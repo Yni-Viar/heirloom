@@ -10,15 +10,3 @@
 **************************************************************************/
 
 #include "resource.h"
-
-//
-// Japan markers:
-//
-
-#define JAPANBEGIN
-#define JAPANEND
-#define KOREAJAPANBEGIN
-#define KOREAJAPANEND
-
-#define bJAPAN bJapan
-#define bKOREAJAPAN bJapan
