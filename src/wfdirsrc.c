@@ -1252,20 +1252,6 @@ DirMoveCopy:
 
    DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
 
-   if (ret)
-      return TRUE;
-
-#if 0
-   if (!iShowSourceBitmaps)
-      SendMessage(lpds->hwndSource, WM_FSC, FSC_REFRESH, 0L);
-
-   //
-   // we got dropped on, but if this is a dir we don't need to refresh
-   //
-   if (!(dwAttrib & ATTR_DIR))
-      SendMessage(hwndHolder, WM_FSC, FSC_REFRESH, 0L);
-#endif
-
    return TRUE;
 }
 

@@ -1412,23 +1412,6 @@ Extern RtlSetProcessPlaceholderCompatibilityMode_t pfnRtlSetProcessPlaceholderCo
    Extern DWORD dwMenuIDs[];
 #endif
 
-#if 0
-Extern TCHAR szReplace[];
-Extern TCHAR szCurrentView[];
-Extern TCHAR szCurrentSort[];
-Extern TCHAR szCurrentAttribs[];
-Extern TCHAR szTreeKey[];
-Extern TCHAR szDated[];
-Extern TCHAR szWith[];
-
-Extern TCHAR szNTlanman[];
-Extern INT  cKids;
-Extern INT  dxBraces;
-Extern INT  dyTitle;
-
-Extern INT nCopyMaxQueue;
-#endif
-
 #undef Extern
 #undef EQ
 

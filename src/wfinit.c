@@ -1337,24 +1337,6 @@ InitFileManager(
       return FALSE;
    }
 
-#if 0
-   wndClass.lpszClassName  = szListbBox;
-   wndClass.style          = 0L;
-   wndClass.lpfnWndProc    = DirListBoxWndProc;
-// wndClass.cbClsExtra     = 0;
-   wndClass.cbWndExtra     = sizeof(LONG_PTR);
-
-// wndClass.hInstance      = hInstance;
-   wndClass.hIcon          = LoadIconForCurrentDPI(hInstance, (LPTSTR) MAKEINTRESOURCE(DIRICON));
-// wndClass.hCursor        = NULL;
-   wndClass.hbrBackground  = NULL;
-// wndClass.lpszMenuName   = NULL;
-
-   if ((atomDirListBox = RegisterClass(&wndClass)) == 0) {
-      return FALSE;
-   }
-#endif
-
    if (!ResizeDialogInitialize(hInstance)) {
       return FALSE;
    }

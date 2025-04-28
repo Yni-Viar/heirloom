@@ -25,15 +25,9 @@
 
 #define FILETYPEBLOCK MAX_PATH
 
-
-#if 0
-#define odf(x,y) {TCHAR szT[100]; wsprintf(szT,x,y); OutputDebugString(szT);}
-#else
 #undef OutputDebugString
 #define OutputDebugString(x)
 #define odf(x,y)
-#endif
-
 // structures
 
 typedef struct _DDE_INFO {
@@ -482,24 +476,6 @@ AssociateDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
    case WM_COMMAND:
       switch (GET_WM_COMMAND_ID(wParam, lParam)) {
 
-#if 0
-      case IDD_COMMAND:
-
-         //
-         // The winball compatibility "sorta a file type definer" control
-         //
-
-         if (GET_WM_COMMAND_CMD(wParam, lParam) == EN_CHANGE) {
-
-            //
-            // Search for matching pFileType
-            //
-
-//          while();;xxxxx
-
-         }
-         break;
-#endif
       case IDD_HELP:
          goto DoHelp;
 

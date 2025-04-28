@@ -276,14 +276,6 @@ ComparePath(PDNODE p1, PDNODE p2)
          // parents are equal
 
          ret = lstrcmpi(p1->szName, p2->szName);
-#if 0
-         {
-            TCHAR buf[200];
-            wsprintf(buf, TEXT("Compare(%s, %s) -> %d\r\n"), p1->szName, p2->szName, ret);
-            OutputDebugString(buf);
-         }
-#endif
-
       }
 
       // not equal parents, propagate up the call tree
@@ -2014,20 +2006,6 @@ ExpandLevel(HWND hWnd, WPARAM wParam, INT nIndex, LPTSTR szPath)
   }
 
   GetTreePath(pNode, szPath);
-
-#if 0
-
-  //
-  // GetTreePath already does this.
-  //
-  StripBackslash(szPath);   // remove the slash
-
-  //
-  // This doesn't do us any good.
-  //
-  if (!szPath[3])       // and any slashes on root dirs
-      szPath[2] = CHAR_NULL;
-#endif
 
   cNodes = 0;
   bCancelTree = FALSE;

@@ -735,18 +735,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
          RedoDriveWindows(NULL);
       }
 
-#if 0
-      //
-      // Check if the user's environment variables have changed, if so
-      // regenerate the environment, so that new apps started from
-      // taskman will have the latest environment.
-      //
-      if (lParam && (!lstrcmpi((LPTSTR)lParam, TEXT("Environment")))) {
-         PVOID pEnv;
-
-         RegenerateUserEnvironment(&pEnv, TRUE);
-      }
-#endif
       break;
 
    case FM_GETFOCUS:

@@ -873,10 +873,6 @@ ReplaceDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
          id = GET_WM_COMMAND_ID(wParam, lParam);
          switch (id) {
-#if 0
-         case IDD_HELP:
-            goto DoHelp;
-#endif
          case IDD_FLAGS:
             break;
 
@@ -1085,138 +1081,6 @@ GetNextCleanup(PCOPYROOT pcr)
    }
 }
 
-
-#if 0
-
-/* GetNameDialog
- *
- *  Runs the dialog box to prompt the user for a new filename when copying
- *  or moving from HPFS to FAT.
- */
-
-DWORD GetNameDialog(DWORD, LPTSTR, LPTSTR);
-BOOL  GetNameDlgProc(HWND,UINT,WPARAM,LONG);
-
-LPTSTR pszDialogFrom;
-LPTSTR pszDialogTo;
-
-BOOL
-GetNameDlgProc(
-   HWND hwnd,
-   UINT wMsg,
-   WPARAM wParam,
-   LPARAM lParam)
-{
-    TCHAR szT[14];
-    LPTSTR p;
-    INT i, j, cMax, fDot;
-
-    UNREFERENCED_PARAMETER(lParam);
-
-    switch (wMsg)
-      {
-    case WM_INITDIALOG:
-        // inform the user of the old name
-        SetDlgItemText(hwnd, IDD_FROM, pszDialogFrom);
-
-        // generate a guess for the new name
-    p = FindFileName(pszDialogFrom);
-        for (i = j = fDot = 0, cMax = 8; *p; p++)
-          {
-            if (*p == CHAR_DOT)
-              {
-                // if there was a previous dot, step back to it
-                // this way, we get the last extension
-                if (fDot)
-                    i -= j+1;
-
-                // set number of chars to 0, put the dot in
-                j = 0;
-                szT[i++] = CHAR_DOT;
-
-                // remember we saw a dot and set max 3 chars.
-                fDot = TRUE;
-                cMax = 3;
-              }
-            else if (j < cMax && IsValidChar(*p,FALSE, FALSE))
-              {
-                j++;
-                szT[i++] = *p;
-              }
-          }
-        szT[i] = CHAR_NULL;
-        SetDlgItemText(hwnd, IDD_TO, szT);
-        SendDlgItemMessage(hwnd,IDD_TO,EM_LIMITTEXT,COUNTOF(szT) - 1, 0L);
-
-        // directory the file will go into
-        RemoveLast(pszDialogTo);
-        SetDlgItemText(hwnd, IDD_DIR, pszDialogTo);
-        break;
-
-    case WM_COMMAND:
-        switch (GET_WM_COMMAND_ID(wParam, lParam)) {
-        case IDOK:
-            GetDlgItemText(hwnd,IDD_TO,szT,COUNTOF(szT));
-            AppendToPath(pszDialogTo,szT);
-            QualifyPath(pszDialogTo);
-            EndDialog(hwnd,IDOK);
-            break;
-
-        case IDCANCEL:
-            EndDialog(hwnd,IDCANCEL);
-            break;
-
-        case IDD_HELP:
-            goto DoHelp;
-
-        case IDD_TO:
-            GetDlgItemText(hwnd,IDD_TO,szT,COUNTOF(szT));
-            for (p = szT; *p; p++)
-              {
-                if (!IsValidChar(*p,FALSE, FALSE))
-                    break;
-              }
-
-            EnableWindow(GetDlgItem(hwnd,IDOK),((!*p) && (p != szT)));
-            break;
-
-        default:
-            return FALSE;
-          }
-        break;
-
-    default:
-        if (wMsg == wHelpMessage)
-          {
-DoHelp:
-            return TRUE;
-          }
-        return FALSE;
-      }
-
-    return TRUE;
-}
-
-DWORD
-GetNameDialog(DWORD dwOp, LPTSTR pFrom, LPTSTR pTo)
-{
-   DWORD dwRet = (DWORD)-1;
-   DWORD dwSave;
-
-   dwSave = dwContext;
-   dwContext = IDH_DLG_LFNTOFATDLG;
-
-   pszDialogFrom = pFrom;
-   pszDialogTo = pTo;
-
-   dwRet = (DWORD)DialogBox(hAppInstance, (LPTSTR) MAKEINTRESOURCE(LFNTOFATDLG),
-      hdlgProgress, GetNameDlgProc);
-
-   dwContext = dwSave;
-   return dwRet;
-}
-
-#endif
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1644,22 +1508,7 @@ ReturnPair:
             }
 
          } else {
-#if 0
-            // This has been turned off since
-            // it's a strange feature for HPFS only
-
-            if (GetNameDialog(dwOp, pFrom, pToPath) != IDOK)
-               return 0;   // User cancelled the operation, return failure
-
-            // Update the "to" path with the FAT name chosen by the user.
-
-            if (dwOp == OPER_MKDIR) {
-               RemoveLast(pcr->szDest);
-               AppendToPath(pcr->szDest, FindFileName(pToPath));
-            }
-#else
-         goto MergeNames;
-#endif
+            goto MergeNames;
          }
       } else {
 

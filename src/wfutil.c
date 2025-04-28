@@ -818,39 +818,6 @@ IsCDRomDrive(DRIVE drive)
 }
 
 
-#if 0
-// this is called for every drive at init time so it must
-// be sure to not trigger things like the phantom B: drive support
-//
-// drive is a zero based drive number (0 = A, 1 = B)
-
-DWORD
-IsNetDrive(INT drive)
-{
-   INT err;
-
-   if (IsCDRomDrive(drive))   // this is bogus...  move this out
-      return 0;
-
-   if (IsRemoteDrive(drive)) {
-
-      err = WFGetConnection(drive, NULL, TRUE, ALTNAME_REG);
-
-      if (err == WN_SUCCESS)
-         return 1;
-
-      if (err == WN_CONNECTION_CLOSED /* || err == 111 */)
-         return 2;
-
-      //
-      // For now default on error to an available drive
-      //
-      return 1;
-   }
-   return 0;
-}
-#endif
-
 BOOL
 IsNTFSDrive(DRIVE drive)
 {
@@ -1515,13 +1482,6 @@ ExecProgram(LPTSTR lpPath, LPTSTR lpParms, LPTSTR lpDir, BOOL bLoadIt, BOOL bRun
 
 EPExit:
   i = ShowCursor(FALSE);
-
-#if 0
-
-  /* Make sure that the cursor count is still balanced. */
-  if (i != iCurCount)
-      ShowCursor(TRUE);
-#endif
 
   SetCursor(hCursor);
 
