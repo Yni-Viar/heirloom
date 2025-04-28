@@ -448,7 +448,7 @@ NewFont()
    cf.nSizeMin       = 4;
    cf.nSizeMax       = 36;
 
-   cf.Flags          = CF_SCREENFONTS | CF_SHOWHELP |
+   cf.Flags          = CF_SCREENFONTS |
                        CF_INITTOLOGFONTSTRUCT |
                        CF_LIMITSIZE | CF_ANSIONLY;
 
