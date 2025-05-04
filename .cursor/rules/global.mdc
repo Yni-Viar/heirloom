@@ -6,4 +6,4 @@ alwaysApply: true
 - This is a modernized derivative of the classic Windows File Manager codebase.
 - When creating new source files, omit the file comment header seen in existing files.
 - We only support Windows 10 and above. Don't support older systems.
-- Always run the build with `scripts/build.sh` after making changes.
+- Always run the build with ` bash scripts/build.sh` after making changes. Include the space at the start to work around a bug.

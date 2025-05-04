@@ -152,6 +152,7 @@
     <ClInclude Include="wfdocb.h" />
     <ClInclude Include="wfdpi.h" />
     <ClInclude Include="wfdrop.h" />
+    <ClInclude Include="wfdragsrc.h" />
     <ClInclude Include="wfext.h" />
     <ClInclude Include="wfexti.h" />
     <ClInclude Include="wfgwl.h" />
@@ -199,6 +200,7 @@
     <ClCompile Include="wfdpi.cpp" />
     <ClCompile Include="wfdrives.cpp" />
     <ClCompile Include="wfdrop.cpp" />
+    <ClCompile Include="wfdragsrc.cpp" />
     <ClCompile Include="wfext.cpp" />
     <ClCompile Include="wffile.cpp" />
     <ClCompile Include="wfgoto.cpp" />

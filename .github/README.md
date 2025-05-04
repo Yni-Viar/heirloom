@@ -2,10 +2,15 @@
 
 <p align="center"><img src="screenshot.png" width=590></p>
 
-This fork of [microsoft/winfile](https://github.com/microsoft/winfile) changes the following:
+A simple app for browsing, organizing, and manipulating files.
+It doesn't try to replace the modern File Explorer but offers a faster alternative for basic tasks.
 
-- High-DPI support.
-- Removed features that are irrelevant in the modern world.
+This derivative of the [classic Windows File Manager (microsoft/winfile)](https://github.com/microsoft/winfile) adds the following features:
+
+- High-DPI screen support
+- Drag-and-drop from File Manager into external applications
+
+It also removes old features that are irrelevant today.
 
 ## License
 

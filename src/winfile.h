@@ -28,6 +28,7 @@
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <strsafe.h>
+#include <ole2.h>  // Add explicit OLE header for drag-drop interfaces
 #include "suggest.h"
 #include "numfmt.h"
 

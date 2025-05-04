@@ -16,6 +16,10 @@
 #include <commctrl.h>
 
 #include "wfdrop.h"
+#include "wfdragsrc.h"
+
+// Constants for selection types passed to DirGetSelection
+#define SELECTION_ANY 0  // Return all selected files
 
 WCHAR szAttr[] = L"RHSACE";
 
@@ -330,12 +334,86 @@ VOID CreateLBLine(DWORD dwLineFormat, LPXDTA lpxdta, LPWSTR szBuffer) {
 }
 
 LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
+    static BOOL fDragging = FALSE;
+    static POINT ptOrigin;
+    static HWND hwndParent = NULL;
+
     switch (wMsg) {
+        case WM_LBUTTONDOWN: {
+            // Save the starting point for potential drag operation
+            ptOrigin.x = GET_X_LPARAM(lParam);
+            ptOrigin.y = GET_Y_LPARAM(lParam);
+            hwndParent = GetParent(hWnd);
+            fDragging = TRUE;
+
+            // Set capture to ensure we get mouse movement even if outside the window
+            SetCapture(hWnd);
+            break;
+        }
+
+        case WM_MOUSEMOVE: {
+            if (fDragging && (wParam & MK_LBUTTON)) {
+                POINT pt;
+                POINT ptScreen;
+                INT dx, dy;
+
+                // Get current mouse position
+                pt.x = GET_X_LPARAM(lParam);
+                pt.y = GET_Y_LPARAM(lParam);
+
+                // Calculate distance moved
+                dx = pt.x - ptOrigin.x;
+                dy = pt.y - ptOrigin.y;
+
+                // Only start drag after moved a certain distance
+                if ((abs(dx) > GetSystemMetrics(SM_CXDRAG)) || (abs(dy) > GetSystemMetrics(SM_CYDRAG))) {
+                    INT iSelType = SELECTION_ANY;  // Get any selected files
+                    BOOL fIsDir = FALSE;
+                    LPWSTR pszFiles;
+
+                    // Get the selected files
+                    pszFiles = DirGetSelection(hwndParent, hwndParent, hWnd, iSelType, &fIsDir, NULL);
+
+                    if (pszFiles && *pszFiles) {
+                        DWORD dwEffect = DROPEFFECT_COPY | DROPEFFECT_MOVE;
+                        ptScreen = pt;
+                        ClientToScreen(hWnd, &ptScreen);
+
+                        // Cancel dragging flag to avoid re-entry
+                        fDragging = FALSE;
+
+                        // Release capture - OLE drag and drop will take over
+                        ReleaseCapture();
+
+                        // Call our custom DoDragDrop function
+                        HRESULT hr = WFDoDragDrop(hWnd, pszFiles, ptScreen, &dwEffect);
+
+                        // Free the file list
+                        LocalFree((HLOCAL)pszFiles);
+
+                        return 0;
+                    }
+                }
+            }
+            break;
+        }
+
+        case WM_LBTRACKPOINT:
+            // Don't pass this message to the old window proc
+            // This prevents the old drag and drop system from activating
+            return 0;
+
+        case WM_LBUTTONUP:
+            fDragging = FALSE;
+            ReleaseCapture();
+            break;
+
         case WM_RBUTTONDOWN:
-            MessageBeep(1);
             break;
     }
-    return 0;
+
+    // Call the original window procedure
+    return CallWindowProc((WNDPROC)GetWindowLongPtr(hWnd, GWLP_USERDATA), hWnd, wMsg, wParam, lParam);
 }
 
 LRESULT
@@ -663,7 +741,8 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 return TRUE;
 
         case WM_LBTRACKPOINT:
-            return DSTrackPoint(hwnd, hwndLB, wParam, lParam, FALSE);
+            // Disable old style drag and drop
+            return FALSE;
 
         case WM_MEASUREITEM:
 
@@ -1225,6 +1304,10 @@ ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 lRetval = -1L;
                 goto Done;
             }
+
+            // Subclass the list box to handle drag and drop
+            WNDPROC lpfnOldProc = (WNDPROC)SetWindowLongPtr(hwndLB, GWLP_WNDPROC, (LONG_PTR)DirListBoxWndProc);
+            SetWindowLongPtr(hwndLB, GWLP_USERDATA, (LONG_PTR)lpfnOldProc);
 
             if (!dwNewAttribs)
                 dwNewAttribs = ATTR_DEFAULT;

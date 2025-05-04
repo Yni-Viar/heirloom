@@ -13,30 +13,61 @@
 #define WFDROP_INC
 #include <ole2.h>
 
-// data object:
+// Data object:
 
 class WF_IDataObject : public IDataObject {
    public:
-    int ref_count;
+    WF_IDataObject();
+    virtual ~WF_IDataObject();
+
+    // IUnknown methods
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override;
+    ULONG STDMETHODCALLTYPE AddRef() override;
+    ULONG STDMETHODCALLTYPE Release() override;
+
+    // IDataObject methods
+    HRESULT STDMETHODCALLTYPE GetData(FORMATETC* pFormatEtc, STGMEDIUM* pMedium) override;
+    HRESULT STDMETHODCALLTYPE GetDataHere(FORMATETC* pFormatEtc, STGMEDIUM* pMedium) override;
+    HRESULT STDMETHODCALLTYPE QueryGetData(FORMATETC* pFormatEtc) override;
+    HRESULT STDMETHODCALLTYPE GetCanonicalFormatEtc(FORMATETC* pFormatEtcIn, FORMATETC* pFormatEtcOut) override;
+    HRESULT STDMETHODCALLTYPE SetData(FORMATETC* pFormatEtc, STGMEDIUM* pMedium, BOOL fRelease) override;
+    HRESULT STDMETHODCALLTYPE EnumFormatEtc(DWORD dwDirection, IEnumFORMATETC** ppEnumFormatEtc) override;
+    HRESULT STDMETHODCALLTYPE
+    DAdvise(FORMATETC* pFormatEtc, DWORD advf, IAdviseSink* pAdvSink, DWORD* pdwConnection) override;
+    HRESULT STDMETHODCALLTYPE DUnadvise(DWORD dwConnection) override;
+    HRESULT STDMETHODCALLTYPE EnumDAdvise(IEnumSTATDATA** ppEnumAdvise) override;
+
+    // Helper methods
+    HRESULT AddFormatEtc(FORMATETC* pFormatEtc, STGMEDIUM* pMedium, BOOL fRelease);
+    LONG IndexOfFormat(FORMATETC* pFormatEtc);
+    HRESULT CopyMedium(STGMEDIUM* pMedDest, STGMEDIUM* pMedSrc, FORMATETC* pFmtSrc);
+
+    LONG m_lRefCount;
     FORMATETC* m_pFormatEtc;
     STGMEDIUM* m_pStgMedium;
     LONG m_nNumFormats;
-    LONG m_lRefCount;
 };
 
 class WF_IEnumFORMATETC : public IEnumFORMATETC {
    public:
-    int ref_count;
-    int ix;
-    LONG m_lRefCount;     // Reference count for this COM interface
-    ULONG m_nIndex;       // current enumerator index
-    ULONG m_nNumFormats;  // number of FORMATETC members
-    FORMATETC* m_pFormatEtc;
-};
+    WF_IEnumFORMATETC();
+    virtual ~WF_IEnumFORMATETC();
 
-class WF_IDropSource : public IDropSource {
-   public:
+    // IUnknown methods
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override;
+    ULONG STDMETHODCALLTYPE AddRef() override;
+    ULONG STDMETHODCALLTYPE Release() override;
+
+    // IEnumFORMATETC methods
+    HRESULT STDMETHODCALLTYPE Next(ULONG celt, FORMATETC* rgelt, ULONG* pceltFetched) override;
+    HRESULT STDMETHODCALLTYPE Skip(ULONG celt) override;
+    HRESULT STDMETHODCALLTYPE Reset() override;
+    HRESULT STDMETHODCALLTYPE Clone(IEnumFORMATETC** ppEnum) override;
+
     LONG m_lRefCount;
+    ULONG m_nIndex;
+    ULONG m_nNumFormats;
+    FORMATETC* m_pFormatEtc;
 };
 
 class WF_IDropTarget : public IDropTarget {
