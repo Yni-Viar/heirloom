@@ -1,6 +1,5 @@
 # CRLF
 .clang-format text eol=crlf
-.git-blame-ignore-revs text eol=crlf
 .gitattributes text eol=crlf
 .gitignore text eol=crlf
 *.cpp linguist-language=C++ text eol=crlf
@@ -16,6 +15,7 @@
 LICENSE text eol=crlf
 
 # LF
+.git-blame-ignore-revs text eol=lf
 *.mdc text eol=lf
 *.yaml text eol=lf
 *.sh text eol=lf
