@@ -1,0 +1,10 @@
+*.cpp linguist-language=C++ text eol=crlf
+*.h linguist-language=C++ text eol=crlf
+*.sln text eol=crlf
+*.vcxproj text eol=crlf
+*.txt text eol=crlf
+*.manifest text eol=crlf
+*.vcxproj.filters text eol=crlf
+*.md text eol=crlf
+.gitattributes text eol=crlf
+.gitignore text eol=crlf
