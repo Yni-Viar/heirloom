@@ -1,6 +1,6 @@
 <h1 align="center"><img src="icon.png" width=64><br>File Manager</h1>
 
-<p align="center"><img src="screenshot.png" width=590></p>
+<p align="center"><img src="screenshot.png" width=588></p>
 
 A simple app for browsing, organizing, and manipulating files.
 It doesn't try to replace the modern File Explorer but offers a faster alternative for basic tasks.
