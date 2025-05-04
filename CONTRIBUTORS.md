@@ -1,3 +1,9 @@
+# Getting started
+
+```
+git config --local blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
 # Editing dialogs
 We have `res_dummy.rc` which can be opened in Visual Studio, while `res.rc` doesn't open properly.
 Copy your dialog from `res.rc` into `res_dummy.rc`, edit it there, and copy it back.

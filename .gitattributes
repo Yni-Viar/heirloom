@@ -8,3 +8,4 @@
 *.md text eol=crlf
 .gitattributes text eol=crlf
 .gitignore text eol=crlf
+.git-blame-ignore-revs text eol=crlf
