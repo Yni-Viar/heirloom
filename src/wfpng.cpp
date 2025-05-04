@@ -136,27 +136,23 @@ static BOOL EnsureScaledForDpi(PNG_BITMAP* png, UINT dpiTarget) {
     if (!hbmDest)
         return FALSE;
 
-    // ----- stretch once into the new DIB -----
-    HDC hdcScreen = GetDC(NULL);
-    HDC hdcSrc = CreateCompatibleDC(hdcScreen);
-    HDC hdcDest = CreateCompatibleDC(hdcScreen);
-    HGDIOBJ hOldSrc = SelectObject(hdcSrc, png->hbmOrig);
-    HGDIOBJ hOldDest = SelectObject(hdcDest, hbmDest);
-
-    // Use HALFTONE for better quality scaling
-    SetStretchBltMode(hdcDest, HALFTONE);
-    SetBrushOrgEx(hdcDest, 0, 0, NULL);  // HALFTONE hint
-
-    // Use AlphaBlend instead of StretchBlt to preserve alpha channel
-    BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-    AlphaBlend(hdcDest, 0, 0, cxNew, cyNew, hdcSrc, 0, 0, png->origCX, png->origCY, bf);
-
-    // cleanup
-    SelectObject(hdcSrc, hOldSrc);
-    SelectObject(hdcDest, hOldDest);
-    DeleteDC(hdcSrc);
-    DeleteDC(hdcDest);
-    ReleaseDC(NULL, hdcScreen);
+    // ----- high quality WIC resample -----
+    IWICImagingFactory* wic = NULL;
+    IWICBitmap* pBitmap = NULL;
+    IWICBitmapScaler* pScaler = NULL;
+    if (SUCCEEDED(CoCreateInstance(
+            CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&wic)) &&
+        SUCCEEDED(wic->CreateBitmapFromHBITMAP(png->hbmOrig, NULL, WICBitmapUsePremultipliedAlpha, &pBitmap)) &&
+        SUCCEEDED(wic->CreateBitmapScaler(&pScaler)) &&
+        SUCCEEDED(pScaler->Initialize(pBitmap, cxNew, cyNew, WICBitmapInterpolationModeFant))) {
+        pScaler->CopyPixels(NULL, cxNew * 4, cyNew * cxNew * 4, (LPBYTE)pvBitsDest);
+    }
+    if (pScaler)
+        pScaler->Release();
+    if (pBitmap)
+        pBitmap->Release();
+    if (wic)
+        wic->Release();
 
     // commit
     png->hbmScaled = hbmDest;
