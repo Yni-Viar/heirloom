@@ -161,7 +161,7 @@ MemAdd(
       if (dwNewSize < lpLast->dwSize)
          dwNewSize = lpLast->dwSize;
 
-      lpLast->next = LocalAlloc(LMEM_FIXED, dwNewSize);
+      lpLast->next = (LPXDTALINK)LocalAlloc(LMEM_FIXED, dwNewSize);
 
       if (!lpLast->next)
          return NULL;
@@ -243,7 +243,7 @@ MemClone(LPXDTALINK lpStart)
 
       dwSize = LocalSize((HLOCAL)lpStart);
 
-      lpLink = LocalAlloc(LMEM_FIXED, dwSize);
+      lpLink = (LPXDTALINK)LocalAlloc(LMEM_FIXED, dwSize);
       if (!lpLink)
       {
          MemDelete(lpStartCopy);

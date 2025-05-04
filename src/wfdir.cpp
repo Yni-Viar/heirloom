@@ -2042,7 +2042,7 @@ GetMaxExtent(HWND hwndLB, LPXDTALINK lpLink, BOOL bNTFS)
       goto NoDTA;
 
    hdc = GetDC(hwndLB);
-   hOld = SelectObject(hdc, hFont);
+   hOld = (HFONT)SelectObject(hdc, hFont);
 
    for (dwItems = MemLinkToHead(lpLink)->dwEntries, lpxdta = MemFirst(lpLink);
         dwItems;
@@ -2162,7 +2162,7 @@ FixTabsAndThings(
       return i;
 
    hdc = GetDC(NULL);
-   hOld = SelectObject(hdc, hFont);
+   hOld = (HFONT)SelectObject(hdc, hFont);
 
    //
    //  Only if flag is set...

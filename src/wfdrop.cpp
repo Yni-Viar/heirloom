@@ -92,10 +92,10 @@ LPWSTR QuotedDropList(IDataObject *pDataObject)
 	FORMATETC fmtetc = { CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM stgmed;
 
-	if (pDataObject->lpVtbl->GetData(pDataObject, &fmtetc, &stgmed) == S_OK)
+	if (pDataObject->GetData(&fmtetc, &stgmed) == S_OK)
 	{
 		// Yippie! the data is there, so go get it!
-		hdrop = stgmed.hGlobal;
+		hdrop = (HDROP)stgmed.hGlobal;
 
 		cFiles = DragQueryFile(hdrop, 0xffffffff, NULL, 0);
 		cchFiles = 0;
@@ -174,7 +174,7 @@ HDROP CreateDropFiles(POINT pt, BOOL fNC, LPTSTR pszFiles)
 
 	GlobalUnlock(hDrop);
 
-	return hDrop;
+	return (HDROP)hDrop;
 }
 
 #define BLOCK_SIZE 512
@@ -197,7 +197,7 @@ static HRESULT StreamToFile(IStream *stream, TCHAR *szFile)
 
     if (hFile != INVALID_HANDLE_VALUE) {
         do {
-            hr = stream->lpVtbl->Read(stream, buffer, BLOCK_SIZE, &bytes_read);
+            hr = stream->Read(buffer, BLOCK_SIZE, &bytes_read);
 			bytes_written = 0;
             if (SUCCEEDED(hr) && bytes_read)
 			{
@@ -236,11 +236,11 @@ LPWSTR QuotedContentList(IDataObject *pDataObject)
     FORMATETC contents_format = {cp_format_contents, NULL, DVASPECT_CONTENT, -1, TYMED_ISTREAM};
 
     // Check for descriptor format type
-    hr = pDataObject->lpVtbl->QueryGetData(pDataObject, &descriptor_format);
+    hr = pDataObject->QueryGetData(&descriptor_format);
     if (hr == S_OK) 
 	{ 
 		// Check for contents format type
-        hr = pDataObject->lpVtbl->QueryGetData(pDataObject, &contents_format);
+        hr = pDataObject->QueryGetData(&contents_format);
         if (hr == S_OK)
 		{ 
             // Get the descriptor information
@@ -250,7 +250,7 @@ LPWSTR QuotedContentList(IDataObject *pDataObject)
             size_t cchTempPath, cchFiles;
             WCHAR szTempPath[MAXPATHLEN +1];
 
-            hr = pDataObject->lpVtbl->GetData(pDataObject, &descriptor_format, &sm_desc);
+            hr = pDataObject->GetData(&descriptor_format, &sm_desc);
 			if (hr != S_OK)
 				return NULL;
 
@@ -276,7 +276,7 @@ LPWSTR QuotedContentList(IDataObject *pDataObject)
                 file_descriptor = file_group_descriptor->fgd[file_index];
                 contents_format.lindex = file_index;
 				memset(&sm_content, 0, sizeof(sm_content));
-                hr = pDataObject->lpVtbl->GetData(pDataObject, &contents_format, &sm_content);
+                hr = pDataObject->GetData(&contents_format, &sm_content);
 
                 if (hr == S_OK) 
 				{
@@ -331,8 +331,8 @@ static BOOL QueryDataObject(WF_IDataObject *pDataObject)
 	descriptor_format.cfFormat = cp_format_descriptor;
 
 	// does the data object support CF_HDROP using a HGLOBAL?
-	return pDataObject->ido.lpVtbl->QueryGetData((LPDATAOBJECT)pDataObject, &fmtetc) == S_OK || 
-			pDataObject->ido.lpVtbl->QueryGetData((LPDATAOBJECT)pDataObject, &descriptor_format) == S_OK;
+	return pDataObject->QueryGetData(&fmtetc) == S_OK || 
+			pDataObject->QueryGetData(&descriptor_format) == S_OK;
 }
 
 //
@@ -366,144 +366,117 @@ static DWORD DropEffect(DWORD grfKeyState, POINTL pt, DWORD dwAllowed)
 }
 
 //
-//	IUnknown::AddRef
+// IUnknown methods
 //
-static ULONG STDMETHODCALLTYPE idroptarget_addref (WF_IDropTarget* This)
+
+ULONG STDMETHODCALLTYPE WF_IDropTarget::AddRef()
 {
-  return InterlockedIncrement(&This->m_lRefCount);
+    return InterlockedIncrement(&m_lRefCount);
 }
 
-//
-//	IUnknown::QueryInterface
-//
-static HRESULT STDMETHODCALLTYPE
-idroptarget_queryinterface (WF_IDropTarget *This,
-			       REFIID          riid,
-			       LPVOID         *ppvObject)
+HRESULT STDMETHODCALLTYPE WF_IDropTarget::QueryInterface(REFIID riid, LPVOID* ppvObject)
 {
+    *ppvObject = NULL;
 
-  *ppvObject = NULL;
-
-//  PRINT_GUID (riid);
-  if (IsEqualIID (riid, &IID_IUnknown) || IsEqualIID (riid, &IID_IDropTarget))
+    if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDropTarget))
     {
-      idroptarget_addref (This);
-      *ppvObject = This;
-      return S_OK;
+        AddRef();
+        *ppvObject = this;
+        return S_OK;
     }
-  
-  else
+    else
     {
-      return E_NOINTERFACE;
+        return E_NOINTERFACE;
     }
 }
 
+ULONG STDMETHODCALLTYPE WF_IDropTarget::Release()
+{
+    LONG count = InterlockedDecrement(&m_lRefCount);
+
+    if (count == 0)
+    {
+        delete this;
+        return 0;
+    }
+    else
+    {
+        return count;
+    }
+}
 
 //
-//	IUnknown::Release
+// IDropTarget methods
 //
-static ULONG STDMETHODCALLTYPE
-idroptarget_release (WF_IDropTarget* This)
+
+HRESULT STDMETHODCALLTYPE WF_IDropTarget::DragEnter(IDataObject* pDataObject, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
 {
+    // does the dataobject contain data we want?
+    m_fAllowDrop = QueryDataObject((WF_IDataObject*)pDataObject);
     
-  LONG count = InterlockedDecrement(&This->m_lRefCount);
+    if (m_fAllowDrop)
+    {
+        // get the dropeffect based on keyboard state
+        *pdwEffect = DropEffect(grfKeyState, pt, *pdwEffect);
 
-  if(count == 0)
-	{
-		free(This);
-		return 0;
-	}
-	else
-	{
-		return count;
-	}
-  
+        SetFocus(m_hWnd);
+
+        PaintRectItem(this, &pt);
+    }
+    else
+    {
+        *pdwEffect = DROPEFFECT_NONE;
+    }
+
+    return S_OK;
 }
-//
-//	IDropTarget::DragEnter
-//
-//
-//
-static HRESULT STDMETHODCALLTYPE idroptarget_dragenter(WF_IDropTarget* This, WF_IDataObject * pDataObject, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect)
+
+HRESULT STDMETHODCALLTYPE WF_IDropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
 {
-	// does the dataobject contain data we want?
-	This->m_fAllowDrop = QueryDataObject(pDataObject);
-	
-	if(This->m_fAllowDrop)
-	{
-		// get the dropeffect based on keyboard state
-		*pdwEffect = DropEffect(grfKeyState, pt, *pdwEffect);
+    if (m_fAllowDrop)
+    {
+        *pdwEffect = DropEffect(grfKeyState, pt, *pdwEffect);
+        PaintRectItem(this, &pt);
+    }
+    else
+    {
+        *pdwEffect = DROPEFFECT_NONE;
+    }
 
-		SetFocus(This->m_hWnd);
-
-		PaintRectItem(This, &pt);
-	}
-	else
-	{
-		*pdwEffect = DROPEFFECT_NONE;
-	}
-
-	return S_OK;
+    return S_OK;
 }
 
-//
-//	IDropTarget::DragOver
-//
-//
-//
-static HRESULT STDMETHODCALLTYPE idroptarget_dragover(WF_IDropTarget* This, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect)
+HRESULT STDMETHODCALLTYPE WF_IDropTarget::DragLeave()
 {
-	if(This->m_fAllowDrop)
-	{
-		*pdwEffect = DropEffect(grfKeyState, pt, *pdwEffect);
-		PaintRectItem(This, &pt);
-	}
-	else
-	{
-		*pdwEffect = DROPEFFECT_NONE;
-	}
-
-	return S_OK;
+    PaintRectItem(this, NULL);
+    return S_OK;
 }
 
-//
-//	IDropTarget::DragLeave
-//
-static HRESULT STDMETHODCALLTYPE idroptarget_dragleave(WF_IDropTarget* This)
+HRESULT STDMETHODCALLTYPE WF_IDropTarget::Drop(IDataObject* pDataObject, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
 {
-	PaintRectItem(This, NULL);
-	return S_OK;
+    if (m_fAllowDrop)
+    {
+        *pdwEffect = DropEffect(grfKeyState, pt, *pdwEffect);
+
+        DropData(this, pDataObject, *pdwEffect);
+    }
+    else
+    {
+        *pdwEffect = DROPEFFECT_NONE;
+    }
+
+    return S_OK;
 }
 
-//
-//	IDropTarget::Drop
-//
-//
-static HRESULT STDMETHODCALLTYPE idroptarget_drop(WF_IDropTarget* This, IDataObject * pDataObject, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect)
+// Constructor
+WF_IDropTarget::WF_IDropTarget(HWND hwnd)
 {
-	if(This->m_fAllowDrop)
-	{
-		*pdwEffect = DropEffect(grfKeyState, pt, *pdwEffect);
-
-		DropData(This, pDataObject, *pdwEffect);
-	}
-	else
-	{
-		*pdwEffect = DROPEFFECT_NONE;
-	}
-
-	return S_OK;
+    m_lRefCount = 1;
+    m_hWnd = hwnd;
+    m_fAllowDrop = FALSE;
+    m_iItemSelected = (DWORD)-1;
+    m_pDataObject = NULL;
 }
-
-static WF_IDropTargetVtbl idt_vtbl = {
-  idroptarget_queryinterface,
-  idroptarget_addref,
-  idroptarget_release,
-  idroptarget_dragenter,
-  idroptarget_dragover,
-  idroptarget_dragleave,
-  idroptarget_drop
-};
 
 void DropData(WF_IDropTarget *This, IDataObject *pDataObject, DWORD dwEffect)
 {
@@ -600,30 +573,7 @@ void UnregisterDropWindow(HWND hwnd, IDropTarget *pDropTarget)
 	CoLockObjectExternal((struct IUnknown*)pDropTarget, FALSE, TRUE);
 
 	// release our own reference
-	pDropTarget->lpVtbl->Release(pDropTarget);
-}
-
-//	Constructor for the CDropTarget class
-//
-
-WF_IDropTarget * WF_IDropTarget_new(HWND hwnd)
-{
-  WF_IDropTarget *result;
-
-  result = calloc(1, sizeof(WF_IDropTarget));
-
-  if (result)
-  {
-	  result->idt.lpVtbl = (IDropTargetVtbl*)&idt_vtbl;
-
-	  result->m_lRefCount = 1;
-	  result->m_hWnd = hwnd;
-	  result->m_fAllowDrop = FALSE;
-
-	  // return result;
-  }
-
-  return result;
+	pDropTarget->Release();
 }
 
 HRESULT CreateDropTarget(HWND hwnd, WF_IDropTarget **ppDropTarget) 
@@ -631,7 +581,7 @@ HRESULT CreateDropTarget(HWND hwnd, WF_IDropTarget **ppDropTarget)
 	if(ppDropTarget == 0)
 		return E_INVALIDARG;
 
-	*ppDropTarget = WF_IDropTarget_new(hwnd);
+	*ppDropTarget = new WF_IDropTarget(hwnd);
 
 	return (*ppDropTarget) ? S_OK : E_OUTOFMEMORY;
 

@@ -302,7 +302,7 @@ CancelDlgProc(HWND hDlg,
          bLastQuick = TRUE;
 
          switch(CancelInfo.eCancelType) {
-         case CANCEL_FORMAT:
+         case _CANCEL_INFO::CANCEL_FORMAT:
 
             //
             // Formatting disk requires that we release any notification
@@ -311,7 +311,7 @@ CancelDlgProc(HWND hDlg,
             NotifyPause(CancelInfo.Info.Format.iFormatDrive, DRIVE_REMOVABLE);
 
             break;
-         case CANCEL_COPY:
+         case _CANCEL_INFO::CANCEL_COPY:
 
             //
             // Pause notifications on dest drive.
@@ -332,7 +332,7 @@ CancelDlgProc(HWND hDlg,
 
          if (!CancelInfo.hThread) {
             switch (CancelInfo.eCancelType) {
-            case CANCEL_FORMAT:
+            case _CANCEL_INFO::CANCEL_FORMAT:
                CancelInfo.hThread = CreateThread( NULL,      // Security
                   0L,                                        // Stack Size
                   FormatDrive,
@@ -340,7 +340,7 @@ CancelDlgProc(HWND hDlg,
                   0L,
                   &Ignore );
                break;
-            case CANCEL_COPY:
+            case _CANCEL_INFO::CANCEL_COPY:
               CancelInfo.hThread = CreateThread( NULL,      // Security
                   0L,                                        // Stack Size
                   CopyDiskette,
@@ -390,7 +390,7 @@ CancelDlgProc(HWND hDlg,
        // If formatting quick, set this display
        //
        if (CancelInfo.Info.Format.fQuick &&
-          CANCEL_FORMAT == CancelInfo.eCancelType) {
+           _CANCEL_INFO::CANCEL_FORMAT == CancelInfo.eCancelType) {
 
           LoadString(hAppInstance, IDS_QUICKFORMATTINGTITLE, buffer, COUNTOF(buffer));
           SendDlgItemMessage(hDlg, IDD_TEXT1, WM_SETTEXT, 0, (LPARAM)szNULL);

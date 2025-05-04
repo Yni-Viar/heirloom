@@ -341,7 +341,8 @@ InsertDirectory(
    BOOL bPartialSort,
    DWORD dwAttribs)
 {
-   UINT len, x, xTreeMax;
+   int len;
+   UINT x, xTreeMax;
    PDNODE pNode, pMid;
    HWND hwndLB;
    INT iMin, iMax, iMid;
@@ -1611,7 +1612,7 @@ TCWP_DrawItem(
   INT               x, y, dy;
   INT               nLevel;
   HDC               hdc;
-  UINT              len;
+  int               len;
   RECT              rc;
   BOOL              bHasFocus, bDrawSelected;
   PDNODE            pNode, pNTemp;
@@ -1659,7 +1660,7 @@ TCWP_DrawItem(
 
       if (hBrush = CreateSolidBrush(GetSysColor(COLOR_GRAYTEXT)))
       {
-        hOld = SelectObject(hdc, hBrush);
+        hOld = (HBRUSH)SelectObject(hdc, hBrush);
 
         if (pNode->pParent)
         {
@@ -2753,7 +2754,7 @@ UpdateSelection:
       // too FAR to the right?
       //
       hdc = GetDC(hwndLB);
-      hOld = SelectObject(hdc, hFont);
+      hOld = (HFONT)SelectObject(hdc, hFont);
       GetTextExtentPoint32(hdc, szPath, len, &size);
       size.cx += (dyBorderx2*2);
       if (hOld)
@@ -3346,7 +3347,7 @@ GetRealExtent(
     if (hwndLB != NULL)
     {
         hdc = GetDC(hwndLB);
-        hOld = SelectObject(hdc, hFont);
+        hOld = (HFONT)SelectObject(hdc, hFont);
         GetTextExtentPoint32(hdc, szPath, *pLen, &size);
         if (hOld)
             SelectObject(hdc, hOld);

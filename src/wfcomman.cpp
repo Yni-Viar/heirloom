@@ -775,33 +775,6 @@ MDIClientSizeChange(HWND hwndActive,INT iFlags)
 BOOL
 FmifsLoaded()
 {
-   // Get a filename from the dialog...
-   // Load the fmifs dll.
-
-   if (hfmifsDll < (HANDLE)32) {
-      hfmifsDll = LoadSystemLibrary(FMIFS_DLL);
-      if (hfmifsDll < (HANDLE)32) {
-         /* FMIFS not available. */
-         MyMessageBox(hwndFrame, IDS_WINFILE, IDS_FMIFSLOADERR, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
-         hfmifsDll = NULL;
-         return FALSE;
-      }
-      else {
-         lpfnFormat = (PVOID)GetProcAddress(hfmifsDll, "Format");
-         lpfnQuerySupportedMedia = (PVOID)GetProcAddress(hfmifsDll, "QuerySupportedMedia");
-
-         lpfnSetLabel = (PVOID)GetProcAddress(hfmifsDll, "SetLabel");
-         lpfnDiskCopy = (PVOID)GetProcAddress(hfmifsDll, "DiskCopy");
-         if (!lpfnFormat || !lpfnQuerySupportedMedia ||
-            !lpfnSetLabel || !lpfnDiskCopy) {
-
-            MyMessageBox(hwndFrame, IDS_WINFILE, IDS_FMIFSLOADERR, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
-            FreeLibrary(hfmifsDll);
-            hfmifsDll = NULL;
-            return FALSE;
-         }
-      }
-   }
    return TRUE;
 }
 
@@ -828,7 +801,7 @@ GetPowershellExePath(LPTSTR szPSPath)
             DWORD dwInstall;
             DWORD dwType;
             DWORD cbValue = sizeof(dwInstall);
-            dwError = WFRegGetValueW(hkey, szSub, TEXT("Install"), RRF_RT_DWORD, &dwType, (PVOID)&dwInstall, &cbValue);
+            dwError = RegGetValue(hkey, szSub, TEXT("Install"), RRF_RT_DWORD, &dwType, (PVOID)&dwInstall, &cbValue);
 
             if (dwError == ERROR_SUCCESS && dwInstall == 1)
             {
@@ -842,7 +815,7 @@ GetPowershellExePath(LPTSTR szPSPath)
                     LPTSTR szPSExe = TEXT("\\Powershell.exe");
 
                     cbValue = (MAXPATHLEN - lstrlen(szPSExe)) * sizeof(TCHAR);
-                    dwError = WFRegGetValueW(hkeySub, TEXT("PowerShellEngine"), TEXT("ApplicationBase"), RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ, &dwType, (PVOID)szPSPath, &cbValue);
+                    dwError = RegGetValue(hkeySub, TEXT("PowerShellEngine"), TEXT("ApplicationBase"), RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ, &dwType, (PVOID)szPSPath, &cbValue);
 
                     if (dwError == ERROR_SUCCESS)
                     {
@@ -1180,7 +1153,7 @@ AppCommandProc(DWORD id)
       {
       IDataObject *pDataObj;
 	  FORMATETC fmtetcDrop = { 0, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-	  UINT uFormatEffect = RegisterClipboardFormat(CFSTR_PREFERREDDROPEFFECT);
+	  CLIPFORMAT uFormatEffect = RegisterClipboardFormat(CFSTR_PREFERREDDROPEFFECT);
 	  FORMATETC fmtetcEffect = { uFormatEffect, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	  STGMEDIUM stgmed;
 	  DWORD dwEffect = DROPEFFECT_COPY;
@@ -1188,9 +1161,9 @@ AppCommandProc(DWORD id)
 
 	  OleGetClipboard(&pDataObj);		// pDataObj == NULL if error
 
-	  if(pDataObj != NULL && pDataObj->lpVtbl->GetData(pDataObj, &fmtetcEffect, &stgmed) == S_OK)
+	  if(pDataObj != NULL && pDataObj->GetData(&fmtetcEffect, &stgmed) == S_OK)
 	  {
-	  	LPDWORD lpEffect = GlobalLock(stgmed.hGlobal);
+	  	LPDWORD lpEffect = (LPDWORD)GlobalLock(stgmed.hGlobal);
 	  	if(*lpEffect & DROPEFFECT_COPY) dwEffect = DROPEFFECT_COPY;
 		if(*lpEffect & DROPEFFECT_MOVE) dwEffect = DROPEFFECT_MOVE;
 		GlobalUnlock(stgmed.hGlobal);
@@ -1212,9 +1185,9 @@ AppCommandProc(DWORD id)
 
 	  // Try "LongFileNameW"
 	  fmtetcDrop.cfFormat = RegisterClipboardFormat(TEXT("LongFileNameW"));
-	  if(szFiles == NULL && pDataObj != NULL && pDataObj->lpVtbl->GetData(pDataObj, &fmtetcDrop, &stgmed) == S_OK)
+	  if(szFiles == NULL && pDataObj != NULL && pDataObj->GetData(&fmtetcDrop, &stgmed) == S_OK)
 	  {
-	  	LPWSTR lpFile = GlobalLock(stgmed.hGlobal);
+	  	LPWSTR lpFile = (LPWSTR)GlobalLock(stgmed.hGlobal);
 	  	SIZE_T cchFile = wcslen(lpFile);
 		szFiles = (LPWSTR)LocalAlloc(LMEM_FIXED, (cchFile+3) * sizeof(WCHAR));
 		lstrcpy (szFiles+1, lpFile);
@@ -1245,7 +1218,7 @@ AppCommandProc(DWORD id)
 	  }
 
 	  if (pDataObj != NULL)
-	    pDataObj->lpVtbl->Release(pDataObj);
+	    pDataObj->Release();
    	  }
    	  break;
    	  
@@ -1291,13 +1264,13 @@ AppCommandProc(DWORD id)
 			 hMemLongW = GlobalAlloc(GPTR|GMEM_DDESHARE, cbMemLong);
 			 if (hMemLongW)
 			 {
-				 lstrcpy(GlobalLock(hMemLongW), szPathLong);
+				 lstrcpy((LPWSTR)GlobalLock(hMemLongW), szPathLong);
 				 GlobalUnlock(hMemLongW);
 			 }
 			 hMemTextW = GlobalAlloc(GPTR|GMEM_DDESHARE, cbMemLong);
 			 if (hMemTextW)
 			 {
-				 lstrcpy(GlobalLock(hMemTextW), szPathLong);
+				 lstrcpy((LPWSTR)GlobalLock(hMemTextW), szPathLong);
 				 GlobalUnlock(hMemTextW);
 			 }
 		 }
@@ -1484,12 +1457,12 @@ AppCommandProc(DWORD id)
          DWORD dwIDS;
 
          switch(CancelInfo.eCancelType) {
-         case CANCEL_FORMAT:
+         case _CANCEL_INFO::CANCEL_FORMAT:
 
             dwIDS = IDS_BUSYFORMATQUITVERIFY;
             break;
 
-         case CANCEL_COPY:
+         case _CANCEL_INFO::CANCEL_COPY:
 
             dwIDS = IDS_BUSYCOPYQUITVERIFY;
             break;
@@ -1890,16 +1863,16 @@ ReadMoveStatus()
 {
 	IDataObject *pDataObj;
 	FORMATETC fmtetcDrop = { 0, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-	UINT uFormatEffect = RegisterClipboardFormat(CFSTR_PREFERREDDROPEFFECT);
+	CLIPFORMAT uFormatEffect = RegisterClipboardFormat(CFSTR_PREFERREDDROPEFFECT);
 	FORMATETC fmtetcEffect = { uFormatEffect, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM stgmed;
 	DWORD dwEffect = DROPEFFECT_COPY;
 
 	OleGetClipboard(&pDataObj);		// pDataObj == NULL if error
 
-	if (pDataObj != NULL && pDataObj->lpVtbl->GetData(pDataObj, &fmtetcEffect, &stgmed) == S_OK && stgmed.hGlobal != NULL)
+	if (pDataObj != NULL && pDataObj->GetData(&fmtetcEffect, &stgmed) == S_OK && stgmed.hGlobal != NULL)
 	{
-		LPDWORD lpEffect = GlobalLock(stgmed.hGlobal);
+		LPDWORD lpEffect = (LPDWORD)GlobalLock(stgmed.hGlobal);
 		if (*lpEffect & DROPEFFECT_COPY) dwEffect = DROPEFFECT_COPY;
 		if (*lpEffect & DROPEFFECT_MOVE) dwEffect = DROPEFFECT_MOVE;
 		GlobalUnlock(stgmed.hGlobal);

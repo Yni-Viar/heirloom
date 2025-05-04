@@ -92,7 +92,7 @@ InitExtensions()
    TCHAR szBuf[PROFILE_STRING_SIZ];
    TCHAR szPath[MAXPATHLEN];
    LPTSTR p;
-   HANDLE hMod;
+   HMODULE hMod;
    FM_EXT_PROC fp;
    HMENU hMenu;
    INT iMenuBase;
@@ -761,7 +761,7 @@ FillDocType(
       if (pszDocuments)
          LocalFree((HLOCAL)pszDocuments);
 
-      pszDocuments = LocalAlloc(LMEM_FIXED, uLen*sizeof(WCHAR));
+      pszDocuments = (LPWSTR)LocalAlloc(LMEM_FIXED, uLen*sizeof(WCHAR));
 
       if (!pszDocuments) {
          return 0;
@@ -807,7 +807,7 @@ FillDocType(
 
 BOOL
 InitFileManager(
-   HANDLE hInstance,
+   HINSTANCE hInstance,
    LPWSTR lpCmdLine,
    INT nCmdShow)
 {
@@ -841,16 +841,6 @@ InitFileManager(
    SetThreadPriority(hThread, THREAD_PRIORITY_ABOVE_NORMAL);
 
    InitializeCriticalSection(&CriticalSectionPath);
-
-   hKernel32 = GetModuleHandle(KERNEL32_DLL);
-   if (hKernel32)
-   {
-      lpfnCreateSymbolicLinkW = (PVOID)GetProcAddress(hKernel32, KERNEL32_CreateSymbolicLinkW);
-      lpfnGetLocaleInfoEx = (PVOID)GetProcAddress(hKernel32, KERNEL32_GetLocaleInfoEx);
-      lpfnLocaleNameToLCID = (PVOID)GetProcAddress(hKernel32, KERNEL32_LocaleNameToLCID);
-      lpfnWow64DisableWow64FsRedirection = (PVOID)GetProcAddress(hKernel32, KERNEL32_Wow64DisableWow64FsRedirection);
-      lpfnWow64RevertWow64FsRedirection = (PVOID)GetProcAddress(hKernel32, KERNEL32_Wow64RevertWow64FsRedirection);
-   }
 
    // ProfStart();
 
@@ -977,8 +967,6 @@ InitFileManager(
    dyButton = ScaleByDpi(22);
    dxDriveList = ScaleByDpi(205);
    dyDriveItem = ScaleByDpi(17);
-
-   LoadUxTheme();
 
    PngStartup();
 
@@ -1454,12 +1442,6 @@ FreeFileManager()
    if (hfontDriveList)
       DeleteObject(hfontDriveList);
 
-   //
-   // Free the fmifs junk
-   //
-   if (hfmifsDll)
-      FreeLibrary(hfmifsDll);
-
    if (hNtshrui)
       FreeLibrary(hNtshrui);
 
@@ -1517,56 +1499,4 @@ LoadFailMessage(VOID)
    MessageBox(hwndFrame, szMessage, szTitle, MB_ICONEXCLAMATION|MB_OK|MB_APPLMODAL);
 
    return;
-}
-
-/////////////////////////////////////////////////////////////////////
-//
-// Name:     LoadUxTheme
-//
-// Synopsis: Loads function SetWindowTheme dynamically
-//
-// IN:       VOID
-//
-// Return:   BOOL  T=Success, F=FAILURE
-//
-//
-// Assumes:
-//
-// Effects:  hUxTheme, lpfnSetWindowTheme
-//
-//
-// Notes:
-//
-/////////////////////////////////////////////////////////////////////
-
-BOOL
-LoadUxTheme(VOID)
-{
-  UINT uErrorMode;
-
-  //
-  // Have we already loaded it?
-  //
-  if (hUxTheme)
-    return TRUE;
-
-  //
-  // Let the system handle errors here
-  //
-  uErrorMode = SetErrorMode(0);
-  hUxTheme = LoadSystemLibrary(UXTHEME_DLL);
-  SetErrorMode(uErrorMode);
-
-  if (!hUxTheme)
-    return FALSE;
-
-#define GET_PROC(x) \
-   if (!(lpfn##x = (PVOID) GetProcAddress(hUxTheme, UXTHEME_##x))) \
-      return FALSE
-
-  GET_PROC(SetWindowTheme);
-
-#undef GET_PROC
-
-  return TRUE;
 }

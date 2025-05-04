@@ -48,7 +48,7 @@
       <PreprocessorDefinitions>LFN;FASTMOVE;UNICODE;_UNICODE;USELASTDOT;MEMDOUBLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;gdi32.lib;user32.lib;advapi32.lib;oleaut32.lib;ole32.lib;shell32.lib;shlwapi.lib;comctl32.lib;version.lib;windowscodecs.lib;msimg32.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;gdi32.lib;user32.lib;advapi32.lib;oleaut32.lib;ole32.lib;shell32.lib;shlwapi.lib;comctl32.lib;version.lib;windowscodecs.lib;msimg32.lib;mpr.lib;comdlg32.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>15000000</StackReserveSize>
     </Link>
@@ -178,41 +178,41 @@
     <None Include="suggest.db" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dbg.c" />
-    <ClCompile Include="lfn.c" />
-    <ClCompile Include="lfnmisc.c" />
-    <ClCompile Include="numfmt.c" />
-    <ClCompile Include="resize.c" />
-    <ClCompile Include="suggest.c" />
-    <ClCompile Include="treectl.c" />
-    <ClCompile Include="wfassoc.c" />
-    <ClCompile Include="wfchgnot.c" />
-    <ClCompile Include="wfcomman.c" />
-    <ClCompile Include="wfcopy.c" />
-    <ClCompile Include="wfdir.c" />
-    <ClCompile Include="wfdirrd.c" />
-    <ClCompile Include="wfdirsrc.c" />
-    <ClCompile Include="wfdlgs.c" />
-    <ClCompile Include="wfdlgs2.c" />
-    <ClCompile Include="wfdlgs3.c" />
-    <ClCompile Include="wfdos.c" />
-    <ClCompile Include="wfdpi.c" />
-    <ClCompile Include="wfdrives.c" />
-    <ClCompile Include="wfdrop.c" />
-    <ClCompile Include="wfext.c" />
-    <ClCompile Include="wffile.c" />
+    <ClCompile Include="dbg.cpp" />
+    <ClCompile Include="lfn.cpp" />
+    <ClCompile Include="lfnmisc.cpp" />
+    <ClCompile Include="numfmt.cpp" />
+    <ClCompile Include="resize.cpp" />
+    <ClCompile Include="suggest.cpp" />
+    <ClCompile Include="treectl.cpp" />
+    <ClCompile Include="wfassoc.cpp" />
+    <ClCompile Include="wfchgnot.cpp" />
+    <ClCompile Include="wfcomman.cpp" />
+    <ClCompile Include="wfcopy.cpp" />
+    <ClCompile Include="wfdir.cpp" />
+    <ClCompile Include="wfdirrd.cpp" />
+    <ClCompile Include="wfdirsrc.cpp" />
+    <ClCompile Include="wfdlgs.cpp" />
+    <ClCompile Include="wfdlgs2.cpp" />
+    <ClCompile Include="wfdlgs3.cpp" />
+    <ClCompile Include="wfdos.cpp" />
+    <ClCompile Include="wfdpi.cpp" />
+    <ClCompile Include="wfdrives.cpp" />
+    <ClCompile Include="wfdrop.cpp" />
+    <ClCompile Include="wfext.cpp" />
+    <ClCompile Include="wffile.cpp" />
     <ClCompile Include="wfgoto.cpp" />
-    <ClCompile Include="wfinfo.c" />
-    <ClCompile Include="wfinit.c" />
-    <ClCompile Include="wfloc.c" />
-    <ClCompile Include="wfmem.c" />
-    <ClCompile Include="wfprint.c" />
-    <ClCompile Include="wfsearch.c" />
-    <ClCompile Include="wftree.c" />
-    <ClCompile Include="wfutil.c" />
-    <ClCompile Include="winfile.c" />
-    <ClCompile Include="wnetcaps.c" />
-    <ClCompile Include="wfpng.c" />
+    <ClCompile Include="wfinfo.cpp" />
+    <ClCompile Include="wfinit.cpp" />
+    <ClCompile Include="wfloc.cpp" />
+    <ClCompile Include="wfmem.cpp" />
+    <ClCompile Include="wfprint.cpp" />
+    <ClCompile Include="wfsearch.cpp" />
+    <ClCompile Include="wftree.cpp" />
+    <ClCompile Include="wfutil.cpp" />
+    <ClCompile Include="winfile.cpp" />
+    <ClCompile Include="wnetcaps.cpp" />
+    <ClCompile Include="wfpng.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="winfile.exe.manifest" />

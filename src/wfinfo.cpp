@@ -13,7 +13,6 @@
 #include "wnetcaps.h"
 #include <commctrl.h>
 
-
 #define U_HEAD(type) \
    VOID \
    U_##type (DRIVE drive) { \
@@ -360,7 +359,7 @@ Retry:
          goto Done;
       }
 
-      dwRetVal = WNetFormatNetworkNameW(lpConnectInfo->lpProvider,
+      dwRetVal = WNetFormatNetworkName(lpConnectInfo->lpProvider,
          lpConnectInfo->lpRemoteName,
          lpszBuf + DRIVE_INFO_NAME_HEADER,
          &dwSize,
@@ -1695,43 +1694,22 @@ NetLoad(VOID)
       if (!hMPR)
          return FALSE;
 
-
-      //
-      // This is used to reduce typing.
-      // Each function (e.g. Foo) has three things:
-      //
-      // lpfnFoo                  pointer to function
-      // NETWORK_Foo              name for GetProcAddress
-      // #define Foo (*lpfnFoo)   make it transparent
-      //
-
-#define GET_PROC(x) \
-      if (!(lpfn##x = (PVOID) GetProcAddress(hMPR,NETWORK_##x))) \
-         return FALSE
-
-      GET_PROC(WNetCloseEnum);
-      GET_PROC(WNetConnectionDialog2);
-      GET_PROC(WNetDisconnectDialog2);
-
-      GET_PROC(WNetEnumResourceW);
-      GET_PROC(WNetGetConnection2W);
-      GET_PROC(WNetGetDirectoryTypeW);
-      GET_PROC(WNetGetLastErrorW);
-      GET_PROC(WNetGetPropertyTextW);
-      GET_PROC(WNetOpenEnumW);
-      GET_PROC(WNetPropertyDialogW);
-      GET_PROC(WNetFormatNetworkNameW);
-
-      if ((lpfnWNetRestoreSingleConnectionW = (PVOID) GetProcAddress(hMPR,"WNetRestoreSingleConnectionW")) == NULL)
-      {
-         GET_PROC(WNetRestoreConnectionW);
+      lpfnWNetGetDirectoryTypeW = (PFNWNETGETDIRECTORYTYPEW)GetProcAddress(hMPR, "WNetGetDirectoryTypeW");
+      lpfnWNetGetPropertyTextW = (PFNWNETGETPROPERTYTEXTW)GetProcAddress(hMPR, "WNetGetPropertyTextW");
+      lpfnWNetRestoreSingleConnectionW = (PFNWNETRESTORESINGLECONNECTIONW)GetProcAddress(hMPR, "WNetRestoreSingleConnectionW");
+      lpfnWNetPropertyDialogW = (PFNWNETPROPERTYDIALOGW)GetProcAddress(hMPR, "WNetPropertyDialogW");
+      lpfnWNetGetConnection2W = (PFNWNETGETCONNECTION2W)GetProcAddress(hMPR, "WNetGetConnection2W");
+      lpfnWNetFormatNetworkNameW = (PFNWNETFORMATNETWORKNAMEW)GetProcAddress(hMPR, "WNetFormatNetworkNameW");
+      if (!lpfnWNetGetDirectoryTypeW || !lpfnWNetGetPropertyTextW || !lpfnWNetRestoreSingleConnectionW
+            || !lpfnWNetPropertyDialogW || !lpfnWNetGetConnection2W || !lpfnWNetFormatNetworkNameW) {
+         MessageBox(
+            hwndFrame,
+            TEXT("File Manager is incompatible with your operating system version."),
+            TEXT("Error"),
+            MB_OK | MB_ICONERROR
+         );
+         return FALSE;
       }
-
-#ifdef NETCHECK
-      GET_PROC(WNetDirectoryNotifyW);
-#endif
-
-#undef GET_PROC
 
       bNetLoad = TRUE;
    }
@@ -1914,61 +1892,6 @@ ResetDriveInfo()
 
       aDriveInfo[drive].bUpdating = TRUE;
    }
-}
-
-
-
-/////////////////////////////////////////////////////////////////////
-//
-// Name:     LoadComdlg
-//
-// Synopsis: Loads funcs GetOpenFileName and ChooseFont dynamically
-//
-// IN:       VOID
-//
-// Return:   BOOL  T=Success, F=FAILURE
-//
-//
-// Assumes:
-//
-// Effects:  hComdlg, lpfn{GetOpenFilename, ChooseFont}
-//
-//
-// Notes:
-//
-/////////////////////////////////////////////////////////////////////
-
-BOOL
-LoadComdlg(VOID)
-{
-   UINT uErrorMode;
-
-   //
-   // Have we already loaded it?
-   //
-   if (hComdlg)
-      return TRUE;
-
-   //
-   // Let the system handle errors here
-   //
-   uErrorMode = SetErrorMode(0);
-   hComdlg = LoadSystemLibrary(COMDLG_DLL);
-   SetErrorMode(uErrorMode);
-
-   if (!hComdlg)
-      return FALSE;
-
-#define GET_PROC(x) \
-   if (!(lpfn##x = (PVOID) GetProcAddress(hComdlg,COMDLG_##x))) \
-      return FALSE
-
-   GET_PROC(ChooseFontW);
-   GET_PROC(GetOpenFileNameW);
-
-#undef GET_PROC
-
-   return TRUE;
 }
 
 

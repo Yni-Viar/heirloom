@@ -919,10 +919,7 @@ Cancel:
             ofn.lpfnHook             = NULL;
             ofn.lpstrDefExt          = NULL;
 
-            if (!LoadComdlg())
-               return TRUE;
-
-            if ((*lpfnGetOpenFileNameW)(&ofn)) {
+            if (GetOpenFileNameW(&ofn)) {
 
                if (StrChr(szFile+1, CHAR_SPACE)) {
 
@@ -1488,10 +1485,7 @@ Reload:
          ofn.lpfnHook             = NULL;
          ofn.lpstrDefExt          = NULL;
 
-         if (!LoadComdlg())
-            return TRUE;
-
-         if ((*lpfnGetOpenFileNameW)(&ofn))
+         if (GetOpenFileNameW(&ofn))
          {
             if (StrChr(szFile+1, CHAR_SPACE))
             {
@@ -2597,7 +2591,7 @@ DDERead(PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT i)
 {
    TCHAR szKey[MAXPATHLEN];
    INT iPoint;
-   LONG lSize;
+   DWORD lSize;
    DWORD dwError;
    LPTSTR p, p2;
 
@@ -2654,8 +2648,11 @@ DDERead(PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT i)
 
       StripPath(p2);
 
-      if (*p2)
-         *p2=(TCHAR)CharUpper((LPTSTR)*p2);
+      if (*p2) {
+#pragma warning(disable:4302) // CharUpper smuggles a character through a pointer
+          *p2 = reinterpret_cast<WCHAR>(CharUpper((LPTSTR)*p2));
+#pragma warning(default:4302)
+      }
    }
 
    lstrcpy(&szKey[iPoint],szTopic);

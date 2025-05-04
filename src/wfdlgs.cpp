@@ -452,10 +452,6 @@ NewFont()
                        CF_INITTOLOGFONTSTRUCT |
                        CF_LIMITSIZE | CF_ANSIONLY;
 
-   if (!LoadComdlg()) {
-      return;
-   }
-
    res = ChooseFontW(&cf);
 
    if (!res)
@@ -666,10 +662,7 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
                     goto DoHelp;
 
                 case IDC_EDITOR:
-                    if (!LoadComdlg())
-                        break;
-
-                    if ((*lpfnGetOpenFileNameW)(&ofn))
+                    if (GetOpenFileNameW(&ofn))
                     {
                         wcscpy_s(szPath, MAXPATHLEN, ofn.lpstrFile);
                         SetDlgItemText(hDlg, IDD_EDITOR, szPath);

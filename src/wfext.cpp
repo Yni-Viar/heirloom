@@ -336,7 +336,7 @@ FreeExtensions()
    for (i = 0; i < iNumExtensions; i++) {
       (extensions[i].ExtProc)(NULL, FMEVENT_UNLOAD, 0L);
       DeleteMenu(hMenuFrame, posToDelete, MF_BYPOSITION);
-      FreeLibrary((HANDLE)extensions[i].hModule);
+      FreeLibrary((HMODULE)extensions[i].hModule);
    }
    iNumExtensions = 0;
 }

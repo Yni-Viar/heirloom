@@ -12,13 +12,10 @@
 #include "BagOValues.h"
 #include <iterator>
 
-extern "C"
-{
 #include "winfile.h"
 #include "treectl.h"
 #include "lfn.h"
 #include "resize.h"
-}
 
 void BuildDirectoryBagOValues(BagOValues<PDNODE> *pbov, LPTSTR szRoot, PDNODE pNode, DWORD scanEpoc, LPTSTR szCachedRootLower);
 void FreeDirectoryBagOValues(BagOValues<PDNODE> *pbov);

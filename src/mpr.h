@@ -10,6 +10,8 @@
 ********************************************************************/
 
 #include <lmcons.h>
+#include <winnetwk.h>
+
 #ifndef _MPR_H_INCLUDED
 #define _MPR_H_INCLUDED
 
@@ -44,9 +46,7 @@ typedef struct _PARAMETERS {
     LPCONNECTION_INFO ConnectArray;     //Initialized in WNetRestoreConnection
     }PARAMETERS;
 
-#ifdef __cplusplus
 extern "C" {
-#endif
 
 //function load from mprui.dll.
 
@@ -127,29 +127,6 @@ WNetPasswordChangeNotify(
 //
 // Directory functions
 //
-DWORD
-WNetGetDirectoryTypeA (
-    LPSTR   lpName,
-    LPDWORD lpType,
-    BOOL    bFlushCache
-    );
-
-DWORD
-WNetGetDirectoryTypeW (
-    LPTSTR  lpName,
-    LPINT   lpType,
-    BOOL    bFlushCache
-    );
-
-#define WNetGetDirectoryType   WNetGetDirectoryTypeW
-
-
-DWORD
-WNetDirectoryNotifyA (
-    HWND    hwnd,
-    LPSTR   lpDir,
-    DWORD   dwOper
-    );
 
 DWORD
 WNetDirectoryNotifyW (
@@ -161,55 +138,6 @@ WNetDirectoryNotifyW (
 #define WNetDirectoryNotify   WNetDirectoryNotifyW
 
 
-DWORD
-WNetPropertyDialogA (
-    HWND  hwndParent,
-    DWORD iButton,
-    DWORD nPropSel,
-    LPSTR lpszName,
-    DWORD nType
-    );
-
-DWORD
-WNetPropertyDialogW (
-    HWND  hwndParent,
-    DWORD iButton,
-    DWORD nPropSel,
-    LPTSTR lpszName,
-    DWORD nType
-    );
-
-#define WNetPropertyDialog    WNetPropertyDialogW
-
-
-DWORD
-WNetGetPropertyTextA (
-    DWORD iButton,
-    DWORD nPropSel,
-    LPSTR lpszName,
-    LPSTR lpszButtonName,
-    DWORD nButtonNameLength,
-    DWORD nType
-    );
-
-DWORD
-WNetGetPropertyTextW (
-    DWORD  iButton,
-    DWORD  nPropSel,
-    LPTSTR lpszName,
-    LPTSTR lpszButtonName,
-    DWORD  nButtonNameLength,
-    DWORD  nType
-    );
-
-#define WNetGetPropertyText   WNetGetPropertyTextW
-
-typedef struct _WNET_CONNECTINFOA
-{
-    LPSTR lpRemoteName ;
-    LPSTR lpProvider ;
-} WNET_CONNECTIONINFOA, *LPWNET_CONNECTIONINFOA ;
-
 typedef struct _WNET_CONNECTINFOW
 {
     LPWSTR lpRemoteName ;
@@ -218,26 +146,6 @@ typedef struct _WNET_CONNECTINFOW
 
 #define WNET_CONNECTIONINFO   WNET_CONNECTIONINFOW
 #define LPWNET_CONNECTIONINFO LPWNET_CONNECTIONINFOW
-
-//
-//  Used in conjunction with WNET_CONNECTIONINFO, gets the net provider name
-//  in addition to the remote name for this connection.
-//
-DWORD
-WNetGetConnection2A(
-    LPSTR   lpLocalName,
-    LPVOID  lpBuffer,       // Contains WNET_CONNECTIONINFOA struct
-    LPDWORD lpBufferSize    // In bytes!
-    ) ;
-
-DWORD
-WNetGetConnection2W(
-    LPWSTR  lpLocalName,
-    LPVOID  lpBuffer,       // Contains WNET_CONNECTIONINFOW struct
-    LPDWORD lpBufferSize    // In bytes!
-    ) ;
-
-#define WNetGetConnection2 WNetGetConnection2W
 
 //
 // Versions of the dialog with the ability to supply help.
@@ -392,8 +300,6 @@ typedef DWORD (*PF_NPGetReconnectFlags) (
 // This macro operates on the dwFlags parameter of NPAddConnection3
 #define CONNECT_PROVIDER_FLAGS(dwFlags)   ((BYTE) (((dwFlags) & 0xFF000000) >> 24))
 
-#ifdef __cplusplus
-}
-#endif
+} // extern "C"
 
 #endif // _MPR_H_INCLUDED

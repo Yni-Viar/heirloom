@@ -504,7 +504,7 @@ VOID  SwitchDriveSelection(HWND hwndActive);
 // WFINIT.C
 
 VOID  GetInternational(VOID);
-BOOL  InitFileManager(HANDLE hInstance, LPTSTR lpCmdLine, INT nCmdShow);
+BOOL  InitFileManager(HINSTANCE hInstance, LPTSTR lpCmdLine, INT nCmdShow);
 VOID  InitDriveBitmaps(VOID);
 VOID  InitExtensions(VOID);
 VOID  FreeFileManager(VOID);
@@ -553,7 +553,6 @@ BOOL  IsCDRomDrive(DRIVE drive);
 BOOL  IsRamDrive(DRIVE drive);
 VOID  CleanupMessages();
 HWND  GetRealParent(HWND hwnd);
-LONG  WFRegGetValueW(HKEY hkey, LPCWSTR lpSubKey, LPCWSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
 LPTSTR GetFullPathInSystemDirectory(LPCTSTR FileName);
 HMODULE LoadSystemLibrary(LPCTSTR FileName);
 
@@ -955,71 +954,6 @@ typedef struct _DRIVE_INFO {
 #define EQ(x)
 #endif
 
-//-------------------------------------
-//
-//  Lazy load post-XP function support
-//
-//-------------------------------------
-
-#define KERNEL32_DLL TEXT("kernel32.dll")
-Extern HANDLE hKernel32          EQ( NULL );
-
-Extern BOOLEAN (WINAPI* lpfnCreateSymbolicLinkW)(LPCWSTR, LPCWSTR, DWORD);
-Extern INT     (WINAPI* lpfnGetLocaleInfoEx)(LPCWSTR, LCTYPE, LPWSTR, INT);
-Extern LCID    (WINAPI* lpfnLocaleNameToLCID)(LPCWSTR, DWORD);
-Extern BOOL    (WINAPI* lpfnWow64DisableWow64FsRedirection)(PVOID *);
-Extern BOOL    (WINAPI* lpfnWow64RevertWow64FsRedirection)(PVOID);
-
-#define KERNEL32_CreateSymbolicLinkW            "CreateSymbolicLinkW"
-#define KERNEL32_GetLocaleInfoEx                "GetLocaleInfoEx"
-#define KERNEL32_LocaleNameToLCID               "LocaleNameToLCID"
-#define KERNEL32_Wow64DisableWow64FsRedirection "Wow64DisableWow64FsRedirection"
-#define KERNEL32_Wow64RevertWow64FsRedirection  "Wow64RevertWow64FsRedirection"
-
-#define CreateSymbolicLinkW            (*lpfnCreateSymbolicLinkW)
-#define GetLocaleInfoEx                (*lpfnGetLocaleInfoEx)
-#define LocaleNameToLCID               (*lpfnLocaleNameToLCID)
-#define Wow64DisableWow64FsRedirection (*lpfnWow64DisableWow64FsRedirection)
-#define Wow64RevertWow64FsRedirection  (*lpfnWow64RevertWow64FsRedirection)
-
-#ifndef CreateSymbolicLink
-#define CreateSymbolicLink  CreateSymbolicLinkW
-#endif
-
-//----------------------------
-//
-//  Lazy load comdlg support
-//
-//----------------------------
-
-#define COMDLG_DLL TEXT("comdlg32.dll")
-Extern HANDLE hComdlg            EQ( NULL );
-
-Extern DWORD (*lpfnChooseFontW)(LPCHOOSEFONTW);
-Extern DWORD (*lpfnGetOpenFileNameW)(LPOPENFILENAMEW);
-
-#define COMDLG_ChooseFontW                "ChooseFontW"
-#define COMDLG_GetOpenFileNameW           "GetOpenFileNameW"
-
-#define ChooseFontW         (*lpfnChooseFontW)
-#define GetOpenFileNameW    (*lpfnGetOpenFileNameW)
-
-//----------------------------
-//
-//  Lazy load UxTheme support
-//
-//----------------------------
-
-#define UXTHEME_DLL TEXT("UxTheme.dll")
-Extern HANDLE hUxTheme            EQ(NULL);
-
-Extern HRESULT (*lpfnSetWindowTheme)(HWND, LPCWSTR, LPCWSTR);
-
-#define UXTHEME_SetWindowTheme "SetWindowTheme"
-
-#define SetWindowTheme         (*lpfnSetWindowTheme)
-
-BOOL LoadUxTheme(VOID);
 
 //----------------------------
 //
@@ -1043,80 +977,47 @@ BOOL LoadUxTheme(VOID);
 #define WAITNET_TYPELOADED  bNetTypeLoad
 #define WAITNET_SHARELOADED bNetShareLoad
 
-Extern DWORD (CALLBACK *lpfnWNetCloseEnum)(HANDLE);
-Extern DWORD (CALLBACK *lpfnWNetConnectionDialog2)(HWND, DWORD, LPWSTR, UINT);
-Extern DWORD (CALLBACK *lpfnWNetDisconnectDialog2)(HWND, UINT, LPWSTR, UINT);
-Extern DWORD (CALLBACK *lpfnWNetEnumResourceW)(HANDLE, LPDWORD, LPVOID, LPDWORD);
-Extern DWORD (CALLBACK *lpfnWNetGetConnection2W)(LPWSTR, WNET_CONNECTIONINFO *, LPDWORD);
-Extern DWORD (CALLBACK *lpfnWNetGetDirectoryTypeW)(LPWSTR, LPDWORD, BOOL);
-Extern DWORD (CALLBACK *lpfnWNetGetLastErrorW)(LPDWORD, LPWSTR, DWORD, LPWSTR, DWORD);
-Extern DWORD (CALLBACK *lpfnWNetGetPropertyTextW)(WORD, WORD, LPWSTR, LPWSTR, WORD, WORD);
-Extern DWORD (CALLBACK *lpfnWNetOpenEnumW)(DWORD, DWORD, DWORD, LPNETRESOURCE, LPHANDLE);
-Extern DWORD (CALLBACK *lpfnWNetPropertyDialogW)(HWND, WORD, WORD, LPWSTR, WORD);
-Extern DWORD (CALLBACK *lpfnWNetRestoreConnectionW)(HWND, LPWSTR);
-Extern DWORD (CALLBACK *lpfnWNetRestoreSingleConnectionW)(HWND, LPWSTR, BOOL);
-Extern DWORD (CALLBACK *lpfnWNetFormatNetworkNameW)(
-                    LPCWSTR  lpProvider,
-                    LPCWSTR  lpRemoteName,
-                    LPWSTR   lpFormattedName,
-                    LPDWORD  lpnLength,
-                    DWORD    dwFlags,
-                    DWORD    dwAveCharPerLine
-                    );
-Extern DWORD (CALLBACK *lpfnShowShareFolderUI)(HWND, LPWSTR);
+// Start mpr.dll functions
+typedef DWORD (CALLBACK *PFNWNETGETDIRECTORYTYPEW)(LPWSTR, LPDWORD, BOOL);
+Extern PFNWNETGETDIRECTORYTYPEW lpfnWNetGetDirectoryTypeW;
+#define WNetGetDirectoryType (*lpfnWNetGetDirectoryTypeW)
 
-#ifdef NETCHECK
-Extern DWORD (CALLBACK *lpfnWNetDirectoryNotifyW)(HWND, LPWSTR, DWORD);
-#endif
+typedef DWORD (CALLBACK *PFNWNETGETPROPERTYTEXTW)(WORD, WORD, LPWSTR, LPWSTR, WORD, WORD);
+Extern PFNWNETGETPROPERTYTEXTW lpfnWNetGetPropertyTextW;
+#define WNetGetPropertyText (*lpfnWNetGetPropertyTextW)
 
-#define NETWORK_WNetCloseEnum          "WNetCloseEnum"
-#define NETWORK_WNetConnectionDialog2  "WNetConnectionDialog2"
-#define NETWORK_WNetDisconnectDialog2  "WNetDisconnectDialog2"
-#define NETWORK_WNetEnumResourceW      "WNetEnumResourceW"
-#define NETWORK_WNetGetConnection2W    "WNetGetConnection2W"
-#define NETWORK_WNetGetDirectoryTypeW  "WNetGetDirectoryTypeW"
-#define NETWORK_WNetGetLastErrorW      "WNetGetLastErrorW"
-#define NETWORK_WNetGetPropertyTextW   "WNetGetPropertyTextW"
-#define NETWORK_WNetOpenEnumW          "WNetOpenEnumW"
-#define NETWORK_WNetPropertyDialogW    "WNetPropertyDialogW"
-#define NETWORK_WNetRestoreConnectionW "WNetRestoreConnectionW"
-#define NETWORK_WNetRestoreSingleConnectionW "WNetRestoreSingleConnectionW"
-#define NETWORK_WNetFormatNetworkNameW "WNetFormatNetworkNameW"
-#define NETWORK_ShareCreate            "ShareCreate"
-#define NETWORK_ShareStop              "ShareStop"
+typedef DWORD (CALLBACK *PFNWNETRESTORESINGLECONNECTIONW)(HWND, LPWSTR, BOOL);
+Extern PFNWNETRESTORESINGLECONNECTIONW lpfnWNetRestoreSingleConnectionW;
+#define WNetRestoreSingleConnection (*lpfnWNetRestoreSingleConnectionW)
 
-#ifdef NETCHECK
-#define NETWORK_WNetDirectoryNotifyW   "WNetDirectoryNotifyW"
-#endif
+typedef DWORD (CALLBACK *PFNWNETPROPERTYDIALOGW)(HWND, WORD, WORD, LPWSTR, WORD);
+Extern PFNWNETPROPERTYDIALOGW lpfnWNetPropertyDialogW;
+#define WNetPropertyDialog (*lpfnWNetPropertyDialogW)
 
-#define WNetCloseEnum              (*lpfnWNetCloseEnum)
-#define WNetConnectionDialog2      (*lpfnWNetConnectionDialog2)
-#define WNetDisconnectDialog2      (*lpfnWNetDisconnectDialog2)
-#define WNetEnumResourceW          (*lpfnWNetEnumResourceW)
-#define WNetGetConnection2W        (*lpfnWNetGetConnection2W)
-#define WNetGetDirectoryTypeW      (*lpfnWNetGetDirectoryTypeW)
-#define WNetGetLastErrorW          (*lpfnWNetGetLastErrorW)
-#define WNetGetPropertyTextW       (*lpfnWNetGetPropertyTextW)
-#define WNetOpenEnumW              (*lpfnWNetOpenEnumW)
-#define WNetPropertyDialogW        (*lpfnWNetPropertyDialogW)
-#define WNetRestoreConnectionW     (*lpfnWNetRestoreConnectionW)
-#define WNetRestoreSingleConnectionW     (*lpfnWNetRestoreSingleConnectionW)
-#define WNetFormatNetworkNameW     (*lpfnWNetFormatNetworkNameW)
-#define ShowShareFolderUI          (*lpfnShowShareFolderUI)
+typedef DWORD (CALLBACK *PFNWNETGETCONNECTION2W)(LPWSTR, LPVOID, LPDWORD);
+Extern PFNWNETGETCONNECTION2W lpfnWNetGetConnection2W;
+#define WNetGetConnection2 (*lpfnWNetGetConnection2W)
 
-#ifdef NETCHECK
-#define WNetDirectoryNotifyW       (*lpfnWNetDirectoryNotifyW)
-#endif
-
+typedef DWORD (CALLBACK *PFNWNETFORMATNETWORKNAMEW)(
+   LPCWSTR  lpProvider,
+   LPCWSTR  lpRemoteName,
+   LPWSTR   lpFormattedName,
+   LPDWORD  lpnLength,
+   DWORD    dwFlags,
+   DWORD    dwAveCharPerLine
+);
+Extern PFNWNETFORMATNETWORKNAMEW lpfnWNetFormatNetworkNameW;
+#define WNetFormatNetworkName (*lpfnWNetFormatNetworkNameW)
+// End mpr.dll
 
 Extern FM_EXT_PROC lpfnAcledit;
 Extern BOOL        bSecMenuDeleted;
 
-Extern HANDLE hVersion             EQ( NULL );
-Extern HANDLE hMPR                 EQ( NULL );
-Extern HANDLE hNtshrui             EQ( NULL );
-Extern HANDLE hAcledit             EQ( NULL );
-Extern HANDLE hNtdll               EQ (NULL );
+Extern HMODULE hVersion             EQ( NULL );
+Extern HMODULE hMPR                 EQ( NULL );
+Extern HMODULE hNtshrui             EQ( NULL );
+Extern HMODULE hAcledit             EQ( NULL );
+Extern HMODULE hNtdll               EQ (NULL );
 
 
 //--------------------------------------------------------------------------
@@ -1311,9 +1212,7 @@ Extern HFONT hfontDriveList;
 Extern HFONT hFont;
 Extern HFONT hFontStatus;
 
-Extern HANDLE hfmifsDll EQ( NULL );
-
-Extern HANDLE  hAccel            EQ( NULL );
+Extern HACCEL  hAccel            EQ( NULL );
 Extern HINSTANCE  hAppInstance;
 
 Extern HBITMAP  hbmBitmaps         EQ( NULL );
@@ -1387,7 +1286,7 @@ Extern RtlSetProcessPlaceholderCompatibilityMode_t pfnRtlSetProcessPlaceholderCo
 
 
 #ifdef _GLOBALS
-   DWORD dwMenuIDs[] = {
+   UINT dwMenuIDs[] = {
       // three distinct cases: 1: popups (search), 2: popups (position), 3: non-popups
 
       MH_MYITEMS,               // case 3: used for all non-popups; IDM from WM_MENUSELECT (loword of wParam) is added to this
@@ -1400,7 +1299,7 @@ Extern RtlSetProcessPlaceholderCompatibilityMode_t pfnRtlSetProcessPlaceholderCo
       0, 0                      // We need to NULL terminate this list
    };
 #else
-   Extern DWORD dwMenuIDs[];
+   Extern UINT dwMenuIDs[];
 #endif
 
 #undef Extern

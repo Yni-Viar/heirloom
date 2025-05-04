@@ -465,7 +465,7 @@ BuildDocumentStringWorker()
       if (pszDocuments)
          LocalFree((HLOCAL) pszDocuments);
 
-      pszDocuments = LocalAlloc(LMEM_FIXED, uLen*sizeof(*pszDocuments));
+      pszDocuments = (LPTSTR)LocalAlloc(LMEM_FIXED, uLen*sizeof(*pszDocuments));
 
       if (!pszDocuments) {
          goto Return;
@@ -533,14 +533,14 @@ BuildDocumentStringWorker()
 
          cbClass = sizeof(szClass);
          cbIconFile = 0;
-         if (WFRegGetValueW(hk, szT, NULL, RRF_RT_ANY, NULL, szClass, &cbClass) == ERROR_SUCCESS)
+         if (RegGetValue(hk, szT, NULL, RRF_RT_ANY, NULL, szClass, &cbClass) == ERROR_SUCCESS)
          {
             DWORD cbClass2;
             TCHAR szClass2[MAXPATHLEN];
 
             cbClass2 = sizeof(szClass2);
             lstrcat(szClass, L"\\CurVer");
-            if (WFRegGetValueW(hk, szClass, NULL, RRF_RT_ANY, NULL, szClass2, &cbClass2) == ERROR_SUCCESS)
+            if (RegGetValue(hk, szClass, NULL, RRF_RT_ANY, NULL, szClass2, &cbClass2) == ERROR_SUCCESS)
             {
                lstrcpy(szClass, szClass2);
             }
@@ -551,7 +551,7 @@ BuildDocumentStringWorker()
 
             cbIconFile = sizeof(szIconFile);
             lstrcat(szClass, L"\\DefaultIcon");
-            if (WFRegGetValueW(hk, szClass, NULL, RRF_RT_ANY, NULL, szIconFile, &cbIconFile) != ERROR_SUCCESS)
+            if (RegGetValue(hk, szClass, NULL, RRF_RT_ANY, NULL, szIconFile, &cbIconFile) != ERROR_SUCCESS)
             {
                cbIconFile = 0;
             }

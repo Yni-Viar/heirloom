@@ -382,7 +382,7 @@ TreeWndProc(
       }
 
       MenuHelp((WORD)uMsg, wParam, lParam, GetMenu(hwndFrame),
-         hAppInstance, hwndStatus, (LPDWORD)dwMenuIDs);
+         hAppInstance, hwndStatus, dwMenuIDs);
       break;
 
    case WM_FSC:
@@ -802,7 +802,7 @@ TreeWndProc(
                 // draw the black pane handle
 
                 rc.top = rc.bottom - GetSystemMetrics(SM_CYHSCROLL);
-                FillRect(hdc, &rc, GetStockObject(BLACK_BRUSH));
+                FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 
                 if (hbr = CreateSolidBrush(GetSysColor(COLOR_WINDOW))) {
 

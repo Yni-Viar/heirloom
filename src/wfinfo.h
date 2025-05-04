@@ -155,7 +155,6 @@ VOID UpdateDriveListComplete(VOID);
 VOID UpdateDriveList(VOID);
 VOID ResetDriveInfo(VOID);
 
-BOOL LoadComdlg(VOID);
 VOID UpdateWaitQuit(VOID);
 VOID WaitLoadEvent(BOOL bNet);
 

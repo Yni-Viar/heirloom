@@ -12,9 +12,7 @@
 #ifndef _INC_WFEXT
 #define _INC_WFEXT            /* #defined if wfext.h has been included */
 
-#ifdef __cplusplus            /* Assume C declaration for C++ */
 extern "C" {
-#endif  /* __cplusplus */
 
 #define MENU_TEXT_LEN           40
 
@@ -129,9 +127,7 @@ typedef DWORD (APIENTRY *FM_EXT_PROC)(HWND, WPARAM, LPARAM);
 
 LONG WINAPI FMExtensionProcW(HWND hwnd, WPARAM wEvent, LPARAM lParam);
 
-#ifdef __cplusplus
 }                  /* End of extern "C" { */
-#endif             /* __cplusplus */
 
 #endif             /* _INC_WFEXT */
 

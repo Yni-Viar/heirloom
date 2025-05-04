@@ -17,26 +17,6 @@
 #include "resize.h"
 
 
-
-BOOL (*lpfnGetFileVersionInfoW)(LPWSTR, DWORD, DWORD, LPVOID);
-DWORD (*lpfnGetFileVersionInfoSizeW)(LPWSTR, LPDWORD);
-BOOL (*lpfnVerQueryValueW)(const LPVOID, LPWSTR, LPVOID*, LPDWORD);
-BOOL (*lpfnVerQueryValueIndexW)(const LPVOID, LPWSTR, INT, LPVOID*, LPVOID*, LPDWORD);
-
-#define VERSION_DLL TEXT("version.dll")
-
-// LATER: replace these with ordinal numbers
-
-#define VERSION_GetFileVersionInfoW     "GetFileVersionInfoW"
-#define VERSION_GetFileVersionInfoSizeW "GetFileVersionInfoSizeW"
-#define VERSION_VerQueryValueW          "VerQueryValueW"
-#define VERSION_VerQueryValueIndexW     "VerQueryValueIndexW"
-
-#define GetFileVersionInfoW     (*lpfnGetFileVersionInfoW)
-#define GetFileVersionInfoSizeW (*lpfnGetFileVersionInfoSizeW)
-#define VerQueryValueW          (*lpfnVerQueryValueW)
-#define VerQueryValueIndexW      (*lpfnVerQueryValueIndexW)
-
 VOID CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn);
 BOOL NoQuotes(LPTSTR szT);
 
@@ -147,7 +127,7 @@ SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
          EndDialog(hDlg, FALSE);
          break;
 
-      case IDOK:
+      case IDOK: {
 
          GetDlgItemText(hDlg, IDD_DIR, SearchInfo.szSearch, COUNTOF(SearchInfo.szSearch));
          QualifyPath(SearchInfo.szSearch);
@@ -184,7 +164,7 @@ SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
          SearchInfo.iDirsRead = 0;
          SearchInfo.iFileCount = 0;
-         SearchInfo.eStatus = SEARCH_NULL;
+         SearchInfo.eStatus = _SEARCH_INFO::SEARCH_NULL;
          SearchInfo.bCancel = FALSE;
 
          // Retrieve state of search window
@@ -230,6 +210,7 @@ SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
          SetWindowPos(hwndSearch, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 
          break;
+      }
 
       default:
          return FALSE;
@@ -908,7 +889,7 @@ DisableVersionCtls(HWND hDlg)
 LPTSTR
 GetVersionDatum(LPTSTR pszName)
 {
-   DWORD cbValue=0;
+   UINT cbValue=0;
    LPTSTR lpValue;
 
    if (!hmemVersion)
@@ -948,35 +929,8 @@ LPTSTR
 GetVersionInfo(PTSTR pszPath, PTSTR pszName)
 {
    DWORD cbValue=0;
-   DWORD cbValueTranslation=0;
+   UINT cbValueTranslation=0;
    LPTSTR lpszValue=NULL;
-
-   static bDLLFail = FALSE;
-
-   if (!hVersion) {
-
-      hVersion = LoadSystemLibrary(VERSION_DLL);
-
-      if (!hVersion) {
-         bDLLFail = TRUE;
-         return NULL;
-      }
-
-#define GET_PROC(x) \
-   if (!(lpfn##x = (PVOID) GetProcAddress(hVersion,VERSION_##x))) {\
-      bDLLFail = TRUE; \
-      return NULL; }
-
-      GET_PROC(GetFileVersionInfoW);
-      GET_PROC(GetFileVersionInfoSizeW);
-      GET_PROC(VerQueryValueW);
-      GET_PROC(VerQueryValueIndexW);
-   }
-
-   if (bDLLFail)
-      return NULL;
-
-#undef GET_PROC
 
    //
    // Just in case, free old version buffer.
@@ -1004,7 +958,7 @@ GetVersionInfo(PTSTR pszPath, PTSTR pszName)
       // can't get memory for version info, blow out
       return NULL;
 
-   lpVersionBuffer = GlobalLock(hmemVersion);
+   lpVersionBuffer = (LPTSTR)GlobalLock(hmemVersion);
 
    //
    // If we fail, just return NULL. hmemVersion will be freed the next
@@ -1155,93 +1109,9 @@ FillSimpleVersion(HWND hDlg, LPTSTR lpszValue)
 
 
 VOID
-FillVersionList(HWND hDlg)
+FillVersionList(HWND)
 {
-   LPTSTR lpszKey, lpszValue;
-
-   DWORD cbValue;
-   UINT i, j, cchOffset;
-   INT idx;
-   HWND hwndLB;
-
-   hwndLB = GetDlgItem(hDlg, IDD_VERSION_KEY);
-
-   szVersionKey[VER_KEY_END - 1] = CHAR_NULL;        // strip the backslash
-
-   for (j=0; VerQueryValueIndexW(lpVersionBuffer,
-                                szVersionKey,
-                                j,
-                                (LPVOID*)&lpszKey,
-                                (LPVOID*)&lpszValue,
-                                &cbValue);  j++) {
-
-      if (!lstrcmp(lpszKey, szFileVersion) ||
-          !lstrcmp(lpszKey, szLegalCopyright)) {
-
-          continue;
-      }
-
-      for (i=0; i<MAX_VERNAMES; i++)
-         if (!lstrcmp(vernames[i].pszName, lpszKey))
-            break;
-
-      if (i != MAX_VERNAMES && LoadString(hAppInstance, vernames[i].idString, szMessage, COUNTOF(szMessage)))
-         lpszKey=szMessage;
-
-      idx = (INT)SendMessage(hwndLB, LB_ADDSTRING, 0, (LPARAM)lpszKey);
-
-      //
-      // Only add if the value len isn't zero.
-      // This is checked in the SendMessage 4th parm.
-      //
-      if (idx != LB_ERR)
-         SendMessage(hwndLB, LB_SETITEMDATA, idx, (LPARAM)lpszValue);
-   }
-
-   //
-   // Now look at the \VarFileInfo\Translations section and add an
-   // item for the language(s) this file supports.
-   //
-
-   if (lpXlate == NULL || pszXlate == NULL)
-      goto Done;
-
-   if (!LoadString(hAppInstance, (cXlate == 1) ? IDS_VN_LANGUAGE : IDS_VN_LANGUAGES,
-      szMessage, COUNTOF(szMessage)))
-
-      goto Done;
-
-   idx = (INT)SendMessage(hwndLB, LB_ADDSTRING, 0, (LPARAM)szMessage);
-   if (idx == LB_ERR)
-      goto Done;
-
-   pszXlate[0] = CHAR_NULL;
-   cchOffset = 0;
-   for (i=0; i<cXlate; i++) {
-      if (cchOffset + 2 > cchXlateString)
-         break;
-      if (i != 0) {
-         lstrcat(pszXlate, TEXT(", "));
-         cchOffset += 2;
-      }
-
-      if (VerLanguageName(lpXlate[i*2],
-                          pszXlate+cchOffset,
-                          cchXlateString-cchOffset
-                          ) > cchXlateString - cchOffset)
-
-         break;
-
-      cchOffset += lstrlen(pszXlate+cchOffset);
-   }
-   pszXlate[cchXlateString-1] = CHAR_NULL;
-
-   SendMessage(hwndLB, LB_SETITEMDATA, idx, (LPARAM)pszXlate);
-
-Done:
-
-   SendMessage(hwndLB, LB_SETCURSEL, 0, 0L);
-   PostMessage(hDlg, WM_COMMAND, GET_WM_COMMAND_MPS(IDD_VERSION_KEY, NULL, LBN_SELCHANGE));
+   // No longer used. It was broken and I don't think it's needed.
 }
 
 
@@ -1433,7 +1303,9 @@ FullPath:
       {
          if ((bFileCompression) && (dwAttribsOn & ATTR_COMPRESSED))
          {
-            qCSize.LowPart = GetCompressedFileSize(szName, &(qCSize.HighPart));
+            DWORD highPart = 0;
+            qCSize.LowPart = GetCompressedFileSize(szName, &highPart);
+            qCSize.HighPart = highPart;
             PutSize(&qCSize, szNum);
             wsprintf(szTemp, szSBytes, szNum);
             SetDlgItemText(hDlg, IDD_CSIZE, szTemp);

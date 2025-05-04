@@ -218,17 +218,17 @@ InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive)
 
          fmtetcLFN.cfFormat = RegisterClipboardFormat(TEXT("LongFileNameW"));
 
-         if (pDataObj->lpVtbl->QueryGetData(pDataObj, &fmtetcDrop) != S_OK &&
-             pDataObj->lpVtbl->QueryGetData(pDataObj, &fmtetcLFN) != S_OK && 
-             (pDataObj->lpVtbl->QueryGetData(pDataObj, &descriptor_format) != S_OK ||
-              pDataObj->lpVtbl->QueryGetData(pDataObj, &contents_format) != S_OK))
+         if (pDataObj->QueryGetData(&fmtetcDrop) != S_OK &&
+             pDataObj->QueryGetData(&fmtetcLFN) != S_OK && 
+             (pDataObj->QueryGetData(&descriptor_format) != S_OK ||
+              pDataObj->QueryGetData(&contents_format) != S_OK))
          {
             uPaste |= MF_GRAYED;
          }
 
           EnableMenuItem(hMenu, IDM_PASTE, uPaste);
 
-          pDataObj->lpVtbl->Release(pDataObj);
+          pDataObj->Release();
       }
 
       if (!hwndDir)

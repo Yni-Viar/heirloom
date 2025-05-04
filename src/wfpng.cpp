@@ -1,10 +1,7 @@
 #include "winfile.h"
 #include <windows.h>
 #include <assert.h>
-
-#define COBJMACROS
 #include <wincodec.h>
-#undef COBJMACROS
 
 #ifndef IStream_Release
 #define IStream_Release(This)	\
@@ -46,7 +43,7 @@ static HGLOBAL LoadPNGResource(HINSTANCE hInst, WORD id, DWORD *pcb)
 
 static BOOL CreateBitmapFromPNGRes(HINSTANCE hInst, WORD id, PNG_BITMAP *out)
 {
-    *out = (PNG_BITMAP){ 0 };
+    *out = {};
 
     DWORD cb;
     HGLOBAL hmem = LoadPNGResource(hInst, id, &cb);
@@ -72,18 +69,18 @@ static BOOL CreateBitmapFromPNGRes(HINSTANCE hInst, WORD id, PNG_BITMAP *out)
     IWICFormatConverter *conv = NULL;
     BOOL ok = FALSE;
 
-    if (SUCCEEDED(CoCreateInstance(&CLSID_WICImagingFactory, NULL,
-                   CLSCTX_INPROC_SERVER, &IID_IWICImagingFactory,
+    if (SUCCEEDED(CoCreateInstance(CLSID_WICImagingFactory, NULL,
+                   CLSCTX_INPROC_SERVER, IID_IWICImagingFactory,
                    (void **)&wic)) &&
-        SUCCEEDED(IWICImagingFactory_CreateDecoderFromStream(
-                   wic, pStream, NULL, WICDecodeMetadataCacheOnLoad, &dec)) &&
-        SUCCEEDED(IWICBitmapDecoder_GetFrame(dec, 0, &frm)) &&
-        SUCCEEDED(IWICImagingFactory_CreateFormatConverter(wic, &conv)) &&
-        SUCCEEDED(IWICFormatConverter_Initialize(conv, (IWICBitmapSource*)frm,
-                   &GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone,
+        SUCCEEDED(wic->CreateDecoderFromStream(
+                   pStream, NULL, WICDecodeMetadataCacheOnLoad, &dec)) &&
+        SUCCEEDED(dec->GetFrame(0, &frm)) &&
+        SUCCEEDED(wic->CreateFormatConverter(&conv)) &&
+        SUCCEEDED(conv->Initialize((IWICBitmapSource*)frm,
+                   GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone,
                    NULL, 0.0f, WICBitmapPaletteTypeCustom))) {
 
-        UINT w, h; IWICBitmapSource_GetSize(conv, &w, &h);
+        UINT w, h; conv->GetSize(&w, &h);
         BITMAPINFO bi = { 0 };
         bi.bmiHeader.biSize        = sizeof(bi.bmiHeader);
         bi.bmiHeader.biWidth       =  w;
@@ -96,18 +93,17 @@ static BOOL CreateBitmapFromPNGRes(HINSTANCE hInst, WORD id, PNG_BITMAP *out)
         HBITMAP hbm = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS,
                                        &pvBits, NULL, 0);
         if (hbm &&
-            SUCCEEDED(IWICBitmapSource_CopyPixels(conv, NULL,
-                       w * 4, h * w * 4, pvBits))) {
-            *out = (PNG_BITMAP){ hbm, w, h, NULL, 0, 0, 0 };
+            SUCCEEDED(conv->CopyPixels(NULL, w * 4, h * w * 4, (LPBYTE)pvBits))) {
+            *out = { hbm, w, h, NULL, 0, 0, 0 };
             ok = TRUE;
         }
     }
 
-    if (conv) IWICFormatConverter_Release(conv);
-    if (frm)  IWICBitmapFrameDecode_Release(frm);
-    if (dec)  IWICBitmapDecoder_Release(dec);
-    if (wic)  IWICImagingFactory_Release(wic);
-    if (pStream) IStream_Release(pStream);
+    if (conv) conv->Release();
+    if (frm)  frm->Release();
+    if (dec)  dec->Release();
+    if (wic)  wic->Release();
+    if (pStream) pStream->Release();
     return ok;
 }
 

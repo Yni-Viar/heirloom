@@ -404,11 +404,7 @@ CheckDrive(HWND hwnd, DRIVE drive, DWORD dwFunc)
          //
          WAITNET();
 
-         if (lpfnWNetRestoreSingleConnectionW != NULL) {
-            err = WNetRestoreSingleConnectionW(hwnd, szDrive, TRUE);
-         } else {
-            err = WNetRestoreConnectionW(hwnd, szDrive);
-         }
+         err = WNetRestoreSingleConnection(hwnd, szDrive, TRUE);
 
          if (err != WN_SUCCESS) {
 

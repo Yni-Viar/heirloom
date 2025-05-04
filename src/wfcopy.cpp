@@ -814,8 +814,8 @@ SetDlgItemPath(HWND hDlg, INT id, LPTSTR pszPath)
 
    hdc = GetDC(hDlg);
 
-   hFont = (HANDLE)SendMessage(hwnd, WM_GETFONT, 0, 0L);
-   if (hFont = SelectObject(hdc, hFont)) {
+   hFont = (HFONT)SendMessage(hwnd, WM_GETFONT, 0, 0L);
+   if (hFont = (HFONT)SelectObject(hdc, hFont)) {
       CompactPath(hdc, szPath, rc.right);
       SelectObject(hdc, hFont);
    }
@@ -1709,7 +1709,7 @@ Notify(HWND hDlg, WORD idMessage, LPTSTR szFrom, LPTSTR szTo)
 BOOL
 IsWindowsFile(LPTSTR szFileOEM)
 {
-   HANDLE hMod;
+   HMODULE hMod;
    TCHAR szModule[MAXPATHLEN];
 
    //
@@ -1939,7 +1939,7 @@ DWORD
 WINAPI
 WFMoveCopyDriverThread(LPVOID lpParameter)
 {
-   PCOPYINFO pCopyInfo = lpParameter;
+   PCOPYINFO pCopyInfo = (PCOPYINFO)lpParameter;
    DWORD ret = 0;                     // Return value from WFMoveCopyDriver
    LPWSTR pSpec = NULL;               // Pointer to file spec
    DWORD dwAttr;                      // File attributes

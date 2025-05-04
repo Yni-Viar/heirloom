@@ -186,7 +186,7 @@ SearchList(
       if (!*plpStart) {
 MemoryError:
          SearchInfo.dwError = ERROR_NOT_ENOUGH_MEMORY;
-         SearchInfo.eStatus = SEARCH_ERROR;
+         SearchInfo.eStatus = _SEARCH_INFO::SEARCH_ERROR;
          return iFileCount;
       }
 
@@ -233,7 +233,7 @@ MemoryError:
          ERROR_SYMLINK_CLASS_DISABLED != lfndta.err &&
          ERROR_INVALID_NAME != lfndta.err)) {
 
-      SearchInfo.eStatus = SEARCH_ERROR;
+      SearchInfo.eStatus = _SEARCH_INFO::SEARCH_ERROR;
       SearchInfo.dwError = lfndta.err;
       bRecurse = FALSE;
 
@@ -291,7 +291,7 @@ MemoryError:
 
             bRecurse = FALSE;       // simulate an abort
             SearchInfo.dwError = ERROR_NOT_ENOUGH_MEMORY;
-            SearchInfo.eStatus = SEARCH_ERROR;
+            SearchInfo.eStatus = _SEARCH_INFO::SEARCH_ERROR;
 
             break;
          }
@@ -395,7 +395,7 @@ SearchCleanup:
 
          iFileCount = iRetVal;
 
-         if (SEARCH_ERROR == SearchInfo.eStatus) {
+         if (_SEARCH_INFO::SEARCH_ERROR == SearchInfo.eStatus) {
             break;
          }
 
@@ -639,7 +639,7 @@ SearchWndProc(
       //
       if (SearchInfo.hThread) {
          SearchInfo.bCancel = TRUE;
-         SearchInfo.eStatus = SEARCH_MDICLOSE;
+         SearchInfo.eStatus = _SEARCH_INFO::SEARCH_MDICLOSE;
       }
       hwndSearch = NULL;
 
@@ -828,7 +828,7 @@ SearchWndProc(
 
          SearchInfo.iDirsRead = 0;
          SearchInfo.iFileCount = 0;
-         SearchInfo.eStatus = SEARCH_NULL;
+         SearchInfo.eStatus = _SEARCH_INFO::SEARCH_NULL;
          SearchInfo.bCancel = FALSE;
 
          // Create our dialog!  (modeless)
@@ -1251,7 +1251,7 @@ SearchProgDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
       switch (GET_WM_COMMAND_ID(wParam, lParam)) {
       case IDCANCEL:
          SearchInfo.bCancel = TRUE;
-         SearchInfo.eStatus = SEARCH_CANCEL;
+         SearchInfo.eStatus = _SEARCH_INFO::SEARCH_CANCEL;
          return TRUE;
       case IDD_HIDE:
          DestroyWindow(SearchInfo.hSearchDlg);
@@ -1303,7 +1303,7 @@ SearchEnd(VOID)
 {
    HWND hwndMDIChild;
 
-   if (SEARCH_MDICLOSE == SearchInfo.eStatus) {
+   if (_SEARCH_INFO::SEARCH_MDICLOSE == SearchInfo.eStatus) {
       //
       // Free up the data structure
       // Actually called by main thread, but on behalf of worker thread.
@@ -1313,7 +1313,7 @@ SearchEnd(VOID)
       InvalidateRect(SearchInfo.hwndLB, NULL, TRUE);
    }
 
-   if (SEARCH_ERROR == SearchInfo.eStatus) {
+   if (_SEARCH_INFO::SEARCH_ERROR == SearchInfo.eStatus) {
 
       LoadString(hAppInstance, IDS_SEARCHTITLE, szTitle, COUNTOF(szTitle));
 
@@ -1323,7 +1323,7 @@ SearchEnd(VOID)
       if (0 == SearchInfo.iRet)
          goto CloseWindow;
 
-   } else if (0 == SearchInfo.iRet && SEARCH_MDICLOSE != SearchInfo.eStatus) {
+   } else if (0 == SearchInfo.iRet && _SEARCH_INFO::SEARCH_MDICLOSE != SearchInfo.eStatus) {
 
       LoadString(hAppInstance, IDS_SEARCHTITLE, szTitle, COUNTOF(szTitle));
       LoadString(hAppInstance, IDS_SEARCHNOMATCHES, szMessage, COUNTOF(szMessage));
@@ -1338,7 +1338,7 @@ CloseWindow:
 
    }
 
-   if (SEARCH_MDICLOSE != SearchInfo.eStatus) {
+   if (_SEARCH_INFO::SEARCH_MDICLOSE != SearchInfo.eStatus) {
 
       hwndMDIChild = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
