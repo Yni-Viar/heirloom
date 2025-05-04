@@ -12,8 +12,7 @@
 #include "wfcopy.h"
 #include "treectl.h"
 
-HANDLE hDlgProgress   = NULL;
-
+HANDLE hDlgProgress = NULL;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -23,28 +22,22 @@ HANDLE hDlgProgress   = NULL;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-DWORD MKDir(
-    LPTSTR pName,
-    LPTSTR pSrc)
-{
-   DWORD dwErr = ERROR_SUCCESS;
+DWORD MKDir(LPTSTR pName, LPTSTR pSrc) {
+    DWORD dwErr = ERROR_SUCCESS;
 
-   if ((pSrc && *pSrc) ?
-         CreateDirectoryEx(pSrc, pName, NULL) :
-         CreateDirectory(pName, NULL)) {
-      ChangeFileSystem(FSC_MKDIR, pName, NULL);
-   } else {
-      dwErr = GetLastError();
+    if ((pSrc && *pSrc) ? CreateDirectoryEx(pSrc, pName, NULL) : CreateDirectory(pName, NULL)) {
+        ChangeFileSystem(FSC_MKDIR, pName, NULL);
+    } else {
+        dwErr = GetLastError();
 
-      // CreateDirectoryEx does not support developer mode, so create symbolic ourselves
-      if (ERROR_PRIVILEGE_NOT_HELD == dwErr) {
-         dwErr = WFCopyIfSymlink(pSrc, pName, SYMBOLIC_LINK_FLAG_DIRECTORY, FSC_SYMLINKD);
-      }
-   }
+        // CreateDirectoryEx does not support developer mode, so create symbolic ourselves
+        if (ERROR_PRIVILEGE_NOT_HELD == dwErr) {
+            dwErr = WFCopyIfSymlink(pSrc, pName, SYMBOLIC_LINK_FLAG_DIRECTORY, FSC_SYMLINKD);
+        }
+    }
 
-   return dwErr;
+    return dwErr;
 }
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -54,23 +47,17 @@ DWORD MKDir(
 //
 /////////////////////////////////////////////////////////////////////////////
 
-DWORD RMDir(
-    LPTSTR pName)
-{
-   DWORD dwErr = 0;
+DWORD RMDir(LPTSTR pName) {
+    DWORD dwErr = 0;
 
-   if (RemoveDirectory(pName))
-   {
-      ChangeFileSystem(FSC_RMDIR, pName, NULL);
-   }
-   else
-   {
-      dwErr = (WORD)GetLastError();
-   }
+    if (RemoveDirectory(pName)) {
+        ChangeFileSystem(FSC_RMDIR, pName, NULL);
+    } else {
+        dwErr = (WORD)GetLastError();
+    }
 
-   return (dwErr);
+    return (dwErr);
 }
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -80,28 +67,23 @@ DWORD RMDir(
 //
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL WFSetAttr(
-    LPTSTR lpFile,
-    DWORD dwAttr)
-{
-   BOOL bRet;
+BOOL WFSetAttr(LPTSTR lpFile, DWORD dwAttr) {
+    BOOL bRet;
 
-   //
-   //  Compression attribute is handled separately -
-   //  do not try to set it here.
-   //
-   dwAttr = dwAttr & ~(ATTR_COMPRESSED | ATTR_ENCRYPTED);
+    //
+    //  Compression attribute is handled separately -
+    //  do not try to set it here.
+    //
+    dwAttr = dwAttr & ~(ATTR_COMPRESSED | ATTR_ENCRYPTED);
 
-   bRet = SetFileAttributes(lpFile, dwAttr);
+    bRet = SetFileAttributes(lpFile, dwAttr);
 
-   if (bRet)
-   {
-      ChangeFileSystem(FSC_ATTRIBUTES, lpFile, NULL);
-   }
+    if (bRet) {
+        ChangeFileSystem(FSC_ATTRIBUTES, lpFile, NULL);
+    }
 
-   return ( (BOOL)!bRet );
+    return ((BOOL)!bRet);
 }
-
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -111,15 +93,13 @@ BOOL WFSetAttr(
 //
 //////////////////////////////////////////////////////////////////////////////
 
-VOID CentreWindow(
-    HWND hwnd)
-{
-    RECT    rect;
-    RECT    rectParent;
-    HWND    hwndParent;
-    LONG    dx, dy;
-    LONG    dxParent, dyParent;
-    DWORD   Style;
+VOID CentreWindow(HWND hwnd) {
+    RECT rect;
+    RECT rectParent;
+    HWND hwndParent;
+    LONG dx, dy;
+    LONG dxParent, dyParent;
+    DWORD Style;
 
     //
     //  Get window rect.
@@ -133,15 +113,11 @@ VOID CentreWindow(
     //  Get parent rect.
     //
     Style = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
-    if ((Style & WS_CHILD) == 0)
-    {
+    if ((Style & WS_CHILD) == 0) {
         hwndParent = GetDesktopWindow();
-    }
-    else
-    {
+    } else {
         hwndParent = GetParent(hwnd);
-        if (hwndParent == NULL)
-        {
+        if (hwndParent == NULL) {
             hwndParent = GetDesktopWindow();
         }
     }
@@ -154,23 +130,15 @@ VOID CentreWindow(
     //  Centre the child in the parent.
     //
     rect.left = (dxParent - dx) / 2;
-    rect.top  = (dyParent - dy) / 3;
+    rect.top = (dyParent - dy) / 3;
 
     //
     //  Move the child into position.
     //
-    SetWindowPos( hwnd,
-                  NULL,
-                  rect.left,
-                  rect.top,
-                  0,
-                  0,
-                  SWP_NOSIZE | SWP_NOZORDER );
+    SetWindowPos(hwnd, NULL, rect.left, rect.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 
     SetForegroundWindow(hwnd);
 }
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -181,16 +149,10 @@ VOID CentreWindow(
 //
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL GetRootPath(
-    LPTSTR szPath,
-    LPTSTR szReturn)
-{
-    if (!QualifyPath(szPath))
-    {
+BOOL GetRootPath(LPTSTR szPath, LPTSTR szReturn) {
+    if (!QualifyPath(szPath)) {
         return (FALSE);
-    }
-    else
-    {
+    } else {
         szReturn[0] = TEXT('\0');
     }
 

@@ -15,136 +15,116 @@
 #ifndef _MPR_H_INCLUDED
 #define _MPR_H_INCLUDED
 
-//For restoring connection stuff. Add by congpay.
-// const used by connect.c
-#define SHOW_CONNECTION     (WM_USER+200)
-#define DO_PASSWORD_DIALOG  (WM_USER + 201)
-#define DO_ERROR_DIALOG     (WM_USER + 202)
+// For restoring connection stuff. Add by congpay.
+//  const used by connect.c
+#define SHOW_CONNECTION (WM_USER + 200)
+#define DO_PASSWORD_DIALOG (WM_USER + 201)
+#define DO_ERROR_DIALOG (WM_USER + 202)
 
 // types used by connect.c
 
-typedef struct _CONNECTION_INFO *LPCONNECTION_INFO;
+typedef struct _CONNECTION_INFO* LPCONNECTION_INFO;
 
 // The following two structures are used by two threads in mpr.dll and
 // mprui.dll to share data.
 
 typedef struct _PARAMETERS {
-    HWND    hDlg;
-    HANDLE  hDlgCreated;                //Initialized in WNetRestoreConnection
-    HANDLE  hDlgFailed;                 //Initialized in WNetRestoreConnection
-    HANDLE  hDonePassword;              //Initialized in WNetRestoreConnection
-    TCHAR * pchResource;                //ShowReconnectDialog, DoRestoreConnection
-    TCHAR * pchUserName;                //For DoPasswordDialog
-    TCHAR   passwordBuffer[UNLEN+1];    //Used by WNetRestoreThisConnection
-    BOOL    fSuccess;                   //For the DoPasswordDialog
-    BOOL    fDidCancel;                 //For the DoPasswordDialog
-    BOOL    fDownLevel;                 //FALSE if error==ERROR_LOGON_FAILURE
-    BOOL    fTerminateThread;           //TRUE if we want the second thread to be end
-    DWORD   status;                     //return value from DoRestoreConnection
-    DWORD   numSubKeys;                 //Initialized in WNetRestoreConnection
-    DWORD   RegMaxWait;
-    LPCONNECTION_INFO ConnectArray;     //Initialized in WNetRestoreConnection
-    }PARAMETERS;
+    HWND hDlg;
+    HANDLE hDlgCreated;               // Initialized in WNetRestoreConnection
+    HANDLE hDlgFailed;                // Initialized in WNetRestoreConnection
+    HANDLE hDonePassword;             // Initialized in WNetRestoreConnection
+    TCHAR* pchResource;               // ShowReconnectDialog, DoRestoreConnection
+    TCHAR* pchUserName;               // For DoPasswordDialog
+    TCHAR passwordBuffer[UNLEN + 1];  // Used by WNetRestoreThisConnection
+    BOOL fSuccess;                    // For the DoPasswordDialog
+    BOOL fDidCancel;                  // For the DoPasswordDialog
+    BOOL fDownLevel;                  // FALSE if error==ERROR_LOGON_FAILURE
+    BOOL fTerminateThread;            // TRUE if we want the second thread to be end
+    DWORD status;                     // return value from DoRestoreConnection
+    DWORD numSubKeys;                 // Initialized in WNetRestoreConnection
+    DWORD RegMaxWait;
+    LPCONNECTION_INFO ConnectArray;  // Initialized in WNetRestoreConnection
+} PARAMETERS;
 
 extern "C" {
 
-//function load from mprui.dll.
+// function load from mprui.dll.
 
 DWORD DoPasswordDialog(
-    HWND          hwndOwner,
-    TCHAR *       pchResource,
-    TCHAR *       pchUserName,
-    TCHAR *       pchPasswordReturnBuffer,
-    DWORD         cbPasswordReturnBuffer, // bytes!
-    BOOL *        pfDidCancel,
-    BOOL          fDownLevel
-    );
+    HWND hwndOwner,
+    TCHAR* pchResource,
+    TCHAR* pchUserName,
+    TCHAR* pchPasswordReturnBuffer,
+    DWORD cbPasswordReturnBuffer,  // bytes!
+    BOOL* pfDidCancel,
+    BOOL fDownLevel);
 
 DWORD DoProfileErrorDialog(
-    HWND          hwndOwner,
-    const TCHAR * pchDevice,
-    const TCHAR * pchResource,
-    const TCHAR * pchProvider,
-    DWORD         dwError,
-    BOOL          fAllowCancel, // ask whether to stop reconnecting devices
-                                //  this time?
-    BOOL *        pfDidCancel,  // stop reconnecting devices this time?
-                                //  active iff fAllowCancel
-    BOOL *        pfDisconnect, // do not reconnect this device in future?
-    BOOL *        pfHideErrors  // stop displaying error dialogs this time?
-                                //  active iff fAllowCancel
-    );
+    HWND hwndOwner,
+    const TCHAR* pchDevice,
+    const TCHAR* pchResource,
+    const TCHAR* pchProvider,
+    DWORD dwError,
+    BOOL fAllowCancel,   // ask whether to stop reconnecting devices
+                         //  this time?
+    BOOL* pfDidCancel,   // stop reconnecting devices this time?
+                         //  active iff fAllowCancel
+    BOOL* pfDisconnect,  // do not reconnect this device in future?
+    BOOL* pfHideErrors   // stop displaying error dialogs this time?
+                         //  active iff fAllowCancel
+);
 
-DWORD ShowReconnectDialog (
-    HWND          hwndParent,
-    PARAMETERS *  Params);
+DWORD ShowReconnectDialog(HWND hwndParent, PARAMETERS* Params);
 
 //
 // Return codes from WNetRestoreConnection
 //
-#define WN_CONTINUE     0x00000BB9
+#define WN_CONTINUE 0x00000BB9
 
-DWORD APIENTRY
-RestoreConnectionA0(
-     HWND    hWnd,
-     LPSTR  lpDevice
-    );
+DWORD APIENTRY RestoreConnectionA0(HWND hWnd, LPSTR lpDevice);
 
-DWORD APIENTRY
-WNetClearConnections(
-     HWND    hWnd
-     ) ;
+DWORD APIENTRY WNetClearConnections(HWND hWnd);
 
 //
 // Authentication Provider (Credential Management) Functions
 //
 
-DWORD APIENTRY
-WNetLogonNotify(
-    LPCWSTR             lpPrimaryAuthenticator,
-    PLUID               lpLogonId,
-    LPCWSTR             lpAuthentInfoType,
-    LPVOID              lpAuthentInfo,
-    LPCWSTR             lpPreviousAuthentInfoType,
-    LPVOID              lpPreviousAuthentInfo,
-    LPWSTR              lpStationName,
-    LPVOID              StationHandle,
-    LPWSTR              *lpLogonScripts
-    );
+DWORD APIENTRY WNetLogonNotify(
+    LPCWSTR lpPrimaryAuthenticator,
+    PLUID lpLogonId,
+    LPCWSTR lpAuthentInfoType,
+    LPVOID lpAuthentInfo,
+    LPCWSTR lpPreviousAuthentInfoType,
+    LPVOID lpPreviousAuthentInfo,
+    LPWSTR lpStationName,
+    LPVOID StationHandle,
+    LPWSTR* lpLogonScripts);
 
-DWORD APIENTRY
-WNetPasswordChangeNotify(
-    LPCWSTR             lpPrimaryAuthenticator,
-    LPCWSTR             lpAuthentInfoType,
-    LPVOID              lpAuthentInfo,
-    LPCWSTR             lpPreviousAuthentInfoType,
-    LPVOID              lpPreviousAuthentInfo,
-    LPWSTR              lpStationName,
-    LPVOID              StationHandle,
-    DWORD               dwChangeInfo
-    );
+DWORD APIENTRY WNetPasswordChangeNotify(
+    LPCWSTR lpPrimaryAuthenticator,
+    LPCWSTR lpAuthentInfoType,
+    LPVOID lpAuthentInfo,
+    LPCWSTR lpPreviousAuthentInfoType,
+    LPVOID lpPreviousAuthentInfo,
+    LPWSTR lpStationName,
+    LPVOID StationHandle,
+    DWORD dwChangeInfo);
 
 //
 // Directory functions
 //
 
 DWORD
-WNetDirectoryNotifyW (
-    HWND    hwnd,
-    LPTSTR  lpDir,
-    DWORD   dwOper
-    );
+WNetDirectoryNotifyW(HWND hwnd, LPTSTR lpDir, DWORD dwOper);
 
-#define WNetDirectoryNotify   WNetDirectoryNotifyW
+#define WNetDirectoryNotify WNetDirectoryNotifyW
 
+typedef struct _WNET_CONNECTINFOW {
+    LPWSTR lpRemoteName;
+    LPWSTR lpProvider;
+} WNET_CONNECTIONINFOW, *LPWNET_CONNECTIONINFOW;
 
-typedef struct _WNET_CONNECTINFOW
-{
-    LPWSTR lpRemoteName ;
-    LPWSTR lpProvider ;
-} WNET_CONNECTIONINFOW, *LPWNET_CONNECTIONINFOW ;
-
-#define WNET_CONNECTIONINFO   WNET_CONNECTIONINFOW
+#define WNET_CONNECTIONINFO WNET_CONNECTIONINFOW
 #define LPWNET_CONNECTIONINFO LPWNET_CONNECTIONINFOW
 
 //
@@ -153,20 +133,9 @@ typedef struct _WNET_CONNECTINFOW
 // nor encourage apps to have to document the way these
 // dialogs work, since they are liable to change.
 //
-DWORD WNetConnectionDialog2 (
-    HWND    hwndParent,
-    DWORD   dwType,
-    WCHAR  *lpHelpFile,
-    DWORD   nHelpContext
-    );
+DWORD WNetConnectionDialog2(HWND hwndParent, DWORD dwType, WCHAR* lpHelpFile, DWORD nHelpContext);
 
-DWORD WNetDisconnectDialog2 (
-    HWND    hwndParent,
-    DWORD   dwType,
-    WCHAR  *lpHelpFile,
-    DWORD   nHelpContext
-    );
-
+DWORD WNetDisconnectDialog2(HWND hwndParent, DWORD dwType, WCHAR* lpHelpFile, DWORD nHelpContext);
 
 //
 // Browse dialog
@@ -174,7 +143,7 @@ DWORD WNetDisconnectDialog2 (
 
 // Type of the callback routine used by the browse dialog to validate
 // the path input by the user
-typedef BOOL (*PFUNC_VALIDATION_CALLBACK)( LPWSTR pszName );
+typedef BOOL (*PFUNC_VALIDATION_CALLBACK)(LPWSTR pszName);
 
 //  WNetBrowseDialog and WNetBrowsePrinterDialog
 //  NOTE: WNetBrowsePrintDialog =
@@ -210,96 +179,89 @@ typedef BOOL (*PFUNC_VALIDATION_CALLBACK)( LPWSTR pszName );
 ********************************************************************/
 
 DWORD WNetBrowseDialog(
-    HWND    hwndParent,
-    DWORD   dwType,
-    WCHAR  *lpszName,
-    DWORD   cchBufSize,
-    WCHAR  *lpszHelpFile,
-    DWORD   nHelpContext,
-    PFUNC_VALIDATION_CALLBACK pfuncValidation );
+    HWND hwndParent,
+    DWORD dwType,
+    WCHAR* lpszName,
+    DWORD cchBufSize,
+    WCHAR* lpszHelpFile,
+    DWORD nHelpContext,
+    PFUNC_VALIDATION_CALLBACK pfuncValidation);
 
 DWORD WNetBrowsePrinterDialog(
-    HWND    hwndParent,
-    WCHAR  *lpszName,
-    DWORD   cchBufSize,
-    WCHAR  *lpszHelpFile,
-    DWORD   nHelpContext,
-    PFUNC_VALIDATION_CALLBACK pfuncValidation );
+    HWND hwndParent,
+    WCHAR* lpszName,
+    DWORD cchBufSize,
+    WCHAR* lpszHelpFile,
+    DWORD nHelpContext,
+    PFUNC_VALIDATION_CALLBACK pfuncValidation);
 
 //
 // stuff in user, not driver, for shell apps ;Internal
 //
-DWORD APIENTRY WNetErrorText(DWORD,LPTSTR,DWORD); // ;Internal
+DWORD APIENTRY WNetErrorText(DWORD, LPTSTR, DWORD);  // ;Internal
 
 //
 // used by MPRUI.DLL to determine if a provider supports
 // NpSearchDialog() and obtain to a pointer to it.
 //
-FARPROC WNetGetSearchDialog(LPWSTR lpProvider) ;
+FARPROC WNetGetSearchDialog(LPWSTR lpProvider);
 
 //
 // used by MPRUI.DLL to determine if a provider supports
 // NPFormatNetworkName() and obtain a pointer to it.
 //
-FARPROC WNetGetFormatNameProc(LPWSTR lpProvider) ;
+FARPROC WNetGetFormatNameProc(LPWSTR lpProvider);
 
 //
 // used by MPRUI.DLL to determine if a provider supports
 // WNNC_ENUM_GLOBAL
 //
-BOOL WNetSupportGlobalEnum(LPWSTR lpProvider) ;
+BOOL WNetSupportGlobalEnum(LPWSTR lpProvider);
 
 //
 // used by ACLEDIT.DLL to get provider-specific permission editor
 //
 
-DWORD WNetFMXGetPermCaps( LPWSTR lpDriveName ) ;
-DWORD WNetFMXEditPerm( LPWSTR lpDriveName, HWND hwndFMX, DWORD nDialogType );
-DWORD WNetFMXGetPermHelp( LPWSTR  lpDriveName,
-                          DWORD   nDialogType,
-                          BOOL    fDirectory,
-                          LPVOID  lpFileNameBuffer,
-                          LPDWORD lpBufferSize,
-                          LPDWORD lpnHelpContext );
+DWORD WNetFMXGetPermCaps(LPWSTR lpDriveName);
+DWORD WNetFMXEditPerm(LPWSTR lpDriveName, HWND hwndFMX, DWORD nDialogType);
+DWORD WNetFMXGetPermHelp(
+    LPWSTR lpDriveName,
+    DWORD nDialogType,
+    BOOL fDirectory,
+    LPVOID lpFileNameBuffer,
+    LPDWORD lpBufferSize,
+    LPDWORD lpnHelpContext);
 
 //
 // sections and keys used for persistent connections
 //
 
-#define WNNC_DLG_DISCONNECT     0x0008
-#define WNNC_DLG_CONNECT        0x0004
+#define WNNC_DLG_DISCONNECT 0x0008
+#define WNNC_DLG_CONNECT 0x0004
 
-#define MPR_MRU_FILE_SECTION        L"NET_Files"
-#define MPR_MRU_PRINT_SECTION       L"NET_Printers"
-#define MPR_MRU_ORDER_KEY       L"Order"
+#define MPR_MRU_FILE_SECTION L"NET_Files"
+#define MPR_MRU_PRINT_SECTION L"NET_Printers"
+#define MPR_MRU_ORDER_KEY L"Order"
 
-#define MPR_NETWORK_SECTION     L"Network"
-#define MPR_SAVECONNECTION_KEY      L"SaveConnections"
-#define MPR_RESTORECONNECTION_KEY   L"RestoreConnections"
-#define MPR_EXPANDLOGONDOMAIN_KEY       L"ExpandLogonDomain"
+#define MPR_NETWORK_SECTION L"Network"
+#define MPR_SAVECONNECTION_KEY L"SaveConnections"
+#define MPR_RESTORECONNECTION_KEY L"RestoreConnections"
+#define MPR_EXPANDLOGONDOMAIN_KEY L"ExpandLogonDomain"
 
-#define MPR_YES_VALUE           L"yes"
-#define MPR_NO_VALUE            L"no"
-
+#define MPR_YES_VALUE L"yes"
+#define MPR_NO_VALUE L"no"
 
 //
 // Internal NP interface used to help the NTLM provider remember
 // whether a persistent connection is a DFS connection or not
 //
 
-DWORD APIENTRY
-NPGetReconnectFlags (
-       IN  LPWSTR   lpLocalName,
-       OUT LPBYTE   lpPersistFlags
-    );
-typedef DWORD (*PF_NPGetReconnectFlags) (
-       LPWSTR   lpLocalName,
-       LPBYTE   lpPersistFlags
-    );
+DWORD APIENTRY NPGetReconnectFlags(IN LPWSTR lpLocalName, OUT LPBYTE lpPersistFlags);
+typedef DWORD (*PF_NPGetReconnectFlags)(LPWSTR lpLocalName, LPBYTE lpPersistFlags);
 
 // This macro operates on the dwFlags parameter of NPAddConnection3
-#define CONNECT_PROVIDER_FLAGS(dwFlags)   ((BYTE) (((dwFlags) & 0xFF000000) >> 24))
+#define CONNECT_PROVIDER_FLAGS(dwFlags) ((BYTE)(((dwFlags) & 0xFF000000) >> 24))
 
-} // extern "C"
+}  // extern "C"
 
-#endif // _MPR_H_INCLUDED
+#endif  // _MPR_H_INCLUDED

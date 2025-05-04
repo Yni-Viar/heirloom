@@ -18,16 +18,13 @@ LPTSTR CurDirCache[26];
 
 #define MAXHISTORY 32
 DWORD historyCur = 0;
-typedef struct HistoryDir
-{
+typedef struct HistoryDir {
     HWND hwnd;
     TCHAR szDir[MAXPATHLEN];
 } HistoryDir;
 HistoryDir rghistoryDir[MAXHISTORY];
 
-VOID
-SaveHistoryDir(HWND hwnd, LPWSTR szDir)
-{
+VOID SaveHistoryDir(HWND hwnd, LPWSTR szDir) {
     if (rghistoryDir[historyCur].hwnd == hwnd && lstrcmpi(rghistoryDir[historyCur].szDir, szDir) == 0)
         return;
 
@@ -42,11 +39,9 @@ SaveHistoryDir(HWND hwnd, LPWSTR szDir)
     rghistoryDir[historyT].szDir[0] = '\0';
 }
 
-BOOL
-GetPrevHistoryDir(BOOL forward, HWND *phwnd, LPWSTR szDir)
-{
+BOOL GetPrevHistoryDir(BOOL forward, HWND* phwnd, LPWSTR szDir) {
     DWORD historyNext = (historyCur + 1) % MAXHISTORY;
-    DWORD historyPrev = (historyCur == 0 ? MAXHISTORY : historyCur )- 1;
+    DWORD historyPrev = (historyCur == 0 ? MAXHISTORY : historyCur) - 1;
     DWORD historyT = forward ? historyNext : historyPrev;
 
     if (rghistoryDir[historyT].hwnd == NULL)
@@ -54,42 +49,39 @@ GetPrevHistoryDir(BOOL forward, HWND *phwnd, LPWSTR szDir)
 
     historyCur = historyT;
 
-    *phwnd = rghistoryDir[historyCur].hwnd;  
+    *phwnd = rghistoryDir[historyCur].hwnd;
     lstrcpy(szDir, rghistoryDir[historyCur].szDir);
     return TRUE;
 }
 
 LPWSTR
-pszNextComponent(
-   LPWSTR p)
-{
-   BOOL    bInQuotes = FALSE;
+pszNextComponent(LPWSTR p) {
+    BOOL bInQuotes = FALSE;
 
-   while (*p == L' ' || *p == L'\t')
-      p++;
+    while (*p == L' ' || *p == L'\t')
+        p++;
 
-   //
-   // Skip executable name
-   //
-   while (*p) {
+    //
+    // Skip executable name
+    //
+    while (*p) {
+        if ((*p == L' ' || *p == L'\t') && !bInQuotes)
+            break;
 
-      if ((*p == L' ' || *p == L'\t') && !bInQuotes)
-         break;
+        if (*p == CHAR_DQUOTE)
+            bInQuotes = !bInQuotes;
 
-      if (*p == CHAR_DQUOTE)
-         bInQuotes = !bInQuotes;
+        p++;
+    }
 
-      p++;
-   }
+    if (*p) {
+        *p++ = CHAR_NULL;
 
-   if (*p) {
-      *p++ = CHAR_NULL;
+        while (*p == L' ' || *p == L'\t')
+            p++;
+    }
 
-      while (*p == L' ' || *p == L'\t')
-         p++;
-   }
-
-   return p;
+    return p;
 }
 
 // If a string starts and ends with a quote, truncate the ending quote and
@@ -97,91 +89,78 @@ pszNextComponent(
 // pszNextComponent above support quotes in the middle of strings, which
 // this function makes no attempt to remove.
 LPWSTR
-pszRemoveSurroundingQuotes(
-   LPWSTR p
-   )
-{
-   if (*p == CHAR_DQUOTE) {
-      size_t len;
+pszRemoveSurroundingQuotes(LPWSTR p) {
+    if (*p == CHAR_DQUOTE) {
+        size_t len;
 
-      len = wcslen(p);
+        len = wcslen(p);
 
-      // Length needs to be at least 2 to ensure there are 2 quotes rather
-      // than counting the same quote twice
-      if (len > 1 && p[len - 1] == CHAR_DQUOTE) {
-         p[len - 1] = '\0';
-         p++;
-      }
-   }
+        // Length needs to be at least 2 to ensure there are 2 quotes rather
+        // than counting the same quote twice
+        if (len > 1 && p[len - 1] == CHAR_DQUOTE) {
+            p[len - 1] = '\0';
+            p++;
+        }
+    }
 
-   return p;
+    return p;
 }
-
 
 // Set the status bar text for a given pane
 
-VOID CDECL
-SetStatusText(int nPane, UINT nFlags, LPCTSTR szFormat, ...)
-{
-   TCHAR szTemp[120+MAXPATHLEN];
-   TCHAR szTempFormat[120+MAXPATHLEN];
+VOID CDECL SetStatusText(int nPane, UINT nFlags, LPCTSTR szFormat, ...) {
+    TCHAR szTemp[120 + MAXPATHLEN];
+    TCHAR szTempFormat[120 + MAXPATHLEN];
 
-   va_list vaArgs;
+    va_list vaArgs;
 
-   if (!hwndStatus)
-      return;
+    if (!hwndStatus)
+        return;
 
-   if (nFlags & SST_RESOURCE) {
-      if (!LoadString(hAppInstance, (DWORD) (LONG_PTR) szFormat,
-         szTempFormat, COUNTOF(szTempFormat)))
+    if (nFlags & SST_RESOURCE) {
+        if (!LoadString(hAppInstance, (DWORD)(LONG_PTR)szFormat, szTempFormat, COUNTOF(szTempFormat)))
 
-         return;
+            return;
 
-      szFormat = szTempFormat;
-   }
+        szFormat = szTempFormat;
+    }
 
-   if (nFlags & SST_FORMAT) {
+    if (nFlags & SST_FORMAT) {
+        va_start(vaArgs, szFormat);
+        wvsprintf(szTemp, szFormat, vaArgs);
+        va_end(vaArgs);
 
-      va_start(vaArgs, szFormat);
-      wvsprintf(szTemp, szFormat, vaArgs);
-      va_end(vaArgs);
+        szFormat = szTemp;
+    }
 
-      szFormat = szTemp;
-   }
-
-   SendMessage(hwndStatus, SB_SETTEXT, nPane, (LPARAM)szFormat);
+    SendMessage(hwndStatus, SB_SETTEXT, nPane, (LPARAM)szFormat);
 }
-
 
 // drive   zero based drive number (0 = A, 1 = B)
 // returns:
 //  TRUE    we have it saved pszPath gets path
 //  FALSE   we don't have it saved
 
-BOOL
-GetSavedDirectory(DRIVE drive, LPTSTR pszPath)
-{
-   if (CurDirCache[drive]) {
-      lstrcpy(pszPath, CurDirCache[drive]);
-      return TRUE;
-   } else
-      return FALSE;
+BOOL GetSavedDirectory(DRIVE drive, LPTSTR pszPath) {
+    if (CurDirCache[drive]) {
+        lstrcpy(pszPath, CurDirCache[drive]);
+        return TRUE;
+    } else
+        return FALSE;
 }
 
-VOID
-SaveDirectory(LPTSTR pszPath)
-{
-   DRIVE drive;
+VOID SaveDirectory(LPTSTR pszPath) {
+    DRIVE drive;
 
-   drive = DRIVEID(pszPath);
+    drive = DRIVEID(pszPath);
 
-   if (CurDirCache[drive])
-      LocalFree((HANDLE)CurDirCache[drive]);
+    if (CurDirCache[drive])
+        LocalFree((HANDLE)CurDirCache[drive]);
 
-   CurDirCache[drive] = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(pszPath)+1));
+    CurDirCache[drive] = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(pszPath) + 1));
 
-   if (CurDirCache[drive])
-      lstrcpy(CurDirCache[drive], pszPath);
+    if (CurDirCache[drive])
+        lstrcpy(CurDirCache[drive], pszPath);
 }
 
 /*
@@ -195,13 +174,11 @@ SaveDirectory(LPTSTR pszPath)
  *           (search windows NOT allowed)
  */
 
-INT
-GetSelectedDrive()
-{
+INT GetSelectedDrive() {
     HWND hwnd;
 
-    hwnd = (HWND)SendMessage(hwndMDIClient,WM_MDIGETACTIVE,0,0L);
-    return (INT)SendMessage(hwnd,FS_GETDRIVE,0,0L) - (INT)CHAR_A;
+    hwnd = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
+    return (INT)SendMessage(hwnd, FS_GETDRIVE, 0, 0L) - (INT)CHAR_A;
 }
 
 /*
@@ -218,51 +195,41 @@ GetSelectedDrive()
  *  NOTE: when drive != 0, string will be empty for an invalid drive.
  */
 
-VOID
-GetSelectedDirectory(DRIVE drive, LPTSTR pszDir)
-{
+VOID GetSelectedDirectory(DRIVE drive, LPTSTR pszDir) {
     HWND hwnd;
     DRIVE driveT;
 
     if (drive) {
-       for (hwnd = GetWindow(hwndMDIClient,GW_CHILD);
-       hwnd;
-       hwnd = GetWindow(hwnd,GW_HWNDNEXT)) {
-
-          driveT = (DRIVE)SendMessage(hwnd,FS_GETDRIVE,0,0L);
-          if (drive == (DRIVE)(driveT - CHAR_A + 1))
-             goto hwndfound;
-       }
-       if (!GetSavedDirectory(drive - 1, pszDir)) {
-          GetDriveDirectory(drive, pszDir);
-       }
-       return;
+        for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = GetWindow(hwnd, GW_HWNDNEXT)) {
+            driveT = (DRIVE)SendMessage(hwnd, FS_GETDRIVE, 0, 0L);
+            if (drive == (DRIVE)(driveT - CHAR_A + 1))
+                goto hwndfound;
+        }
+        if (!GetSavedDirectory(drive - 1, pszDir)) {
+            GetDriveDirectory(drive, pszDir);
+        }
+        return;
     } else
-       hwnd = (HWND)SendMessage(hwndMDIClient,WM_MDIGETACTIVE,0,0L);
+        hwnd = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
 hwndfound:
-    SendMessage(hwnd,FS_GETDIRECTORY,MAXPATHLEN,(LPARAM)pszDir);
+    SendMessage(hwnd, FS_GETDIRECTORY, MAXPATHLEN, (LPARAM)pszDir);
 
     StripBackslash(pszDir);
 }
 
-
-BOOL  GetDriveDirectory(INT iDrive, LPTSTR pszDir)
-{
+BOOL GetDriveDirectory(INT iDrive, LPTSTR pszDir) {
     TCHAR drvstr[4];
     DWORD ret;
 
     pszDir[0] = '\0';
 
-    if(iDrive!=0)
-    {
+    if (iDrive != 0) {
         drvstr[0] = ('A') - 1 + iDrive;
         drvstr[1] = (':');
         drvstr[2] = ('.');
         drvstr[3] = ('\0');
-    }
-    else
-    {
+    } else {
         drvstr[0] = ('.');
         drvstr[1] = ('\0');
     }
@@ -270,58 +237,48 @@ BOOL  GetDriveDirectory(INT iDrive, LPTSTR pszDir)
     if (GetFileAttributes(drvstr) == INVALID_FILE_ATTRIBUTES)
         return FALSE;
 
-//  if (!CheckDirExists(drvstr))
-//      return FALSE;
+    //  if (!CheckDirExists(drvstr))
+    //      return FALSE;
 
-    ret = GetFullPathName( drvstr, MAXPATHLEN, pszDir, NULL);
+    ret = GetFullPathName(drvstr, MAXPATHLEN, pszDir, NULL);
 
     return ret != 0;
 }
 
-
 // similar to GetSelectedDirectory but for all already listed directories
 // doesn't change the current directory of the drives, but returns a list of them
-VOID
-GetAllDirectories(LPTSTR rgszDirs[])
-{
+VOID GetAllDirectories(LPTSTR rgszDirs[]) {
     HWND mpdrivehwnd[MAX_DRIVES];
     HWND hwnd;
     DRIVE driveT;
 
-    for (driveT = 0; driveT < MAX_DRIVES; driveT++)
-    {
+    for (driveT = 0; driveT < MAX_DRIVES; driveT++) {
         rgszDirs[driveT] = NULL;
         mpdrivehwnd[driveT] = NULL;
     }
 
-    for (hwnd = GetWindow(hwndMDIClient,GW_CHILD); hwnd; hwnd = GetWindow(hwnd,GW_HWNDNEXT)) 
-    {
-        driveT = (DRIVE)SendMessage(hwnd,FS_GETDRIVE,0,0L) - CHAR_A;
+    for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = GetWindow(hwnd, GW_HWNDNEXT)) {
+        driveT = (DRIVE)SendMessage(hwnd, FS_GETDRIVE, 0, 0L) - CHAR_A;
         if (mpdrivehwnd[driveT] == NULL)
             mpdrivehwnd[driveT] = hwnd;
     }
 
-    for (driveT = 0; driveT < MAX_DRIVES; driveT++)
-    {
+    for (driveT = 0; driveT < MAX_DRIVES; driveT++) {
         TCHAR szDir[MAXPATHLEN];
 
-        if (mpdrivehwnd[driveT] != NULL)
-        {
-            SendMessage(mpdrivehwnd[driveT],FS_GETDIRECTORY,MAXPATHLEN,(LPARAM)szDir);
+        if (mpdrivehwnd[driveT] != NULL) {
+            SendMessage(mpdrivehwnd[driveT], FS_GETDIRECTORY, MAXPATHLEN, (LPARAM)szDir);
 
             StripBackslash(szDir);
-        }
-        else if (!GetSavedDirectory(driveT, szDir))
+        } else if (!GetSavedDirectory(driveT, szDir))
             szDir[0] = '\0';
 
-        if (szDir[0] != '\0')
-        {
-            rgszDirs[driveT] = (LPTSTR) LocalAlloc(LPTR, ByteCountOf(lstrlen(szDir)+1));
+        if (szDir[0] != '\0') {
+            rgszDirs[driveT] = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(szDir) + 1));
             lstrcpy(rgszDirs[driveT], szDir);
         }
     }
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -335,191 +292,169 @@ GetAllDirectories(LPTSTR rgszDirs[])
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-RefreshWindow(
-   HWND hwndActive,
-   BOOL bUpdateDriveList,
-   BOOL bFlushCache)
-{
-   HWND hwndTree, hwndDir;
-   DRIVE drive;
+VOID RefreshWindow(HWND hwndActive, BOOL bUpdateDriveList, BOOL bFlushCache) {
+    HWND hwndTree, hwndDir;
+    DRIVE drive;
 
-   //
-   // make it optional for speed.
-   //
-   if (bUpdateDriveList) {
+    //
+    // make it optional for speed.
+    //
+    if (bUpdateDriveList) {
+        UpdateDriveList();
+    }
 
-      UpdateDriveList();
-   }
+    //
+    // make sure the thing is still there (floppy drive, net drive)
+    //
+    drive = (DRIVE)GetWindowLongPtr(hwndActive, GWL_TYPE);
 
-   //
-   // make sure the thing is still there (floppy drive, net drive)
-   //
-   drive = (DRIVE)GetWindowLongPtr(hwndActive, GWL_TYPE);
+    if ((drive >= 0) && !CheckDrive(hwndActive, drive, FUNC_SETDRIVE)) {
+        return;
+    }
 
-   if ((drive >= 0) && !CheckDrive(hwndActive, drive, FUNC_SETDRIVE)) {
-      return;
-   }
+    //
+    // If bFlushCache, remind ourselves to try it
+    //
+    if (bFlushCache) {
+        aDriveInfo[drive].bShareChkTried = FALSE;
+    }
 
-   //
-   // If bFlushCache, remind ourselves to try it
-   //
-   if (bFlushCache) {
-      aDriveInfo[drive].bShareChkTried = FALSE;
-   }
+    // NOTE: similar to CreateDirWindow
 
-   // NOTE: similar to CreateDirWindow
+    //
+    // update the dir part first so tree can steal later
+    //
+    if (hwndDir = HasDirWindow(hwndActive)) {
+        SendMessage(hwndDir, FS_CHANGEDISPLAY, CD_PATH, 0L);
+    }
 
-   //
-   // update the dir part first so tree can steal later
-   //
-   if (hwndDir = HasDirWindow(hwndActive)) {
-      SendMessage(hwndDir, FS_CHANGEDISPLAY, CD_PATH, 0L);
-   }
+    if (hwndTree = HasTreeWindow(hwndActive)) {
+        //
+        // update the drives windows
+        //
+        SendMessage(hwndActive, FS_CHANGEDRIVES, 0, 0L);
 
-   if (hwndTree = HasTreeWindow(hwndActive)) {
+        //
+        // update the tree
+        //
+        SendMessage(hwndTree, TC_SETDRIVE, MAKELONG(MAKEWORD(FALSE, TRUE), TRUE), 0L);
+    }
 
-      //
-      // update the drives windows
-      //
-      SendMessage(hwndActive, FS_CHANGEDRIVES, 0, 0L);
-
-      //
-      // update the tree
-      //
-      SendMessage(hwndTree,
-                  TC_SETDRIVE,
-                  MAKELONG(MAKEWORD(FALSE,TRUE),TRUE),
-                  0L);
-   }
-
-   if (hwndActive == hwndSearch) {
-      SendMessage(hwndActive, FS_CHANGEDISPLAY, CD_PATH, 0L);
-   }
+    if (hwndActive == hwndSearch) {
+        SendMessage(hwndActive, FS_CHANGEDISPLAY, CD_PATH, 0L);
+    }
 }
 
 //
 // Assumes there are 2 extra spaces in the array.
 //
 
-VOID
-CheckEsc(LPTSTR szFile)
-{
-   // DrivesDropObject calls w/ 2*MAXPATHLEN
+VOID CheckEsc(LPTSTR szFile) {
+    // DrivesDropObject calls w/ 2*MAXPATHLEN
 
-   TCHAR szT[2 * MAXPATHLEN];
+    TCHAR szT[2 * MAXPATHLEN];
 
-   TCHAR *p, *pT;
+    TCHAR *p, *pT;
 
-   for (p = szFile; *p; p++) {
-      switch (*p) {
-      case CHAR_SPACE:
-      case CHAR_COMMA:
-      case CHAR_SEMICOLON:
+    for (p = szFile; *p; p++) {
+        switch (*p) {
+            case CHAR_SPACE:
+            case CHAR_COMMA:
+            case CHAR_SEMICOLON:
 #ifdef CARETESC
-      case CHAR_CARET:
+            case CHAR_CARET:
 #endif
-      case CHAR_DQUOTE:
-         {
-            // this path contains an annoying character
-            lstrcpy(szT,szFile);
-            p = szFile;
-            *p++ = CHAR_DQUOTE;
-            for (pT = szT; *pT; ) {
+            case CHAR_DQUOTE: {
+                // this path contains an annoying character
+                lstrcpy(szT, szFile);
+                p = szFile;
+                *p++ = CHAR_DQUOTE;
+                for (pT = szT; *pT;) {
 #ifdef CARETESC
-               if (*pT == CHAR_CARET || *pT == CHAR_DQUOTE)
-                  *p++ = CHAR_CARET;
+                    if (*pT == CHAR_CARET || *pT == CHAR_DQUOTE)
+                        *p++ = CHAR_CARET;
 #endif
-               *p++ = *pT++;
+                    *p++ = *pT++;
+                }
+                *p++ = CHAR_DQUOTE;
+                *p = CHAR_NULL;
+                return;
             }
-            *p++ = CHAR_DQUOTE;
-            *p = CHAR_NULL;
-            return;
-         }
-      }
-   }
+        }
+    }
 }
 
+HWND GetRealParent(HWND hwnd) {
+    // run up the parent chain until you find a hwnd
+    // that doesn't have WS_CHILD set
 
-HWND
-GetRealParent(HWND hwnd)
-{
-   // run up the parent chain until you find a hwnd
-   // that doesn't have WS_CHILD set
+    while (GetWindowLongPtr(hwnd, GWL_STYLE) & WS_CHILD)
+        hwnd = (HWND)GetWindowLongPtr(hwnd, GWLP_HWNDPARENT);
 
-   while (GetWindowLongPtr(hwnd, GWL_STYLE) & WS_CHILD)
-      hwnd = (HWND)GetWindowLongPtr(hwnd, GWLP_HWNDPARENT);
-
-   return hwnd;
+    return hwnd;
 }
 
 // atoi with decimal comma separators
 //
 
-//#ifdef INLIBRARY
+// #ifdef INLIBRARY
 LPTSTR
-AddCommasInternal(LPTSTR szBuf, DWORD dw)
-{
-   TCHAR szTemp[40];
-   LPTSTR pTemp;
-   INT count, len;
-   LPTSTR p;
-   INT iCommaLen;
-   INT i;
+AddCommasInternal(LPTSTR szBuf, DWORD dw) {
+    TCHAR szTemp[40];
+    LPTSTR pTemp;
+    INT count, len;
+    LPTSTR p;
+    INT iCommaLen;
+    INT i;
 
-   // if *szComma[0] == NULL, get out now
+    // if *szComma[0] == NULL, get out now
 
-   if (!szComma[0]) {
-      wsprintf(szBuf,TEXT("%lu"),dw);
-      return szBuf;
-   }
+    if (!szComma[0]) {
+        wsprintf(szBuf, TEXT("%lu"), dw);
+        return szBuf;
+    }
 
-   len = wsprintf(szTemp, TEXT("%lu"), dw);
-   iCommaLen = lstrlen(szComma);
+    len = wsprintf(szTemp, TEXT("%lu"), dw);
+    iCommaLen = lstrlen(szComma);
 
-   pTemp = szTemp + len - 1;
+    pTemp = szTemp + len - 1;
 
-   // szComma size may be < 1 !
+    // szComma size may be < 1 !
 
-   p = szBuf + len + ((len - 1) / 3)*iCommaLen;
+    p = szBuf + len + ((len - 1) / 3) * iCommaLen;
 
-   *p-- = CHAR_NULL;    // null terminate the string we are building
+    *p-- = CHAR_NULL;  // null terminate the string we are building
 
-   count = 1;
-   while (pTemp >= szTemp) {
-      *p-- = *pTemp--;
-      if (count == 3) {
-         count = 1;
-         if (p > szBuf) {
-            for (i=iCommaLen-1 ; i >=0 ;i--)
-               *p-- = szComma[i];
-         }
-      } else
-         count++;
-   }
-   return szBuf;
+    count = 1;
+    while (pTemp >= szTemp) {
+        *p-- = *pTemp--;
+        if (count == 3) {
+            count = 1;
+            if (p > szBuf) {
+                for (i = iCommaLen - 1; i >= 0; i--)
+                    *p-- = szComma[i];
+            }
+        } else
+            count++;
+    }
+    return szBuf;
 }
-//#endif
+// #endif
 
+BOOL IsLastWindow() {
+    HWND hwnd;
+    INT count;
 
-BOOL
-IsLastWindow()
-{
-   HWND hwnd;
-   INT count;
+    count = 0;
 
-   count = 0;
+    // count all non title/search windows to see if close is allowed
 
-   // count all non title/search windows to see if close is allowed
+    for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = GetWindow(hwnd, GW_HWNDNEXT))
+        if (!GetWindow(hwnd, GW_OWNER) && ((INT)GetWindowLongPtr(hwnd, GWL_TYPE) >= 0))
+            count++;
 
-   for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = GetWindow(hwnd, GW_HWNDNEXT))
-      if (!GetWindow(hwnd, GW_OWNER) && ((INT)GetWindowLongPtr(hwnd, GWL_TYPE) >= 0))
-         count++;
-
-   return count == 1;
+    return count == 1;
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -544,59 +479,54 @@ IsLastWindow()
 //
 /////////////////////////////////////////////////////////////////////
 
-INT
-GetMDIWindowText(HWND hwnd, LPWSTR szTitle, INT size)
-{
-   //
-   // Need temp buffer due to filter + path
-   //
-   WCHAR szTemp[2 * MAXPATHLEN + 40];
+INT GetMDIWindowText(HWND hwnd, LPWSTR szTitle, INT size) {
+    //
+    // Need temp buffer due to filter + path
+    //
+    WCHAR szTemp[2 * MAXPATHLEN + 40];
 
-   LPWSTR lpLast;
-   INT iWindowNumber;
+    LPWSTR lpLast;
+    INT iWindowNumber;
 
-   EnterCriticalSection(&CriticalSectionPath);
+    EnterCriticalSection(&CriticalSectionPath);
 
-   InternalGetWindowText(hwnd, szTemp, COUNTOF(szTemp));
+    InternalGetWindowText(hwnd, szTemp, COUNTOF(szTemp));
 
-   if (GetWindow(hwnd, GW_OWNER) ||
-      GetWindowLongPtr(hwnd, GWL_TYPE) == -1L)
-      lpLast = NULL;
-   else {
-      lpLast = szTemp + GetWindowLongPtr(hwnd, GWL_PATHLEN);
-      if (lpLast == szTemp || !*lpLast)
-         lpLast = NULL;
-   }
+    if (GetWindow(hwnd, GW_OWNER) || GetWindowLongPtr(hwnd, GWL_TYPE) == -1L)
+        lpLast = NULL;
+    else {
+        lpLast = szTemp + GetWindowLongPtr(hwnd, GWL_PATHLEN);
+        if (lpLast == szTemp || !*lpLast)
+            lpLast = NULL;
+    }
 
-   LeaveCriticalSection(&CriticalSectionPath);
+    LeaveCriticalSection(&CriticalSectionPath);
 
-   //
-   // save the window #
-   //
-   if (lpLast) {
-      iWindowNumber = atoi(lpLast + 1);
+    //
+    // save the window #
+    //
+    if (lpLast) {
+        iWindowNumber = atoi(lpLast + 1);
 
-      //
-      // Delimit title (we just want part of the title)
-      //
-      *lpLast = CHAR_NULL;
+        //
+        // Delimit title (we just want part of the title)
+        //
+        *lpLast = CHAR_NULL;
 
-   } else {
-      iWindowNumber = 0;
-   }
+    } else {
+        iWindowNumber = 0;
+    }
 
-   //
-   // Make sure the strcpy below doesn't blow up if COUNTOF( szTemp ) > size
-   //
-   if (COUNTOF(szTemp) > size)
-      szTemp[size-1] = CHAR_NULL;
+    //
+    // Make sure the strcpy below doesn't blow up if COUNTOF( szTemp ) > size
+    //
+    if (COUNTOF(szTemp) > size)
+        szTemp[size - 1] = CHAR_NULL;
 
-   lstrcpy( szTitle, szTemp );
+    lstrcpy(szTitle, szTemp);
 
-   return iWindowNumber;
+    return iWindowNumber;
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -625,166 +555,148 @@ GetMDIWindowText(HWND hwnd, LPWSTR szTitle, INT size)
 //
 /////////////////////////////////////////////////////////////////////
 
+VOID SetMDIWindowText(HWND hwnd, LPWSTR szTitle) {
+    WCHAR szTemp[MAXPATHLEN * 2 + 10];  // BONK!  is this big enough?
+    WCHAR szNumber[20];
+    HWND hwndT;
+    INT num, max_num, cur_num;
+    LPWSTR lpszVolShare;
+    LPWSTR lpszVolName;
 
-VOID
-SetMDIWindowText(
-   HWND hwnd,
-   LPWSTR szTitle)
-{
-   WCHAR szTemp[MAXPATHLEN*2+10];  // BONK!  is this big enough?
-   WCHAR szNumber[20];
-   HWND hwndT;
-   INT num, max_num, cur_num;
-   LPWSTR lpszVolShare;
-   LPWSTR lpszVolName;
+    UINT cchTempLen;
+    DRIVE drive;
+    BOOL bNumIncrement = FALSE;
+    BOOL bNotSame;
 
-   UINT cchTempLen;
-   DRIVE drive;
-   BOOL bNumIncrement = FALSE;
-   BOOL bNotSame;
+    UINT uTitleLen;
+    DWORD dwError;
 
-   UINT uTitleLen;
-   DWORD dwError;
+    cur_num = GetMDIWindowText(hwnd, szTemp, COUNTOF(szTemp));
 
-   cur_num = GetMDIWindowText(hwnd, szTemp, COUNTOF(szTemp));
+    bNotSame = lstrcmp(szTemp, szTitle);
 
-   bNotSame = lstrcmp(szTemp, szTitle);
+    max_num = 0;
 
-   max_num = 0;
+    for (hwndT = GetWindow(hwndMDIClient, GW_CHILD); hwndT; hwndT = GetWindow(hwndT, GW_HWNDNEXT)) {
+        num = GetMDIWindowText(hwndT, szTemp, COUNTOF(szTemp));
 
-   for (hwndT = GetWindow(hwndMDIClient, GW_CHILD); hwndT; hwndT = GetWindow(hwndT, GW_HWNDNEXT)) {
+        if (!lstrcmp(szTemp, szTitle)) {
+            if (hwndT == hwnd)
+                continue;
 
-      num = GetMDIWindowText(hwndT, szTemp, COUNTOF(szTemp));
+            if (!max_num && !num) {
+                DWORD Length = lstrlen(szTemp);
 
-      if (!lstrcmp(szTemp, szTitle)) {
+                lstrcat(szTemp, SZ_COLONONE);
+                // if (wTextAttribs & TA_LOWERCASE)
+                //    CharLower(szTemp);
 
-         if (hwndT == hwnd)
-            continue;
+                drive = (DWORD)GetWindowLongPtr(hwnd, GWL_TYPE);
+                if (drive != -1) { /* if not a search window */
+                    lstrcat(szTemp, SZ_SPACEDASHSPACE);
 
-         if (!max_num && !num) {
+                    dwError = GetVolShare(drive, &lpszVolShare, ALTNAME_SHORT);
 
-            DWORD Length = lstrlen(szTemp);
+                    if (!dwError || DE_REGNAME == dwError) {
+                        cchTempLen = lstrlen(szTemp);
+                        StrNCpy(szTemp + cchTempLen, lpszVolShare, COUNTOF(szTemp) - cchTempLen - 1);
 
-            lstrcat(szTemp, SZ_COLONONE);
-            // if (wTextAttribs & TA_LOWERCASE)
-            //    CharLower(szTemp);
+                        szTemp[COUNTOF(szTemp) - 1] = CHAR_NULL;
+                    }
+                }
 
-            drive = (DWORD)GetWindowLongPtr(hwnd, GWL_TYPE);
-            if (drive != -1) {     /* if not a search window */
-               lstrcat(szTemp, SZ_SPACEDASHSPACE);
-
-               dwError = GetVolShare(drive, &lpszVolShare, ALTNAME_SHORT);
-
-               if (!dwError || DE_REGNAME == dwError) {
-                  cchTempLen = lstrlen(szTemp);
-                  StrNCpy(szTemp + cchTempLen, lpszVolShare,
-                     COUNTOF(szTemp) - cchTempLen - 1);
-
-                  szTemp[COUNTOF(szTemp) - 1] = CHAR_NULL;
-               }
+                SetWindowText(hwndT, szTemp);
+                max_num = 1;
+                SetWindowLongPtr(hwndT, GWL_PATHLEN, Length);
             }
+            max_num = max(max_num, num);
+        }
+    }
 
-            SetWindowText(hwndT, szTemp);
-            max_num = 1;
-            SetWindowLongPtr(hwndT, GWL_PATHLEN, Length);
-         }
-         max_num = max(max_num, num);
-      }
-   }
+    drive = (DWORD)GetWindowLongPtr(hwnd, GWL_TYPE);
 
+    uTitleLen = lstrlen(szTitle);
 
-   drive = (DWORD)GetWindowLongPtr(hwnd, GWL_TYPE);
+    if (max_num) {
+        if (bNotSame || !cur_num) {
+            max_num++;
+        } else {
+            max_num = cur_num;
+        }
 
-   uTitleLen = lstrlen(szTitle);
+        wsprintf(szNumber, TEXT(":%d"), max_num);
+        lstrcat(szTitle, szNumber);
+    }
 
-   if (max_num) {
+    // if (wTextAttribs & TA_LOWERCASE)
+    //    CharLower(szTitle);
 
-      if (bNotSame || !cur_num) {
-         max_num++;
-      } else {
-         max_num = cur_num;
-      }
+    if (drive != -1) { /* if this isn't a search window */
+        lstrcpy(szTemp, szTitle);
+        lstrcat(szTemp, SZ_SPACEDASHSPACE);
 
-      wsprintf(szNumber, TEXT(":%d"), max_num);
-      lstrcat(szTitle, szNumber);
-   }
+        // Must store realname in GWL_VOLNAME
+        // But only for remote drives
 
-   // if (wTextAttribs & TA_LOWERCASE)
-   //    CharLower(szTitle);
+        lpszVolName = (LPTSTR)GetWindowLongPtr(hwnd, GWL_VOLNAME);
 
-   if (drive != -1) {     /* if this isn't a search window */
-      lstrcpy(szTemp, szTitle);
-      lstrcat(szTemp, SZ_SPACEDASHSPACE);
+        if (lpszVolName)
+            LocalFree(lpszVolName);
 
-      // Must store realname in GWL_VOLNAME
-      // But only for remote drives
+        if (GetVolShare(drive, &lpszVolShare, ALTNAME_REG) || !IsRemoteDrive(drive)) {
+            //
+            // If error or not a remote drive, then do not store this.
+            //
+            lpszVolName = NULL;
 
-      lpszVolName = (LPTSTR)GetWindowLongPtr(hwnd, GWL_VOLNAME);
+        } else {
+            lpszVolName = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(lpszVolShare) + 1));
 
-      if (lpszVolName)
-         LocalFree(lpszVolName);
+            if (lpszVolName) {
+                lstrcpy(lpszVolName, lpszVolShare);
+            }
+        }
 
-      if (GetVolShare(drive, &lpszVolShare, ALTNAME_REG) ||
-         !IsRemoteDrive(drive)) {
+        SetWindowLongPtr(hwnd, GWL_VOLNAME, (LONG_PTR)lpszVolName);
 
-         //
-         // If error or not a remote drive, then do not store this.
-         //
-         lpszVolName = NULL;
+        //
+        // Use short name in window title
+        //
+        dwError = GetVolShare(drive, &lpszVolShare, ALTNAME_SHORT);
 
-      } else {
-         lpszVolName = (LPTSTR) LocalAlloc(LPTR, ByteCountOf(lstrlen(lpszVolShare)+1));
+        if (!dwError || DE_REGNAME == dwError) {
+            cchTempLen = lstrlen(szTemp);
+            StrNCpy(szTemp + cchTempLen, lpszVolShare, COUNTOF(szTemp) - cchTempLen - 1);
 
-         if (lpszVolName) {
-            lstrcpy(lpszVolName, lpszVolShare);
-         }
-      }
+            szTemp[COUNTOF(szTemp) - 1] = CHAR_NULL;
+        }
 
-      SetWindowLongPtr(hwnd, GWL_VOLNAME, (LONG_PTR)lpszVolName);
+        EnterCriticalSection(&CriticalSectionPath);
 
-      //
-      // Use short name in window title
-      //
-      dwError = GetVolShare(drive, &lpszVolShare, ALTNAME_SHORT);
+        SetWindowLongPtr(hwnd, GWL_PATHLEN, uTitleLen);
+        //
+        // c:\foo\*.*:1 - [VOL LABEL]
+        // h:\foo\*.foo - \\server\share
+        //
+        SetWindowText(hwnd, szTemp);
 
-      if (!dwError || DE_REGNAME == dwError) {
+        LeaveCriticalSection(&CriticalSectionPath);
 
-         cchTempLen = lstrlen(szTemp);
-         StrNCpy(szTemp + cchTempLen, lpszVolShare,
-            COUNTOF(szTemp) - cchTempLen - 1);
+    } else {
+        SetWindowText(hwnd, szTitle);
+    }
 
-         szTemp[COUNTOF(szTemp) - 1] = CHAR_NULL;
-      }
+    //
+    // Now delimit szTitle to keep it the same
+    //
+    szTitle[uTitleLen] = CHAR_NULL;
 
-      EnterCriticalSection(&CriticalSectionPath);
-
-      SetWindowLongPtr(hwnd, GWL_PATHLEN, uTitleLen);
-      //
-      // c:\foo\*.*:1 - [VOL LABEL]
-      // h:\foo\*.foo - \\server\share
-      //
-      SetWindowText(hwnd, szTemp);
-
-      LeaveCriticalSection(&CriticalSectionPath);
-
-   } else {
-
-      SetWindowText(hwnd, szTitle);
-   }
-
-   //
-   // Now delimit szTitle to keep it the same
-   //
-   szTitle[uTitleLen] = CHAR_NULL;
-
-   SaveHistoryDir(hwnd, szTitle);
+    SaveHistoryDir(hwnd, szTitle);
 }
 
-#define ISDIGIT(c)  ((c) >= TEXT('0') && (c) <= TEXT('9'))
+#define ISDIGIT(c) ((c) >= TEXT('0') && (c) <= TEXT('9'))
 
-INT
-atoiW(LPTSTR sz)
-{
+INT atoiW(LPTSTR sz) {
     INT n = 0;
     BOOL bNeg = FALSE;
 
@@ -801,7 +713,6 @@ atoiW(LPTSTR sz)
     return bNeg ? -n : n;
 }
 
-
 //
 // IsCDROM()  - determine if a drive is a CDROM drive
 //
@@ -809,33 +720,26 @@ atoiW(LPTSTR sz)
 //
 // return TRUE/FALSE
 //
-BOOL
-IsCDRomDrive(DRIVE drive)
-{
-   if (aDriveInfo[drive].uType == DRIVE_CDROM)
-      return(TRUE);
-   return(FALSE);
+BOOL IsCDRomDrive(DRIVE drive) {
+    if (aDriveInfo[drive].uType == DRIVE_CDROM)
+        return (TRUE);
+    return (FALSE);
 }
 
+BOOL IsNTFSDrive(DRIVE drive) {
+    U_VolInfo(drive);
 
-BOOL
-IsNTFSDrive(DRIVE drive)
-{
-   U_VolInfo(drive);
+    //
+    // Return false if the return value was an error condition.
+    //
+    if (GETRETVAL(VolInfo, drive))
+        return FALSE;
 
-   //
-   // Return false if the return value was an error condition.
-   //
-   if (GETRETVAL(VolInfo, drive))
-      return FALSE;
-
-   //
-   // See if it's an NTFS drive.
-   //
-   return (!lstrcmpi(aDriveInfo[drive].szFileSysName, SZ_NTFSNAME)) ?
-           TRUE : FALSE;
+    //
+    // See if it's an NTFS drive.
+    //
+    return (!lstrcmpi(aDriveInfo[drive].szFileSysName, SZ_NTFSNAME)) ? TRUE : FALSE;
 }
-
 
 //
 // NOTE:  This function really says whether or not the drive is not a
@@ -843,74 +747,55 @@ IsNTFSDrive(DRIVE drive)
 //            If it IS a FAT drive, it returns FALSE.
 //            If it is NOT a FAT drive, it returns TRUE.
 //
-BOOL
-IsCasePreservedDrive(DRIVE drive)
-{
-   U_VolInfo(drive);
+BOOL IsCasePreservedDrive(DRIVE drive) {
+    U_VolInfo(drive);
 
-   //
-   // Return false if the return value was an error condition.
-   //
-   if (GETRETVAL(VolInfo, drive))
-      return FALSE;
+    //
+    // Return false if the return value was an error condition.
+    //
+    if (GETRETVAL(VolInfo, drive))
+        return FALSE;
 
-   //
-   // Can no longer check the FS_CASE_IS_PRESERVED bit to see if it's a
-   // FAT drive (now that FAT is case preserving and stores Unicode
-   // on disk.
-   //
-   // Instead, we will check the file system string to see if the drive
-   // is FAT.
-   //
-   // OLD CODE:
-   //   return (aDriveInfo[drive].dwFileSystemFlags & FS_CASE_IS_PRESERVED) ?
-   //           TRUE : FALSE;
-   //
-   return (!lstrcmpi(aDriveInfo[drive].szFileSysName, SZ_FATNAME)) ?
-           FALSE : TRUE;
+    //
+    // Can no longer check the FS_CASE_IS_PRESERVED bit to see if it's a
+    // FAT drive (now that FAT is case preserving and stores Unicode
+    // on disk.
+    //
+    // Instead, we will check the file system string to see if the drive
+    // is FAT.
+    //
+    // OLD CODE:
+    //   return (aDriveInfo[drive].dwFileSystemFlags & FS_CASE_IS_PRESERVED) ?
+    //           TRUE : FALSE;
+    //
+    return (!lstrcmpi(aDriveInfo[drive].szFileSysName, SZ_FATNAME)) ? FALSE : TRUE;
 }
 
-
-BOOL
-IsRemovableDrive(DRIVE drive)
-{
-   return aDriveInfo[drive].uType == DRIVE_REMOVABLE;
+BOOL IsRemovableDrive(DRIVE drive) {
+    return aDriveInfo[drive].uType == DRIVE_REMOVABLE;
 }
 
-
-BOOL
-IsRemoteDrive(DRIVE drive)
-{
-   return aDriveInfo[drive].uType == DRIVE_REMOTE;
+BOOL IsRemoteDrive(DRIVE drive) {
+    return aDriveInfo[drive].uType == DRIVE_REMOTE;
 }
 
-
-BOOL
-IsRamDrive(DRIVE drive)
-{
-   return aDriveInfo[drive].uType == DRIVE_RAMDISK;
+BOOL IsRamDrive(DRIVE drive) {
+    return aDriveInfo[drive].uType == DRIVE_RAMDISK;
 }
 
-
-BOOL
-IsValidDisk(DRIVE drive)
-{
-   U_Type(drive);
-   return ((aDriveInfo[drive].uType != DRIVE_UNKNOWN) &&
-           (aDriveInfo[drive].uType != DRIVE_NO_ROOT_DIR));
+BOOL IsValidDisk(DRIVE drive) {
+    U_Type(drive);
+    return ((aDriveInfo[drive].uType != DRIVE_UNKNOWN) && (aDriveInfo[drive].uType != DRIVE_NO_ROOT_DIR));
 }
 
 DWORD
-GetVolShare(DRIVE drive, LPTSTR* ppszVolShare, DWORD dwType)
-{
-   if (IsRemoteDrive(drive)) {
-      return WFGetConnection(drive,ppszVolShare,FALSE, dwType);
-   } else {
-      return GetVolumeLabel(drive, ppszVolShare, TRUE);
-   }
+GetVolShare(DRIVE drive, LPTSTR* ppszVolShare, DWORD dwType) {
+    if (IsRemoteDrive(drive)) {
+        return WFGetConnection(drive, ppszVolShare, FALSE, dwType);
+    } else {
+        return GetVolumeLabel(drive, ppszVolShare, TRUE);
+    }
 }
-
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -918,23 +803,20 @@ GetVolShare(DRIVE drive, LPTSTR* ppszVolShare, DWORD dwType)
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-BOOL
-IsLFNSelected()
-{
-  HWND  hwndActive;
-  BOOL  fDir;
-  LPTSTR p;
+BOOL IsLFNSelected() {
+    HWND hwndActive;
+    BOOL fDir;
+    LPTSTR p;
 
-  hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
+    hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
-  p = (LPTSTR)SendMessage(hwndActive, FS_GETSELECTION, 2, (LPARAM)&fDir);
-  if (p) {
-      LocalFree((HANDLE)p);
-  }
+    p = (LPTSTR)SendMessage(hwndActive, FS_GETSELECTION, 2, (LPARAM)&fDir);
+    if (p) {
+        LocalFree((HANDLE)p);
+    }
 
-  return(fDir);
+    return (fDir);
 }
-
 
 //--------------------------------------------------------------------------
 //
@@ -946,16 +828,13 @@ IsLFNSelected()
 //--------------------------------------------------------------------------
 
 LPTSTR
-GetSelection(INT iSelType, PBOOL pbDir)
-{
-   HWND  hwndActive;
+GetSelection(INT iSelType, PBOOL pbDir) {
+    HWND hwndActive;
 
-   hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
+    hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
-   return (LPTSTR)SendMessage(hwndActive,FS_GETSELECTION,
-      (WPARAM)iSelType, (LPARAM)pbDir);
+    return (LPTSTR)SendMessage(hwndActive, FS_GETSELECTION, (WPARAM)iSelType, (LPARAM)pbDir);
 }
-
 
 //
 // in:
@@ -974,90 +853,84 @@ GetSelection(INT iSelType, PBOOL pbDir)
 //
 
 LPTSTR
-GetNextFile(LPTSTR pFrom, LPTSTR pTo, INT cchMax)
-{
-   INT i;
+GetNextFile(LPTSTR pFrom, LPTSTR pTo, INT cchMax) {
+    INT i;
 
-// Originally, this code tested if the first char was a double quote,
-// then either (1) scanned for the next space or (2) scanned for the next
-// quote.  CMD, however, will let you put quotes anywhere.
-// Now, the bInQuotes boolean is used instead.
+    // Originally, this code tested if the first char was a double quote,
+    // then either (1) scanned for the next space or (2) scanned for the next
+    // quote.  CMD, however, will let you put quotes anywhere.
+    // Now, the bInQuotes boolean is used instead.
 
-   BOOL bInQuotes=FALSE;
+    BOOL bInQuotes = FALSE;
 
-   if (!pFrom)
-      return NULL;
+    if (!pFrom)
+        return NULL;
 
-   // Skip over leading spaces and commas.
-   while (*pFrom && (*pFrom == CHAR_SPACE || *pFrom == CHAR_COMMA))
-      pFrom++;
+    // Skip over leading spaces and commas.
+    while (*pFrom && (*pFrom == CHAR_SPACE || *pFrom == CHAR_COMMA))
+        pFrom++;
 
-   if (!*pFrom)
-      return(NULL);
+    if (!*pFrom)
+        return (NULL);
 
-   // Find the next delimiter (space, comma (valid in bInQuotes only))
+    // Find the next delimiter (space, comma (valid in bInQuotes only))
 
-   for (i=0; *pFrom && ((*pFrom != CHAR_SPACE && *pFrom != CHAR_COMMA) || bInQuotes);) {
+    for (i = 0; *pFrom && ((*pFrom != CHAR_SPACE && *pFrom != CHAR_COMMA) || bInQuotes);) {
+        // bQuotes flipped if encountered.  ugly.
+        // Note: it is also TAKEN OUT!
+        if (CHAR_DQUOTE == *pFrom) {
+            bInQuotes = !bInQuotes;
+            ++pFrom;
 
-      // bQuotes flipped if encountered.  ugly.
-      // Note: it is also TAKEN OUT!
-      if ( CHAR_DQUOTE == *pFrom ) {
-         bInQuotes = !bInQuotes;
-         ++pFrom;
+            if (!*pFrom)
+                break;
 
-         if (!*pFrom)
-            break;
-
-         // Must continue, or else the space (pFrom was inc'd!) will
-         // be stored in the pTo string, which is FATAL!
-         continue;
-      }
+            // Must continue, or else the space (pFrom was inc'd!) will
+            // be stored in the pTo string, which is FATAL!
+            continue;
+        }
 
 #ifdef CARETESC
-      if (*pFrom == CHAR_CARET) {
-         ++pFrom;
-         if (!*pFrom)
-            break;
-      }
+        if (*pFrom == CHAR_CARET) {
+            ++pFrom;
+            if (!*pFrom)
+                break;
+        }
 #endif
 
-      if (i < cchMax - 1) {
-         i++;
-         *pTo++ = *pFrom++;
+        if (i < cchMax - 1) {
+            i++;
+            *pTo++ = *pFrom++;
 
-         // increment to kill off present file name
-      } else pFrom++;
-
-   }
+            // increment to kill off present file name
+        } else
+            pFrom++;
+    }
 
 #ifdef KEEPTRAILSPACE
 #else
-   // Kill off trailing spaces
+    // Kill off trailing spaces
 
-   while ( CHAR_SPACE == *(--pTo) )
-      ;
+    while (CHAR_SPACE == *(--pTo))
+        ;
 #endif
 
-   *(++pTo) = CHAR_NULL;
+    *(++pTo) = CHAR_NULL;
 
-   return(pFrom);
+    return (pFrom);
 }
-
 
 // sets the DOS current directory based on the currently active window
 
-VOID
-SetWindowDirectory()
-{
-// Actually, only needs to be MAX MDI Title = (MAXPATHLEN + few + MAX diskname)
-// like "d:\aaa .. aaa\filter.here - [albertt]"
-// which _could_ be > 2*MAXPATHLEN
-   TCHAR szTemp[MAXPATHLEN*2];
+VOID SetWindowDirectory() {
+    // Actually, only needs to be MAX MDI Title = (MAXPATHLEN + few + MAX diskname)
+    // like "d:\aaa .. aaa\filter.here - [albertt]"
+    // which _could_ be > 2*MAXPATHLEN
+    TCHAR szTemp[MAXPATHLEN * 2];
 
-   GetSelectedDirectory(0, szTemp);
-   SetCurrentDirectory(szTemp);
+    GetSelectedDirectory(0, szTemp);
+    SetCurrentDirectory(szTemp);
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1071,55 +944,52 @@ SetWindowDirectory()
  * this does not really change the DOS current directory
  */
 
-VOID
-SetDlgDirectory(HWND hDlg, LPTSTR pszPath)
-{
-  HDC       hDC;
-  SIZE      size;
-  RECT      rc;
-  HWND      hDlgItem;
-  HANDLE    hFont;
-  HANDLE    hFontBak;
-  TCHAR     szPath[MAXPATHLEN+5];
-  TCHAR     szTemp[MAXPATHLEN+20];
-  TCHAR     szMessage[MAXMESSAGELEN];
+VOID SetDlgDirectory(HWND hDlg, LPTSTR pszPath) {
+    HDC hDC;
+    SIZE size;
+    RECT rc;
+    HWND hDlgItem;
+    HANDLE hFont;
+    HANDLE hFontBak;
+    TCHAR szPath[MAXPATHLEN + 5];
+    TCHAR szTemp[MAXPATHLEN + 20];
+    TCHAR szMessage[MAXMESSAGELEN];
 
-  hFontBak = NULL;
+    hFontBak = NULL;
 
-  if (pszPath)
-      lstrcpy(szPath, pszPath);
-  else
-      GetSelectedDirectory(0, szPath);
+    if (pszPath)
+        lstrcpy(szPath, pszPath);
+    else
+        GetSelectedDirectory(0, szPath);
 
-  /* Make sure that the current directory fits inside the static text field. */
-  hDlgItem = GetDlgItem(hDlg, IDD_DIR);
-  GetClientRect(hDlgItem, &rc);
+    /* Make sure that the current directory fits inside the static text field. */
+    hDlgItem = GetDlgItem(hDlg, IDD_DIR);
+    GetClientRect(hDlgItem, &rc);
 
-  if (LoadString(hAppInstance, IDS_CURDIRIS, szMessage, COUNTOF(szMessage))) {
-      hDC = GetDC(hDlg);
-      hFont = (HANDLE)SendMessage(hDlgItem, WM_GETFONT, 0, 0L);
+    if (LoadString(hAppInstance, IDS_CURDIRIS, szMessage, COUNTOF(szMessage))) {
+        hDC = GetDC(hDlg);
+        hFont = (HANDLE)SendMessage(hDlgItem, WM_GETFONT, 0, 0L);
 
-      //
-      // This is required because Japanese Windows uses System font
-      // for dialog box
-      //
-      if (hFont) {
-         hFontBak = SelectObject(hDC, hFont);
-      }
+        //
+        // This is required because Japanese Windows uses System font
+        // for dialog box
+        //
+        if (hFont) {
+            hFontBak = SelectObject(hDC, hFont);
+        }
 
-      GetTextExtentPoint32(hDC, szMessage, lstrlen(szMessage), &size);
-      CompactPath(hDC, szPath, (rc.right-rc.left-size.cx));
+        GetTextExtentPoint32(hDC, szMessage, lstrlen(szMessage), &size);
+        CompactPath(hDC, szPath, (rc.right - rc.left - size.cx));
 
-      if (hFont) {
-         SelectObject(hDC, hFontBak);
-      }
+        if (hFont) {
+            SelectObject(hDC, hFontBak);
+        }
 
-      ReleaseDC(hDlg, hDC);
-      wsprintf(szTemp, szMessage, szPath);
-      SetDlgItemText(hDlg, IDD_DIR, szTemp);
-  }
+        ReleaseDC(hDlg, hDC);
+        wsprintf(szTemp, szMessage, szPath);
+        SetDlgItemText(hDlg, IDD_DIR, szTemp);
+    }
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1127,16 +997,12 @@ SetDlgDirectory(HWND hDlg, LPTSTR pszPath)
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID
-WritePrivateProfileBool(LPTSTR szKey, BOOL bParam)
-{
-  TCHAR  szBool[6];
+VOID WritePrivateProfileBool(LPTSTR szKey, BOOL bParam) {
+    TCHAR szBool[6];
 
-  wsprintf(szBool, SZ_PERCENTD, bParam);
-  WritePrivateProfileString(szSettings, szKey, szBool, szTheINIFile);
+    wsprintf(szBool, SZ_PERCENTD, bParam);
+    WritePrivateProfileString(szSettings, szKey, szBool, szTheINIFile);
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1157,19 +1023,15 @@ WritePrivateProfileBool(LPTSTR szKey, BOOL bParam)
 //
 /////////////////////////////////////////////////////////////////////
 
+VOID CleanupMessages() {
+    MSG msg;
 
-VOID
-CleanupMessages()
-{
-   MSG   msg;
-
-   while (PeekMessage(&msg, NULL, 0, 0, TRUE)) {
-      if (!IsDialogMessage(hdlgProgress, &msg))
-         DispatchMessage(&msg);
-   }
-   return;
+    while (PeekMessage(&msg, NULL, 0, 0, TRUE)) {
+        if (!IsDialogMessage(hdlgProgress, &msg))
+            DispatchMessage(&msg);
+    }
+    return;
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1179,19 +1041,15 @@ CleanupMessages()
 
 /* Returns TRUE iff the path contains * or ? */
 
-BOOL
-IsWild(LPTSTR lpszPath)
-{
-  while (*lpszPath)
-    {
-      if (*lpszPath == CHAR_QUESTION || *lpszPath == CHAR_STAR)
-          return(TRUE);
-      lpszPath++;
+BOOL IsWild(LPTSTR lpszPath) {
+    while (*lpszPath) {
+        if (*lpszPath == CHAR_QUESTION || *lpszPath == CHAR_STAR)
+            return (TRUE);
+        lpszPath++;
     }
 
-  return(FALSE);
+    return (FALSE);
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1201,17 +1059,13 @@ IsWild(LPTSTR lpszPath)
 
 /* Replaces frontslashes (evil) with backslashes (good). */
 
-VOID
-CheckSlashes(LPTSTR lpT)
-{
-  while (*lpT)
-    {
-      if (*lpT == CHAR_SLASH)
-          *lpT = CHAR_BACKSLASH;
-      lpT++;
+VOID CheckSlashes(LPTSTR lpT) {
+    while (*lpT) {
+        if (*lpT == CHAR_SLASH)
+            *lpT = CHAR_BACKSLASH;
+        lpT++;
     }
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1221,20 +1075,16 @@ CheckSlashes(LPTSTR lpT)
 
 /* Ensures that a path ends with a backslash. */
 
-UINT
-AddBackslash(LPTSTR lpszPath)
-{
-   UINT uLen = lstrlen(lpszPath);
+UINT AddBackslash(LPTSTR lpszPath) {
+    UINT uLen = lstrlen(lpszPath);
 
-   if (*(lpszPath+uLen-1) != CHAR_BACKSLASH) {
+    if (*(lpszPath + uLen - 1) != CHAR_BACKSLASH) {
+        lpszPath[uLen++] = CHAR_BACKSLASH;
+        lpszPath[uLen] = CHAR_NULL;
+    }
 
-      lpszPath[uLen++] = CHAR_BACKSLASH;
-      lpszPath[uLen]   = CHAR_NULL;
-   }
-
-   return uLen;
+    return uLen;
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1246,18 +1096,15 @@ AddBackslash(LPTSTR lpszPath)
  * the root directory.  Assumes a fully qualified directory path.
  */
 
-VOID
-StripBackslash(LPTSTR lpszPath)
-{
-  UINT len;
+VOID StripBackslash(LPTSTR lpszPath) {
+    UINT len;
 
-  len = (lstrlen(lpszPath) - 1);
-  if ((len == 2) || (lpszPath[len] != CHAR_BACKSLASH))
-      return;
+    len = (lstrlen(lpszPath) - 1);
+    if ((len == 2) || (lpszPath[len] != CHAR_BACKSLASH))
+        return;
 
-  lpszPath[len] = CHAR_NULL;
+    lpszPath[len] = CHAR_NULL;
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1267,27 +1114,24 @@ StripBackslash(LPTSTR lpszPath)
 
 /* Remove the filespec portion from a path (including the backslash). */
 
-VOID
-StripFilespec(LPTSTR lpszPath)
-{
-   LPTSTR     p;
+VOID StripFilespec(LPTSTR lpszPath) {
+    LPTSTR p;
 
-   p = lpszPath + lstrlen(lpszPath);
-   while ((*p != CHAR_BACKSLASH) && (*p != CHAR_COLON) && (p != lpszPath))
-      p--;
+    p = lpszPath + lstrlen(lpszPath);
+    while ((*p != CHAR_BACKSLASH) && (*p != CHAR_COLON) && (p != lpszPath))
+        p--;
 
-   if (*p == CHAR_COLON)
-      p++;
+    if (*p == CHAR_COLON)
+        p++;
 
-   /* Don't strip backslash from root directory entry. */
-   if (p != lpszPath) {
-      if ((*p == CHAR_BACKSLASH) && (*(p-1) == CHAR_COLON))
-         p++;
-   }
+    /* Don't strip backslash from root directory entry. */
+    if (p != lpszPath) {
+        if ((*p == CHAR_BACKSLASH) && (*(p - 1) == CHAR_COLON))
+            p++;
+    }
 
-   *p = CHAR_NULL;
+    *p = CHAR_NULL;
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1297,22 +1141,19 @@ StripFilespec(LPTSTR lpszPath)
 
 /* Extract only the filespec portion from a path. */
 
-VOID
-StripPath(LPTSTR lpszPath)
-{
-  LPTSTR     p;
+VOID StripPath(LPTSTR lpszPath) {
+    LPTSTR p;
 
-  p = lpszPath + lstrlen(lpszPath);
-  while ((*p != CHAR_BACKSLASH) && (*p != CHAR_COLON) && (p != lpszPath))
-      p--;
+    p = lpszPath + lstrlen(lpszPath);
+    while ((*p != CHAR_BACKSLASH) && (*p != CHAR_COLON) && (p != lpszPath))
+        p--;
 
-  if (p != lpszPath)
-      p++;
+    if (p != lpszPath)
+        p++;
 
-  if (p != lpszPath)
-      lstrcpy(lpszPath, p);
+    if (p != lpszPath)
+        lstrcpy(lpszPath, p);
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1323,24 +1164,21 @@ StripPath(LPTSTR lpszPath)
 /* Returns the extension part of a filename. */
 
 LPTSTR
-GetExtension(LPTSTR pszFile)
-{
-  LPTSTR p, pSave = NULL;
+GetExtension(LPTSTR pszFile) {
+    LPTSTR p, pSave = NULL;
 
-  p = pszFile;
-  while (*p)
-    {
-      if (*p == CHAR_DOT)
-          pSave = p;
-      p++;
+    p = pszFile;
+    while (*p) {
+        if (*p == CHAR_DOT)
+            pSave = p;
+        p++;
     }
 
-  if (!pSave)
-      return(p);
+    if (!pSave)
+        return (p);
 
-  return pSave+1;
+    return pSave + 1;
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1348,32 +1186,29 @@ GetExtension(LPTSTR pszFile)
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-INT
-MyMessageBox(HWND hwnd, DWORD idTitle, DWORD idMessage, DWORD wStyle)
-{
-   TCHAR  szTitle[MAXTITLELEN];
-   TCHAR  szMessage[MAXMESSAGELEN];
-   TCHAR  szTemp[MAXMESSAGELEN];
+INT MyMessageBox(HWND hwnd, DWORD idTitle, DWORD idMessage, DWORD wStyle) {
+    TCHAR szTitle[MAXTITLELEN];
+    TCHAR szMessage[MAXMESSAGELEN];
+    TCHAR szTemp[MAXMESSAGELEN];
 
-   HWND hwndT;
+    HWND hwndT;
 
-   LoadString(hAppInstance, idTitle, szTitle, COUNTOF(szTitle));
+    LoadString(hAppInstance, idTitle, szTitle, COUNTOF(szTitle));
 
-   if (idMessage < 32) {
-      LoadString(hAppInstance, IDS_UNKNOWNMSG, szTemp, COUNTOF(szTemp));
-      wsprintf(szMessage, szTemp, idMessage);
-   } else {
-      LoadString(hAppInstance, idMessage, szMessage, COUNTOF(szMessage));
-   }
+    if (idMessage < 32) {
+        LoadString(hAppInstance, IDS_UNKNOWNMSG, szTemp, COUNTOF(szTemp));
+        wsprintf(szMessage, szTemp, idMessage);
+    } else {
+        LoadString(hAppInstance, idMessage, szMessage, COUNTOF(szMessage));
+    }
 
-   if (hwnd)
-      hwndT = GetLastActivePopup(hwnd);
-   else
-      hwndT = hwnd;
+    if (hwnd)
+        hwndT = GetLastActivePopup(hwnd);
+    else
+        hwndT = hwnd;
 
-   return MessageBox(hwndT, szMessage, szTitle, wStyle | MB_TASKMODAL);
+    return MessageBox(hwndT, szMessage, szTitle, wStyle | MB_TASKMODAL);
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1395,101 +1230,98 @@ MyMessageBox(HWND hwnd, DWORD idTitle, DWORD idMessage, DWORD wStyle)
 //  there is no extension.  even if it's already quoted!)
 
 DWORD
-ExecProgram(LPTSTR lpPath, LPTSTR lpParms, LPTSTR lpDir, BOOL bLoadIt, BOOL bRunAs)
-{
-  DWORD_PTR     ret;
-  INT           iCurCount;
-  INT           i;
-  HCURSOR       hCursor;
-  LPTSTR         lpszTitle;
+ExecProgram(LPTSTR lpPath, LPTSTR lpParms, LPTSTR lpDir, BOOL bLoadIt, BOOL bRunAs) {
+    DWORD_PTR ret;
+    INT iCurCount;
+    INT i;
+    HCURSOR hCursor;
+    LPTSTR lpszTitle;
 
-  ret = 0;
+    ret = 0;
 
-  hCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-  iCurCount = ShowCursor(TRUE) - 1;
+    hCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+    iCurCount = ShowCursor(TRUE) - 1;
 
-  //
-  // Shell Execute takes ansi string.
-  //
+    //
+    // Shell Execute takes ansi string.
+    //
 
-  // Set title to file spec only
-  // Note: this is set to the app, so
-  // drag, drop, execute title shows app, not file
+    // Set title to file spec only
+    // Note: this is set to the app, so
+    // drag, drop, execute title shows app, not file
 
-  // Set up title
-  for (lpszTitle=lpPath+lstrlen(lpPath); *lpszTitle != CHAR_BACKSLASH && *lpszTitle != CHAR_COLON &&
-     lpszTitle != lpPath; lpszTitle --)
-     ;
+    // Set up title
+    for (lpszTitle = lpPath + lstrlen(lpPath);
+         *lpszTitle != CHAR_BACKSLASH && *lpszTitle != CHAR_COLON && lpszTitle != lpPath; lpszTitle--)
+        ;
 
-  // If we encountered a \ or : then skip it
+    // If we encountered a \ or : then skip it
 
-  if (lpszTitle != lpPath)
-     lpszTitle++;
+    if (lpszTitle != lpPath)
+        lpszTitle++;
 
-  SetErrorMode(0);
-  ret = (DWORD_PTR) ShellExecute(hwndFrame, bRunAs ? L"runas" : NULL, lpPath, lpParms, lpDir, bLoadIt ? SW_SHOWMINNOACTIVE : SW_SHOWNORMAL);
+    SetErrorMode(0);
+    ret = (DWORD_PTR)ShellExecute(
+        hwndFrame, bRunAs ? L"runas" : NULL, lpPath, lpParms, lpDir, bLoadIt ? SW_SHOWMINNOACTIVE : SW_SHOWNORMAL);
 
-  SetErrorMode(1);
+    SetErrorMode(1);
 
-  switch (ret) {
-      case 0:
-      case 8:
-          ret = IDS_NOMEMORYMSG;
-          break;
+    switch (ret) {
+        case 0:
+        case 8:
+            ret = IDS_NOMEMORYMSG;
+            break;
 
-      case 2:
-          ret = IDS_FILENOTFOUNDMSG;
-          break;
+        case 2:
+            ret = IDS_FILENOTFOUNDMSG;
+            break;
 
-      case 3:
-          ret = IDS_BADPATHMSG;
-          break;
+        case 3:
+            ret = IDS_BADPATHMSG;
+            break;
 
-      case 5:
-          ret = IDS_NOACCESSFILE;
-          break;
+        case 5:
+            ret = IDS_NOACCESSFILE;
+            break;
 
-      case 11:
-          ret = IDS_EXECERRTITLE;
-          break;
+        case 11:
+            ret = IDS_EXECERRTITLE;
+            break;
 
-      case SE_ERR_SHARE:
-          ret = IDS_SHAREERROR;
-          break;
+        case SE_ERR_SHARE:
+            ret = IDS_SHAREERROR;
+            break;
 
-      case SE_ERR_ASSOCINCOMPLETE:
-          ret = IDS_ASSOCINCOMPLETE;
-          break;
+        case SE_ERR_ASSOCINCOMPLETE:
+            ret = IDS_ASSOCINCOMPLETE;
+            break;
 
-      case SE_ERR_DDETIMEOUT:
-      case SE_ERR_DDEFAIL:
-      case SE_ERR_DDEBUSY:
-         ret = IDS_DDEFAIL;
-         break;
+        case SE_ERR_DDETIMEOUT:
+        case SE_ERR_DDEFAIL:
+        case SE_ERR_DDEBUSY:
+            ret = IDS_DDEFAIL;
+            break;
 
-      case SE_ERR_NOASSOC:
-         ret = IDS_NOASSOCMSG;
-         break;
+        case SE_ERR_NOASSOC:
+            ret = IDS_NOASSOCMSG;
+            break;
 
-      default:
-         if (ret < 32)
-            goto EPExit;
+        default:
+            if (ret < 32)
+                goto EPExit;
 
-         if (bMinOnRun && !bLoadIt)
-            ShowWindow(hwndFrame, SW_SHOWMINNOACTIVE);
-         ret = 0;
-  }
+            if (bMinOnRun && !bLoadIt)
+                ShowWindow(hwndFrame, SW_SHOWMINNOACTIVE);
+            ret = 0;
+    }
 
 EPExit:
-  i = ShowCursor(FALSE);
+    i = ShowCursor(FALSE);
 
-  SetCursor(hCursor);
+    SetCursor(hCursor);
 
-  return (DWORD)ret;
+    return (DWORD)ret;
 }
-
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1514,87 +1346,79 @@ EPExit:
 /////////////////////////////////////////////////////////////////////
 
 PDOCBUCKET
-IsBucketFile(LPTSTR lpszPath, PPDOCBUCKET ppBucket)
-{
-  LPTSTR szExt;
+IsBucketFile(LPTSTR lpszPath, PPDOCBUCKET ppBucket) {
+    LPTSTR szExt;
 
-  //
-  // Get the file's extension.
-  //
-  szExt = GetExtension(lpszPath);
+    //
+    // Get the file's extension.
+    //
+    szExt = GetExtension(lpszPath);
 
-  if (!*szExt) {
+    if (!*szExt) {
+        //
+        // The specified path didn't have an extension.  It can't be a program.
+        //
+        return (FALSE);
+    }
 
-     //
-     // The specified path didn't have an extension.  It can't be a program.
-     //
-     return(FALSE);
-  }
-
-  return DocFind(ppBucket, szExt);
+    return DocFind(ppBucket, szExt);
 }
-
-
 
 // string always upper case
 // returns true if additional characters; false if first one
 // repeating the first character leaves only one character
 // ch == '\0' resets the tick and buffer
-BOOL TypeAheadString(WCHAR ch, LPWSTR szT)
-{
-   static DWORD tick64 = 0;
-   
-   // Ringbuffer for typed chracters
-   static WCHAR rgchTA[MAXPATHLEN] = { '\0' };
-   
-   // When typing characters all characters so far are the same
-   static BOOL sameChar = TRUE;
-   DWORD tickT;
-   size_t ich;
+BOOL TypeAheadString(WCHAR ch, LPWSTR szT) {
+    static DWORD tick64 = 0;
 
-   if (ch == '\0') {
-      tick64 = 0;
-      rgchTA[0] = '\0';
-      return FALSE;
-   }
+    // Ringbuffer for typed chracters
+    static WCHAR rgchTA[MAXPATHLEN] = { '\0' };
 
-   tickT = GetTickCount();
-#pragma warning(disable:4302) // CharUpper smuggles a character through a pointer
-   ch = reinterpret_cast<WCHAR>(CharUpper((LPWSTR)ch));
-#pragma warning(default:4302)
-   ich = wcslen(rgchTA);
+    // When typing characters all characters so far are the same
+    static BOOL sameChar = TRUE;
+    DWORD tickT;
+    size_t ich;
 
-   // if out of space or more than .5s since last char, start over
-   if (tickT - tick64 > 500 || ich > MAXPATHLEN - 2)
-   {
-      ich = 0;
-      sameChar = TRUE;
-   }
+    if (ch == '\0') {
+        tick64 = 0;
+        rgchTA[0] = '\0';
+        return FALSE;
+    }
 
-   rgchTA[ich] = ch;
-   rgchTA[ich + 1] = '\0';
+    tickT = GetTickCount();
+#pragma warning(disable : 4302)  // CharUpper smuggles a character through a pointer
+    ch = reinterpret_cast<WCHAR>(CharUpper((LPWSTR)ch));
+#pragma warning(default : 4302)
+    ich = wcslen(rgchTA);
 
-   tick64 = tickT;
+    // if out of space or more than .5s since last char, start over
+    if (tickT - tick64 > 500 || ich > MAXPATHLEN - 2) {
+        ich = 0;
+        sameChar = TRUE;
+    }
 
-   if (rgchTA[0] == ch && TRUE == sameChar) {
-      // Same consecutive character as the first was pressed so jump ahead by one
-      szT[0] = ch;
-      szT[1] = '\0';
+    rgchTA[ich] = ch;
+    rgchTA[ich + 1] = '\0';
 
-      return FALSE;
-   }
-   else {
-      // not the same character as the first
-      sameChar = FALSE;
-   }
+    tick64 = tickT;
 
-   lstrcpy(szT, rgchTA);
+    if (rgchTA[0] == ch && TRUE == sameChar) {
+        // Same consecutive character as the first was pressed so jump ahead by one
+        szT[0] = ch;
+        szT[1] = '\0';
 
-   return ich != 0;
+        return FALSE;
+    } else {
+        // not the same character as the first
+        sameChar = FALSE;
+    }
+
+    lstrcpy(szT, rgchTA);
+
+    return ich != 0;
 }
 
-LPTSTR GetFullPathInSystemDirectory(LPCTSTR FileName)
-{
+LPTSTR GetFullPathInSystemDirectory(LPCTSTR FileName) {
     UINT LengthRequired;
     UINT LengthReturned;
     UINT FileNameLength;
@@ -1622,8 +1446,7 @@ LPTSTR GetFullPathInSystemDirectory(LPCTSTR FileName)
     return FullPath;
 }
 
-HMODULE LoadSystemLibrary(LPCTSTR FileName)
-{
+HMODULE LoadSystemLibrary(LPCTSTR FileName) {
     LPTSTR FullPath;
     HMODULE Module;
 

@@ -37,4 +37,4 @@ INT ScaledSystemMetric(INT nIndex);
 // Load an icon resource with proper scaling for the current DPI
 HICON LoadIconForCurrentDPI(HINSTANCE hInstance, LPCTSTR lpIconName);
 
-#endif // _WFDPI_H 
+#endif  // _WFDPI_H

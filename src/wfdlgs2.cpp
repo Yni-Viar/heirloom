@@ -12,68 +12,62 @@
 #include "winfile.h"
 #include "lfn.h"
 #include "wfcopy.h"
-#include "wnetcaps.h"         // WNetGetCaps()
+#include "wnetcaps.h"  // WNetGetCaps()
 #include "commdlg.h"
 #include "resize.h"
-
 
 VOID CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn);
 BOOL NoQuotes(LPTSTR szT);
 
-
 // Return pointers to various bits of a path.
 // ie where the dir name starts, where the filename starts and where the
 // params are.
-VOID
-GetPathInfo(LPTSTR szTemp, LPTSTR *ppDir, LPTSTR *ppFile, LPTSTR *ppPar)
-{
-   // handle quoted things
-   BOOL bInQuotes=FALSE;
+VOID GetPathInfo(LPTSTR szTemp, LPTSTR* ppDir, LPTSTR* ppFile, LPTSTR* ppPar) {
+    // handle quoted things
+    BOOL bInQuotes = FALSE;
 
-   // strip leading spaces
+    // strip leading spaces
 
-   for (*ppDir = szTemp; **ppDir == CHAR_SPACE; (*ppDir)++)
-      ;
+    for (*ppDir = szTemp; **ppDir == CHAR_SPACE; (*ppDir)++)
+        ;
 
-   // locate the parameters
+    // locate the parameters
 
-   // Use bInQuotes and add if clause
-   for (*ppPar = *ppDir; **ppPar && (**ppPar != CHAR_SPACE || bInQuotes) ; (*ppPar)++)
-      if ( CHAR_DQUOTE == **ppPar ) bInQuotes = !bInQuotes;
+    // Use bInQuotes and add if clause
+    for (*ppPar = *ppDir; **ppPar && (**ppPar != CHAR_SPACE || bInQuotes); (*ppPar)++)
+        if (CHAR_DQUOTE == **ppPar)
+            bInQuotes = !bInQuotes;
 
-   // locate the start of the filename and the extension.
+    // locate the start of the filename and the extension.
 
-   for (*ppFile = *ppPar; *ppFile > *ppDir; --(*ppFile)) {
-      if (((*ppFile)[-1] == CHAR_COLON) || ((*ppFile)[-1] == CHAR_BACKSLASH))
-         break;
-   }
+    for (*ppFile = *ppPar; *ppFile > *ppDir; --(*ppFile)) {
+        if (((*ppFile)[-1] == CHAR_COLON) || ((*ppFile)[-1] == CHAR_BACKSLASH))
+            break;
+    }
 }
-
 
 //
 // Strips off the path portion and replaces the first part of an 8-dot-3
 // filename with an asterisk.
 //
 
-VOID
-StarFilename(LPTSTR pszPath)
-{
-   LPTSTR p;
-   TCHAR szTemp[MAXPATHLEN];
+VOID StarFilename(LPTSTR pszPath) {
+    LPTSTR p;
+    TCHAR szTemp[MAXPATHLEN];
 
-   // Remove any leading path information.
-   StripPath(pszPath);
+    // Remove any leading path information.
+    StripPath(pszPath);
 
-   lstrcpy(szTemp, pszPath);
+    lstrcpy(szTemp, pszPath);
 
-   p=GetExtension(szTemp);
+    p = GetExtension(szTemp);
 
-   if (*p) {
-      pszPath[0] = CHAR_STAR;
-      lstrcpy(pszPath+1, p-1);
-   } else {
-      lstrcpy(pszPath, szStarDotStar);
-   }
+    if (*p) {
+        pszPath[0] = CHAR_STAR;
+        lstrcpy(pszPath + 1, p - 1);
+    } else {
+        lstrcpy(pszPath, szStarDotStar);
+    }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -84,148 +78,143 @@ StarFilename(LPTSTR pszPath)
 
 INT_PTR
 CALLBACK
-SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-   LPTSTR     p;
-   MDICREATESTRUCT   MDICS;
-   TCHAR szStart[MAXFILENAMELEN];
+SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
+    LPTSTR p;
+    MDICREATESTRUCT MDICS;
+    TCHAR szStart[MAXFILENAMELEN];
 
-   if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
-      return TRUE;
-   }
+    if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
+        return TRUE;
+    }
 
-   switch (wMsg)
-   {
-   case WM_INITDIALOG:
+    switch (wMsg) {
+        case WM_INITDIALOG:
 
-      SendDlgItemMessage(hDlg, IDD_DIR, EM_LIMITTEXT, COUNTOF(SearchInfo.szSearch) - 1, 0L);
-      SendDlgItemMessage(hDlg, IDD_NAME, EM_LIMITTEXT, COUNTOF(szStart) - 1, 0L);
+            SendDlgItemMessage(hDlg, IDD_DIR, EM_LIMITTEXT, COUNTOF(SearchInfo.szSearch) - 1, 0L);
+            SendDlgItemMessage(hDlg, IDD_NAME, EM_LIMITTEXT, COUNTOF(szStart) - 1, 0L);
 
-      GetSelectedDirectory(0, SearchInfo.szSearch);
-      SetDlgItemText(hDlg, IDD_DIR, SearchInfo.szSearch);
+            GetSelectedDirectory(0, SearchInfo.szSearch);
+            SetDlgItemText(hDlg, IDD_DIR, SearchInfo.szSearch);
 
-      p = GetSelection(1, NULL);
+            p = GetSelection(1, NULL);
 
-      if (p) {
-         GetNextFile(p, szStart, COUNTOF(szStart));
-         StarFilename(szStart);
-         SetDlgItemText(hDlg, IDD_NAME, szStart);
-         LocalFree((HANDLE)p);
-      }
-
-      CheckDlgButton(hDlg, IDD_SEARCHALL, !SearchInfo.bDontSearchSubs);
-      CheckDlgButton(hDlg, IDD_INCLUDEDIRS, SearchInfo.bIncludeSubDirs);
-      break;
-
-   case WM_COMMAND:
-      switch (GET_WM_COMMAND_ID(wParam, lParam)) {
-
-      case IDD_HELP:
-         goto DoHelp;
-
-      case IDCANCEL:
-         EndDialog(hDlg, FALSE);
-         break;
-
-      case IDOK: {
-
-         GetDlgItemText(hDlg, IDD_DIR, SearchInfo.szSearch, COUNTOF(SearchInfo.szSearch));
-         QualifyPath(SearchInfo.szSearch);
-
-         GetDlgItemText(hDlg, IDD_DATE, szStart, COUNTOF(szStart));
-         SearchInfo.ftSince.dwHighDateTime = SearchInfo.ftSince.dwLowDateTime = 0;
-         if (lstrlen(szStart) != 0)
-         {
-            DATE date;
-            SYSTEMTIME st;
-            FILETIME ftLocal;
-            HRESULT hr = VarDateFromStr(szStart, lcid, 0, &date);
-            BOOL b1 = VariantTimeToSystemTime(date, &st);
-            BOOL b2 = SystemTimeToFileTime(&st, &ftLocal);
-
-            // SearchInfo.ftSince is in UTC (as are FILETIME in files to which this will be compared)
-            BOOL b3 = LocalFileTimeToFileTime(&ftLocal, &SearchInfo.ftSince);
-            if (FAILED(hr) || !b1 || !b2 || !b3) {
-               MessageBeep(0);
-               break;
+            if (p) {
+                GetNextFile(p, szStart, COUNTOF(szStart));
+                StarFilename(szStart);
+                SetDlgItemText(hDlg, IDD_NAME, szStart);
+                LocalFree((HANDLE)p);
             }
-         }
 
-         GetDlgItemText(hDlg, IDD_NAME, szStart, COUNTOF(szStart));
+            CheckDlgButton(hDlg, IDD_SEARCHALL, !SearchInfo.bDontSearchSubs);
+            CheckDlgButton(hDlg, IDD_INCLUDEDIRS, SearchInfo.bIncludeSubDirs);
+            break;
 
-         KillQuoteTrailSpace(szStart);
+        case WM_COMMAND:
+            switch (GET_WM_COMMAND_ID(wParam, lParam)) {
+                case IDD_HELP:
+                    goto DoHelp;
 
-         AppendToPath(SearchInfo.szSearch, szStart);
+                case IDCANCEL:
+                    EndDialog(hDlg, FALSE);
+                    break;
 
-         SearchInfo.bDontSearchSubs = !IsDlgButtonChecked(hDlg, IDD_SEARCHALL);
-         SearchInfo.bIncludeSubDirs = IsDlgButtonChecked(hDlg, IDD_INCLUDEDIRS);
+                case IDOK: {
+                    GetDlgItemText(hDlg, IDD_DIR, SearchInfo.szSearch, COUNTOF(SearchInfo.szSearch));
+                    QualifyPath(SearchInfo.szSearch);
 
-         EndDialog(hDlg, TRUE);
+                    GetDlgItemText(hDlg, IDD_DATE, szStart, COUNTOF(szStart));
+                    SearchInfo.ftSince.dwHighDateTime = SearchInfo.ftSince.dwLowDateTime = 0;
+                    if (lstrlen(szStart) != 0) {
+                        DATE date;
+                        SYSTEMTIME st;
+                        FILETIME ftLocal;
+                        HRESULT hr = VarDateFromStr(szStart, lcid, 0, &date);
+                        BOOL b1 = VariantTimeToSystemTime(date, &st);
+                        BOOL b2 = SystemTimeToFileTime(&st, &ftLocal);
 
-         SearchInfo.iDirsRead = 0;
-         SearchInfo.iFileCount = 0;
-         SearchInfo.eStatus = _SEARCH_INFO::SEARCH_NULL;
-         SearchInfo.bCancel = FALSE;
+                        // SearchInfo.ftSince is in UTC (as are FILETIME in files to which this will be compared)
+                        BOOL b3 = LocalFileTimeToFileTime(&ftLocal, &SearchInfo.ftSince);
+                        if (FAILED(hr) || !b1 || !b2 || !b3) {
+                            MessageBeep(0);
+                            break;
+                        }
+                    }
 
-         // Retrieve state of search window
-         BOOL bMaximized = FALSE;
-         HWND hwndMDIChild = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, (LPARAM)&bMaximized);
+                    GetDlgItemText(hDlg, IDD_NAME, szStart, COUNTOF(szStart));
 
-         /* Is the search window already up? */
-         if (hwndSearch == NULL) {
-            //
-            // !! BUGBUG !!
-            //
-            // This is safe since szMessage = MAXPATHLEN*2+MAXSUGGESTLEN
-            // but it's not portable
-            //
-            LoadString(hAppInstance, IDS_SEARCHTITLE, szMessage, COUNTOF(szMessage));
+                    KillQuoteTrailSpace(szStart);
 
-            lstrcat(szMessage, SearchInfo.szSearch);
+                    AppendToPath(SearchInfo.szSearch, szStart);
 
-            // Have the MDIClient create the MDI directory window.
+                    SearchInfo.bDontSearchSubs = !IsDlgButtonChecked(hDlg, IDD_SEARCHALL);
+                    SearchInfo.bIncludeSubDirs = IsDlgButtonChecked(hDlg, IDD_INCLUDEDIRS);
 
-            MDICS.szClass = szSearchClass;
-            MDICS.hOwner = hAppInstance;
-            MDICS.szTitle = szMessage;
+                    EndDialog(hDlg, TRUE);
 
-            // Create max or normal based on current mdi child
+                    SearchInfo.iDirsRead = 0;
+                    SearchInfo.iFileCount = 0;
+                    SearchInfo.eStatus = _SEARCH_INFO::SEARCH_NULL;
+                    SearchInfo.bCancel = FALSE;
 
-            MDICS.style = bMaximized ? WS_MAXIMIZE : WS_OVERLAPPED;
-            MDICS.x = CW_USEDEFAULT;
-            MDICS.y = 0;
-            MDICS.cx = CW_USEDEFAULT;
-            MDICS.cy = 0;
+                    // Retrieve state of search window
+                    BOOL bMaximized = FALSE;
+                    HWND hwndMDIChild = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, (LPARAM)&bMaximized);
 
-            SendMessage(hwndMDIClient, WM_MDICREATE, 0L, (LPARAM)(LPMDICREATESTRUCT)&MDICS);
+                    /* Is the search window already up? */
+                    if (hwndSearch == NULL) {
+                        //
+                        // !! BUGBUG !!
+                        //
+                        // This is safe since szMessage = MAXPATHLEN*2+MAXSUGGESTLEN
+                        // but it's not portable
+                        //
+                        LoadString(hAppInstance, IDS_SEARCHTITLE, szMessage, COUNTOF(szMessage));
 
-            // Forward the attributes to the search window, since hwndSearch was just created by WM_MDICREATE
-            SetWindowLongPtr(hwndSearch, GWL_ATTRIBS, GetWindowLongPtr(hwndMDIChild, GWL_ATTRIBS));
-         }
+                        lstrcat(szMessage, SearchInfo.szSearch);
 
-         SendMessage(hwndSearch, FS_CHANGEDISPLAY, CD_PATH, (LPARAM)SearchInfo.szSearch);
+                        // Have the MDIClient create the MDI directory window.
 
-         // Show search window immediatley
-         ShowWindow(hwndSearch, bMaximized ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
-         SetWindowPos(hwndSearch, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+                        MDICS.szClass = szSearchClass;
+                        MDICS.hOwner = hAppInstance;
+                        MDICS.szTitle = szMessage;
 
-         break;
-      }
+                        // Create max or normal based on current mdi child
 
-      default:
-         return FALSE;
-      }
-      break;
+                        MDICS.style = bMaximized ? WS_MAXIMIZE : WS_OVERLAPPED;
+                        MDICS.x = CW_USEDEFAULT;
+                        MDICS.y = 0;
+                        MDICS.cx = CW_USEDEFAULT;
+                        MDICS.cy = 0;
 
-   default:
-      if (wMsg == wHelpMessage) {
-      DoHelp:
-         return TRUE;
-      }
-      else
-         return FALSE;
-   }
-   return TRUE;
+                        SendMessage(hwndMDIClient, WM_MDICREATE, 0L, (LPARAM)(LPMDICREATESTRUCT)&MDICS);
+
+                        // Forward the attributes to the search window, since hwndSearch was just created by
+                        // WM_MDICREATE
+                        SetWindowLongPtr(hwndSearch, GWL_ATTRIBS, GetWindowLongPtr(hwndMDIChild, GWL_ATTRIBS));
+                    }
+
+                    SendMessage(hwndSearch, FS_CHANGEDISPLAY, CD_PATH, (LPARAM)SearchInfo.szSearch);
+
+                    // Show search window immediatley
+                    ShowWindow(hwndSearch, bMaximized ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
+                    SetWindowPos(hwndSearch, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+
+                    break;
+                }
+
+                default:
+                    return FALSE;
+            }
+            break;
+
+        default:
+            if (wMsg == wHelpMessage) {
+            DoHelp:
+                return TRUE;
+            } else
+                return FALSE;
+    }
+    return TRUE;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -236,155 +225,146 @@ SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
 INT_PTR
 CALLBACK
-RunDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-  LPTSTR p,pDir,pFile,pPar;
-  DWORD ret;
-  LPTSTR pDir2;
-  TCHAR szTemp[MAXPATHLEN];
-  TCHAR szTemp2[MAXPATHLEN];
-  TCHAR sz3[MAXPATHLEN];
+RunDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
+    LPTSTR p, pDir, pFile, pPar;
+    DWORD ret;
+    LPTSTR pDir2;
+    TCHAR szTemp[MAXPATHLEN];
+    TCHAR szTemp2[MAXPATHLEN];
+    TCHAR sz3[MAXPATHLEN];
 
-  if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
-      return TRUE;
-  }
+    if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
+        return TRUE;
+    }
 
-  switch (wMsg)
-    {
-      case WM_INITDIALOG:
-          SetDlgDirectory(hDlg, NULL);
-          SetWindowDirectory();          // and really set the DOS current directory
+    switch (wMsg) {
+        case WM_INITDIALOG:
+            SetDlgDirectory(hDlg, NULL);
+            SetWindowDirectory();  // and really set the DOS current directory
 
-          SendDlgItemMessage(hDlg, IDD_NAME, EM_LIMITTEXT, COUNTOF(szTemp)-1, 0L);
+            SendDlgItemMessage(hDlg, IDD_NAME, EM_LIMITTEXT, COUNTOF(szTemp) - 1, 0L);
 
-          p = GetSelection(1, NULL);
+            p = GetSelection(1, NULL);
 
-          if (p) {
-              SetDlgItemText(hDlg, IDD_NAME, p);
-              LocalFree((HANDLE)p);
-          }
-          break;
+            if (p) {
+                SetDlgItemText(hDlg, IDD_NAME, p);
+                LocalFree((HANDLE)p);
+            }
+            break;
 
-      case WM_SIZE:
-          SetDlgDirectory(hDlg, NULL);
-	  break;
+        case WM_SIZE:
+            SetDlgDirectory(hDlg, NULL);
+            break;
 
-      case WM_COMMAND:
-          switch (GET_WM_COMMAND_ID(wParam, lParam))
-            {
-              case IDD_HELP:
-                  goto DoHelp;
+        case WM_COMMAND:
+            switch (GET_WM_COMMAND_ID(wParam, lParam)) {
+                case IDD_HELP:
+                    goto DoHelp;
 
-              case IDCANCEL:
-                  EndDialog(hDlg, FALSE);
-                  break;
+                case IDCANCEL:
+                    EndDialog(hDlg, FALSE);
+                    break;
 
-              case IDOK:
-                {
-                  BOOL bLoadIt, bRunAs;
+                case IDOK: {
+                    BOOL bLoadIt, bRunAs;
 
-                  GetDlgItemText(hDlg, IDD_NAME, szTemp, COUNTOF(szTemp));
-                  GetPathInfo(szTemp, &pDir, &pFile, &pPar);
+                    GetDlgItemText(hDlg, IDD_NAME, szTemp, COUNTOF(szTemp));
+                    GetPathInfo(szTemp, &pDir, &pFile, &pPar);
 
-                  // copy away parameters
-                  lstrcpy(sz3,pPar);
-                  *pPar = CHAR_NULL;    // strip the params from the program
+                    // copy away parameters
+                    lstrcpy(sz3, pPar);
+                    *pPar = CHAR_NULL;  // strip the params from the program
 
-                  // REVIEW HACK Hard code UNC style paths.
-                  if (*pDir == CHAR_BACKSLASH && *(pDir+1) == CHAR_BACKSLASH) {
-                     // This is a UNC style filename so NULLify directory.
-                     pDir2 = NULL;
-                  } else {
-                     GetSelectedDirectory(0, szTemp2);
-                     pDir2 = szTemp2;
-                  }
+                    // REVIEW HACK Hard code UNC style paths.
+                    if (*pDir == CHAR_BACKSLASH && *(pDir + 1) == CHAR_BACKSLASH) {
+                        // This is a UNC style filename so NULLify directory.
+                        pDir2 = NULL;
+                    } else {
+                        GetSelectedDirectory(0, szTemp2);
+                        pDir2 = szTemp2;
+                    }
 
-                  bLoadIt = IsDlgButtonChecked(hDlg, IDD_LOAD);
-                  bRunAs = IsDlgButtonChecked(hDlg, IDD_RUNAS);
+                    bLoadIt = IsDlgButtonChecked(hDlg, IDD_LOAD);
+                    bRunAs = IsDlgButtonChecked(hDlg, IDD_RUNAS);
 
-                  // Stop SaveBits flickering by invalidating the SaveBitsStuff.
-                  // You can't just hide the window because it messes up the
-                  // the activation.
+                    // Stop SaveBits flickering by invalidating the SaveBitsStuff.
+                    // You can't just hide the window because it messes up the
+                    // the activation.
 
-                  SetWindowPos(hDlg, 0, 0, 0, 0, 0, SWP_HIDEWINDOW|SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER);
+                    SetWindowPos(
+                        hDlg, 0, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
 
-                  ret = ExecProgram(pDir, sz3, pDir2, bLoadIt, bRunAs);
-                  if (ret) {
-                     MyMessageBox(hDlg, IDS_EXECERRTITLE, ret, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
-                     SetWindowPos(hDlg, 0, 0, 0, 0, 0, SWP_SHOWWINDOW|SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER);
-                  } else
-                      EndDialog(hDlg, TRUE);
-                  break;
+                    ret = ExecProgram(pDir, sz3, pDir2, bLoadIt, bRunAs);
+                    if (ret) {
+                        MyMessageBox(hDlg, IDS_EXECERRTITLE, ret, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
+                        SetWindowPos(
+                            hDlg, 0, 0, 0, 0, 0,
+                            SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
+                    } else
+                        EndDialog(hDlg, TRUE);
+                    break;
                 }
 
-              default:
-                  return(FALSE);
+                default:
+                    return (FALSE);
             }
-          break;
+            break;
 
-      default:
-          if (wMsg == wHelpMessage || wMsg == wBrowseMessage) {
-DoHelp:
+        default:
+            if (wMsg == wHelpMessage || wMsg == wBrowseMessage) {
+            DoHelp:
                 return TRUE;
-          } else
+            } else
                 return FALSE;
     }
-  return TRUE;
+    return TRUE;
 }
 
+VOID EnableCopy(HWND hDlg, BOOL bCopy) {
+    HWND hwnd;
 
-VOID
-EnableCopy(HWND hDlg, BOOL bCopy)
-{
-   HWND hwnd;
+    // turn these off
 
-   // turn these off
+    hwnd = GetDlgItem(hDlg, IDD_STATUS);
+    if (hwnd) {
+        EnableWindow(hwnd, !bCopy);
+        ShowWindow(hwnd, !bCopy ? SW_SHOWNA : SW_HIDE);
+    }
 
-   hwnd = GetDlgItem(hDlg, IDD_STATUS);
-   if (hwnd) {
-      EnableWindow(hwnd, !bCopy);
-      ShowWindow(hwnd, !bCopy ? SW_SHOWNA : SW_HIDE);
-   }
-
-   hwnd = GetDlgItem(hDlg, IDD_NAME);
-   if (hwnd) {
-      EnableWindow(hwnd, !bCopy);
-      ShowWindow(hwnd, !bCopy ? SW_SHOWNA : SW_HIDE);
-   }
+    hwnd = GetDlgItem(hDlg, IDD_NAME);
+    if (hwnd) {
+        EnableWindow(hwnd, !bCopy);
+        ShowWindow(hwnd, !bCopy ? SW_SHOWNA : SW_HIDE);
+    }
 }
 
-VOID
-MessWithRenameDirPath(LPTSTR pszPath)
-{
-   TCHAR szPath[MAXPATHLEN];
-   LPTSTR lpsz;
+VOID MessWithRenameDirPath(LPTSTR pszPath) {
+    TCHAR szPath[MAXPATHLEN];
+    LPTSTR lpsz;
 
-   // absolute path? don't tamper with it!
+    // absolute path? don't tamper with it!
 
-   // Also allow "\"f:\joe\me\""  ( ->   "f:\joe\me  )
+    // Also allow "\"f:\joe\me\""  ( ->   "f:\joe\me  )
 
-   //
-   // !! LATER !!
-   //
-   // Should we allow backslashes here also ?
-   // CheckSlashes(pszPath); or add || clause.
-   //
+    //
+    // !! LATER !!
+    //
+    // Should we allow backslashes here also ?
+    // CheckSlashes(pszPath); or add || clause.
+    //
 
-   lpsz = (CHAR_DQUOTE == pszPath[0]) ?
-      pszPath+1 :
-      pszPath;
+    lpsz = (CHAR_DQUOTE == pszPath[0]) ? pszPath + 1 : pszPath;
 
-   if (CHAR_COLON == lpsz[1] && CHAR_BACKSLASH == lpsz[2] ||
-      lstrlen(pszPath) > (COUNTOF(szPath) - 4) )
+    if (CHAR_COLON == lpsz[1] && CHAR_BACKSLASH == lpsz[2] || lstrlen(pszPath) > (COUNTOF(szPath) - 4))
 
-      return;
+        return;
 
-   //
-   // prepend "..\" to this non absolute path
-   //
-   lstrcpy(szPath, TEXT("..\\"));
-   lstrcat(szPath, pszPath);
-   lstrcpy(pszPath, szPath);
+    //
+    // prepend "..\" to this non absolute path
+    //
+    lstrcpy(szPath, TEXT("..\\"));
+    lstrcat(szPath, pszPath);
+    lstrcpy(pszPath, szPath);
 }
 
 //--------------------------------------------------------------------------*/
@@ -399,418 +379,386 @@ MessWithRenameDirPath(LPTSTR pszPath)
 
 INT_PTR
 CALLBACK
-SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-   UINT          len;
-   INT           iCtrl;
-   LPTSTR        pszFrom;
-   //
-   // WFMoveCopyDrive tries to append \*.* to directories and
-   // probably other nasty stuff.  2* for safety.
-   //
-   TCHAR  szTo[2*MAXPATHLEN];
-   static BOOL   bTreeHasFocus;
+SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
+    UINT len;
+    INT iCtrl;
+    LPTSTR pszFrom;
+    //
+    // WFMoveCopyDrive tries to append \*.* to directories and
+    // probably other nasty stuff.  2* for safety.
+    //
+    TCHAR szTo[2 * MAXPATHLEN];
+    static BOOL bTreeHasFocus;
 
-   TCHAR         szStr[256];
+    TCHAR szStr[256];
 
-   static PCOPYINFO pCopyInfo;
+    static PCOPYINFO pCopyInfo;
 
+    if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
+        return TRUE;
+    }
 
-   if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
-      return TRUE;
-   }
+    switch (wMsg) {
+        case WM_INITDIALOG: {
+            LPTSTR p;
+            HWND hwndActive;
 
-   switch (wMsg) {
-   case WM_INITDIALOG:
-      {
-         LPTSTR  p;
-         HWND  hwndActive;
+            pCopyInfo = NULL;
 
-         pCopyInfo = NULL;
+            SetDlgDirectory(hDlg, NULL);
 
-         SetDlgDirectory(hDlg, NULL);
+            EnableCopy(hDlg, dwSuperDlgMode == IDM_COPY);
 
-         EnableCopy(hDlg, dwSuperDlgMode == IDM_COPY);
+            hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
+            bTreeHasFocus = (hwndActive != hwndSearch) && (GetTreeFocus(hwndActive) == HasTreeWindow(hwndActive));
 
-         hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
-         bTreeHasFocus = (hwndActive != hwndSearch) &&
-            (GetTreeFocus(hwndActive) == HasTreeWindow(hwndActive));
-
-         switch (dwSuperDlgMode) {
-
-         case IDM_COPY:
-
-            p = GetSelection(0, NULL);
-
-            LoadString(hAppInstance, IDS_COPY, szTitle, COUNTOF(szTitle));
-            SetWindowText(hDlg, szTitle);
-
-            LoadString(hAppInstance, IDS_KK_COPYFROMSTR, szStr, COUNTOF(szStr));
-            SetDlgItemText(hDlg, IDD_KK_TEXTFROM, szStr);
-            LoadString(hAppInstance, IDS_KK_COPYTOSTR, szStr, COUNTOF(szStr));
-            SetDlgItemText(hDlg, IDD_KK_TEXTTO, szStr);
-
-            break;
-         case IDM_HARDLINK:
-
-            p = GetSelection(0, NULL);
-
-            LoadString(hAppInstance, IDS_HARDLINK, szTitle, COUNTOF(szTitle));
-            SetWindowText(hDlg, szTitle);
-
-            LoadString(hAppInstance, IDS_KK_HARDLINKFROMSTR, szStr, COUNTOF(szStr));
-            SetDlgItemText(hDlg, IDD_KK_TEXTFROM, szStr);
-            LoadString(hAppInstance, IDS_KK_HARDLINKTOSTR, szStr, COUNTOF(szStr));
-            SetDlgItemText(hDlg, IDD_KK_TEXTTO, szStr);
-
-            break;
-         case IDM_SYMLINK:
-
-            p = GetSelection(0, NULL);
-
-            LoadString(hAppInstance, IDS_SYMLINK, szTitle, COUNTOF(szTitle));
-            SetWindowText(hDlg, szTitle);
-
-            LoadString(hAppInstance, IDS_KK_SYMLINKFROMSTR, szStr, COUNTOF(szStr));
-            SetDlgItemText(hDlg, IDD_KK_TEXTFROM, szStr);
-            LoadString(hAppInstance, IDS_KK_SYMLINKTOSTR, szStr, COUNTOF(szStr));
-            SetDlgItemText(hDlg, IDD_KK_TEXTTO, szStr);
-
-            break;
-         case IDM_RENAME:
-
-            LoadString(hAppInstance, IDS_RENAME, szTitle, COUNTOF(szTitle));
-            SetWindowText(hDlg, szTitle);
-
-            LoadString(hAppInstance, IDS_KK_RENAMEFROMSTR, szStr, COUNTOF(szStr));
-            SetDlgItemText(hDlg, IDD_KK_TEXTFROM, szStr);
-            LoadString(hAppInstance, IDS_KK_RENAMETOSTR, szStr, COUNTOF(szStr));
-            SetDlgItemText(hDlg, IDD_KK_TEXTTO, szStr);
-
-            // when renaming the current directory we cd up a level
-            // (not really) and apply the appropriate adjustments
-
-            if (bTreeHasFocus) {
-
-               p = GetSelection(16, NULL);
-               lstrcpy(szTo, p);
-               StripFilespec(szTo);
-
-               SetDlgDirectory(hDlg, szTo);  // make the user think this!
-               StripPath(p);                 // name part of dir
-
-               CheckEsc(p);
-            } else {
-               p = GetSelection(0, NULL);
-            }
-
-            break;
-
-         default:
-
-            p=GetSelection(0, NULL);
-         }
-
-         SetDlgItemText(hDlg, IDD_FROM, p);
-
-         if ((dwSuperDlgMode == IDM_PRINT) || (dwSuperDlgMode == IDM_DELETE))
-            iCtrl = IDD_FROM;
-         else
-         {
-            TCHAR szDirs[MAXPATHLEN];
-            LPTSTR rgszDirs[MAX_DRIVES];
-            int drive, driveCur;
-            BOOL fFirst = TRUE;
-            
-            iCtrl = IDD_TO;
-            if (dwSuperDlgMode == IDM_RENAME)
-                SetDlgItemText(hDlg, IDD_TO, p);
-
-            driveCur = (int)GetWindowLongPtr(hwndActive, GWL_TYPE);
-
-            LoadString(hAppInstance, IDS_CURDIRSARE, szDirs, COUNTOF(szDirs));
-
-            GetAllDirectories(rgszDirs);
-
-            for (drive = 0; drive < MAX_DRIVES; drive++)
-            {
-                if (drive != driveCur && rgszDirs[drive] != NULL)
-                {
-                    if (!fFirst)
-                    {
-                        wcsncat_s(szDirs, MAXPATHLEN, TEXT(";"), 1);
-                    }
-                    fFirst = FALSE;
-
-                    // NOTE: this call may truncate the result that goes in szDirs,
-                    // but due to the limited width of the dialog, we can't see it all anyway.
-                    wcsncat_s(szDirs, MAXPATHLEN, rgszDirs[drive], _TRUNCATE);
-
-                    LocalFree(rgszDirs[drive]);
-                }
-            }
-
-            SetDlgItemText(hDlg, IDD_DIRS, szDirs);
-         }
-
-         SendDlgItemMessage(hDlg, iCtrl, EM_LIMITTEXT, COUNTOF(szTo) - 1, 0L);
-         LocalFree((HANDLE)p);
-         break;
-      }
-
-   case WM_SIZE:
-      {
-         SetDlgDirectory(hDlg, NULL);
-	 break;
-      }
-
-   case WM_NCACTIVATE:
-      if (IDM_RENAME == dwSuperDlgMode) {
-         size_t ich1, ich2;
-         LPWSTR pchDot;
-
-         GetDlgItemText(hDlg, IDD_TO, szTo, COUNTOF(szTo));
-         ich1 = 0;
-         ich2 = wcslen(szTo);
-
-         // Search for extension
-         pchDot = wcsrchr(szTo, '.');
-         if (pchDot != NULL) {
-            TCHAR szTemp[MAXPATHLEN];
-            lstrcpy(szTemp, szTo);
-            QualifyPath(szTemp);
-
-            // Is this a file or directory
-            if (GetFileAttributes(szTemp) & FILE_ATTRIBUTE_DIRECTORY) {
-               if (szTo[ich2 - 1] == '\"')
-                  ich2--;
-            }
-            else {
-               ich2 = pchDot - szTo;
-            }
-         }
-         // Make sure we handle " properly with selection
-         if (*szTo == '\"') {
-            ich1 = 1;
-            if (pchDot == NULL)
-               ich2--;
-         }
-         SendDlgItemMessage(hDlg, IDD_TO, EM_SETSEL, ich1, ich2);
-      }
-      return FALSE;
-      
-   case FS_COPYDONE:
-
-      //
-      // Only cancel out if pCopyInfo == lParam
-      // This indicates that the proper thread quit.
-      //
-      // wParam holds return value
-      //
-
-      if (lParam == (LPARAM)pCopyInfo) {
-         SPC_SET_HITDISK(qFreeSpace);     // force status info refresh
-
-         EndDialog(hDlg, wParam);
-      }
-      break;
-
-
-   case WM_COMMAND:
-      switch (GET_WM_COMMAND_ID(wParam, lParam)) {
-
-      case IDD_HELP:
-         goto DoHelp;
-
-      case IDCANCEL:
-
-         if (pCopyInfo)
-            pCopyInfo->bUserAbort = TRUE;
-
-SuperDlgExit:
-
-         EndDialog(hDlg, 0);
-         break;
-
-      case IDOK:
-
-         len = (UINT)(SendDlgItemMessage(hDlg, IDD_FROM, EM_LINELENGTH,
-            (WPARAM)-1, 0L) + 1);
-
-         //
-         // make sure the pszFrom buffer is big enough to
-         // add the "..\" stuff in MessWithRenameDirPath()
-         //
-         len += 4;
-
-         pszFrom = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(len));
-         if (!pszFrom)
-            goto SuperDlgExit;
-
-         GetDlgItemText(hDlg, IDD_FROM, pszFrom, len);
-         GetDlgItemText(hDlg, IDD_TO, szTo, COUNTOF(szTo));
-
-         //
-         // if dwSuperDlgMode is copy, rename, symlink, hardlink, or move, do checkesc.
-         // Only if no quotes in string!
-         //
-         switch (dwSuperDlgMode) {
-         case IDM_RENAME:
-         case IDM_MOVE:
-         case IDM_COPY:
-         case IDM_SYMLINK:
-         case IDM_HARDLINK:
-            if (NoQuotes(szTo))
-               CheckEsc(szTo);
-         }
-
-         if (!szTo[0]) {
-             switch (dwSuperDlgMode) {
-                 case IDM_RENAME:
-                 case IDM_MOVE:
-                 case IDM_COPY:
-                 case IDM_SYMLINK:
-                 case IDM_HARDLINK:
-                 {
-                     szTo[0] = CHAR_DOT;
-                     szTo[1] = CHAR_NULL;
-                     break;
-                 }
-             }
-         }
-
-         EnableCopy(hDlg, FALSE);
-
-         hdlgProgress = hDlg;
-         if (dwSuperDlgMode == IDM_PRINT) {
-            WFPrint(pszFrom);
-
-            LocalFree(pszFrom);
-            goto SuperDlgExit;
-
-         } else {
-
-            if (dwSuperDlgMode == IDM_RENAME && bTreeHasFocus) {
-               MessWithRenameDirPath(pszFrom);
-               MessWithRenameDirPath(szTo);
-            }
-
-            //
-            // Setup pCopyInfo structure
-            //
-            // Note that everything must be malloc'd!!
-            // (Freed by thread)
-            //
-
-            pCopyInfo = (PCOPYINFO) LocalAlloc(LPTR, sizeof(COPYINFO));
-
-            if (!pCopyInfo) {
-
-Error:
-               FormatError(TRUE, szMessage, COUNTOF(szMessage), GetLastError());
-               LoadString(hAppInstance, IDS_WINFILE, szTitle, COUNTOF(szTitle));
-
-               MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONEXCLAMATION);
-
-               LocalFree(pszFrom);
-               goto SuperDlgExit;
-            }
-
-            pCopyInfo->pFrom = pszFrom;
-            pCopyInfo->pTo = (LPTSTR) LocalAlloc(LMEM_FIXED, sizeof(szTo));
-
-            if (!pCopyInfo->pTo) {
-
-               goto Error;
-            }
-
-            // Map IDM_* to FUNC_*
             switch (dwSuperDlgMode) {
-            case IDM_MOVE:
-               pCopyInfo->dwFunc = FUNC_MOVE;
-               break;
-            case IDM_COPY:
-               pCopyInfo->dwFunc = FUNC_COPY;
-               break;
-            case IDM_DELETE:
-               pCopyInfo->dwFunc = FUNC_DELETE;
-               break;
-            case IDM_RENAME:
-               pCopyInfo->dwFunc = FUNC_RENAME;
-               break;
-            case IDM_SYMLINK:
-               pCopyInfo->dwFunc = FUNC_LINK;
-               break;
-            case IDM_HARDLINK:
-                pCopyInfo->dwFunc = FUNC_HARD;
-               break;
+                case IDM_COPY:
+
+                    p = GetSelection(0, NULL);
+
+                    LoadString(hAppInstance, IDS_COPY, szTitle, COUNTOF(szTitle));
+                    SetWindowText(hDlg, szTitle);
+
+                    LoadString(hAppInstance, IDS_KK_COPYFROMSTR, szStr, COUNTOF(szStr));
+                    SetDlgItemText(hDlg, IDD_KK_TEXTFROM, szStr);
+                    LoadString(hAppInstance, IDS_KK_COPYTOSTR, szStr, COUNTOF(szStr));
+                    SetDlgItemText(hDlg, IDD_KK_TEXTTO, szStr);
+
+                    break;
+                case IDM_HARDLINK:
+
+                    p = GetSelection(0, NULL);
+
+                    LoadString(hAppInstance, IDS_HARDLINK, szTitle, COUNTOF(szTitle));
+                    SetWindowText(hDlg, szTitle);
+
+                    LoadString(hAppInstance, IDS_KK_HARDLINKFROMSTR, szStr, COUNTOF(szStr));
+                    SetDlgItemText(hDlg, IDD_KK_TEXTFROM, szStr);
+                    LoadString(hAppInstance, IDS_KK_HARDLINKTOSTR, szStr, COUNTOF(szStr));
+                    SetDlgItemText(hDlg, IDD_KK_TEXTTO, szStr);
+
+                    break;
+                case IDM_SYMLINK:
+
+                    p = GetSelection(0, NULL);
+
+                    LoadString(hAppInstance, IDS_SYMLINK, szTitle, COUNTOF(szTitle));
+                    SetWindowText(hDlg, szTitle);
+
+                    LoadString(hAppInstance, IDS_KK_SYMLINKFROMSTR, szStr, COUNTOF(szStr));
+                    SetDlgItemText(hDlg, IDD_KK_TEXTFROM, szStr);
+                    LoadString(hAppInstance, IDS_KK_SYMLINKTOSTR, szStr, COUNTOF(szStr));
+                    SetDlgItemText(hDlg, IDD_KK_TEXTTO, szStr);
+
+                    break;
+                case IDM_RENAME:
+
+                    LoadString(hAppInstance, IDS_RENAME, szTitle, COUNTOF(szTitle));
+                    SetWindowText(hDlg, szTitle);
+
+                    LoadString(hAppInstance, IDS_KK_RENAMEFROMSTR, szStr, COUNTOF(szStr));
+                    SetDlgItemText(hDlg, IDD_KK_TEXTFROM, szStr);
+                    LoadString(hAppInstance, IDS_KK_RENAMETOSTR, szStr, COUNTOF(szStr));
+                    SetDlgItemText(hDlg, IDD_KK_TEXTTO, szStr);
+
+                    // when renaming the current directory we cd up a level
+                    // (not really) and apply the appropriate adjustments
+
+                    if (bTreeHasFocus) {
+                        p = GetSelection(16, NULL);
+                        lstrcpy(szTo, p);
+                        StripFilespec(szTo);
+
+                        SetDlgDirectory(hDlg, szTo);  // make the user think this!
+                        StripPath(p);                 // name part of dir
+
+                        CheckEsc(p);
+                    } else {
+                        p = GetSelection(0, NULL);
+                    }
+
+                    break;
+
+                default:
+
+                    p = GetSelection(0, NULL);
             }
 
-            pCopyInfo->bUserAbort = FALSE;
+            SetDlgItemText(hDlg, IDD_FROM, p);
 
-            lstrcpy(pCopyInfo->pTo, szTo);
+            if ((dwSuperDlgMode == IDM_PRINT) || (dwSuperDlgMode == IDM_DELETE))
+                iCtrl = IDD_FROM;
+            else {
+                TCHAR szDirs[MAXPATHLEN];
+                LPTSTR rgszDirs[MAX_DRIVES];
+                int drive, driveCur;
+                BOOL fFirst = TRUE;
+
+                iCtrl = IDD_TO;
+                if (dwSuperDlgMode == IDM_RENAME)
+                    SetDlgItemText(hDlg, IDD_TO, p);
+
+                driveCur = (int)GetWindowLongPtr(hwndActive, GWL_TYPE);
+
+                LoadString(hAppInstance, IDS_CURDIRSARE, szDirs, COUNTOF(szDirs));
+
+                GetAllDirectories(rgszDirs);
+
+                for (drive = 0; drive < MAX_DRIVES; drive++) {
+                    if (drive != driveCur && rgszDirs[drive] != NULL) {
+                        if (!fFirst) {
+                            wcsncat_s(szDirs, MAXPATHLEN, TEXT(";"), 1);
+                        }
+                        fFirst = FALSE;
+
+                        // NOTE: this call may truncate the result that goes in szDirs,
+                        // but due to the limited width of the dialog, we can't see it all anyway.
+                        wcsncat_s(szDirs, MAXPATHLEN, rgszDirs[drive], _TRUNCATE);
+
+                        LocalFree(rgszDirs[drive]);
+                    }
+                }
+
+                SetDlgItemText(hDlg, IDD_DIRS, szDirs);
+            }
+
+            SendDlgItemMessage(hDlg, iCtrl, EM_LIMITTEXT, COUNTOF(szTo) - 1, 0L);
+            LocalFree((HANDLE)p);
+            break;
+        }
+
+        case WM_SIZE: {
+            SetDlgDirectory(hDlg, NULL);
+            break;
+        }
+
+        case WM_NCACTIVATE:
+            if (IDM_RENAME == dwSuperDlgMode) {
+                size_t ich1, ich2;
+                LPWSTR pchDot;
+
+                GetDlgItemText(hDlg, IDD_TO, szTo, COUNTOF(szTo));
+                ich1 = 0;
+                ich2 = wcslen(szTo);
+
+                // Search for extension
+                pchDot = wcsrchr(szTo, '.');
+                if (pchDot != NULL) {
+                    TCHAR szTemp[MAXPATHLEN];
+                    lstrcpy(szTemp, szTo);
+                    QualifyPath(szTemp);
+
+                    // Is this a file or directory
+                    if (GetFileAttributes(szTemp) & FILE_ATTRIBUTE_DIRECTORY) {
+                        if (szTo[ich2 - 1] == '\"')
+                            ich2--;
+                    } else {
+                        ich2 = pchDot - szTo;
+                    }
+                }
+                // Make sure we handle " properly with selection
+                if (*szTo == '\"') {
+                    ich1 = 1;
+                    if (pchDot == NULL)
+                        ich2--;
+                }
+                SendDlgItemMessage(hDlg, IDD_TO, EM_SETSEL, ich1, ich2);
+            }
+            return FALSE;
+
+        case FS_COPYDONE:
 
             //
-            // Move/Copy things.
+            // Only cancel out if pCopyInfo == lParam
+            // This indicates that the proper thread quit.
             //
-            if (WFMoveCopyDriver(pCopyInfo)) {
+            // wParam holds return value
+            //
 
-               LoadString(hAppInstance,
-                          IDS_COPYERROR + pCopyInfo->dwFunc,
-                          szTitle,
-                          COUNTOF(szTitle));
+            if (lParam == (LPARAM)pCopyInfo) {
+                SPC_SET_HITDISK(qFreeSpace);  // force status info refresh
 
-               FormatError(TRUE, szMessage, COUNTOF(szMessage), GetLastError());
+                EndDialog(hDlg, wParam);
+            }
+            break;
 
-               MessageBox(hDlg, szMessage, szTitle, MB_ICONSTOP|MB_OK);
+        case WM_COMMAND:
+            switch (GET_WM_COMMAND_ID(wParam, lParam)) {
+                case IDD_HELP:
+                    goto DoHelp;
 
-               EndDialog(hDlg, GetLastError());
+                case IDCANCEL:
 
+                    if (pCopyInfo)
+                        pCopyInfo->bUserAbort = TRUE;
+
+                SuperDlgExit:
+
+                    EndDialog(hDlg, 0);
+                    break;
+
+                case IDOK:
+
+                    len = (UINT)(SendDlgItemMessage(hDlg, IDD_FROM, EM_LINELENGTH, (WPARAM)-1, 0L) + 1);
+
+                    //
+                    // make sure the pszFrom buffer is big enough to
+                    // add the "..\" stuff in MessWithRenameDirPath()
+                    //
+                    len += 4;
+
+                    pszFrom = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(len));
+                    if (!pszFrom)
+                        goto SuperDlgExit;
+
+                    GetDlgItemText(hDlg, IDD_FROM, pszFrom, len);
+                    GetDlgItemText(hDlg, IDD_TO, szTo, COUNTOF(szTo));
+
+                    //
+                    // if dwSuperDlgMode is copy, rename, symlink, hardlink, or move, do checkesc.
+                    // Only if no quotes in string!
+                    //
+                    switch (dwSuperDlgMode) {
+                        case IDM_RENAME:
+                        case IDM_MOVE:
+                        case IDM_COPY:
+                        case IDM_SYMLINK:
+                        case IDM_HARDLINK:
+                            if (NoQuotes(szTo))
+                                CheckEsc(szTo);
+                    }
+
+                    if (!szTo[0]) {
+                        switch (dwSuperDlgMode) {
+                            case IDM_RENAME:
+                            case IDM_MOVE:
+                            case IDM_COPY:
+                            case IDM_SYMLINK:
+                            case IDM_HARDLINK: {
+                                szTo[0] = CHAR_DOT;
+                                szTo[1] = CHAR_NULL;
+                                break;
+                            }
+                        }
+                    }
+
+                    EnableCopy(hDlg, FALSE);
+
+                    hdlgProgress = hDlg;
+                    if (dwSuperDlgMode == IDM_PRINT) {
+                        WFPrint(pszFrom);
+
+                        LocalFree(pszFrom);
+                        goto SuperDlgExit;
+
+                    } else {
+                        if (dwSuperDlgMode == IDM_RENAME && bTreeHasFocus) {
+                            MessWithRenameDirPath(pszFrom);
+                            MessWithRenameDirPath(szTo);
+                        }
+
+                        //
+                        // Setup pCopyInfo structure
+                        //
+                        // Note that everything must be malloc'd!!
+                        // (Freed by thread)
+                        //
+
+                        pCopyInfo = (PCOPYINFO)LocalAlloc(LPTR, sizeof(COPYINFO));
+
+                        if (!pCopyInfo) {
+                        Error:
+                            FormatError(TRUE, szMessage, COUNTOF(szMessage), GetLastError());
+                            LoadString(hAppInstance, IDS_WINFILE, szTitle, COUNTOF(szTitle));
+
+                            MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONEXCLAMATION);
+
+                            LocalFree(pszFrom);
+                            goto SuperDlgExit;
+                        }
+
+                        pCopyInfo->pFrom = pszFrom;
+                        pCopyInfo->pTo = (LPTSTR)LocalAlloc(LMEM_FIXED, sizeof(szTo));
+
+                        if (!pCopyInfo->pTo) {
+                            goto Error;
+                        }
+
+                        // Map IDM_* to FUNC_*
+                        switch (dwSuperDlgMode) {
+                            case IDM_MOVE:
+                                pCopyInfo->dwFunc = FUNC_MOVE;
+                                break;
+                            case IDM_COPY:
+                                pCopyInfo->dwFunc = FUNC_COPY;
+                                break;
+                            case IDM_DELETE:
+                                pCopyInfo->dwFunc = FUNC_DELETE;
+                                break;
+                            case IDM_RENAME:
+                                pCopyInfo->dwFunc = FUNC_RENAME;
+                                break;
+                            case IDM_SYMLINK:
+                                pCopyInfo->dwFunc = FUNC_LINK;
+                                break;
+                            case IDM_HARDLINK:
+                                pCopyInfo->dwFunc = FUNC_HARD;
+                                break;
+                        }
+
+                        pCopyInfo->bUserAbort = FALSE;
+
+                        lstrcpy(pCopyInfo->pTo, szTo);
+
+                        //
+                        // Move/Copy things.
+                        //
+                        if (WFMoveCopyDriver(pCopyInfo)) {
+                            LoadString(hAppInstance, IDS_COPYERROR + pCopyInfo->dwFunc, szTitle, COUNTOF(szTitle));
+
+                            FormatError(TRUE, szMessage, COUNTOF(szMessage), GetLastError());
+
+                            MessageBox(hDlg, szMessage, szTitle, MB_ICONSTOP | MB_OK);
+
+                            EndDialog(hDlg, GetLastError());
+
+                        } else {
+                            //
+                            // Disable all but the cancel button on the notify dialog
+                            //
+                            DialogEnterFileStuff(hdlgProgress);
+                        }
+                    }
+                    break;
+
+                default:
+                    return (FALSE);
+            }
+            break;
+
+        default:
+            if (wMsg == wHelpMessage) {
+            DoHelp:
+                return TRUE;
             } else {
-
-               //
-               // Disable all but the cancel button on the notify dialog
-               //
-               DialogEnterFileStuff(hdlgProgress);
+                return FALSE;
             }
-         }
-         break;
-
-      default:
-         return(FALSE);
-      }
-      break;
-
-   default:
-      if (wMsg == wHelpMessage) {
-DoHelp:
-         return TRUE;
-      } else {
-         return FALSE;
-      }
-   }
-   return TRUE;
+    }
+    return TRUE;
 }
 
+VOID CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn) {
+    INT i;
 
-VOID
-CheckAttribsDlgButton(
-   HWND hDlg,
-   INT id,
-   DWORD dwAttribs,
-   DWORD dwAttribs3State,
-   DWORD dwAttribsOn)
-{
-   INT i;
+    if (dwAttribs3State & dwAttribs)
+        i = 2;
+    else if (dwAttribsOn & dwAttribs)
+        i = 1;
+    else
+        i = 0;
 
-   if (dwAttribs3State & dwAttribs)
-      i = 2;
-   else if (dwAttribsOn & dwAttribs)
-      i = 1;
-   else
-      i = 0;
-
-   CheckDlgButton(hDlg, id, i);
+    CheckDlgButton(hDlg, id, i);
 }
 
 // The following data structure associates a version stamp datum
@@ -818,7 +766,7 @@ CheckAttribsDlgButton(
 // can show translations of these names to the user.
 
 struct vertbl {
-    WCHAR *pszName;
+    WCHAR* pszName;
     WORD idString;
 };
 
@@ -826,36 +774,34 @@ struct vertbl {
 //  so the following literal strings are just fine.
 
 #define MAX_VERNAMES 10
-struct vertbl vernames[MAX_VERNAMES] = {
-    { L"Comments",          IDS_VN_COMMENTS },
-    { L"CompanyName",       IDS_VN_COMPANYNAME },
-    { L"FileDescription",   IDS_VN_FILEDESCRIPTION },
-    { L"InternalName",      IDS_VN_INTERNALNAME },
-    { L"LegalTrademarks",   IDS_VN_LEGALTRADEMARKS },
-    { L"OriginalFilename",  IDS_VN_ORIGINALFILENAME },
-    { L"PrivateBuild",      IDS_VN_PRIVATEBUILD },
-    { L"ProductName",       IDS_VN_PRODUCTNAME },
-    { L"ProductVersion",    IDS_VN_PRODUCTVERSION },
-    { L"SpecialBuild",      IDS_VN_SPECIALBUILD }
-};
+struct vertbl vernames[MAX_VERNAMES] = { { L"Comments", IDS_VN_COMMENTS },
+                                         { L"CompanyName", IDS_VN_COMPANYNAME },
+                                         { L"FileDescription", IDS_VN_FILEDESCRIPTION },
+                                         { L"InternalName", IDS_VN_INTERNALNAME },
+                                         { L"LegalTrademarks", IDS_VN_LEGALTRADEMARKS },
+                                         { L"OriginalFilename", IDS_VN_ORIGINALFILENAME },
+                                         { L"PrivateBuild", IDS_VN_PRIVATEBUILD },
+                                         { L"ProductName", IDS_VN_PRODUCTNAME },
+                                         { L"ProductVersion", IDS_VN_PRODUCTVERSION },
+                                         { L"SpecialBuild", IDS_VN_SPECIALBUILD } };
 
-DWORD dwHandle;         // version subsystem handle
-HANDLE hmemVersion=0;   // global handle for version data buffer
-LPTSTR lpVersionBuffer; // pointer to version data
-DWORD dwVersionSize;    // size of the version data
-TCHAR szVersionKey[60]; // big enough for anything we need
-LPWORD lpXlate;         // ptr to translations data
-UINT cXlate;            // count of translations
+DWORD dwHandle;          // version subsystem handle
+HANDLE hmemVersion = 0;  // global handle for version data buffer
+LPTSTR lpVersionBuffer;  // pointer to version data
+DWORD dwVersionSize;     // size of the version data
+TCHAR szVersionKey[60];  // big enough for anything we need
+LPWORD lpXlate;          // ptr to translations data
+UINT cXlate;             // count of translations
 LPWSTR pszXlate = NULL;
 UINT cchXlateString;
 
-#define LANGLEN          45    // characters per language
+#define LANGLEN 45  // characters per language
 
-#define VER_KEY_END      25    // length of "\StringFileInfo\xxxx\yyyy" (chars)
-#define VER_BLOCK_OFFSET 24    // to get block size (chars)
+#define VER_KEY_END 25       // length of "\StringFileInfo\xxxx\yyyy" (chars)
+#define VER_BLOCK_OFFSET 24  // to get block size (chars)
 
 // (not localized)
-TCHAR szFileVersion[]    = TEXT("FileVersion");
+TCHAR szFileVersion[] = TEXT("FileVersion");
 TCHAR szLegalCopyright[] = TEXT("LegalCopyright");
 
 WCHAR wszFileVersion[] = L"FileVersion";
@@ -863,19 +809,15 @@ WCHAR wszLegalCopyright[] = L"LegalCopyright";
 
 void FreeVersionInfo(void);
 
-
 // Disables the version controls in a properties dialog.  Used for
 // when the selection is a directory and also when a file has no
 // version stamps.
 
-VOID
-DisableVersionCtls(HWND hDlg)
-{
-   EnableWindow(GetDlgItem(hDlg, IDD_VERSION_FRAME), FALSE);
-   EnableWindow(GetDlgItem(hDlg, IDD_VERSION_KEY), FALSE);
-   EnableWindow(GetDlgItem(hDlg, IDD_VERSION_VALUE), FALSE);
+VOID DisableVersionCtls(HWND hDlg) {
+    EnableWindow(GetDlgItem(hDlg, IDD_VERSION_FRAME), FALSE);
+    EnableWindow(GetDlgItem(hDlg, IDD_VERSION_KEY), FALSE);
+    EnableWindow(GetDlgItem(hDlg, IDD_VERSION_VALUE), FALSE);
 }
-
 
 // Gets a particular datum about a file.  The file's version info
 // should have already been loaded by GetVersionInfo.  If no datum
@@ -887,19 +829,18 @@ DisableVersionCtls(HWND hDlg)
 // such as "FileVersion" to this function.
 
 LPTSTR
-GetVersionDatum(LPTSTR pszName)
-{
-   UINT cbValue=0;
-   LPTSTR lpValue;
+GetVersionDatum(LPTSTR pszName) {
+    UINT cbValue = 0;
+    LPTSTR lpValue;
 
-   if (!hmemVersion)
-      return NULL;
+    if (!hmemVersion)
+        return NULL;
 
-   lstrcpy(szVersionKey + VER_KEY_END, pszName);
+    lstrcpy(szVersionKey + VER_KEY_END, pszName);
 
-   VerQueryValueW(lpVersionBuffer, szVersionKey, (LPVOID*)&lpValue, &cbValue);
+    VerQueryValueW(lpVersionBuffer, szVersionKey, (LPVOID*)&lpValue, &cbValue);
 
-   return (cbValue != 0) ? lpValue : NULL;
+    return (cbValue != 0) ? lpValue : NULL;
 }
 
 // Initialize version information for the properties dialog.  The
@@ -924,156 +865,143 @@ GetVersionDatum(LPTSTR pszName)
 // Note, Codepage is bogus, since everything is really in unicode.
 // Note, Language is bogus, since FindResourceEx takes a language already...
 
-
 LPTSTR
-GetVersionInfo(PTSTR pszPath, PTSTR pszName)
-{
-   DWORD cbValue=0;
-   UINT cbValueTranslation=0;
-   LPTSTR lpszValue=NULL;
+GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
+    DWORD cbValue = 0;
+    UINT cbValueTranslation = 0;
+    LPTSTR lpszValue = NULL;
 
-   //
-   // Just in case, free old version buffer.
-   //
-   if (hmemVersion)
-      FreeVersionInfo();
+    //
+    // Just in case, free old version buffer.
+    //
+    if (hmemVersion)
+        FreeVersionInfo();
 
-   AddBackslash(pszPath);
+    AddBackslash(pszPath);
 
-   // pszPath = fully qualified name
-   lstrcat(pszPath, pszName);
+    // pszPath = fully qualified name
+    lstrcat(pszPath, pszName);
 
-   dwVersionSize = GetFileVersionInfoSizeW(pszPath, &dwHandle);
+    dwVersionSize = GetFileVersionInfoSizeW(pszPath, &dwHandle);
 
-   if (dwVersionSize == 0L)
-      // no version info
-      return NULL;
+    if (dwVersionSize == 0L)
+        // no version info
+        return NULL;
 
-   //
-   // The value returned from GetFileVersionInfoSize is actually
-   // a byte count.
-   //
-   hmemVersion = GlobalAlloc(GPTR, dwVersionSize);
-   if (hmemVersion == NULL)
-      // can't get memory for version info, blow out
-      return NULL;
+    //
+    // The value returned from GetFileVersionInfoSize is actually
+    // a byte count.
+    //
+    hmemVersion = GlobalAlloc(GPTR, dwVersionSize);
+    if (hmemVersion == NULL)
+        // can't get memory for version info, blow out
+        return NULL;
 
-   lpVersionBuffer = (LPTSTR)GlobalLock(hmemVersion);
+    lpVersionBuffer = (LPTSTR)GlobalLock(hmemVersion);
 
-   //
-   // If we fail, just return NULL. hmemVersion will be freed the next
-   // time we do a version call.
-   //
-   if (!GetFileVersionInfoW(pszPath, dwHandle, dwVersionSize, lpVersionBuffer))
-      return NULL;
+    //
+    // If we fail, just return NULL. hmemVersion will be freed the next
+    // time we do a version call.
+    //
+    if (!GetFileVersionInfoW(pszPath, dwHandle, dwVersionSize, lpVersionBuffer))
+        return NULL;
 
-   //
-   // We must always get the translation since we want to display
-   // all the languages anyway.
-   //
-   VerQueryValue(lpVersionBuffer, TEXT("\\VarFileInfo\\Translation"),
-      (LPVOID*)&lpXlate, &cbValueTranslation);
+    //
+    // We must always get the translation since we want to display
+    // all the languages anyway.
+    //
+    VerQueryValue(lpVersionBuffer, TEXT("\\VarFileInfo\\Translation"), (LPVOID*)&lpXlate, &cbValueTranslation);
 
-   if (cbValueTranslation != 0) {
+    if (cbValueTranslation != 0) {
+        //
+        // We found some translations above; use the first one.
+        //
+        cXlate = cbValueTranslation / sizeof(DWORD);
 
-      //
-      // We found some translations above; use the first one.
-      //
-      cXlate = cbValueTranslation / sizeof(DWORD);
+        //
+        // figure 45 LANGLEN chars per lang name
+        //
+        cchXlateString = cXlate * LANGLEN;
+        pszXlate = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(cchXlateString));
 
-      //
-      // figure 45 LANGLEN chars per lang name
-      //
-      cchXlateString = cXlate * LANGLEN;
-      pszXlate = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(cchXlateString));
+    } else {
+        lpXlate = NULL;
+    }
 
-   } else {
-      lpXlate = NULL;
-   }
+    //
+    // First try the language we are currently in.
+    //
+    wsprintf(szVersionKey, TEXT("\\StringFileInfo\\%04X04B0\\"), LANGIDFROMLCID(lcid));
 
-   //
-   // First try the language we are currently in.
-   //
-   wsprintf(szVersionKey, TEXT("\\StringFileInfo\\%04X04B0\\"),
-      LANGIDFROMLCID(lcid));
+    lpszValue = GetVersionDatum(szFileVersion);
 
-   lpszValue = GetVersionDatum(szFileVersion);
+    if (lpszValue != NULL)
+        return lpszValue;
 
-   if (lpszValue != NULL)
-      return lpszValue;
+    //
+    // Now try the first translation
+    //
+    if (cbValueTranslation != 0) {
+        wsprintf(szVersionKey, TEXT("\\StringFileInfo\\%04X%04X\\"), *lpXlate, *(lpXlate + 1));
 
-   //
-   // Now try the first translation
-   //
-   if (cbValueTranslation != 0) {
+        //
+        // a required field
+        //
+        lpszValue = GetVersionDatum(szFileVersion);
 
-      wsprintf(szVersionKey, TEXT("\\StringFileInfo\\%04X%04X\\"),
-         *lpXlate, *(lpXlate+1));
+        if (lpszValue != NULL) {
+            //
+            // localized key found version data
+            //
+            return lpszValue;
+        }
+    }
 
-      //
-      // a required field
-      //
-      lpszValue = GetVersionDatum(szFileVersion);
+    //
+    // Now try the english, unicode
+    //
+    lstrcpy(szVersionKey, TEXT("\\StringFileInfo\\040904B0\\"));
+    lpszValue = GetVersionDatum(szFileVersion);
 
-      if (lpszValue != NULL) {
+    if (lpszValue != NULL)
+        return lpszValue;
 
-         //
-         // localized key found version data
-         //
-         return lpszValue;
-      }
-   }
+    //
+    // Try english with various code pages
+    // (04E4) here
+    //
+    lstrcpy(szVersionKey, TEXT("\\StringFileInfo\\040904E4\\"));
+    lpszValue = GetVersionDatum(szFileVersion);
 
+    if (lpszValue != NULL)
+        return lpszValue;  // localized key found version data
 
-   //
-   // Now try the english, unicode
-   //
-   lstrcpy(szVersionKey, TEXT("\\StringFileInfo\\040904B0\\"));
-   lpszValue = GetVersionDatum(szFileVersion);
+    //
+    // Try english with various code pages
+    // (0000) here
+    //
+    lstrcpy(szVersionKey, TEXT("\\StringFileInfo\\04090000\\"));
+    lpszValue = GetVersionDatum(szFileVersion);
 
-   if (lpszValue != NULL)
-      return lpszValue;
-
-
-   //
-   // Try english with various code pages
-   // (04E4) here
-   //
-   lstrcpy(szVersionKey, TEXT("\\StringFileInfo\\040904E4\\"));
-   lpszValue = GetVersionDatum(szFileVersion);
-
-   if (lpszValue != NULL)
-      return lpszValue;             // localized key found version data
-
-
-   //
-   // Try english with various code pages
-   // (0000) here
-   //
-   lstrcpy(szVersionKey, TEXT("\\StringFileInfo\\04090000\\"));
-   lpszValue = GetVersionDatum(szFileVersion);
-
-   return lpszValue;
+    return lpszValue;
 }
 
 // Frees global version data about a file.  After this call, all
 // GetVersionDatum calls will return NULL.  To avoid memory leaks,
 // always call this before the main properties dialog exits.
 
-VOID
-FreeVersionInfo(VOID)
-{
-   lpVersionBuffer = NULL;
-   dwHandle = 0L;
-   if (hmemVersion) {
-      GlobalUnlock(hmemVersion);
-      GlobalFree(hmemVersion);
-      hmemVersion = 0;
-   }
-   if (pszXlate) {
-      LocalFree((HANDLE)pszXlate);
-      pszXlate = NULL;
-   }
+VOID FreeVersionInfo(VOID) {
+    lpVersionBuffer = NULL;
+    dwHandle = 0L;
+    if (hmemVersion) {
+        GlobalUnlock(hmemVersion);
+        GlobalFree(hmemVersion);
+        hmemVersion = 0;
+    }
+    if (pszXlate) {
+        LocalFree((HANDLE)pszXlate);
+        pszXlate = NULL;
+    }
 }
 
 // Looks for version information on the file.  If none is found,
@@ -1083,421 +1011,362 @@ FreeVersionInfo(VOID)
 
 // Returns TRUE if the file has version stamp information.
 
-BOOL
-FillSimpleVersion(HWND hDlg, LPTSTR lpszValue)
-{
-   BOOL bRet = TRUE;
+BOOL FillSimpleVersion(HWND hDlg, LPTSTR lpszValue) {
+    BOOL bRet = TRUE;
 
-   if (lpszValue != NULL)
-      SetDlgItemText(hDlg, IDD_VERSION, lpszValue);
-   else {
-      DisableVersionCtls(hDlg);
-      bRet = FALSE;
-   }
+    if (lpszValue != NULL)
+        SetDlgItemText(hDlg, IDD_VERSION, lpszValue);
+    else {
+        DisableVersionCtls(hDlg);
+        bRet = FALSE;
+    }
 
-   lpszValue = GetVersionDatum(szLegalCopyright);
+    lpszValue = GetVersionDatum(szLegalCopyright);
 
-   if (lpszValue != NULL)
-      SetDlgItemText(hDlg, IDD_COPYRIGHT, lpszValue);
+    if (lpszValue != NULL)
+        SetDlgItemText(hDlg, IDD_COPYRIGHT, lpszValue);
 
-   return bRet;
+    return bRet;
 }
 
 // Fills the version key listbox with all available keys in the
 // StringFileInfo block, and sets the version value text to the
 // value of the first item.
 
-
-VOID
-FillVersionList(HWND)
-{
-   // No longer used. It was broken and I don't think it's needed.
+VOID FillVersionList(HWND) {
+    // No longer used. It was broken and I don't think it's needed.
 }
 
+INT InitPropertiesDialog(HWND hDlg) {
+    HWND hwndLB, hwndActive, hwndTree;
+    LPXDTA lpxdta;
+    DWORD dwAttribsOn, dwAttribs3State, dwAttribsLast;
+    HWND hwndDir, hwnd, hwndView;
+    WCHAR szName[MAXPATHLEN];
+    WCHAR szPath[MAXPATHLEN];
+    WCHAR szTemp[MAXPATHLEN + 20];
+    WCHAR szBuf[MAXPATHLEN];
+    WCHAR szNum[MAXPATHLEN];
+    INT i, iMac, iCount, dyButton;
+    RECT rc, rcT;
+    DWORD dwAttrib;
+    FILETIME ftLastWrite;
+    LFNDTA lfndta;
+    LPTSTR p;
+    HFONT hFont;
+    INT nType = 0;
+    DWORD dwFlags;
+    BOOL bFileCompression = FALSE;
+    BOOL bFileEncryption = FALSE;
 
-INT
-InitPropertiesDialog(
-   HWND hDlg)
-{
-   HWND hwndLB, hwndActive, hwndTree;
-   LPXDTA lpxdta;
-   DWORD dwAttribsOn, dwAttribs3State, dwAttribsLast;
-   HWND hwndDir, hwnd, hwndView;
-   WCHAR szName[MAXPATHLEN];
-   WCHAR szPath[MAXPATHLEN];
-   WCHAR szTemp[MAXPATHLEN + 20];
-   WCHAR szBuf[MAXPATHLEN];
-   WCHAR szNum[MAXPATHLEN];
-   INT i, iMac, iCount, dyButton;
-   RECT rc, rcT;
-   DWORD dwAttrib;
-   FILETIME ftLastWrite;
-   LFNDTA lfndta;
-   LPTSTR p;
-   HFONT hFont;
-   INT nType = 0;
-   DWORD dwFlags;
-   BOOL bFileCompression = FALSE;
-   BOOL bFileEncryption = FALSE;
+    LPTSTR lpszBuf;
+    LARGE_INTEGER qSize, qCSize;
 
-   LPTSTR lpszBuf;
-   LARGE_INTEGER qSize, qCSize;
+    LARGE_INTEGER_NULL(qSize);
+    LARGE_INTEGER_NULL(qCSize);
 
-   LARGE_INTEGER_NULL(qSize);
-   LARGE_INTEGER_NULL(qCSize);
+    //
+    // this is needed for relative findfirst calls below
+    //
+    SetWindowDirectory();
 
-   //
-   // this is needed for relative findfirst calls below
-   //
-   SetWindowDirectory();
+    hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
+    hwndDir = HasDirWindow(hwndActive);
+    hwndTree = HasTreeWindow(hwndActive);
 
-   hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
-   hwndDir = HasDirWindow(hwndActive);
-   hwndTree = HasTreeWindow(hwndActive);
+    if (GetVolumeInformation(NULL, NULL, 0L, NULL, NULL, &dwFlags, NULL, 0L)) {
+        bFileCompression = ((dwFlags & FS_FILE_COMPRESSION) == FS_FILE_COMPRESSION);
+        bFileEncryption = ((dwFlags & FS_FILE_ENCRYPTION) == FS_FILE_ENCRYPTION);
+    }
 
-   if (GetVolumeInformation(NULL, NULL, 0L, NULL, NULL, &dwFlags, NULL, 0L))
-   {
-      bFileCompression = ((dwFlags & FS_FILE_COMPRESSION) == FS_FILE_COMPRESSION);
-      bFileEncryption = ((dwFlags & FS_FILE_ENCRYPTION) == FS_FILE_ENCRYPTION);
-   }
+    iCount = 0;
+    dwAttribsOn = 0;         // all bits to check
+    dwAttribs3State = 0;     // all bits to 3 state
+    dwAttribsLast = 0xFFFF;  // previous bits
 
-   iCount = 0;
-   dwAttribsOn = 0;                // all bits to check
-   dwAttribs3State = 0;            // all bits to 3 state
-   dwAttribsLast = 0xFFFF;         // previous bits
+    if (hwndTree && hwndTree == GetTreeFocus(hwndActive)) {
+        SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szPath), (LPARAM)szPath);
+        StripBackslash(szPath);
 
-   if (hwndTree && hwndTree == GetTreeFocus(hwndActive)) {
-
-      SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szPath), (LPARAM)szPath);
-      StripBackslash(szPath);
-
-      if (!WFFindFirst(&lfndta, szPath, ATTR_ALL | ATTR_DIR)) {
-         LoadString(hAppInstance, IDS_ATTRIBERR, szMessage, COUNTOF(szMessage));
-         FormatError(FALSE, szMessage, COUNTOF(szMessage), ERROR_FILE_NOT_FOUND);
-
-         //
-         // BUGBUG: szPath should be set to "Properties for %s"!
-         //
-         MessageBox(hwndFrame, szMessage, szPath, MB_OK | MB_ICONSTOP);
-         EndDialog(hDlg, FALSE);
-         return 0;
-      }
-      WFFindClose(&lfndta);
-
-      dwAttribsOn = lfndta.fd.dwFileAttributes;
-      ftLastWrite = lfndta.fd.ftLastWriteTime;
-
-      lstrcpy(szName, szPath);
-
-      goto FullPath;
-   }
-
-   if (hwndDir) {
-      hwndLB = GetDlgItem(hwndDir, IDCW_LISTBOX);
-      hwndView = hwndDir;
-   } else {
-      hwndLB = GetDlgItem(hwndActive, IDCW_LISTBOX);
-      hwndView = hwndActive;
-   }
-
-   iMac = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
-
-   szPath[0] = CHAR_NULL;
-   szName[0] = CHAR_NULL;
-
-   for (i = 0; i < iMac; i++) {
-
-      if (SendMessage(hwndLB, LB_GETSEL, i, 0L)) {
-
-         //
-         // get info from either dir or search window
-         //
-         SendMessage(hwndLB, LB_GETTEXT, i, (LPARAM)&lpxdta);
-         dwAttrib = lpxdta->dwAttrs;
-
-         //
-         // Check that this is not the .. entry
-         //
-         if (dwAttrib & ATTR_DIR && dwAttrib & ATTR_PARENT)
-            continue;
-
-         qSize.QuadPart = qSize.QuadPart + (lpxdta->qFileSize).QuadPart;
-
-         if (!szName[0]) {
-
-            ftLastWrite = lpxdta->ftLastWriteTime;
-            lstrcpy(szName, MemGetFileName(lpxdta));
-         }
-
-         dwAttribsOn |= dwAttrib;
-
-         if (dwAttribsLast == 0xFFFF) {
+        if (!WFFindFirst(&lfndta, szPath, ATTR_ALL | ATTR_DIR)) {
+            LoadString(hAppInstance, IDS_ATTRIBERR, szMessage, COUNTOF(szMessage));
+            FormatError(FALSE, szMessage, COUNTOF(szMessage), ERROR_FILE_NOT_FOUND);
 
             //
-            // save the previous bits for future compares
+            // BUGBUG: szPath should be set to "Properties for %s"!
             //
-            dwAttribsLast = dwAttrib;
+            MessageBox(hwndFrame, szMessage, szPath, MB_OK | MB_ICONSTOP);
+            EndDialog(hDlg, FALSE);
+            return 0;
+        }
+        WFFindClose(&lfndta);
 
-         } else {
+        dwAttribsOn = lfndta.fd.dwFileAttributes;
+        ftLastWrite = lfndta.fd.ftLastWriteTime;
+
+        lstrcpy(szName, szPath);
+
+        goto FullPath;
+    }
+
+    if (hwndDir) {
+        hwndLB = GetDlgItem(hwndDir, IDCW_LISTBOX);
+        hwndView = hwndDir;
+    } else {
+        hwndLB = GetDlgItem(hwndActive, IDCW_LISTBOX);
+        hwndView = hwndActive;
+    }
+
+    iMac = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+
+    szPath[0] = CHAR_NULL;
+    szName[0] = CHAR_NULL;
+
+    for (i = 0; i < iMac; i++) {
+        if (SendMessage(hwndLB, LB_GETSEL, i, 0L)) {
+            //
+            // get info from either dir or search window
+            //
+            SendMessage(hwndLB, LB_GETTEXT, i, (LPARAM)&lpxdta);
+            dwAttrib = lpxdta->dwAttrs;
 
             //
-            // remember all bits that don't compare to last bits
+            // Check that this is not the .. entry
             //
-            dwAttribs3State |= (dwAttrib ^ dwAttribsLast);
-         }
+            if (dwAttrib & ATTR_DIR && dwAttrib & ATTR_PARENT)
+                continue;
 
-         iCount++;
-      }
-   }
+            qSize.QuadPart = qSize.QuadPart + (lpxdta->qFileSize).QuadPart;
 
-   GetDlgItemText(hDlg, IDD_TEXT1, szTemp, COUNTOF(szTemp));
-   wsprintf(szBuf, szTemp, iCount);
-   SetDlgItemText(hDlg, IDD_TEXT1, szBuf);
-
-   GetDlgItemText(hDlg, IDD_TEXT2, szTemp, COUNTOF(szTemp));
-   PutSize(&qSize, szNum);
-   wsprintf(szBuf, szTemp, szNum);
-   SetDlgItemText(hDlg, IDD_TEXT2, szBuf);
-
-   if (iCount == 1)
-   {
-      if (hwndDir)
-      {
-         SendMessage(hwndDir, FS_GETDIRECTORY, COUNTOF(szPath), (LPARAM)szPath);
-      }
-      else
-      {
-         lstrcpy(szPath, szName);
-FullPath:
-         StripPath(szName);
-         StripFilespec(szPath);
-      }
-
-      StripBackslash(szPath);
-
-      GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
-      wsprintf(szTemp, szTitle, szName);
-      SetWindowText(hDlg, szTemp);
-
-      SetDlgItemText(hDlg, IDD_NAME, szName);
-      SetDlgItemText(hDlg, IDD_DIR, szPath);
-
-      if (dwAttribsOn & ATTR_DIR)
-      {
-         //
-         //  Hide size, ratio, and version info.
-         //
-         if (LoadString(hAppInstance, IDS_DIRNAMELABEL, szTemp, COUNTOF(szTemp)))
-            SetDlgItemText(hDlg, IDD_NAMELABEL, szTemp);
-
-         ShowWindow(GetDlgItem(hDlg, IDD_SIZELABEL), SW_HIDE);
-         ShowWindow(GetDlgItem(hDlg, IDD_SIZE), SW_HIDE);
-
-         ShowWindow(GetDlgItem(hDlg, IDD_CSIZELABEL), SW_HIDE);
-         ShowWindow(GetDlgItem(hDlg, IDD_CSIZE), SW_HIDE);
-
-         ShowWindow(GetDlgItem(hDlg, IDD_CRATIOLABEL), SW_HIDE);
-         ShowWindow(GetDlgItem(hDlg, IDD_CRATIO), SW_HIDE);
-      }
-      else
-      {
-         if ((bFileCompression) && (dwAttribsOn & ATTR_COMPRESSED))
-         {
-            DWORD highPart = 0;
-            qCSize.LowPart = GetCompressedFileSize(szName, &highPart);
-            qCSize.HighPart = highPart;
-            PutSize(&qCSize, szNum);
-            wsprintf(szTemp, szSBytes, szNum);
-            SetDlgItemText(hDlg, IDD_CSIZE, szTemp);
-
-            if (qSize.QuadPart != 0)
-            {
-               //
-               //  Ratio = 100 - ((CompressSize * 100) / FileSize)
-               //
-               qCSize.QuadPart =
-                   (qCSize.QuadPart * 100) /
-                   qSize.QuadPart;
-
-               if (qCSize.HighPart || (qCSize.LowPart > 100))
-               {
-                   //
-                   //  Ratio = 100%
-                   //
-                   qCSize.LowPart = 100;
-                   qCSize.HighPart = 0;
-               }
-               else
-               {
-                   qCSize.LowPart = 100 - qCSize.LowPart;
-               }
+            if (!szName[0]) {
+                ftLastWrite = lpxdta->ftLastWriteTime;
+                lstrcpy(szName, MemGetFileName(lpxdta));
             }
-            else
-            {
-               //
-               //  Ratio = 0%
-               //
-               qCSize.LowPart = 0;
-               qCSize.HighPart = 0;
+
+            dwAttribsOn |= dwAttrib;
+
+            if (dwAttribsLast == 0xFFFF) {
+                //
+                // save the previous bits for future compares
+                //
+                dwAttribsLast = dwAttrib;
+
+            } else {
+                //
+                // remember all bits that don't compare to last bits
+                //
+                dwAttribs3State |= (dwAttrib ^ dwAttribsLast);
             }
-            PutSize(&qCSize, szNum);
-            wsprintf(szTemp, TEXT("%s%%"), szNum);
-            SetDlgItemText(hDlg, IDD_CRATIO, szTemp);
-         }
-         else
-         {
+
+            iCount++;
+        }
+    }
+
+    GetDlgItemText(hDlg, IDD_TEXT1, szTemp, COUNTOF(szTemp));
+    wsprintf(szBuf, szTemp, iCount);
+    SetDlgItemText(hDlg, IDD_TEXT1, szBuf);
+
+    GetDlgItemText(hDlg, IDD_TEXT2, szTemp, COUNTOF(szTemp));
+    PutSize(&qSize, szNum);
+    wsprintf(szBuf, szTemp, szNum);
+    SetDlgItemText(hDlg, IDD_TEXT2, szBuf);
+
+    if (iCount == 1) {
+        if (hwndDir) {
+            SendMessage(hwndDir, FS_GETDIRECTORY, COUNTOF(szPath), (LPARAM)szPath);
+        } else {
+            lstrcpy(szPath, szName);
+        FullPath:
+            StripPath(szName);
+            StripFilespec(szPath);
+        }
+
+        StripBackslash(szPath);
+
+        GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
+        wsprintf(szTemp, szTitle, szName);
+        SetWindowText(hDlg, szTemp);
+
+        SetDlgItemText(hDlg, IDD_NAME, szName);
+        SetDlgItemText(hDlg, IDD_DIR, szPath);
+
+        if (dwAttribsOn & ATTR_DIR) {
+            //
+            //  Hide size, ratio, and version info.
+            //
+            if (LoadString(hAppInstance, IDS_DIRNAMELABEL, szTemp, COUNTOF(szTemp)))
+                SetDlgItemText(hDlg, IDD_NAMELABEL, szTemp);
+
+            ShowWindow(GetDlgItem(hDlg, IDD_SIZELABEL), SW_HIDE);
+            ShowWindow(GetDlgItem(hDlg, IDD_SIZE), SW_HIDE);
+
             ShowWindow(GetDlgItem(hDlg, IDD_CSIZELABEL), SW_HIDE);
             ShowWindow(GetDlgItem(hDlg, IDD_CSIZE), SW_HIDE);
+
             ShowWindow(GetDlgItem(hDlg, IDD_CRATIOLABEL), SW_HIDE);
             ShowWindow(GetDlgItem(hDlg, IDD_CRATIO), SW_HIDE);
-         }
+        } else {
+            if ((bFileCompression) && (dwAttribsOn & ATTR_COMPRESSED)) {
+                DWORD highPart = 0;
+                qCSize.LowPart = GetCompressedFileSize(szName, &highPart);
+                qCSize.HighPart = highPart;
+                PutSize(&qCSize, szNum);
+                wsprintf(szTemp, szSBytes, szNum);
+                SetDlgItemText(hDlg, IDD_CSIZE, szTemp);
 
-         PostMessage(hDlg, FS_CHANGEDISPLAY, 0, 0L);
+                if (qSize.QuadPart != 0) {
+                    //
+                    //  Ratio = 100 - ((CompressSize * 100) / FileSize)
+                    //
+                    qCSize.QuadPart = (qCSize.QuadPart * 100) / qSize.QuadPart;
 
-         // changes szPath
-         lpszBuf = GetVersionInfo(szPath, szName);
-
-         if (FillSimpleVersion(hDlg, lpszBuf))
-            FillVersionList(hDlg);
-      }
-
-      if (!bFileCompression)
-      {
-         ShowWindow(GetDlgItem(hDlg, IDD_COMPRESSED), SW_HIDE);
-      }
-
-      if (!bFileEncryption)
-      {
-         ShowWindow(GetDlgItem(hDlg, IDD_ENCRYPTED), SW_HIDE);
-      }
-
-      PutSize(&qSize, szNum);
-      wsprintf(szTemp, szSBytes, szNum);
-      SetDlgItemText(hDlg, IDD_SIZE, szTemp);
-
-      PutDate(&ftLastWrite, szTemp);
-      lstrcat(szTemp, TEXT("  "));
-      PutTime(&ftLastWrite, szTemp + lstrlen(szTemp));
-
-      SetDlgItemText(hDlg, IDD_DATE, szTemp);
-   }
-   else
-   {
-      if (!bFileCompression)
-      {
-          ShowWindow(GetDlgItem(hDlg, IDD_COMPRESSED), SW_HIDE);
-      }
-
-      if (!bFileEncryption)
-      {
-          ShowWindow(GetDlgItem(hDlg, IDD_ENCRYPTED), SW_HIDE);
-      }
-   }
-
-   //
-   // add the network specific property buttons
-   //
-   if (WNetStat(NS_PROPERTYDLG)) {
-      GetWindowRect(GetDlgItem(hDlg,IDOK), &rcT);
-      GetWindowRect(GetDlgItem(hDlg,IDCANCEL), &rc);
-      dyButton = rc.top - rcT.top;
-
-      GetWindowRect(GetDlgItem(hDlg,IDD_HELP), &rc);
-      ScreenToClient(hDlg,(LPPOINT)&rc.left);
-      ScreenToClient(hDlg,(LPPOINT)&rc.right);
-
-      p = GetSelection(4, NULL);
-      if (p) {
-
-         for (i = 0; i < 6; i++) {
-
-            if (iCount > 1)
-               nType = WNPS_MULT;
-            else if (dwAttribsOn & ATTR_DIR)
-               nType = WNPS_DIR;
-            else
-               nType = WNPS_FILE;
-
-            if (WNetGetPropertyText((WORD)i, (WORD)nType, p, szTemp, 30, WNTYPE_FILE) != WN_SUCCESS)
-               break;
-
-            if (!szTemp[0])
-               break;
-
-            OffsetRect(&rc,0,dyButton);
-            hwnd = CreateWindowEx(0L, TEXT("button"), szTemp,
-               WS_VISIBLE|WS_CHILD|WS_TABSTOP|BS_PUSHBUTTON,
-               rc.left, rc.top,
-               rc.right - rc.left, rc.bottom-rc.top,
-               hDlg, (HMENU)(DWORD_PTR)(i + IDD_NETWORKFIRST), hAppInstance, NULL);
-
-            if (hwnd) {
-               hFont = (HFONT)SendDlgItemMessage(hDlg, IDOK, WM_GETFONT, 0, 0L);
-               SendMessage(hwnd, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
+                    if (qCSize.HighPart || (qCSize.LowPart > 100)) {
+                        //
+                        //  Ratio = 100%
+                        //
+                        qCSize.LowPart = 100;
+                        qCSize.HighPart = 0;
+                    } else {
+                        qCSize.LowPart = 100 - qCSize.LowPart;
+                    }
+                } else {
+                    //
+                    //  Ratio = 0%
+                    //
+                    qCSize.LowPart = 0;
+                    qCSize.HighPart = 0;
+                }
+                PutSize(&qCSize, szNum);
+                wsprintf(szTemp, TEXT("%s%%"), szNum);
+                SetDlgItemText(hDlg, IDD_CRATIO, szTemp);
+            } else {
+                ShowWindow(GetDlgItem(hDlg, IDD_CSIZELABEL), SW_HIDE);
+                ShowWindow(GetDlgItem(hDlg, IDD_CSIZE), SW_HIDE);
+                ShowWindow(GetDlgItem(hDlg, IDD_CRATIOLABEL), SW_HIDE);
+                ShowWindow(GetDlgItem(hDlg, IDD_CRATIO), SW_HIDE);
             }
-         }
 
-         LocalFree((HANDLE)p);
+            PostMessage(hDlg, FS_CHANGEDISPLAY, 0, 0L);
 
-         ClientToScreen(hDlg,(LPPOINT)&rc.left);
-         ClientToScreen(hDlg,(LPPOINT)&rc.right);
-         GetWindowRect(hDlg,&rcT);
-         rc.bottom += dyButton;
-         if (rcT.bottom <= rc.bottom) {
-            SetWindowPos(hDlg,NULL,0,0,rcT.right-rcT.left,
-            rc.bottom - rcT.top, SWP_NOMOVE|SWP_NOZORDER);
-         }
-      }
-   }
+            // changes szPath
+            lpszBuf = GetVersionInfo(szPath, szName);
 
-   //
-   // change those that don't need to be 3state to regular
-   //
-   if (ATTR_READONLY & dwAttribs3State)
-   {
-      SetWindowLongPtr( GetDlgItem(hDlg, IDD_READONLY),
-                     GWL_STYLE,
-                     WS_VISIBLE | WS_GROUP | WS_TABSTOP | BS_AUTO3STATE | WS_CHILD );
-   }
-   if (ATTR_HIDDEN & dwAttribs3State)
-   {
-      SetWindowLongPtr( GetDlgItem(hDlg, IDD_HIDDEN),
-                     GWL_STYLE,
-                     WS_VISIBLE | BS_AUTO3STATE | WS_CHILD);
-   }
-   if (ATTR_ARCHIVE & dwAttribs3State)
-   {
-      SetWindowLongPtr( GetDlgItem(hDlg, IDD_ARCHIVE),
-                     GWL_STYLE,
-                     WS_VISIBLE | BS_AUTO3STATE | WS_CHILD);
-   }
-   if (ATTR_SYSTEM & dwAttribs3State)
-   {
-      SetWindowLongPtr( GetDlgItem(hDlg, IDD_SYSTEM),
-                     GWL_STYLE,
-                     WS_VISIBLE | BS_AUTO3STATE | WS_CHILD);
-   }
-   if (ATTR_COMPRESSED & dwAttribs3State)
-   {
-      SetWindowLongPtr( GetDlgItem(hDlg, IDD_COMPRESSED),
-                     GWL_STYLE,
-                     WS_VISIBLE | BS_AUTO3STATE | WS_CHILD | WS_DISABLED);
-   }
-   if (ATTR_ENCRYPTED & dwAttribs3State)
-   {
-      SetWindowLongPtr( GetDlgItem(hDlg, IDD_ENCRYPTED),
-                     GWL_STYLE,
-                     WS_VISIBLE | BS_AUTO3STATE | WS_CHILD | WS_DISABLED);
-   }
+            if (FillSimpleVersion(hDlg, lpszBuf))
+                FillVersionList(hDlg);
+        }
 
-   CheckAttribsDlgButton(hDlg, IDD_READONLY,   ATTR_READONLY, dwAttribs3State, dwAttribsOn);
-   CheckAttribsDlgButton(hDlg, IDD_HIDDEN,     ATTR_HIDDEN, dwAttribs3State, dwAttribsOn);
-   CheckAttribsDlgButton(hDlg, IDD_ARCHIVE,    ATTR_ARCHIVE, dwAttribs3State, dwAttribsOn);
-   CheckAttribsDlgButton(hDlg, IDD_SYSTEM,     ATTR_SYSTEM, dwAttribs3State, dwAttribsOn);
-   CheckAttribsDlgButton(hDlg, IDD_COMPRESSED, ATTR_COMPRESSED, dwAttribs3State, dwAttribsOn);
-   CheckAttribsDlgButton(hDlg, IDD_ENCRYPTED,  ATTR_ENCRYPTED, dwAttribs3State, dwAttribsOn);
+        if (!bFileCompression) {
+            ShowWindow(GetDlgItem(hDlg, IDD_COMPRESSED), SW_HIDE);
+        }
 
-   return nType;
+        if (!bFileEncryption) {
+            ShowWindow(GetDlgItem(hDlg, IDD_ENCRYPTED), SW_HIDE);
+        }
+
+        PutSize(&qSize, szNum);
+        wsprintf(szTemp, szSBytes, szNum);
+        SetDlgItemText(hDlg, IDD_SIZE, szTemp);
+
+        PutDate(&ftLastWrite, szTemp);
+        lstrcat(szTemp, TEXT("  "));
+        PutTime(&ftLastWrite, szTemp + lstrlen(szTemp));
+
+        SetDlgItemText(hDlg, IDD_DATE, szTemp);
+    } else {
+        if (!bFileCompression) {
+            ShowWindow(GetDlgItem(hDlg, IDD_COMPRESSED), SW_HIDE);
+        }
+
+        if (!bFileEncryption) {
+            ShowWindow(GetDlgItem(hDlg, IDD_ENCRYPTED), SW_HIDE);
+        }
+    }
+
+    //
+    // add the network specific property buttons
+    //
+    if (WNetStat(NS_PROPERTYDLG)) {
+        GetWindowRect(GetDlgItem(hDlg, IDOK), &rcT);
+        GetWindowRect(GetDlgItem(hDlg, IDCANCEL), &rc);
+        dyButton = rc.top - rcT.top;
+
+        GetWindowRect(GetDlgItem(hDlg, IDD_HELP), &rc);
+        ScreenToClient(hDlg, (LPPOINT)&rc.left);
+        ScreenToClient(hDlg, (LPPOINT)&rc.right);
+
+        p = GetSelection(4, NULL);
+        if (p) {
+            for (i = 0; i < 6; i++) {
+                if (iCount > 1)
+                    nType = WNPS_MULT;
+                else if (dwAttribsOn & ATTR_DIR)
+                    nType = WNPS_DIR;
+                else
+                    nType = WNPS_FILE;
+
+                if (WNetGetPropertyText((WORD)i, (WORD)nType, p, szTemp, 30, WNTYPE_FILE) != WN_SUCCESS)
+                    break;
+
+                if (!szTemp[0])
+                    break;
+
+                OffsetRect(&rc, 0, dyButton);
+                hwnd = CreateWindowEx(
+                    0L, TEXT("button"), szTemp, WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_PUSHBUTTON, rc.left, rc.top,
+                    rc.right - rc.left, rc.bottom - rc.top, hDlg, (HMENU)(DWORD_PTR)(i + IDD_NETWORKFIRST),
+                    hAppInstance, NULL);
+
+                if (hwnd) {
+                    hFont = (HFONT)SendDlgItemMessage(hDlg, IDOK, WM_GETFONT, 0, 0L);
+                    SendMessage(hwnd, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
+                }
+            }
+
+            LocalFree((HANDLE)p);
+
+            ClientToScreen(hDlg, (LPPOINT)&rc.left);
+            ClientToScreen(hDlg, (LPPOINT)&rc.right);
+            GetWindowRect(hDlg, &rcT);
+            rc.bottom += dyButton;
+            if (rcT.bottom <= rc.bottom) {
+                SetWindowPos(hDlg, NULL, 0, 0, rcT.right - rcT.left, rc.bottom - rcT.top, SWP_NOMOVE | SWP_NOZORDER);
+            }
+        }
+    }
+
+    //
+    // change those that don't need to be 3state to regular
+    //
+    if (ATTR_READONLY & dwAttribs3State) {
+        SetWindowLongPtr(
+            GetDlgItem(hDlg, IDD_READONLY), GWL_STYLE, WS_VISIBLE | WS_GROUP | WS_TABSTOP | BS_AUTO3STATE | WS_CHILD);
+    }
+    if (ATTR_HIDDEN & dwAttribs3State) {
+        SetWindowLongPtr(GetDlgItem(hDlg, IDD_HIDDEN), GWL_STYLE, WS_VISIBLE | BS_AUTO3STATE | WS_CHILD);
+    }
+    if (ATTR_ARCHIVE & dwAttribs3State) {
+        SetWindowLongPtr(GetDlgItem(hDlg, IDD_ARCHIVE), GWL_STYLE, WS_VISIBLE | BS_AUTO3STATE | WS_CHILD);
+    }
+    if (ATTR_SYSTEM & dwAttribs3State) {
+        SetWindowLongPtr(GetDlgItem(hDlg, IDD_SYSTEM), GWL_STYLE, WS_VISIBLE | BS_AUTO3STATE | WS_CHILD);
+    }
+    if (ATTR_COMPRESSED & dwAttribs3State) {
+        SetWindowLongPtr(
+            GetDlgItem(hDlg, IDD_COMPRESSED), GWL_STYLE, WS_VISIBLE | BS_AUTO3STATE | WS_CHILD | WS_DISABLED);
+    }
+    if (ATTR_ENCRYPTED & dwAttribs3State) {
+        SetWindowLongPtr(
+            GetDlgItem(hDlg, IDD_ENCRYPTED), GWL_STYLE, WS_VISIBLE | BS_AUTO3STATE | WS_CHILD | WS_DISABLED);
+    }
+
+    CheckAttribsDlgButton(hDlg, IDD_READONLY, ATTR_READONLY, dwAttribs3State, dwAttribsOn);
+    CheckAttribsDlgButton(hDlg, IDD_HIDDEN, ATTR_HIDDEN, dwAttribs3State, dwAttribsOn);
+    CheckAttribsDlgButton(hDlg, IDD_ARCHIVE, ATTR_ARCHIVE, dwAttribs3State, dwAttribsOn);
+    CheckAttribsDlgButton(hDlg, IDD_SYSTEM, ATTR_SYSTEM, dwAttribs3State, dwAttribsOn);
+    CheckAttribsDlgButton(hDlg, IDD_COMPRESSED, ATTR_COMPRESSED, dwAttribs3State, dwAttribsOn);
+    CheckAttribsDlgButton(hDlg, IDD_ENCRYPTED, ATTR_ENCRYPTED, dwAttribs3State, dwAttribsOn);
+
+    return nType;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1509,231 +1378,212 @@ FullPath:
 
 INT_PTR
 CALLBACK
-AttribsDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-   LPTSTR p, pSel;
-   BOOL bRet;
-   HCURSOR hCursor;
-   DWORD dwAttribsNew, dwAttribs, dwChangeMask;
-   UINT state;
-   TCHAR szName[MAXPATHLEN];
-   TCHAR szTemp[MAXPATHLEN];
-   static INT nType;
-   LPWSTR lpszValue;
-   INT idx;
+AttribsDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
+    LPTSTR p, pSel;
+    BOOL bRet;
+    HCURSOR hCursor;
+    DWORD dwAttribsNew, dwAttribs, dwChangeMask;
+    UINT state;
+    TCHAR szName[MAXPATHLEN];
+    TCHAR szTemp[MAXPATHLEN];
+    static INT nType;
+    LPWSTR lpszValue;
+    INT idx;
 
-   UNREFERENCED_PARAMETER(lParam);
+    UNREFERENCED_PARAMETER(lParam);
 
-   switch (wMsg) {
-
-   case WM_INITDIALOG:
-
-      WAITNET();
-
-      nType = InitPropertiesDialog(hDlg);
-      break;
-
-   case FS_CHANGEDISPLAY:
-      {
-         // Private message to make the version edit control and
-         // listbox line up properly. Yes, a pain, but this is the
-         // easiest way to do it...
-
-         RECT rcVersionKey;
-         RECT rcVersionValue;
-
-         GetWindowRect(GetDlgItem(hDlg, IDD_VERSION_KEY), &rcVersionKey);
-         ScreenToClient(hDlg, (POINT FAR *) &rcVersionKey.left);
-         ScreenToClient(hDlg, (POINT FAR *) &rcVersionKey.right);
-
-         GetWindowRect(GetDlgItem(hDlg, IDD_VERSION_VALUE), &rcVersionValue);
-         ScreenToClient(hDlg, (POINT FAR *) &rcVersionValue.left);
-         ScreenToClient(hDlg, (POINT FAR *) &rcVersionValue.right);
-
-         SetWindowPos(GetDlgItem(hDlg, IDD_VERSION_VALUE),
-         0,
-         rcVersionValue.left, rcVersionKey.top,
-         rcVersionValue.right - rcVersionValue.left,
-         rcVersionKey.bottom-rcVersionKey.top,
-         SWP_NOACTIVATE | SWP_NOZORDER);
-      }
-
-      break;
-
-   case WM_COMMAND:
-      switch (GET_WM_COMMAND_ID(wParam, lParam)) {
-      case IDD_HELP:
-         goto DoHelp;
-
-      case IDD_NETWORKFIRST+0:
-      case IDD_NETWORKFIRST+1:
-      case IDD_NETWORKFIRST+2:
-      case IDD_NETWORKFIRST+3:
-      case IDD_NETWORKFIRST+4:
-      case IDD_NETWORKFIRST+5:
-
-         p = GetSelection(4|1|16, NULL);
-         if (p) {
+    switch (wMsg) {
+        case WM_INITDIALOG:
 
             WAITNET();
 
-            if (WAITNET_LOADED) {
-               WNetPropertyDialog(hDlg,
-                  (WORD)(GET_WM_COMMAND_ID(wParam, lParam)-IDD_NETWORKFIRST),
-                  (WORD)nType, p, WNTYPE_FILE);
-            }
-
-            LocalFree((HANDLE)p);
-         }
-         break;
-
-      case IDD_VERSION_KEY:
-
-         if (GET_WM_COMMAND_CMD(wParam,lParam) != LBN_SELCHANGE)
-            break;
-         idx = (INT)SendDlgItemMessage(hDlg, IDD_VERSION_KEY, LB_GETCURSEL, 0, 0L);
-         lpszValue = (LPTSTR)SendDlgItemMessage(hDlg, IDD_VERSION_KEY, LB_GETITEMDATA, idx, 0L);
-
-         SetDlgItemText(hDlg, IDD_VERSION_VALUE, lpszValue);
-         break;
-
-      case IDCANCEL:
-
-         FreeVersionInfo();
-         EndDialog(hDlg, FALSE);
-         break;
-
-      case IDOK:
-      {
-         BOOL bIgnoreAll = FALSE;
-
-         bRet = TRUE;
-         dwChangeMask = ATTR_READWRITE;
-         dwAttribsNew = ATTR_READWRITE;
-
-         if ((state = IsDlgButtonChecked(hDlg, IDD_READONLY)) < 2)
-         {
-            dwChangeMask |= ATTR_READONLY;
-            if (state == 1)
-            {
-               dwAttribsNew |= ATTR_READONLY;
-            }
-         }
-
-         if ((state = IsDlgButtonChecked(hDlg, IDD_HIDDEN)) < 2)
-         {
-            dwChangeMask |= ATTR_HIDDEN;
-            if (state == 1)
-            {
-               dwAttribsNew |= ATTR_HIDDEN;
-            }
-         }
-
-         if ((state = IsDlgButtonChecked(hDlg, IDD_ARCHIVE)) < 2)
-         {
-            dwChangeMask |= ATTR_ARCHIVE;
-            if (state == 1)
-            {
-               dwAttribsNew |= ATTR_ARCHIVE;
-            }
-         }
-
-         if ((state = IsDlgButtonChecked(hDlg, IDD_SYSTEM)) < 2)
-         {
-            dwChangeMask |= ATTR_SYSTEM;
-            if (state == 1)
-            {
-               dwAttribsNew |= ATTR_SYSTEM;
-            }
-         }
-
-         //
-         // Free old version buffer
-         // (Ok to call even if no version info present.)
-         //
-         FreeVersionInfo();
-         EndDialog(hDlg, bRet);
-
-         pSel = GetSelection(0, NULL);
-
-         if (!pSel)
+            nType = InitPropertiesDialog(hDlg);
             break;
 
-         hCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-         ShowCursor(TRUE);
+        case FS_CHANGEDISPLAY: {
+            // Private message to make the version edit control and
+            // listbox line up properly. Yes, a pain, but this is the
+            // easiest way to do it...
 
-         SendMessage(hwndFrame, FS_DISABLEFSC, 0, 0L);
+            RECT rcVersionKey;
+            RECT rcVersionValue;
 
-         p = pSel;
+            GetWindowRect(GetDlgItem(hDlg, IDD_VERSION_KEY), &rcVersionKey);
+            ScreenToClient(hDlg, (POINT FAR*)&rcVersionKey.left);
+            ScreenToClient(hDlg, (POINT FAR*)&rcVersionKey.right);
 
-         while (p = GetNextFile(p, szName, COUNTOF(szName))) {
+            GetWindowRect(GetDlgItem(hDlg, IDD_VERSION_VALUE), &rcVersionValue);
+            ScreenToClient(hDlg, (POINT FAR*)&rcVersionValue.left);
+            ScreenToClient(hDlg, (POINT FAR*)&rcVersionValue.right);
 
-            QualifyPath(szName);
+            SetWindowPos(
+                GetDlgItem(hDlg, IDD_VERSION_VALUE), 0, rcVersionValue.left, rcVersionKey.top,
+                rcVersionValue.right - rcVersionValue.left, rcVersionKey.bottom - rcVersionKey.top,
+                SWP_NOACTIVATE | SWP_NOZORDER);
+        }
 
-            dwAttribs = GetFileAttributes(szName);
+        break;
 
-            if (dwAttribs == INVALID_FILE_ATTRIBUTES)
-               goto AttributeError;
-            else
-               dwAttribs &= ~ATTR_DIR;
+        case WM_COMMAND:
+            switch (GET_WM_COMMAND_ID(wParam, lParam)) {
+                case IDD_HELP:
+                    goto DoHelp;
 
-            //
-            // Only try and change the attributes if we need to change
-            // attributes.
-            //
-            if ((dwAttribs ^ dwAttribsNew) & dwChangeMask)
-            {
-               dwAttribs = (dwChangeMask & dwAttribsNew) | (~dwChangeMask & dwAttribs);
+                case IDD_NETWORKFIRST + 0:
+                case IDD_NETWORKFIRST + 1:
+                case IDD_NETWORKFIRST + 2:
+                case IDD_NETWORKFIRST + 3:
+                case IDD_NETWORKFIRST + 4:
+                case IDD_NETWORKFIRST + 5:
 
-               //
-               //  Set the attributes on the file or directory.
-               //
-               lstrcpy(szTemp, szName);
-               if (WFSetAttr(szName, dwAttribs))
-               {
-AttributeError:
-                  GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
-                  LoadString(hAppInstance, IDS_ATTRIBERR, szMessage, COUNTOF(szMessage));
+                    p = GetSelection(4 | 1 | 16, NULL);
+                    if (p) {
+                        WAITNET();
 
-                  FormatError(FALSE, szMessage, COUNTOF(szMessage), GetLastError());
-                  MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONSTOP);
+                        if (WAITNET_LOADED) {
+                            WNetPropertyDialog(
+                                hDlg, (WORD)(GET_WM_COMMAND_ID(wParam, lParam) - IDD_NETWORKFIRST), (WORD)nType, p,
+                                WNTYPE_FILE);
+                        }
 
-                  bRet = FALSE;
-                  break;
-               }
+                        LocalFree((HANDLE)p);
+                    }
+                    break;
+
+                case IDD_VERSION_KEY:
+
+                    if (GET_WM_COMMAND_CMD(wParam, lParam) != LBN_SELCHANGE)
+                        break;
+                    idx = (INT)SendDlgItemMessage(hDlg, IDD_VERSION_KEY, LB_GETCURSEL, 0, 0L);
+                    lpszValue = (LPTSTR)SendDlgItemMessage(hDlg, IDD_VERSION_KEY, LB_GETITEMDATA, idx, 0L);
+
+                    SetDlgItemText(hDlg, IDD_VERSION_VALUE, lpszValue);
+                    break;
+
+                case IDCANCEL:
+
+                    FreeVersionInfo();
+                    EndDialog(hDlg, FALSE);
+                    break;
+
+                case IDOK: {
+                    BOOL bIgnoreAll = FALSE;
+
+                    bRet = TRUE;
+                    dwChangeMask = ATTR_READWRITE;
+                    dwAttribsNew = ATTR_READWRITE;
+
+                    if ((state = IsDlgButtonChecked(hDlg, IDD_READONLY)) < 2) {
+                        dwChangeMask |= ATTR_READONLY;
+                        if (state == 1) {
+                            dwAttribsNew |= ATTR_READONLY;
+                        }
+                    }
+
+                    if ((state = IsDlgButtonChecked(hDlg, IDD_HIDDEN)) < 2) {
+                        dwChangeMask |= ATTR_HIDDEN;
+                        if (state == 1) {
+                            dwAttribsNew |= ATTR_HIDDEN;
+                        }
+                    }
+
+                    if ((state = IsDlgButtonChecked(hDlg, IDD_ARCHIVE)) < 2) {
+                        dwChangeMask |= ATTR_ARCHIVE;
+                        if (state == 1) {
+                            dwAttribsNew |= ATTR_ARCHIVE;
+                        }
+                    }
+
+                    if ((state = IsDlgButtonChecked(hDlg, IDD_SYSTEM)) < 2) {
+                        dwChangeMask |= ATTR_SYSTEM;
+                        if (state == 1) {
+                            dwAttribsNew |= ATTR_SYSTEM;
+                        }
+                    }
+
+                    //
+                    // Free old version buffer
+                    // (Ok to call even if no version info present.)
+                    //
+                    FreeVersionInfo();
+                    EndDialog(hDlg, bRet);
+
+                    pSel = GetSelection(0, NULL);
+
+                    if (!pSel)
+                        break;
+
+                    hCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+                    ShowCursor(TRUE);
+
+                    SendMessage(hwndFrame, FS_DISABLEFSC, 0, 0L);
+
+                    p = pSel;
+
+                    while (p = GetNextFile(p, szName, COUNTOF(szName))) {
+                        QualifyPath(szName);
+
+                        dwAttribs = GetFileAttributes(szName);
+
+                        if (dwAttribs == INVALID_FILE_ATTRIBUTES)
+                            goto AttributeError;
+                        else
+                            dwAttribs &= ~ATTR_DIR;
+
+                        //
+                        // Only try and change the attributes if we need to change
+                        // attributes.
+                        //
+                        if ((dwAttribs ^ dwAttribsNew) & dwChangeMask) {
+                            dwAttribs = (dwChangeMask & dwAttribsNew) | (~dwChangeMask & dwAttribs);
+
+                            //
+                            //  Set the attributes on the file or directory.
+                            //
+                            lstrcpy(szTemp, szName);
+                            if (WFSetAttr(szName, dwAttribs)) {
+                            AttributeError:
+                                GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
+                                LoadString(hAppInstance, IDS_ATTRIBERR, szMessage, COUNTOF(szMessage));
+
+                                FormatError(FALSE, szMessage, COUNTOF(szMessage), GetLastError());
+                                MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONSTOP);
+
+                                bRet = FALSE;
+                                break;
+                            }
+                        }
+
+                        //
+                        //  Clear all the FSC messages from the message queue.
+                        //
+                        wfYield();
+                    }
+
+                    SendMessage(hwndFrame, FS_ENABLEFSC, 0, 0L);
+
+                    ShowCursor(FALSE);
+                    SetCursor(hCursor);
+
+                    LocalFree((HANDLE)pSel);
+
+                    break;
+                }
+                default:
+                    return FALSE;
             }
+            break;
 
-            //
-            //  Clear all the FSC messages from the message queue.
-            //
-            wfYield();
-         }
+        default:
 
-         SendMessage(hwndFrame, FS_ENABLEFSC, 0, 0L);
-
-         ShowCursor(FALSE);
-         SetCursor(hCursor);
-
-         LocalFree((HANDLE)pSel);
-
-         break;
-      }
-      default:
-         return FALSE;
-      }
-      break;
-
-   default:
-
-      if (wMsg == wHelpMessage) {
-DoHelp:
-         return TRUE;
-      } else
-         return FALSE;
-   }
-   return TRUE;
+            if (wMsg == wHelpMessage) {
+            DoHelp:
+                return TRUE;
+            } else
+                return FALSE;
+    }
+    return TRUE;
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1743,121 +1593,115 @@ DoHelp:
 
 INT_PTR
 CALLBACK
-MakeDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-   //
-   // Must be at least MAXPATHLEN
-   //
-   TCHAR szPath[MAXPATHLEN*2];
-   INT ret;
+MakeDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
+    //
+    // Must be at least MAXPATHLEN
+    //
+    TCHAR szPath[MAXPATHLEN * 2];
+    INT ret;
 
-   if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
-      return TRUE;
-   }
+    if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
+        return TRUE;
+    }
 
-   switch (wMsg) {
-   case WM_INITDIALOG:
-      SetDlgDirectory(hDlg, NULL);
-      SendDlgItemMessage(hDlg, IDD_NAME, EM_LIMITTEXT, MAXPATHLEN-1, 0L);
-      break;
+    switch (wMsg) {
+        case WM_INITDIALOG:
+            SetDlgDirectory(hDlg, NULL);
+            SendDlgItemMessage(hDlg, IDD_NAME, EM_LIMITTEXT, MAXPATHLEN - 1, 0L);
+            break;
 
-   case WM_SIZE:
-      SetDlgDirectory(hDlg, NULL);
-      break;
+        case WM_SIZE:
+            SetDlgDirectory(hDlg, NULL);
+            break;
 
-   case WM_COMMAND:
-      switch (GET_WM_COMMAND_ID(wParam, lParam)){
-      case IDD_HELP:
-         goto DoHelp;
+        case WM_COMMAND:
+            switch (GET_WM_COMMAND_ID(wParam, lParam)) {
+                case IDD_HELP:
+                    goto DoHelp;
 
-      case IDCANCEL:
-         EndDialog(hDlg, FALSE);
-         break;
+                case IDCANCEL:
+                    EndDialog(hDlg, FALSE);
+                    break;
 
-      case IDOK:
+                case IDOK:
 
-         GetDlgItemText(hDlg, IDD_NAME, szPath, MAXPATHLEN);
-         EndDialog(hDlg, TRUE);
+                    GetDlgItemText(hDlg, IDD_NAME, szPath, MAXPATHLEN);
+                    EndDialog(hDlg, TRUE);
 
-         //
-         // If "a b" typed in (no quotes, just a b) do we create two
-         // directors, "a" and "b," or create just one: "a b."
-         // For now, create just one.  (No need to call checkesc!)
-         //
-         // put it back in to handle quoted things.
-         // Now, it _ignores_ extra files on the line.  We may wish to return
-         // an error; that would be smart...
-         //
-         if (NoQuotes(szPath)) {
-            CheckEsc(szPath);
-         }
+                    //
+                    // If "a b" typed in (no quotes, just a b) do we create two
+                    // directors, "a" and "b," or create just one: "a b."
+                    // For now, create just one.  (No need to call checkesc!)
+                    //
+                    // put it back in to handle quoted things.
+                    // Now, it _ignores_ extra files on the line.  We may wish to return
+                    // an error; that would be smart...
+                    //
+                    if (NoQuotes(szPath)) {
+                        CheckEsc(szPath);
+                    }
 
-         GetNextFile(szPath, szPath, COUNTOF(szPath));
+                    GetNextFile(szPath, szPath, COUNTOF(szPath));
 
-         QualifyPath(szPath);
+                    QualifyPath(szPath);
 
-         hdlgProgress = hDlg;
+                    hdlgProgress = hDlg;
 
 #ifdef NETCHECK
-         if (NetCheck(szPath,WNDN_MKDIR) == WN_SUCCESS) {
+                    if (NetCheck(szPath, WNDN_MKDIR) == WN_SUCCESS) {
 #endif
-            SendMessage(hwndFrame, FS_DISABLEFSC, 0, 0L);
+                        SendMessage(hwndFrame, FS_DISABLEFSC, 0, 0L);
 
-            ret = WF_CreateDirectory(hDlg, szPath, NULL);
+                        ret = WF_CreateDirectory(hDlg, szPath, NULL);
 
-            if (ret && ret!=DE_OPCANCELLED) {
-               // Handle error messages cleanly.
-               // Special case ERROR_ALREADY_EXISTS
+                        if (ret && ret != DE_OPCANCELLED) {
+                            // Handle error messages cleanly.
+                            // Special case ERROR_ALREADY_EXISTS
 
-               if ( ERROR_ALREADY_EXISTS == ret ) {
-                  ret = WFIsDir(szPath) ?
-                     DE_MAKEDIREXISTS :
-                     DE_DIREXISTSASFILE;
-               }
+                            if (ERROR_ALREADY_EXISTS == ret) {
+                                ret = WFIsDir(szPath) ? DE_MAKEDIREXISTS : DE_DIREXISTSASFILE;
+                            }
 
-               LoadString(hAppInstance, IDS_MAKEDIRERR, szMessage, COUNTOF(szMessage));
-               FormatError(FALSE, szMessage, COUNTOF(szMessage), ret);
+                            LoadString(hAppInstance, IDS_MAKEDIRERR, szMessage, COUNTOF(szMessage));
+                            FormatError(FALSE, szMessage, COUNTOF(szMessage), ret);
 
-               GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
-               MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONSTOP);
+                            GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
+                            MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONSTOP);
+                        }
+
+                        SendMessage(hwndFrame, FS_ENABLEFSC, 0, 0L);
+#ifdef NETCHECK
+                    }
+#endif
+
+                    break;
+
+                default:
+                    return FALSE;
             }
+            break;
 
-            SendMessage(hwndFrame, FS_ENABLEFSC, 0, 0L);
-#ifdef NETCHECK
-         }
-#endif
+        default:
 
-         break;
-
-      default:
-         return FALSE;
-      }
-      break;
-
-   default:
-
-      if (wMsg == wHelpMessage) {
-DoHelp:
-         return TRUE;
-      } else
-         return FALSE;
-   }
-   return TRUE;
+            if (wMsg == wHelpMessage) {
+            DoHelp:
+                return TRUE;
+            } else
+                return FALSE;
+    }
+    return TRUE;
 }
-
 
 // Check if szT has quote in it.
 // could use strchr...
 
-BOOL
-NoQuotes(LPTSTR szT)
-{
-   while (*szT) {
-      if (CHAR_DQUOTE == *szT ) return FALSE;
+BOOL NoQuotes(LPTSTR szT) {
+    while (*szT) {
+        if (CHAR_DQUOTE == *szT)
+            return FALSE;
 
-      szT++;
-   }
+        szT++;
+    }
 
-   return TRUE;
+    return TRUE;
 }
-

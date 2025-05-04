@@ -17,29 +17,27 @@
 
 HWND hwndGlobalSink = NULL;
 
-VOID  SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel);
-VOID  ShowItemBitmaps(HWND hwndLB, INT iShow);
+VOID SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel);
+VOID ShowItemBitmaps(HWND hwndLB, INT iShow);
 int GetDragStatusText(int iOperation);
 
 HCURSOR
-GetMoveCopyCursor()
-{
-   switch (iShowSourceBitmaps) {
-   case DROP_COPY:
-      return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE(iCurDrag | 0b0001));
+GetMoveCopyCursor() {
+    switch (iShowSourceBitmaps) {
+        case DROP_COPY:
+            return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE(iCurDrag | 0b0001));
 
-   case DROP_LINK:
-      return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE((iCurDrag | 0b0100) & ~0b0001));
+        case DROP_LINK:
+            return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE((iCurDrag | 0b0100) & ~0b0001));
 
-   case DROP_HARD:
-      return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE((iCurDrag | 0b1000) & ~0b0101));
+        case DROP_HARD:
+            return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE((iCurDrag | 0b1000) & ~0b0101));
 
-   case DROP_MOVE:
-   default:
-      return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE(iCurDrag & ~0b0001));
-   }
+        case DROP_MOVE:
+        default:
+            return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE(iCurDrag & ~0b0001));
+    }
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -60,96 +58,82 @@ GetMoveCopyCursor()
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-MatchFile(LPWSTR szFile, LPWSTR szSpec)
-{
+BOOL MatchFile(LPWSTR szFile, LPWSTR szSpec) {
+#define IS_DOTEND(ch) ((ch) == CHAR_DOT || (ch) == CHAR_NULL)
 
-#define IS_DOTEND(ch)   ((ch) == CHAR_DOT || (ch) == CHAR_NULL)
+    if (!lstrcmp(szSpec, SZ_STAR) ||      // "*" matches everything
+        !lstrcmp(szSpec, szStarDotStar))  // so does "*.*"
+        return TRUE;
 
-   if (!lstrcmp(szSpec, SZ_STAR) ||            // "*" matches everything
-      !lstrcmp(szSpec, szStarDotStar))         // so does "*.*"
-      return TRUE;
+    while (*szFile && *szSpec) {
+        switch (*szSpec) {
+            case CHAR_QUESTION:
+                szFile++;
+                szSpec++;
+                break;
 
-   while (*szFile && *szSpec) {
+            case CHAR_STAR:
 
-      switch (*szSpec) {
-      case CHAR_QUESTION:
-         szFile++;
-         szSpec++;
-         break;
+                while (!IS_DOTEND(*szSpec))  // got till a terminator
+                    szSpec = CharNext(szSpec);
 
-      case CHAR_STAR:
+                if (*szSpec == CHAR_DOT)
+                    szSpec++;
 
-         while (!IS_DOTEND(*szSpec))     // got till a terminator
-            szSpec = CharNext(szSpec);
+                while (!IS_DOTEND(*szFile))  // got till a terminator
+                    szFile = CharNext(szFile);
 
-         if (*szSpec == CHAR_DOT)
-            szSpec++;
+                if (*szFile == CHAR_DOT)
+                    szFile++;
 
-         while (!IS_DOTEND(*szFile))     // got till a terminator
-            szFile = CharNext(szFile);
+                break;
 
-         if (*szFile == CHAR_DOT)
-            szFile++;
-
-         break;
-
-      default:
-         if (*szSpec == *szFile) {
-
-            szFile++;
-            szSpec++;
-         } else
-            return FALSE;
-      }
-   }
-   return !*szFile && !*szSpec;
+            default:
+                if (*szSpec == *szFile) {
+                    szFile++;
+                    szSpec++;
+                } else
+                    return FALSE;
+        }
+    }
+    return !*szFile && !*szSpec;
 }
 
+VOID DSSetSelection(HWND hwndLB, BOOL bSelect, LPWSTR szSpec, BOOL bSearch) {
+    INT i;
+    INT iMac;
+    LPXDTA lpxdta;
+    LPXDTALINK lpStart;
+    WCHAR szTemp[MAXPATHLEN];
 
-VOID
-DSSetSelection(
-   HWND hwndLB,
-   BOOL bSelect,
-   LPWSTR szSpec,
-   BOOL bSearch)
-{
-   INT i;
-   INT iMac;
-   LPXDTA lpxdta;
-   LPXDTALINK lpStart;
-   WCHAR szTemp[MAXPATHLEN];
+    CharUpper(szSpec);
 
-   CharUpper(szSpec);
+    lpStart = (LPXDTALINK)GetWindowLongPtr(GetParent(hwndLB), GWL_HDTA);
 
-   lpStart = (LPXDTALINK)GetWindowLongPtr(GetParent(hwndLB), GWL_HDTA);
+    if (!lpStart)
+        return;
 
-   if (!lpStart)
-      return;
+    iMac = (INT)MemLinkToHead(lpStart)->dwEntries;
 
-   iMac = (INT)MemLinkToHead(lpStart)->dwEntries;
+    for (i = 0; i < iMac; i++) {
+        if (SendMessage(hwndLB, LB_GETTEXT, i, (LPARAM)&lpxdta) == LB_ERR)
+            return;
 
-   for (i = 0; i < iMac; i++) {
+        if (!lpxdta || lpxdta->dwAttrs & ATTR_PARENT)
+            continue;
 
-      if (SendMessage(hwndLB, LB_GETTEXT, i, (LPARAM)&lpxdta) == LB_ERR)
-         return;
+        lstrcpy(szTemp, MemGetFileName(lpxdta));
 
-      if (!lpxdta || lpxdta->dwAttrs & ATTR_PARENT)
-         continue;
+        if (bSearch) {
+            StripPath(szTemp);
+        }
 
-      lstrcpy(szTemp, MemGetFileName(lpxdta));
+        CharUpper(szTemp);
 
-      if (bSearch) {
-         StripPath(szTemp);
-      }
-
-      CharUpper(szTemp);
-
-      if (MatchFile(szTemp, szSpec))
-         SendMessage(hwndLB, LB_SETSEL, bSelect, i);
-   }
+        if (MatchFile(szTemp, szSpec))
+            SendMessage(hwndLB, LB_SETSEL, bSelect, i);
+    }
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -157,65 +141,54 @@ DSSetSelection(
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID
-ShowItemBitmaps(HWND hwndLB, INT iShow)
-{
-   INT i;
-   INT iMac;
-   INT iFirstSel;
-   RECT rc;
-   INT dx;
-   LPINT lpSelItems;
+VOID ShowItemBitmaps(HWND hwndLB, INT iShow) {
+    INT i;
+    INT iMac;
+    INT iFirstSel;
+    RECT rc;
+    INT dx;
+    LPINT lpSelItems;
 
-   if (iShow == iShowSourceBitmaps)
-      return;
+    if (iShow == iShowSourceBitmaps)
+        return;
 
-   iShowSourceBitmaps = iShow;
+    iShowSourceBitmaps = iShow;
 
-   dx = dxFolder + dyBorderx2 + dyBorder;
+    dx = dxFolder + dyBorderx2 + dyBorder;
 
-   //
-   // Invalidate the bitmap parts of all visible, selected items.
-   //
-   iFirstSel = (INT)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
-   iMac = (INT) SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
+    //
+    // Invalidate the bitmap parts of all visible, selected items.
+    //
+    iFirstSel = (INT)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
+    iMac = (INT)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
 
-   if (iMac == LB_ERR)
-      return;
+    if (iMac == LB_ERR)
+        return;
 
-   lpSelItems = (LPINT) LocalAlloc(LMEM_FIXED, sizeof(INT) * iMac);
+    lpSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(INT) * iMac);
 
-   if (lpSelItems == NULL)
-      return;
+    if (lpSelItems == NULL)
+        return;
 
-   iMac = (INT)SendMessage(hwndLB,
-                           LB_GETSELITEMS,
-                           (WPARAM)iMac,
-                           (LPARAM)lpSelItems);
+    iMac = (INT)SendMessage(hwndLB, LB_GETSELITEMS, (WPARAM)iMac, (LPARAM)lpSelItems);
 
-   for(i=0; i<iMac; i++) {
+    for (i = 0; i < iMac; i++) {
+        if (lpSelItems[i] < iFirstSel)
+            continue;
 
-      if (lpSelItems[i] < iFirstSel)
-         continue;
+        if (SendMessage(hwndLB, LB_GETITEMRECT, lpSelItems[i], (LPARAM)&rc) == LB_ERR)
+            break;
 
-      if (SendMessage(hwndLB,
-                      LB_GETITEMRECT,
-                      lpSelItems[i],
-                      (LPARAM)&rc) == LB_ERR)
-         break;
+        //
+        // Invalidate the bitmap area.
+        //
+        rc.right = rc.left + dx;
+        InvalidateRect(hwndLB, &rc, FALSE);
+    }
+    UpdateWindow(hwndLB);
 
-      //
-      // Invalidate the bitmap area.
-      //
-      rc.right = rc.left + dx;
-      InvalidateRect(hwndLB, &rc, FALSE);
-   }
-   UpdateWindow(hwndLB);
-
-   LocalFree((HLOCAL)lpSelItems);
+    LocalFree((HLOCAL)lpSelItems);
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -235,22 +208,18 @@ ShowItemBitmaps(HWND hwndLB, INT iShow)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel)
-{
-   //
-   // Add the current item to the selection.
-   //
-   SendMessage(hwndLB, LB_SETSEL, bSel, (DWORD)wParam);
+VOID SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel) {
+    //
+    // Add the current item to the selection.
+    //
+    SendMessage(hwndLB, LB_SETSEL, bSel, (DWORD)wParam);
 
-   //
-   // Give the selected item the focus rect and anchor pt.
-   //
-   SendMessage(hwndLB, LB_SETCARETINDEX, wParam, MAKELONG(TRUE,0));
-   SendMessage(hwndLB, LB_SETANCHORINDEX, wParam, 0L);
+    //
+    // Give the selected item the focus rect and anchor pt.
+    //
+    SendMessage(hwndLB, LB_SETCARETINDEX, wParam, MAKELONG(TRUE, 0));
+    SendMessage(hwndLB, LB_SETANCHORINDEX, wParam, 0L);
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -276,146 +245,136 @@ SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-DSDragLoop(HWND hwndLB, WPARAM wParam, LPDROPSTRUCT lpds)
-{
-   INT iShowBitmap;
-   LPXDTA lpxdta;
-   HWND hwndMDIChildSink, hwndDir;
-   BOOL bForceMoveCur = FALSE;
+VOID DSDragLoop(HWND hwndLB, WPARAM wParam, LPDROPSTRUCT lpds) {
+    INT iShowBitmap;
+    LPXDTA lpxdta;
+    HWND hwndMDIChildSink, hwndDir;
+    BOOL bForceMoveCur = FALSE;
 
-   //
-   // bShowBitmap is used to turn the source bitmaps on or off to distinguish
-   // between a move and a copy or to indicate that a drop can
-   // occur (exec and app)
-   //
-   // hack: keep around for drop files!
-   //
-   hwndGlobalSink = lpds->hwndSink;
+    //
+    // bShowBitmap is used to turn the source bitmaps on or off to distinguish
+    // between a move and a copy or to indicate that a drop can
+    // occur (exec and app)
+    //
+    // hack: keep around for drop files!
+    //
+    hwndGlobalSink = lpds->hwndSink;
 
-   //
-   // default to move
-   //
-   iShowBitmap = DROP_MOVE;
+    //
+    // default to move
+    //
+    iShowBitmap = DROP_MOVE;
 
-   //
-   // can't drop here
-   //
-   if (!wParam)
-      goto DragLoopCont;
+    //
+    // can't drop here
+    //
+    if (!wParam)
+        goto DragLoopCont;
 
-   //
-   // Is the user holding down the CTRL key (which forces a copy)?
-   //
-   if (GetKeyState(VK_CONTROL) < 0) {
-       iShowBitmap = DROP_COPY;
-       if (GetKeyState(VK_SHIFT) < 0) {
-          iShowBitmap = DROP_LINK;
-          if (GetKeyState(VK_MENU) < 0) {
-             iShowBitmap = DROP_HARD;
-          }
-       }
-       goto DragLoopCont;
-   }
+    //
+    // Is the user holding down the CTRL key (which forces a copy)?
+    //
+    if (GetKeyState(VK_CONTROL) < 0) {
+        iShowBitmap = DROP_COPY;
+        if (GetKeyState(VK_SHIFT) < 0) {
+            iShowBitmap = DROP_LINK;
+            if (GetKeyState(VK_MENU) < 0) {
+                iShowBitmap = DROP_HARD;
+            }
+        }
+        goto DragLoopCont;
+    }
 
-   //
-   // Is the user holding down the ALT or SHIFT key (which forces a move)?
-   //
-   if (GetKeyState(VK_MENU)<0 || GetKeyState(VK_SHIFT)<0) {
-      iShowBitmap = DROP_MOVE;
-      goto DragLoopCont;
-   }
+    //
+    // Is the user holding down the ALT or SHIFT key (which forces a move)?
+    //
+    if (GetKeyState(VK_MENU) < 0 || GetKeyState(VK_SHIFT) < 0) {
+        iShowBitmap = DROP_MOVE;
+        goto DragLoopCont;
+    }
 
-   hwndMDIChildSink = GetMDIChildFromDescendant(lpds->hwndSink);
+    hwndMDIChildSink = GetMDIChildFromDescendant(lpds->hwndSink);
 
-   //
-   // Are we over the source listbox? (sink and source the same)
-   //
-   if (lpds->hwndSink == hwndLB) {
-
-      //
-      // Are we over a valid listbox entry?
-      //
-      if (lpds->dwControlData == (DWORD)-1) {
-
-         //
-         // Now force move cursor
-         //
-         bForceMoveCur = TRUE;
-         goto DragLoopCont;
-
-      } else {
-
-         //
-         // are we over a directory entry?
-         //
-         SendMessage(hwndLB, LB_GETTEXT, (WPARAM)(lpds->dwControlData), (LPARAM)&lpxdta);
-
-         if (!(lpxdta && lpxdta->dwAttrs & ATTR_DIR)) {
-
+    //
+    // Are we over the source listbox? (sink and source the same)
+    //
+    if (lpds->hwndSink == hwndLB) {
+        //
+        // Are we over a valid listbox entry?
+        //
+        if (lpds->dwControlData == (DWORD)-1) {
             //
             // Now force move cursor
             //
             bForceMoveCur = TRUE;
-
             goto DragLoopCont;
-         }
-      }
-   }
 
-   //
-   // Now we need to see if we are over an Executable file.  If so, we
-   // need to force the Bitmaps to draw.
-   //
+        } else {
+            //
+            // are we over a directory entry?
+            //
+            SendMessage(hwndLB, LB_GETTEXT, (WPARAM)(lpds->dwControlData), (LPARAM)&lpxdta);
 
-   //
-   // Are we over a directory window?
-   //
-   if (hwndMDIChildSink)
-      hwndDir = HasDirWindow(hwndMDIChildSink);
-   else
-      hwndDir = NULL;
+            if (!(lpxdta && lpxdta->dwAttrs & ATTR_DIR)) {
+                //
+                // Now force move cursor
+                //
+                bForceMoveCur = TRUE;
 
-   if (hwndDir && (hwndDir == GetParent(lpds->hwndSink))) {
+                goto DragLoopCont;
+            }
+        }
+    }
 
-      //
-      // Are we over an occupied part of the list box?
-      //
-      if (lpds->dwControlData != (DWORD)-1) {
+    //
+    // Now we need to see if we are over an Executable file.  If so, we
+    // need to force the Bitmaps to draw.
+    //
 
-         //
-         // Are we over an Executable?
-         //
-         SendMessage(lpds->hwndSink, LB_GETTEXT, (WORD)(lpds->dwControlData), (LPARAM)(LPTSTR)&lpxdta);
+    //
+    // Are we over a directory window?
+    //
+    if (hwndMDIChildSink)
+        hwndDir = HasDirWindow(hwndMDIChildSink);
+    else
+        hwndDir = NULL;
 
-         if (lpxdta && IsProgramFile(MemGetFileName(lpxdta))) {
-            goto DragLoopCont;
-         }
-      }
-   }
+    if (hwndDir && (hwndDir == GetParent(lpds->hwndSink))) {
+        //
+        // Are we over an occupied part of the list box?
+        //
+        if (lpds->dwControlData != (DWORD)-1) {
+            //
+            // Are we over an Executable?
+            //
+            SendMessage(lpds->hwndSink, LB_GETTEXT, (WORD)(lpds->dwControlData), (LPARAM)(LPTSTR)&lpxdta);
 
-   //
-   // Are we dropping into the same drive (check the source and dest drives)
-   //
-   iShowBitmap = ((INT)SendMessage(GetParent(hwndLB), FS_GETDRIVE, 0, 0L) !=
-                  GetDrive(lpds->hwndSink, lpds->ptDrop));
+            if (lpxdta && IsProgramFile(MemGetFileName(lpxdta))) {
+                goto DragLoopCont;
+            }
+        }
+    }
+
+    //
+    // Are we dropping into the same drive (check the source and dest drives)
+    //
+    iShowBitmap = ((INT)SendMessage(GetParent(hwndLB), FS_GETDRIVE, 0, 0L) != GetDrive(lpds->hwndSink, lpds->ptDrop));
 
 DragLoopCont:
 
-   ShowItemBitmaps(hwndLB, iShowBitmap);
+    ShowItemBitmaps(hwndLB, iShowBitmap);
 
-   //
-   // hack, set the cursor to match the move/copy state
-   //
-   if (wParam) {
-      if (bForceMoveCur) {
-         SetCursor(LoadCursor(hAppInstance, (LPTSTR) MAKEINTRESOURCE(iCurDrag & ~1)));
-      } else {
-         SetCursor(GetMoveCopyCursor());
-      }
-   }
+    //
+    // hack, set the cursor to match the move/copy state
+    //
+    if (wParam) {
+        if (bForceMoveCur) {
+            SetCursor(LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE(iCurDrag & ~1)));
+        } else {
+            SetCursor(GetMoveCopyCursor());
+        }
+    }
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -430,190 +389,157 @@ DragLoopCont:
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL 
-DSRectItem(
-   HWND hwndLB,
-   INT iItem,
-   BOOL bFocusOn,
-   BOOL bSearch)
-{
-   RECT      rc;
-   RECT      rcT;
-   HDC       hDC;
-   BOOL      bSel;
-   INT       nColor;
-   HBRUSH    hBrush;
-   LPXDTA    lpxdta;
-   WCHAR     szTemp[MAXPATHLEN];
-   PDOCBUCKET pIsProgram = NULL;
-   LPWSTR    pszFile;
+BOOL DSRectItem(HWND hwndLB, INT iItem, BOOL bFocusOn, BOOL bSearch) {
+    RECT rc;
+    RECT rcT;
+    HDC hDC;
+    BOOL bSel;
+    INT nColor;
+    HBRUSH hBrush;
+    LPXDTA lpxdta;
+    WCHAR szTemp[MAXPATHLEN];
+    PDOCBUCKET pIsProgram = NULL;
+    LPWSTR pszFile;
 
-   //
-   // Are we over an unused part of the listbox?
-   //
-   if (iItem == -1) {
-      if (bSearch || hwndDragging == hwndLB) {
-         SendMessage(hwndStatus,
-                     SB_SETTEXT,
-                     SBT_NOBORDERS|255,
-                     (LPARAM)szNULL);
+    //
+    // Are we over an unused part of the listbox?
+    //
+    if (iItem == -1) {
+        if (bSearch || hwndDragging == hwndLB) {
+            SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)szNULL);
 
-         UpdateWindow(hwndStatus);
+            UpdateWindow(hwndStatus);
 
-      } else {
+        } else {
+            SendMessage(GetParent(hwndLB), FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
 
-         SendMessage(GetParent(hwndLB),
-                     FS_GETDIRECTORY,
-                     COUNTOF(szTemp),
-                     (LPARAM)szTemp);
+            StripBackslash(szTemp);
 
-         StripBackslash(szTemp);
+            SetStatusText(
+                SBT_NOBORDERS | 255, SST_RESOURCE | SST_FORMAT,
+                (LPWSTR)(DWORD_PTR)(GetDragStatusText(iShowSourceBitmaps)), szTemp);
 
-         SetStatusText(SBT_NOBORDERS|255,
-                       SST_RESOURCE|SST_FORMAT,
-                       (LPWSTR)(DWORD_PTR)(GetDragStatusText(iShowSourceBitmaps)),
-                       szTemp);
+            UpdateWindow(hwndStatus);
+        }
+        return FALSE;
+    }
 
-         UpdateWindow(hwndStatus);
-      }
-      return FALSE;
-   }
+    //
+    // Are we over ourselves? (i.e. a selected item in the source listbox)
+    //
+    bSel = (BOOL)SendMessage(hwndLB, LB_GETSEL, iItem, 0L);
 
-   //
-   // Are we over ourselves? (i.e. a selected item in the source listbox)
-   //
-   bSel = (BOOL)SendMessage(hwndLB, LB_GETSEL, iItem, 0L);
+    if (bSel && (hwndDragging == hwndLB)) {
+    ClearStatus:
 
-   if (bSel && (hwndDragging == hwndLB)) {
+        SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)szNULL);
 
-ClearStatus:
+        UpdateWindow(hwndStatus);
+        return FALSE;
+    }
 
-      SendMessage(hwndStatus,
-                  SB_SETTEXT,
-                  SBT_NOBORDERS|255,
-                  (LPARAM)szNULL);
+    //
+    // We only put rectangles around directories and program items.
+    //
+    if (SendMessage(hwndLB, LB_GETTEXT, iItem, (LPARAM)(LPTSTR)&lpxdta) == LB_ERR || !lpxdta) {
+        return FALSE;
+    }
 
-      UpdateWindow(hwndStatus);
-      return FALSE;
-   }
+    if (!(lpxdta->dwAttrs & ATTR_DIR) && !(pIsProgram = IsProgramFile(MemGetFileName(lpxdta)))) {
+        //
+        // It's not a directory
+        //
 
-   //
-   // We only put rectangles around directories and program items.
-   //
-   if (SendMessage(hwndLB,
-                   LB_GETTEXT,
-                   iItem,
-                   (LPARAM)(LPTSTR)&lpxdta) == LB_ERR || !lpxdta) {
-      return FALSE;
-   }
+        //
+        // If it's the same dir window, or we are dropping to a search
+        // window, don't show any text!
+        //
+        if ((hwndDragging == hwndLB) || bSearch) {
+            goto ClearStatus;
+        }
 
-   if (!(lpxdta->dwAttrs & ATTR_DIR)  &&
-      !(pIsProgram = IsProgramFile(MemGetFileName(lpxdta)))) {
+        //
+        // We are in a directory window (not search window)
+        // but we aren't over a folder, so just use the current directory.
+        //
+        SendMessage(GetParent(hwndLB), FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
+        StripBackslash(szTemp);
 
-      //
-      // It's not a directory
-      //
+        SetStatusText(
+            SBT_NOBORDERS | 255, SST_FORMAT | SST_RESOURCE, (LPWSTR)(DWORD_PTR)(GetDragStatusText(iShowSourceBitmaps)),
+            szTemp);
 
-      //
-      // If it's the same dir window, or we are dropping to a search
-      // window, don't show any text!
-      //
-      if ((hwndDragging == hwndLB) || bSearch) {
-         goto ClearStatus;
-      }
+        UpdateWindow(hwndStatus);
+        return FALSE;
+    }
 
-      //
-      // We are in a directory window (not search window)
-      // but we aren't over a folder, so just use the current directory.
-      //
-      SendMessage(GetParent(hwndLB), FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
-      StripBackslash(szTemp);
+    //
+    // At this point, we are over a directory folder,
+    // be we could be in a search or directory window.
+    //
 
-      SetStatusText(SBT_NOBORDERS|255,
-                    SST_FORMAT | SST_RESOURCE,
-                    (LPWSTR)(DWORD_PTR)(GetDragStatusText(iShowSourceBitmaps)),
-                    szTemp);
+    //
+    // Turn the item's rectangle on or off.
+    //
+    if (bSearch || !(lpxdta->dwAttrs & ATTR_PARENT)) {
+        pszFile = MemGetFileName(lpxdta);
 
-      UpdateWindow(hwndStatus);
-      return FALSE;
-   }
+    } else {
+        SendMessage(GetParent(hwndLB), FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
+        StripBackslash(szTemp);  // trim it down
+        StripFilespec(szTemp);
 
-   //
-   // At this point, we are over a directory folder,
-   // be we could be in a search or directory window.
-   //
+        pszFile = szTemp;
+    }
 
-   //
-   // Turn the item's rectangle on or off.
-   //
-   if (bSearch || !(lpxdta->dwAttrs & ATTR_PARENT)) {
+    //
+    // Else bSearch and szTemp contains the file name
+    //
+    if (bFocusOn) {
+        SetStatusText(
+            SBT_NOBORDERS | 255, SST_FORMAT | SST_RESOURCE,
+            (LPWSTR)(DWORD_PTR)(pIsProgram ? IDS_DRAG_EXECUTING : (GetDragStatusText(iShowSourceBitmaps))), pszFile);
 
-      pszFile = MemGetFileName(lpxdta);
+        UpdateWindow(hwndStatus);
+    }
 
-   } else {
+    SendMessage(hwndLB, LB_GETITEMRECT, iItem, (LPARAM)(LPRECT)&rc);
+    GetClientRect(hwndLB, &rcT);
+    IntersectRect(&rc, &rc, &rcT);
 
-      SendMessage(GetParent(hwndLB), FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
-      StripBackslash(szTemp);  // trim it down
-      StripFilespec(szTemp);
+    if (bFocusOn) {
+        hDC = GetDC(hwndLB);
+        if (bSel) {
+            nColor = COLOR_WINDOW;
+            InflateRect(&rc, -1, -1);
+        } else
+            nColor = COLOR_WINDOWFRAME;
 
-      pszFile = szTemp;
-   }
+        if (hBrush = CreateSolidBrush(GetSysColor(nColor))) {
+            FrameRect(hDC, &rc, hBrush);
+            DeleteObject(hBrush);
+        }
+        ReleaseDC(hwndLB, hDC);
+    } else {
+        InvalidateRect(hwndLB, &rc, FALSE);
+        UpdateWindow(hwndLB);
+    }
 
-   //
-   // Else bSearch and szTemp contains the file name
-   //
-   if (bFocusOn) {
-
-      SetStatusText(SBT_NOBORDERS|255,
-                    SST_FORMAT | SST_RESOURCE,
-                    (LPWSTR)(DWORD_PTR)(pIsProgram ?
-                       IDS_DRAG_EXECUTING :
-                       (GetDragStatusText(iShowSourceBitmaps))),
-                   pszFile);
-
-      UpdateWindow(hwndStatus);
-   }
-
-   SendMessage(hwndLB, LB_GETITEMRECT, iItem, (LPARAM)(LPRECT)&rc);
-   GetClientRect(hwndLB,&rcT);
-   IntersectRect(&rc,&rc,&rcT);
-
-   if (bFocusOn) {
-      hDC = GetDC(hwndLB);
-      if (bSel) {
-         nColor = COLOR_WINDOW;
-         InflateRect(&rc, -1, -1);
-      } else
-         nColor = COLOR_WINDOWFRAME;
-
-      if (hBrush = CreateSolidBrush(GetSysColor(nColor))) {
-         FrameRect(hDC, &rc, hBrush);
-         DeleteObject(hBrush);
-      }
-      ReleaseDC(hwndLB, hDC);
-   } else {
-      InvalidateRect(hwndLB, &rc, FALSE);
-      UpdateWindow(hwndLB);
-   }
-
-   return TRUE;
+    return TRUE;
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
 // Name:     DSDragScrollSink
 //
-// Synopsis: Called by tree, dir and search drag loops.  
+// Synopsis: Called by tree, dir and search drag loops.
 //           Scrolls the target if the point is above or below it
 //
 //      lpds    drop struct sent with the message
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-DSDragScrollSink(LPDROPSTRUCT lpds)
-{
+VOID DSDragScrollSink(LPDROPSTRUCT lpds) {
     HWND hwndMDIChildSource;
     HWND hwndMDIChildSink;
 
@@ -626,15 +552,12 @@ DSDragScrollSink(LPDROPSTRUCT lpds)
     hwndMDIChildSink = GetMDIChildFromDescendant(lpds->hwndSink);
 
     // calculate the screen x/y of the ptDrop
-    if (lpds->hwndSink == NULL)
-    {
-      rcSink.left = rcSink.top = 0;
-    }
-    else
-    {
-      GetClientRect(lpds->hwndSink, &rcSink);
-      ClientToScreen(lpds->hwndSink, (LPPOINT)&rcSink.left);
-      ClientToScreen(lpds->hwndSink, (LPPOINT)&rcSink.right);
+    if (lpds->hwndSink == NULL) {
+        rcSink.left = rcSink.top = 0;
+    } else {
+        GetClientRect(lpds->hwndSink, &rcSink);
+        ClientToScreen(lpds->hwndSink, (LPPOINT)&rcSink.left);
+        ClientToScreen(lpds->hwndSink, (LPPOINT)&rcSink.right);
     }
 
     ptDropScr.x = rcSink.left + lpds->ptDrop.x;
@@ -644,9 +567,8 @@ DSDragScrollSink(LPDROPSTRUCT lpds)
     // this means that the mouse is over the frame of this app or outside that;
     // we scroll the source mdi child in that case
     hwndToScroll = hwndMDIChildSink;
-    if (hwndToScroll == NULL)
-    {
-      hwndToScroll = hwndMDIChildSource;
+    if (hwndToScroll == NULL) {
+        hwndToScroll = hwndMDIChildSource;
     }
 
     GetClientRect(hwndToScroll, &rcScroll);
@@ -654,44 +576,37 @@ DSDragScrollSink(LPDROPSTRUCT lpds)
     ClientToScreen(hwndToScroll, (LPPOINT)&rcScroll.right);
 
     // if the drop y is above the top of the window to scroll
-    if (ptDropScr.y < rcScroll.top || ptDropScr.y > rcScroll.bottom)
-    {
-      // scroll up/down one line; figure out whether tree or dir list box
-      HWND hwndTree = HasTreeWindow(hwndToScroll);
-      HWND hwndDir = HasDirWindow(hwndToScroll);
-      HWND hwndLB = NULL;
+    if (ptDropScr.y < rcScroll.top || ptDropScr.y > rcScroll.bottom) {
+        // scroll up/down one line; figure out whether tree or dir list box
+        HWND hwndTree = HasTreeWindow(hwndToScroll);
+        HWND hwndDir = HasDirWindow(hwndToScroll);
+        HWND hwndLB = NULL;
 
-      if (hwndDir)
-      {
-        hwndLB = GetDlgItem(hwndDir, IDCW_LISTBOX);
-        if (hwndLB)
-        {
-            RECT rcLB;
-            GetClientRect(hwndLB, &rcLB);
-            ClientToScreen(hwndLB, (LPPOINT)&rcLB.left);
-            // no need: ClientToScreen(hwndLB, (LPPOINT)&rcLB.right);
+        if (hwndDir) {
+            hwndLB = GetDlgItem(hwndDir, IDCW_LISTBOX);
+            if (hwndLB) {
+                RECT rcLB;
+                GetClientRect(hwndLB, &rcLB);
+                ClientToScreen(hwndLB, (LPPOINT)&rcLB.left);
+                // no need: ClientToScreen(hwndLB, (LPPOINT)&rcLB.right);
 
-            if (ptDropScr.x < rcLB.left)
-            {
-                // to left of dir list box; switch to tree
-                hwndLB = NULL;
+                if (ptDropScr.x < rcLB.left) {
+                    // to left of dir list box; switch to tree
+                    hwndLB = NULL;
+                }
             }
         }
-      }
 
-      if (hwndLB == NULL && hwndTree)
-      {
-          // no dir or point outside of dir list box
-          hwndLB = GetDlgItem(hwndTree, IDCW_TREELISTBOX);
-      }
+        if (hwndLB == NULL && hwndTree) {
+            // no dir or point outside of dir list box
+            hwndLB = GetDlgItem(hwndTree, IDCW_TREELISTBOX);
+        }
 
-      if (hwndLB)
-      {
-          SendMessage(hwndLB, WM_VSCROLL, ptDropScr.y < rcScroll.top ? SB_LINEUP : SB_LINEDOWN, 0L);
-      }
-    }          
+        if (hwndLB) {
+            SendMessage(hwndLB, WM_VSCROLL, ptDropScr.y < rcScroll.top ? SB_LINEUP : SB_LINEDOWN, 0L);
+        }
+    }
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -703,9 +618,7 @@ DSDragScrollSink(LPDROPSTRUCT lpds)
  * over is a valid drop point and drop the files
  */
 
-WORD
-DropFilesOnApplication(LPTSTR pszFiles)
-{
+WORD DropFilesOnApplication(LPTSTR pszFiles) {
     POINT pt;
     HWND hwnd;
     RECT rc;
@@ -717,11 +630,11 @@ DropFilesOnApplication(LPTSTR pszFiles)
     hwndGlobalSink = NULL;
 
     GetCursorPos(&pt);
-    GetClientRect(hwnd,&rc);
-    ScreenToClient(hwnd,&pt);
+    GetClientRect(hwnd, &rc);
+    ScreenToClient(hwnd, &pt);
 
-    hDrop = CreateDropFiles(pt, !PtInRect(&rc,pt), pszFiles);
-        
+    hDrop = CreateDropFiles(pt, !PtInRect(&rc, pt), pszFiles);
+
     if (!hDrop)
         return 0;
 
@@ -729,7 +642,6 @@ DropFilesOnApplication(LPTSTR pszFiles)
 
     return 1;
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -751,217 +663,199 @@ DropFilesOnApplication(LPTSTR pszFiles)
 //
 /////////////////////////////////////////////////////////////////////
 
-INT
-DSTrackPoint(
-   HWND hwnd,
-   HWND hwndLB,
-   WPARAM wParam,
-   LPARAM lParam,
-   BOOL bSearch)
-{
-   UINT      iSel;
-   MSG       msg;
-   RECT      rc;
-   DWORD     dwAnchor;
-   DWORD     dwTemp;
-   LPWSTR    pch;
-   BOOL      bDir;
-   BOOL      bSelected;
-   BOOL      bSelectOneItem;
-   BOOL      bUnselectIfNoDrag;
-   LPWSTR    pszFile;
-   POINT     pt;
+INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSearch) {
+    UINT iSel;
+    MSG msg;
+    RECT rc;
+    DWORD dwAnchor;
+    DWORD dwTemp;
+    LPWSTR pch;
+    BOOL bDir;
+    BOOL bSelected;
+    BOOL bSelectOneItem;
+    BOOL bUnselectIfNoDrag;
+    LPWSTR pszFile;
+    POINT pt;
 
-   bSelectOneItem = FALSE;
-   bUnselectIfNoDrag = FALSE;
+    bSelectOneItem = FALSE;
+    bUnselectIfNoDrag = FALSE;
 
-   bSelected = (BOOL)SendMessage(hwndLB, LB_GETSEL, wParam, 0L);
+    bSelected = (BOOL)SendMessage(hwndLB, LB_GETSEL, wParam, 0L);
 
-   if (GetKeyState(VK_SHIFT) < 0) {
+    if (GetKeyState(VK_SHIFT) < 0) {
+        // What is the state of the Anchor point?
+        dwAnchor = (DWORD)SendMessage(hwndLB, LB_GETANCHORINDEX, 0, 0L);
+        bSelected = (BOOL)SendMessage(hwndLB, LB_GETSEL, dwAnchor, 0L);
 
-      // What is the state of the Anchor point?
-      dwAnchor = (DWORD)SendMessage(hwndLB, LB_GETANCHORINDEX, 0, 0L);
-      bSelected = (BOOL)SendMessage(hwndLB, LB_GETSEL, dwAnchor, 0L);
+        // If Control is up, turn everything off.
 
-      // If Control is up, turn everything off.
+        if (!(GetKeyState(VK_CONTROL) < 0))
+            SendMessage(hwndLB, LB_SETSEL, FALSE, -1L);
 
-      if (!(GetKeyState(VK_CONTROL) < 0))
-         SendMessage(hwndLB, LB_SETSEL, FALSE, -1L);
+        // Select everything between the Anchor point and the item.
+        SendMessage(hwndLB, LB_SELITEMRANGE, bSelected, MAKELONG(wParam, dwAnchor));
 
-      // Select everything between the Anchor point and the item.
-      SendMessage(hwndLB, LB_SELITEMRANGE, bSelected, MAKELONG(wParam, dwAnchor));
+        // Give the selected item the focus rect.
+        SendMessage(hwndLB, LB_SETCARETINDEX, wParam, 0L);
 
-      // Give the selected item the focus rect.
-      SendMessage(hwndLB, LB_SETCARETINDEX, wParam, 0L);
+    } else if (GetKeyState(VK_CONTROL) < 0) {
+        if (bSelected)
+            bUnselectIfNoDrag = TRUE;
+        else
+            SelectItem(hwndLB, wParam, TRUE);
 
-   } else if (GetKeyState(VK_CONTROL) < 0) {
-      if (bSelected)
-         bUnselectIfNoDrag = TRUE;
-      else
-         SelectItem(hwndLB, wParam, TRUE);
+    } else {
+        if (bSelected)
+            bSelectOneItem = TRUE;
+        else {
+            // Deselect everything.
+            SendMessage(hwndLB, LB_SETSEL, FALSE, -1L);
 
-   } else {
-      if (bSelected)
-         bSelectOneItem = TRUE;
-      else {
-         // Deselect everything.
-         SendMessage(hwndLB, LB_SETSEL, FALSE, -1L);
+            // Select the current item.
+            SelectItem(hwndLB, wParam, TRUE);
+        }
+    }
 
-         // Select the current item.
-         SelectItem(hwndLB, wParam, TRUE);
-      }
-   }
+    if (!bSearch)
+        UpdateStatus(GetParent(hwnd));
 
-   if (!bSearch)
-      UpdateStatus(GetParent(hwnd));
+    POINTSTOPOINT(pt, lParam);
+    ClientToScreen(hwndLB, (LPPOINT)&pt);
+    ScreenToClient(hwnd, (LPPOINT)&pt);
 
-   POINTSTOPOINT(pt, lParam);
-   ClientToScreen(hwndLB, (LPPOINT)&pt);
-   ScreenToClient(hwnd, (LPPOINT)&pt);
+    // See if the user moves a certain number of pixels in any direction
 
-   // See if the user moves a certain number of pixels in any direction
+    SetRect(&rc, pt.x - dxClickRect, pt.y - dyClickRect, pt.x + dxClickRect, pt.y + dyClickRect);
 
-   SetRect(&rc, pt.x - dxClickRect, pt.y - dyClickRect,
-      pt.x + dxClickRect, pt.y + dyClickRect);
+    SetCapture(hwnd);
 
-   SetCapture(hwnd);
+    for (;;) {
+        if (GetCapture() != hwnd) {
+            msg.message = WM_LBUTTONUP;  // don't proceed below
+            break;
+        }
 
-   for (;;) {
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            DispatchMessage(&msg);
 
-      if (GetCapture() != hwnd) {
-          msg.message = WM_LBUTTONUP;   // don't proceed below
-          break;
-      }
+            //
+            // WM_CANCELMODE messages will unset the capture, in that
+            // case I want to exit this loop
 
-      if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-          DispatchMessage(&msg);
+            //
+            // Must do explicit check.
+            //
+            if (msg.message == WM_CANCELMODE || GetCapture() != hwnd) {
+                msg.message = WM_LBUTTONUP;  // don't proceed below
 
-          //
-          // WM_CANCELMODE messages will unset the capture, in that
-          // case I want to exit this loop
+                break;
+            }
 
-          //
-          // Must do explicit check.
-          //
-      if (msg.message == WM_CANCELMODE || GetCapture() != hwnd) {
-              msg.message = WM_LBUTTONUP;   // don't proceed below
+            if (msg.message == WM_LBUTTONUP)
+                break;
 
-              break;
-          }
-
-          if (msg.message == WM_LBUTTONUP)
-              break;
-
-          POINTSTOPOINT(pt, msg.lParam);
-          if ((msg.message == WM_MOUSEMOVE) && !(PtInRect(&rc, pt)))
-              break;
-      }
+            POINTSTOPOINT(pt, msg.lParam);
+            if ((msg.message == WM_MOUSEMOVE) && !(PtInRect(&rc, pt)))
+                break;
+        }
     }
     ReleaseCapture();
 
     // Did the guy NOT drag anything?
     if (msg.message == WM_LBUTTONUP) {
-       if (bSelectOneItem) {
-          /* Deselect everything. */
-          SendMessage(hwndLB, LB_SETSEL, FALSE, -1L);
+        if (bSelectOneItem) {
+            /* Deselect everything. */
+            SendMessage(hwndLB, LB_SETSEL, FALSE, -1L);
 
-          /* Select the current item. */
-          SelectItem(hwndLB, wParam, TRUE);
-       }
+            /* Select the current item. */
+            SelectItem(hwndLB, wParam, TRUE);
+        }
 
-      if (bUnselectIfNoDrag)
-         SelectItem(hwndLB, wParam, FALSE);
+        if (bUnselectIfNoDrag)
+            SelectItem(hwndLB, wParam, FALSE);
 
-      // notify the appropriate people
+        // notify the appropriate people
 
-      SendMessage(hwnd, WM_COMMAND,
-         GET_WM_COMMAND_MPS(0, hwndLB, LBN_SELCHANGE));
+        SendMessage(hwnd, WM_COMMAND, GET_WM_COMMAND_MPS(0, hwndLB, LBN_SELCHANGE));
 
-      return 1;
-   }
+        return 1;
+    }
 
-   //
-   // Enter Danger Mouse's BatCave.
-   //
-   if (SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L) == 1) {
+    //
+    // Enter Danger Mouse's BatCave.
+    //
+    if (SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L) == 1) {
+        LPXDTA lpxdta;
 
-      LPXDTA lpxdta;
+        //
+        // There is only one thing selected.
+        //  Figure out which cursor to use.
+        //
+        // There is only one thing selected.
+        //  Figure out which cursor to use.
 
-      //
-      // There is only one thing selected.
-      //  Figure out which cursor to use.
-      //
-      // There is only one thing selected.
-      //  Figure out which cursor to use.
+        if (SendMessage(hwndLB, LB_GETTEXT, wParam, (LPARAM)&lpxdta) == LB_ERR || !lpxdta) {
+            return 1;
+        }
 
-      if (SendMessage(hwndLB,
-                      LB_GETTEXT,
-                      wParam,
-                      (LPARAM)&lpxdta) == LB_ERR || !lpxdta) {
-         return 1;
-      }
+        pszFile = MemGetFileName(lpxdta);
 
-      pszFile = MemGetFileName(lpxdta);
+        bDir = lpxdta->dwAttrs & ATTR_DIR;
 
-      bDir = lpxdta->dwAttrs & ATTR_DIR;
+        //
+        // avoid dragging the parent dir
+        //
+        if (lpxdta->dwAttrs & ATTR_PARENT) {
+            return 1;
+        }
 
-      //
-      // avoid dragging the parent dir
-      //
-      if (lpxdta->dwAttrs & ATTR_PARENT) {
-         return 1;
-      }
+        if (bDir) {
+            iSel = DOF_DIRECTORY;
+        } else if (IsProgramFile(pszFile)) {
+            iSel = DOF_EXECUTABLE;
+        } else if (IsDocument(pszFile)) {
+            iSel = DOF_DOCUMENT;
+        } else
+            iSel = DOF_DOCUMENT;
 
-      if (bDir) {
-         iSel = DOF_DIRECTORY;
-      } else if (IsProgramFile(pszFile)) {
-         iSel = DOF_EXECUTABLE;
-      } else if (IsDocument(pszFile)) {
-         iSel = DOF_DOCUMENT;
-      } else
-         iSel = DOF_DOCUMENT;
+        iCurDrag = SINGLECOPYCURSOR;
+    } else {
+        // Multiple files are selected.
+        iSel = DOF_MULTIPLE;
+        iCurDrag = MULTCOPYCURSOR;
+    }
 
-      iCurDrag = SINGLECOPYCURSOR;
-   } else {
+    // Get the list of selected things.
+    pch = (LPTSTR)SendMessage(hwnd, FS_GETSELECTION, FALSE, 0L);
 
-      // Multiple files are selected.
-      iSel = DOF_MULTIPLE;
-      iCurDrag = MULTCOPYCURSOR;
-   }
+    // Wiggle things around.
+    hwndDragging = hwndLB;
 
+    dwTemp = DragObject(GetDesktopWindow(), hwnd, (UINT)iSel, (ULONG_PTR)pch, NULL);
 
-   // Get the list of selected things.
-   pch = (LPTSTR)SendMessage(hwnd, FS_GETSELECTION, FALSE, 0L);
+    SetWindowDirectory();
 
-   // Wiggle things around.
-   hwndDragging = hwndLB;
+    if (dwTemp == DO_PRINTFILE) {
+        // print these suckers
+        hdlgProgress = NULL;
+        WFPrint(pch);
+    } else if (dwTemp == DO_DROPFILE) {
+        // try and drop them on an application
+        DropFilesOnApplication(pch);
+    }
 
-   dwTemp = DragObject(GetDesktopWindow(), hwnd, (UINT)iSel, (ULONG_PTR)pch, NULL);
+    LocalFree((HANDLE)pch);
 
-   SetWindowDirectory();
+    if (IsWindow(hwnd))
+        ShowItemBitmaps(hwndLB, TRUE);
 
-   if (dwTemp == DO_PRINTFILE) {
-      // print these suckers
-      hdlgProgress = NULL;
-      WFPrint(pch);
-   } else if (dwTemp == DO_DROPFILE) {
-      // try and drop them on an application
-      DropFilesOnApplication(pch);
-   }
+    hwndDragging = NULL;
 
-   LocalFree((HANDLE)pch);
+    if (!bSearch && IsWindow(hwnd))
+        UpdateStatus(GetParent(hwnd));
 
-   if (IsWindow(hwnd))
-      ShowItemBitmaps(hwndLB, TRUE);
-
-   hwndDragging = NULL;
-
-   if (!bSearch && IsWindow(hwnd))
-      UpdateStatus(GetParent(hwnd));
-
-   return 2;
+    return 2;
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -983,276 +877,249 @@ DSTrackPoint(
 /////////////////////////////////////////////////////////////////////
 
 LPTSTR
-SkipPathHead(LPTSTR lpszPath)
-{
-   LPTSTR p = lpszPath;
-   INT i;
+SkipPathHead(LPTSTR lpszPath) {
+    LPTSTR p = lpszPath;
+    INT i;
 
-   if (ISUNCPATH(p)) {
+    if (ISUNCPATH(p)) {
+        for (i = 0, p += 2; *p && i < 2; p++) {
+            if (CHAR_BACKSLASH == *p)
+                i++;
+        }
 
-      for(i=0, p+=2; *p && i<2; p++) {
+        //
+        // If we ran out of string, punt.
+        //
+        if (!*p)
+            return NULL;
+        else
+            return p;
 
-         if (CHAR_BACKSLASH == *p)
-            i++;
-      }
+    } else if (CHAR_COLON == lpszPath[1] && CHAR_BACKSLASH == lpszPath[2]) {
+        //
+        // Regular pathname
+        //
 
-      //
-      // If we ran out of string, punt.
-      //
-      if (!*p)
-         return NULL;
-      else
-         return p;
+        return lpszPath + 3;
+    }
 
-   } else if (CHAR_COLON == lpszPath[1] && CHAR_BACKSLASH == lpszPath[2]) {
-
-      //
-      // Regular pathname
-      //
-
-      return lpszPath+3;
-   }
-
-   return NULL;
+    return NULL;
 }
 
+BOOL DSDropObject(HWND hwndHolder, HWND hwndLB, LPDROPSTRUCT lpds, BOOL bSearch) {
+    DWORD ret;
+    LPWSTR pFrom;
+    DWORD dwAttrib = 0;  // init this to not a dir
+    DWORD dwSelSink;
+    LPWSTR pSel;
+    LPWSTR pSelNoQuote;
+    LPXDTA lpxdta;
+    LPXDTALINK lpStart;
 
-BOOL
-DSDropObject(
-   HWND hwndHolder,
-   HWND hwndLB,
-   LPDROPSTRUCT lpds,
-   BOOL bSearch)
-{
-   DWORD      ret;
-   LPWSTR     pFrom;
-   DWORD      dwAttrib = 0;       // init this to not a dir
-   DWORD      dwSelSink;
-   LPWSTR     pSel;
-   LPWSTR     pSelNoQuote;
-   LPXDTA     lpxdta;
-   LPXDTALINK lpStart;
+    WCHAR szTemp[MAXPATHLEN * 2];
+    WCHAR szSourceFile[MAXPATHLEN + 2];
+    WCHAR szSourceFileQualified[MAXPATHLEN + 2];
 
-   WCHAR szTemp[MAXPATHLEN*2];
-   WCHAR szSourceFile[MAXPATHLEN+2];
-   WCHAR szSourceFileQualified[MAXPATHLEN+2];
+    //
+    // Turn off status bar
+    //
+    SendMessage(hwndStatus, SB_SIMPLE, 0, 0L);
+    UpdateWindow(hwndStatus);
 
-   //
-   // Turn off status bar
-   //
-   SendMessage(hwndStatus, SB_SIMPLE, 0, 0L);
-   UpdateWindow(hwndStatus);
+    //
+    // this is the listbox index of the destination
+    //
+    dwSelSink = lpds->dwControlData;
 
-   //
-   // this is the listbox index of the destination
-   //
-   dwSelSink = lpds->dwControlData;
+    //
+    // Are we dropping onto ourselves? (i.e. moving a selected item in the
+    // source listbox OR an unused area of the source listbox).  If so,
+    // no-op the request.
+    //
+    if (hwndHolder == lpds->hwndSource && iShowSourceBitmaps == FALSE &&
+        ((dwSelSink == (DWORD)-1) || SendMessage(hwndLB, LB_GETSEL, dwSelSink, 0L))) {
+        return TRUE;
+    }
 
-   //
-   // Are we dropping onto ourselves? (i.e. moving a selected item in the
-   // source listbox OR an unused area of the source listbox).  If so,
-   // no-op the request.
-   //
-   if (hwndHolder == lpds->hwndSource &&
-      iShowSourceBitmaps == FALSE &&
-      ((dwSelSink == (DWORD)-1) || SendMessage(hwndLB, LB_GETSEL, dwSelSink, 0L))) {
+    //
+    // set the destination, assume move/copy case below (c:\foo\)
+    //
+    SendMessage(hwndHolder, FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
 
-      return TRUE;
-   }
+    //
+    // Are we dropping on a unused portion of some listbox?
+    //
+    if (dwSelSink == (DWORD)-1) {
+        goto NormalMoveCopy;
+    }
 
-   //
-   // set the destination, assume move/copy case below (c:\foo\)
-   //
-   SendMessage(hwndHolder, FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
+    //
+    // check for drop on a directory
+    //
+    lpStart = (LPXDTALINK)GetWindowLongPtr(hwndHolder, GWL_HDTA);
 
-   //
-   // Are we dropping on a unused portion of some listbox?
-   //
-   if (dwSelSink == (DWORD)-1) {
-      goto NormalMoveCopy;
-   }
+    //
+    // If dropping on "No files." or "Access denied." then do normal thing.
+    //
+    if (!lpStart)
+        goto NormalMoveCopy;
 
-   //
-   // check for drop on a directory
-   //
-   lpStart = (LPXDTALINK)GetWindowLongPtr(hwndHolder, GWL_HDTA);
+    if (SendMessage(hwndLB, LB_GETTEXT, dwSelSink, (LPARAM)&lpxdta) == LB_ERR || !lpxdta) {
+        goto NormalMoveCopy;
+    }
 
-   //
-   // If dropping on "No files." or "Access denied." then do normal thing.
-   //
-   if (!lpStart)
-      goto NormalMoveCopy;
+    lstrcpy(szSourceFile, MemGetFileName(lpxdta));
+    dwAttrib = lpxdta->dwAttrs;
 
-   if (SendMessage(hwndLB,
-                   LB_GETTEXT,
-                   dwSelSink,
-                   (LPARAM)&lpxdta) == LB_ERR || !lpxdta) {
-      goto NormalMoveCopy;
-   }
+    if (dwAttrib & ATTR_DIR) {
+        if (bSearch) {
+            lstrcpy(szTemp, szSourceFile);
 
-   lstrcpy(szSourceFile, MemGetFileName(lpxdta));
-   dwAttrib = lpxdta->dwAttrs;
+        } else {
+            //
+            // special case the parent
+            //
+            if (dwAttrib & ATTR_PARENT) {
+                StripBackslash(szTemp);
+                StripFilespec(szTemp);
+            } else {
+                lstrcat(szTemp, szSourceFile);
+            }
+        }
+        goto DirMoveCopy;
+    }
 
-   if (dwAttrib & ATTR_DIR) {
+    //
+    // dropping on a program?
+    //
+    if (!IsProgramFile(szSourceFile))
+        goto NormalMoveCopy;
 
-      if (bSearch) {
+    //
+    // directory drop on a file? this is a NOP
+    //
+    if (lpds->wFmt == DOF_DIRECTORY) {
+        DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
+        return FALSE;
+    }
 
-         lstrcpy(szTemp, szSourceFile);
+    //
+    // We're dropping a file onto a program.
+    // Exec the program using the source file as the parameter.
+    //
+    // set the directory to that of the program to exec
+    //
+    SendMessage(hwndHolder, FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
+    StripBackslash(szTemp);
 
-      } else {
+    SetCurrentDirectory(szTemp);
 
-         //
-         // special case the parent
-         //
-         if (dwAttrib & ATTR_PARENT) {
-            StripBackslash(szTemp);
-            StripFilespec(szTemp);
-         } else {
-            lstrcat(szTemp, szSourceFile);
-         }
-      }
-      goto DirMoveCopy;
-   }
+    //
+    // We need a fully qualified version of the exe since SheConvertPath
+    // doesn't check the current directory if it finds the exe in the path.
+    //
+    lstrcpy(szSourceFileQualified, szTemp);
+    lstrcat(szSourceFileQualified, SZ_BACKSLASH);
+    lstrcat(szSourceFileQualified, szSourceFile);
 
-   //
-   // dropping on a program?
-   //
-   if (!IsProgramFile(szSourceFile))
-      goto NormalMoveCopy;
+    //
+    // get the selected file
+    //
+    pSel = (LPWSTR)SendMessage(lpds->hwndSource, FS_GETSELECTION, 1, 0L);
+    pSelNoQuote = (LPWSTR)SendMessage(lpds->hwndSource, FS_GETSELECTION, 1 | 16, 0L);
+    if (!pSel || !pSelNoQuote) {
+        goto DODone;
+    }
 
-   //
-   // directory drop on a file? this is a NOP
-   //
-   if (lpds->wFmt == DOF_DIRECTORY) {
-      DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
-      return FALSE;
-   }
+    if (lstrlen(pSel) > MAXPATHLEN)  // don't blow up below!
+        goto DODone;
 
-   //
-   // We're dropping a file onto a program.
-   // Exec the program using the source file as the parameter.
-   //
-   // set the directory to that of the program to exec
-   //
-   SendMessage(hwndHolder, FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
-   StripBackslash(szTemp);
+    //
+    // Checkesc on target exe
+    //
+    CheckEsc(szSourceFile);
 
-   SetCurrentDirectory(szTemp);
+    if (bConfirmMouse) {
+        LoadString(hAppInstance, IDS_MOUSECONFIRM, szTitle, COUNTOF(szTitle));
+        LoadString(hAppInstance, IDS_EXECMOUSECONFIRM, szTemp, COUNTOF(szTemp));
 
-   //
-   // We need a fully qualified version of the exe since SheConvertPath
-   // doesn't check the current directory if it finds the exe in the path.
-   //
-   lstrcpy(szSourceFileQualified, szTemp);
-   lstrcat(szSourceFileQualified, SZ_BACKSLASH);
-   lstrcat(szSourceFileQualified, szSourceFile);
+        wsprintf(szMessage, szTemp, szSourceFile, pSel);
+        if (MessageBox(hwndFrame, szMessage, szTitle, MB_YESNO | MB_ICONEXCLAMATION) != IDYES)
+            goto DODone;
+    }
 
-   //
-   // get the selected file
-   //
-   pSel = (LPWSTR)SendMessage(lpds->hwndSource, FS_GETSELECTION, 1, 0L);
-   pSelNoQuote = (LPWSTR)SendMessage(lpds->hwndSource, FS_GETSELECTION, 1|16, 0L);
-   if (!pSel || !pSelNoQuote)
-   {
-      goto DODone;
-   }
+    //
+    // create an absolute path to the argument (search window already
+    // is absolute)
+    //
+    if (lpds->hwndSource == hwndSearch) {
+        szTemp[0] = CHAR_NULL;
+    } else {
+        SendMessage(lpds->hwndSource, FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
+    }
 
-   if (lstrlen(pSel) > MAXPATHLEN)   // don't blow up below!
-      goto DODone;
+    lstrcat(szTemp, pSelNoQuote);  // this is the parameter to the exec
 
-   //
-   // Checkesc on target exe
-   //
-   CheckEsc(szSourceFile);
+    //
+    // put a "." extension on if none found
+    //
+    if (*GetExtension(szTemp) == 0)
+        lstrcat(szTemp, SZ_DOT);
 
-   if (bConfirmMouse) {
+    //
+    // Since it's only 1 filename, checkesc it
+    //
+    CheckEsc(szTemp);
 
-      LoadString(hAppInstance, IDS_MOUSECONFIRM, szTitle, COUNTOF(szTitle));
-      LoadString(hAppInstance, IDS_EXECMOUSECONFIRM, szTemp, COUNTOF(szTemp));
+    ret = ExecProgram(szSourceFileQualified, szTemp, NULL, FALSE, FALSE);
 
-      wsprintf(szMessage, szTemp, szSourceFile, pSel);
-      if (MessageBox(hwndFrame, szMessage, szTitle, MB_YESNO | MB_ICONEXCLAMATION) != IDYES)
-         goto DODone;
-   }
-
-
-   //
-   // create an absolute path to the argument (search window already
-   // is absolute)
-   //
-   if (lpds->hwndSource == hwndSearch) {
-      szTemp[0] = CHAR_NULL;
-   } else {
-      SendMessage(lpds->hwndSource, FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
-   }
-
-   lstrcat(szTemp, pSelNoQuote);     // this is the parameter to the exec
-
-   //
-   // put a "." extension on if none found
-   //
-   if (*GetExtension(szTemp) == 0)
-      lstrcat(szTemp, SZ_DOT);
-
-   //
-   // Since it's only 1 filename, checkesc it
-   //
-   CheckEsc(szTemp);
-
-   ret = ExecProgram(szSourceFileQualified, szTemp, NULL, FALSE, FALSE);
-
-   if (ret)
-      MyMessageBox(hwndFrame, IDS_EXECERRTITLE, (WORD)ret, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
+    if (ret)
+        MyMessageBox(hwndFrame, IDS_EXECERRTITLE, (WORD)ret, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
 
 DODone:
-   DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
-   if (pSel)
-   {
-      LocalFree((HANDLE)pSel);
-   }
-   if (pSelNoQuote)
-   {
-      LocalFree((HANDLE)pSelNoQuote);
-   }
-   return TRUE;
+    DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
+    if (pSel) {
+        LocalFree((HANDLE)pSel);
+    }
+    if (pSelNoQuote) {
+        LocalFree((HANDLE)pSelNoQuote);
+    }
+    return TRUE;
 
-   // szTemp must not be checkesc'd here.
+    // szTemp must not be checkesc'd here.
 
 NormalMoveCopy:
-   //
-   // Make sure that we don't move into same dir.
-   //
-   if (iShowSourceBitmaps == FALSE &&
-      GetWindowLongPtr(hwndHolder, GWL_LISTPARMS) == SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L)) {
-
-      return TRUE;
-   }
+    //
+    // Make sure that we don't move into same dir.
+    //
+    if (iShowSourceBitmaps == FALSE &&
+        GetWindowLongPtr(hwndHolder, GWL_LISTPARMS) == SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L)) {
+        return TRUE;
+    }
 
 DirMoveCopy:
 
-   //
-   // the source filename is in the loword
-   //
-   pFrom = (LPWSTR)lpds->dwData;
+    //
+    // the source filename is in the loword
+    //
+    pFrom = (LPWSTR)lpds->dwData;
 
-   AddBackslash(szTemp);
-   lstrcat(szTemp, szStarDotStar);   // put files in this dir
+    AddBackslash(szTemp);
+    lstrcat(szTemp, szStarDotStar);  // put files in this dir
 
-   //
-   // again moved here: target is single!
-   //
-   CheckEsc(szTemp);
+    //
+    // again moved here: target is single!
+    //
+    CheckEsc(szTemp);
 
-   // iShowSourceBitmaps is either
-   // 1 == TRUE  == DROP_COPY
-   // 0 == FALSE == DROP_MOVE
-   // 2 ==       == DROP_LINK
-   // 3 ==       == DROP_HARD
-   ret = DMMoveCopyHelper(pFrom, szTemp, iShowSourceBitmaps);
+    // iShowSourceBitmaps is either
+    // 1 == TRUE  == DROP_COPY
+    // 0 == FALSE == DROP_MOVE
+    // 2 ==       == DROP_LINK
+    // 3 ==       == DROP_HARD
+    ret = DMMoveCopyHelper(pFrom, szTemp, iShowSourceBitmaps);
 
-   DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
+    DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
 
-   return TRUE;
+    return TRUE;
 }
-
-

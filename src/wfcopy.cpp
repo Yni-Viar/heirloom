@@ -13,65 +13,71 @@
 #include "lfn.h"
 #include "wfcopy.h"
 
-
-BOOL *pbConfirmAll;
-BOOL *pbConfirmReadOnlyAll;
+BOOL* pbConfirmAll;
+BOOL* pbConfirmReadOnlyAll;
 
 INT ManySource;
 
 VOID wfYield(VOID);
 
-INT   CopyMoveRetry(LPTSTR, INT, PBOOL);
+INT CopyMoveRetry(LPTSTR, INT, PBOOL);
 DWORD CopyError(LPTSTR, LPTSTR, DWORD, DWORD, INT, BOOL, BOOL);
 BOOL IsRootDirectory(LPTSTR pPath);
 
 DWORD ConfirmDialog(
-   HWND hDlg, DWORD dlg,
-   LPTSTR pFileDest, PLFNDTA pDTADest,
-   LPTSTR pFileSource, PLFNDTA pDTASource,
-   BOOL bConfirmByDefault, BOOL *pbAll,
-   BOOL bConfirmReadOnlyByDefault, BOOL *pbReadOnlyAll);
+    HWND hDlg,
+    DWORD dlg,
+    LPTSTR pFileDest,
+    PLFNDTA pDTADest,
+    LPTSTR pFileSource,
+    PLFNDTA pDTASource,
+    BOOL bConfirmByDefault,
+    BOOL* pbAll,
+    BOOL bConfirmReadOnlyByDefault,
+    BOOL* pbReadOnlyAll);
 
 DWORD IsInvalidPath(LPTSTR pPath);
-DWORD GetNextPair(PCOPYROOT pcr, LPTSTR pFrom, LPTSTR pToPath, LPTSTR pToSpec, DWORD dwFunc, PDWORD pdwError, BOOL bIsLFNDriveDest);
-INT  CheckMultiple(LPTSTR pInput);
+DWORD GetNextPair(
+    PCOPYROOT pcr,
+    LPTSTR pFrom,
+    LPTSTR pToPath,
+    LPTSTR pToSpec,
+    DWORD dwFunc,
+    PDWORD pdwError,
+    BOOL bIsLFNDriveDest);
+INT CheckMultiple(LPTSTR pInput);
 VOID DialogEnterFileStuff(HWND hwnd);
 DWORD SafeFileRemove(LPTSTR szFileOEM);
 BOOL IsWindowsFile(LPTSTR szFileOEM);
 
 INT_PTR CALLBACK ReplaceDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
+BOOL IsValidChar(TUCHAR ch, BOOL fPath, BOOL bLFN) {
+    switch (ch) {
+        case CHAR_SEMICOLON:  // terminator
+        case CHAR_COMMA:      // terminator
+            return bLFN;
 
-BOOL
-IsValidChar(TUCHAR ch, BOOL fPath, BOOL bLFN)
-{
-   switch (ch) {
-   case CHAR_SEMICOLON:   // terminator
-   case CHAR_COMMA:       // terminator
-      return bLFN;
+        case CHAR_PIPE:     // pipe
+        case CHAR_GREATER:  // redir
+        case CHAR_LESS:     // redir
+        case CHAR_DQUOTE:   // quote
+            return FALSE;
 
-   case CHAR_PIPE:       // pipe
-   case CHAR_GREATER:    // redir
-   case CHAR_LESS:       // redir
-   case CHAR_DQUOTE:     // quote
-      return FALSE;
+        case CHAR_QUESTION:   // wc           we only do wilds here because they're
+        case CHAR_STAR:       // wc           legal for qualifypath
+        case CHAR_BACKSLASH:  // path separator
+        case CHAR_COLON:      // drive colon
+        case CHAR_SLASH:      // path sep
+        case CHAR_SPACE:      // space: valid on NT FAT, but winball can't use.
+            return fPath;
+    }
 
-   case CHAR_QUESTION:    // wc           we only do wilds here because they're
-   case CHAR_STAR:        // wc           legal for qualifypath
-   case CHAR_BACKSLASH:   // path separator
-   case CHAR_COLON:       // drive colon
-   case CHAR_SLASH:       // path sep
-   case CHAR_SPACE:       // space: valid on NT FAT, but winball can't use.
-      return fPath;
-   }
-
-   //
-   // cannot be a control character or space
-   //
-   return ch > CHAR_SPACE;
+    //
+    // cannot be a control character or space
+    //
+    return ch > CHAR_SPACE;
 }
-
-
 
 //--------------------------------------------------------------------------
 //
@@ -84,14 +90,13 @@ IsValidChar(TUCHAR ch, BOOL fPath, BOOL bLFN)
 //--------------------------------------------------------------------------
 
 LPTSTR
-StripColon(LPTSTR pPath)
-{
-   INT cb = lstrlen(pPath);
+StripColon(LPTSTR pPath) {
+    INT cb = lstrlen(pPath);
 
-   if (cb > 2 && pPath[cb-1] == CHAR_COLON)
-      pPath[cb-1] = CHAR_NULL;
+    if (cb > 2 && pPath[cb - 1] == CHAR_COLON)
+        pPath[cb - 1] = CHAR_NULL;
 
-   return pPath;
+    return pPath;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -103,18 +108,16 @@ StripColon(LPTSTR pPath)
 /* Returns a pointer to the last component of a path string. */
 
 LPTSTR
-FindFileName(LPTSTR pPath)
-{
-   LPTSTR pT;
+FindFileName(LPTSTR pPath) {
+    LPTSTR pT;
 
-   for (pT=pPath; *pPath; pPath++) {
-      if ((pPath[0] == CHAR_BACKSLASH || pPath[0] == CHAR_COLON) && pPath[1])
-         pT = pPath+1;
-   }
+    for (pT = pPath; *pPath; pPath++) {
+        if ((pPath[0] == CHAR_BACKSLASH || pPath[0] == CHAR_COLON) && pPath[1])
+            pT = pPath + 1;
+    }
 
-   return(pT);
+    return (pT);
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -131,27 +134,22 @@ FindFileName(LPTSTR pPath)
  * replaced with AddBackslash(); lstrcat()
  */
 
-VOID
-AppendToPath(LPTSTR pPath, LPCTSTR pMore)
-{
+VOID AppendToPath(LPTSTR pPath, LPCTSTR pMore) {
+    /* Don't append a \ to empty paths. */
+    if (*pPath) {
+        while (*pPath)
+            pPath++;
 
-  /* Don't append a \ to empty paths. */
-  if (*pPath)
-    {
-      while (*pPath)
-          pPath++;
-
-      if (pPath[-1]!=CHAR_BACKSLASH)
-          *pPath++=CHAR_BACKSLASH;
+        if (pPath[-1] != CHAR_BACKSLASH)
+            *pPath++ = CHAR_BACKSLASH;
     }
 
-  /* Skip any initial terminators on input. */
-  while (*pMore == CHAR_BACKSLASH)
-      pMore++;
+    /* Skip any initial terminators on input. */
+    while (*pMore == CHAR_BACKSLASH)
+        pMore++;
 
-  lstrcpy(pPath, pMore);
+    lstrcpy(pPath, pMore);
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -164,41 +162,31 @@ AppendToPath(LPTSTR pPath, LPCTSTR pMore)
 
 // Warning: assumes BACKSLASH or : exists in string
 
-UINT
-RemoveLast(LPTSTR pFile)
-{
-  LPTSTR pT;
-  UINT uChars = 0;
+UINT RemoveLast(LPTSTR pFile) {
+    LPTSTR pT;
+    UINT uChars = 0;
 
-  for (pT=pFile; *pFile; pFile++) {
+    for (pT = pFile; *pFile; pFile++) {
+        if (*pFile == CHAR_BACKSLASH) {
+            pT = pFile;
+            uChars = 0;
 
-     if (*pFile == CHAR_BACKSLASH) {
+        } else if (*pFile == CHAR_COLON) {
+            if (pFile[1] == CHAR_BACKSLASH) {
+                pFile++;
+            }
 
-        pT = pFile;
-        uChars = 0;
+            pT = pFile + 1;
 
-     } else if (*pFile == CHAR_COLON) {
-
-        if (pFile[1] ==CHAR_BACKSLASH) {
-
-           pFile++;
-
+            uChars = 0;
+            continue;
         }
+        uChars++;
+    }
 
-        pT = pFile + 1;
-
-        uChars = 0;
-        continue;
-     }
-     uChars++;
-  }
-
-  *pT = CHAR_NULL;
-  return uChars;
+    *pT = CHAR_NULL;
+    return uChars;
 }
-
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -227,9 +215,7 @@ RemoveLast(LPTSTR pFile)
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-QualifyPath(LPTSTR lpszPath)
-{
+BOOL QualifyPath(LPTSTR lpszPath) {
     INT cb, nSpaceLeft, i, j;
     TCHAR szTemp[MAXPATHLEN];
     DRIVE drive = 0;
@@ -278,81 +264,73 @@ QualifyPath(LPTSTR lpszPath)
     //
     // Strip off Surrounding Quotes
     //
-    for( pT = pOrig = szTemp; *pOrig; pOrig++ ) {
-       if (*pOrig != CHAR_DQUOTE) {
-          *pT++ = *pOrig;
-       } else {
-          fQuote = TRUE;
-       }
+    for (pT = pOrig = szTemp; *pOrig; pOrig++) {
+        if (*pOrig != CHAR_DQUOTE) {
+            *pT++ = *pOrig;
+        } else {
+            fQuote = TRUE;
+        }
     }
-
 
     pOrig = szTemp;
 
     if (ISUNCPATH(pOrig)) {
+        //
+        // Stop at"\\foo\bar"
+        //
+        for (i = 0, j = 2, pOrig += 2; *pOrig && i < 2; pOrig++, j++) {
+            if (CHAR_BACKSLASH == *pOrig)
+                i++;
+        }
 
-       //
-       // Stop at"\\foo\bar"
-       //
-       for (i=0, j=2, pOrig+=2; *pOrig && i<2; pOrig++, j++) {
+        //
+        // "\\foo" is an invalid path, but "\\foo\bar" is ok
+        //
 
-          if (CHAR_BACKSLASH == *pOrig)
-             i++;
-       }
+        if (!i)
+            return FALSE;
 
-       //
-       // "\\foo" is an invalid path, but "\\foo\bar" is ok
-       //
+        flfn = IsLFNDrive(lpszPath);
 
-       if (!i)
-          return FALSE;
+        //
+        // If i == 2, then we found the trailing \, axe it off
+        //
+        if (2 == i) {
+            j--;
+            lpszPath[j] = CHAR_NULL;
+        }
 
+        nSpaceLeft -= j;
 
-       flfn = IsLFNDrive(lpszPath);
-
-       //
-       // If i == 2, then we found the trailing \, axe it off
-       //
-       if (2 == i) {
-          j--;
-          lpszPath[j] = CHAR_NULL;
-       }
-
-       nSpaceLeft -= j;
-
-       goto GetComps;
+        goto GetComps;
     }
 
     if (pOrig[0] && CHAR_COLON == pOrig[1]) {
+        //
+        // Check for valid pOrig[1]!
+        // Else seg fault off of search window
+        //
 
-       //
-       // Check for valid pOrig[1]!
-       // Else seg fault off of search window
-       //
+        if (!(pOrig[0] >= CHAR_A && pOrig[0] <= CHAR_Z) && !(pOrig[0] >= CHAR_a && pOrig[0] <= TEXT('z'))) {
+            //
+            // Invalid drive string; return FALSE!
+            //
 
-       if ( !(pOrig[0] >= CHAR_A && pOrig[0] <= CHAR_Z) &&
-          !(pOrig[0] >= CHAR_a && pOrig[0] <= TEXT('z')) ) {
+            return FALSE;
+        }
 
-          //
-          // Invalid drive string; return FALSE!
-          //
+        drive = DRIVEID(pOrig);
 
-          return FALSE;
-       }
-
-       drive = DRIVEID(pOrig);
-
-       //
-       // Skip over the drive letter.
-       //
-       pOrig += 2;
+        //
+        // Skip over the drive letter.
+        //
+        pOrig += 2;
 
     } else {
-
         drive = GetSelectedDrive();
     }
 
-    DRIVESET(szDrive,drive);
+    DRIVESET(szDrive, drive);
 
     flfn = IsLFNDrive(szDrive);
 
@@ -361,10 +339,9 @@ QualifyPath(LPTSTR lpszPath)
     //
 
     for (pT = pOrig; *pT; pT++) {
-       if (!IsValidChar(*pT,TRUE, flfn))
-          *pT = CHAR_UNDERSCORE;
+        if (!IsValidChar(*pT, TRUE, flfn))
+            *pT = CHAR_UNDERSCORE;
     }
-
 
     if (fQuote) {
         lpszPath[0] = CHAR_DQUOTE;
@@ -372,169 +349,150 @@ QualifyPath(LPTSTR lpszPath)
     }
 
     if (CHAR_BACKSLASH == pOrig[0]) {
-      lpszPath[0] = (TCHAR)drive + (TCHAR)'A';
-      lpszPath[1] = CHAR_COLON;
-      lpszPath[2] = CHAR_BACKSLASH;
-      lpszPath[3] = CHAR_NULL;
-      nSpaceLeft -= 3;
-      pOrig++;
+        lpszPath[0] = (TCHAR)drive + (TCHAR)'A';
+        lpszPath[1] = CHAR_COLON;
+        lpszPath[2] = CHAR_BACKSLASH;
+        lpszPath[3] = CHAR_NULL;
+        nSpaceLeft -= 3;
+        pOrig++;
 
     } else {
-
-       //
-       // Get current dir of drive in path.  Also returns drive.
-       //
-       GetSelectedDirectory(drive+1, lpszPath);
-       nSpaceLeft -= lstrlen(lpszPath);
+        //
+        // Get current dir of drive in path.  Also returns drive.
+        //
+        GetSelectedDirectory(drive + 1, lpszPath);
+        nSpaceLeft -= lstrlen(lpszPath);
     }
 
 GetComps:
 
     while (*pOrig && nSpaceLeft > 0) {
-       //
-       // If the component is parent dir, go up one dir.
-       // If its the current dir, skip it, else add it normally
-       //
-       if (CHAR_DOT == pOrig[0]) {
-
-          if (CHAR_DOT == pOrig[1]) {
-
-             if (CHAR_BACKSLASH == pOrig[2] || !pOrig[2]) {
-                nSpaceLeft += RemoveLast(lpszPath);
-             } else {
-                goto AddComponent;
-             }
-
-          } else if (pOrig[1] && CHAR_BACKSLASH != pOrig[1])
-             goto AddComponent;
-
-          while (*pOrig && CHAR_BACKSLASH != *pOrig)
-             pOrig++;
-
-          if (*pOrig)
-             pOrig++;
-
-       } else {
-
-          LPTSTR pT, pTT = NULL;
-
-AddComponent:
-          uLen = AddBackslash(lpszPath);
-          nSpaceLeft = MAXPATHLEN - 1 - uLen;
-
-          pT = lpszPath + uLen;
-
-          if (flfn) {
-
-             lpszDot = NULL;
-
-             //
-             // copy the component
-             //
-             while (*pOrig && CHAR_BACKSLASH != *pOrig && nSpaceLeft > 0) {
-
-                //
-                // Keep track of last dot here.
-                //
-
-                if (
-#ifdef KEEPTRAILSPACE
-#else
-                   CHAR_SPACE == *pOrig ||
-#endif
-                   CHAR_DOT == *pOrig) {
-
-                   //
-                   // Let this be a dot only if there isn't one
-                   // already, and the previous character wasn't
-                   // a "*"
-                   //
-                   if (!lpszDot && CHAR_STAR != pT[-1])
-                      lpszDot = pT;
+        //
+        // If the component is parent dir, go up one dir.
+        // If its the current dir, skip it, else add it normally
+        //
+        if (CHAR_DOT == pOrig[0]) {
+            if (CHAR_DOT == pOrig[1]) {
+                if (CHAR_BACKSLASH == pOrig[2] || !pOrig[2]) {
+                    nSpaceLeft += RemoveLast(lpszPath);
                 } else {
-
-                   lpszDot = NULL;
+                    goto AddComponent;
                 }
 
-                *pT++ = *pOrig++;
-                nSpaceLeft--;
-             }
+            } else if (pOrig[1] && CHAR_BACKSLASH != pOrig[1])
+                goto AddComponent;
 
-             //
-             // If the last character was a {dot|space}+, then axe them
-             // off and restore nSpaceLeft.
-             //
-             if (lpszDot) {
-
-                nSpaceLeft += (INT)(pT-lpszDot);
-                pT = lpszDot;
-             }
-
-          } else {
-
-             //
-             // copy the filename (up to 8 chars)
-             //
-             for (cb = 0;
-                *pOrig && CHAR_BACKSLASH != *pOrig &&
-                CHAR_DOT != *pOrig && nSpaceLeft > 0;
-                pOrig++) {
-
-               if (cb < 8) {
-                  cb++;
-                  *pT++ = *pOrig;
-                  nSpaceLeft--;
-               }
-               pOrigA++;
-             }
-
-             //
-             // if there's an extension, copy it, up to 3 chars
-             //
-             if (CHAR_DOT == *pOrig && nSpaceLeft > 0) {
-
-                *pT++ = CHAR_DOT;
-                nSpaceLeft--;
+            while (*pOrig && CHAR_BACKSLASH != *pOrig)
                 pOrig++;
 
-                for (cb = 0;
-                   *pOrig && CHAR_BACKSLASH != *pOrig && nSpaceLeft > 0;
-                   pOrig++) {
+            if (*pOrig)
+                pOrig++;
 
-                   if (CHAR_DOT == *pOrig)
-                      cb = 3;
+        } else {
+            LPTSTR pT, pTT = NULL;
 
-                   if (cb < 3) {
-                      cb++;
-                      *pT++ = *pOrig;
-                      nSpaceLeft--;
-                   }
-                   pOrigA++;
+        AddComponent:
+            uLen = AddBackslash(lpszPath);
+            nSpaceLeft = MAXPATHLEN - 1 - uLen;
+
+            pT = lpszPath + uLen;
+
+            if (flfn) {
+                lpszDot = NULL;
+
+                //
+                // copy the component
+                //
+                while (*pOrig && CHAR_BACKSLASH != *pOrig && nSpaceLeft > 0) {
+                    //
+                    // Keep track of last dot here.
+                    //
+
+                    if (
+#ifdef KEEPTRAILSPACE
+#else
+                        CHAR_SPACE == *pOrig ||
+#endif
+                        CHAR_DOT == *pOrig) {
+
+                        //
+                        // Let this be a dot only if there isn't one
+                        // already, and the previous character wasn't
+                        // a "*"
+                        //
+                        if (!lpszDot && CHAR_STAR != pT[-1])
+                            lpszDot = pT;
+                    } else {
+                        lpszDot = NULL;
+                    }
+
+                    *pT++ = *pOrig++;
+                    nSpaceLeft--;
                 }
 
                 //
-                // Get rid of extra dots
+                // If the last character was a {dot|space}+, then axe them
+                // off and restore nSpaceLeft.
                 //
-                if (CHAR_DOT == pT[-1] && CHAR_STAR != pT[-2]) {
-
-                   nSpaceLeft++;
-                   pT--;
+                if (lpszDot) {
+                    nSpaceLeft += (INT)(pT - lpszDot);
+                    pT = lpszDot;
                 }
-             }
-          }
 
-          //
-          // skip the backslash
-          //
-          if (*pOrig)
-             pOrig++;
+            } else {
+                //
+                // copy the filename (up to 8 chars)
+                //
+                for (cb = 0; *pOrig && CHAR_BACKSLASH != *pOrig && CHAR_DOT != *pOrig && nSpaceLeft > 0; pOrig++) {
+                    if (cb < 8) {
+                        cb++;
+                        *pT++ = *pOrig;
+                        nSpaceLeft--;
+                    }
+                    pOrigA++;
+                }
 
-          //
-          // null terminate for next pass...
-          //
-          *pT = CHAR_NULL;
+                //
+                // if there's an extension, copy it, up to 3 chars
+                //
+                if (CHAR_DOT == *pOrig && nSpaceLeft > 0) {
+                    *pT++ = CHAR_DOT;
+                    nSpaceLeft--;
+                    pOrig++;
 
-       }
+                    for (cb = 0; *pOrig && CHAR_BACKSLASH != *pOrig && nSpaceLeft > 0; pOrig++) {
+                        if (CHAR_DOT == *pOrig)
+                            cb = 3;
+
+                        if (cb < 3) {
+                            cb++;
+                            *pT++ = *pOrig;
+                            nSpaceLeft--;
+                        }
+                        pOrigA++;
+                    }
+
+                    //
+                    // Get rid of extra dots
+                    //
+                    if (CHAR_DOT == pT[-1] && CHAR_STAR != pT[-2]) {
+                        nSpaceLeft++;
+                        pT--;
+                    }
+                }
+            }
+
+            //
+            // skip the backslash
+            //
+            if (*pOrig)
+                pOrig++;
+
+            //
+            // null terminate for next pass...
+            //
+            *pT = CHAR_NULL;
+        }
     }
 
     StripBackslash(lpszPath);
@@ -549,42 +507,37 @@ AddComponent:
     return TRUE;
 }
 
-
-
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
 /*  IsRootDirectory() -                                                     */
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-BOOL
-IsRootDirectory(LPTSTR pPath)
-{
-  if (!lstrcmpi(pPath+1, TEXT(":\\")))
-      return(TRUE);
-  if (!lstrcmpi(pPath, SZ_BACKSLASH))
-      return(TRUE);
-  if (!lstrcmpi(pPath+1, SZ_COLON))
-      return(TRUE);
+BOOL IsRootDirectory(LPTSTR pPath) {
+    if (!lstrcmpi(pPath + 1, TEXT(":\\")))
+        return (TRUE);
+    if (!lstrcmpi(pPath, SZ_BACKSLASH))
+        return (TRUE);
+    if (!lstrcmpi(pPath + 1, SZ_COLON))
+        return (TRUE);
 
-   // checking unc!
+    // checking unc!
 
-  if (*pPath == CHAR_BACKSLASH && *(pPath+1) == CHAR_BACKSLASH) {   /* some sort of UNC name */
-    LPTSTR p;
-    int cBackslashes=0;
+    if (*pPath == CHAR_BACKSLASH && *(pPath + 1) == CHAR_BACKSLASH) { /* some sort of UNC name */
+        LPTSTR p;
+        int cBackslashes = 0;
 
-    for (p=pPath+2; *p; ) {
-      if (*p == CHAR_BACKSLASH && (++cBackslashes > 1))
-   return FALSE;  /* not a bare UNC name, therefore not a root dir */
+        for (p = pPath + 2; *p;) {
+            if (*p == CHAR_BACKSLASH && (++cBackslashes > 1))
+                return FALSE; /* not a bare UNC name, therefore not a root dir */
 
-   p++;
-
+            p++;
+        }
+        return TRUE; /* end of string with only 1 more backslash */
+                     /* must be a bare UNC, which looks like a root dir */
     }
-    return TRUE;  /* end of string with only 1 more backslash */
-                  /* must be a bare UNC, which looks like a root dir */
-  }
 
-  return(FALSE);
+    return (FALSE);
 }
 
 // returns:
@@ -592,32 +545,29 @@ IsRootDirectory(LPTSTR pPath)
 //      relative paths "." and ".."
 //  FALSE   not a dir
 
-BOOL
-IsDirectory(LPTSTR pPath)
-{
-  LPTSTR pT;
-  TCHAR szTemp[MAXPATHLEN];
+BOOL IsDirectory(LPTSTR pPath) {
+    LPTSTR pT;
+    TCHAR szTemp[MAXPATHLEN];
 
-  if (IsRootDirectory(pPath))
-      return TRUE;
+    if (IsRootDirectory(pPath))
+        return TRUE;
 
-  // check for "." and ".."
-  pT = FindFileName(pPath);
+    // check for "." and ".."
+    pT = FindFileName(pPath);
 
-  if (ISDOTDIR(pT)) {
-     return TRUE;
-  }
+    if (ISDOTDIR(pT)) {
+        return TRUE;
+    }
 
-  lstrcpy(szTemp, pPath);
+    lstrcpy(szTemp, pPath);
 
-  //
-  // QualifyPath
-  //
-  QualifyPath(szTemp);
+    //
+    // QualifyPath
+    //
+    QualifyPath(szTemp);
 
-  return WFIsDir(szTemp);
+    return WFIsDir(szTemp);
 }
-
 
 //
 // note: this has the side effect of setting the
@@ -627,343 +577,312 @@ IsDirectory(LPTSTR pPath)
 //  0 = fail (general)
 //  1 = succeed
 
-BOOL 
-IsTheDiskReallyThere(
-   HWND hwnd,
-   LPTSTR pPath,
-   DWORD dwFunc,
-   BOOL bModal)
-{
-   DRIVE drive;
-   TCHAR szTemp[MAXMESSAGELEN];
-   TCHAR szMessage[MAXMESSAGELEN];
-   TCHAR szTitle[128];
-   INT err = 0;
-   DWORD dwError;
+BOOL IsTheDiskReallyThere(HWND hwnd, LPTSTR pPath, DWORD dwFunc, BOOL bModal) {
+    DRIVE drive;
+    TCHAR szTemp[MAXMESSAGELEN];
+    TCHAR szMessage[MAXMESSAGELEN];
+    TCHAR szTitle[128];
+    INT err = 0;
+    DWORD dwError;
 
-   BOOL bTriedRoot = FALSE;
-   TCHAR szDrive[] = SZ_ACOLONSLASH;
-   HCURSOR hCursor;
+    BOOL bTriedRoot = FALSE;
+    TCHAR szDrive[] = SZ_ACOLONSLASH;
+    HCURSOR hCursor;
 
-   STKCHK();
+    STKCHK();
 
-   if (pPath[1]==CHAR_COLON)
-      drive = DRIVEID(pPath);
-   else
-      return 1;
+    if (pPath[1] == CHAR_COLON)
+        drive = DRIVEID(pPath);
+    else
+        return 1;
 
-   // First chance error if drive is busy (format/diskcopy)
+    // First chance error if drive is busy (format/diskcopy)
 
-   if (aDriveInfo[drive].iBusy) {
+    if (aDriveInfo[drive].iBusy) {
+        LoadString(hAppInstance, aDriveInfo[drive].iBusy, szTemp, COUNTOF(szTemp));
+        LoadString(hAppInstance, IDS_COPYERROR + FUNC_SETDRIVE, szTitle, COUNTOF(szTitle));
 
-      LoadString(hAppInstance, aDriveInfo[drive].iBusy, szTemp, COUNTOF(szTemp));
-      LoadString(hAppInstance, IDS_COPYERROR + FUNC_SETDRIVE, szTitle,
-         COUNTOF(szTitle));
+        wsprintf(szMessage, szTemp, drive + CHAR_A);
+        MessageBox(hwnd, szMessage, szTitle, MB_ICONHAND);
 
-      wsprintf(szMessage, szTemp, drive + CHAR_A);
-      MessageBox(hwnd, szMessage, szTitle, MB_ICONHAND);
-
-      return 0;
-   }
+        return 0;
+    }
 
 Retry:
 
-   // Put up the hourglass cursor since this
-   // could take a long time
+    // Put up the hourglass cursor since this
+    // could take a long time
 
-   hCursor = LoadCursor(NULL, IDC_WAIT);
+    hCursor = LoadCursor(NULL, IDC_WAIT);
 
-   if (hCursor)
-      hCursor = SetCursor(hCursor);
-   ShowCursor(TRUE);
+    if (hCursor)
+        hCursor = SetCursor(hCursor);
+    ShowCursor(TRUE);
 
-   err = !GetDriveDirectory(drive + 1, szTemp);
-   
-   if (hCursor)
-      SetCursor(hCursor);
-   ShowCursor(FALSE);
+    err = !GetDriveDirectory(drive + 1, szTemp);
 
-   if (err) {
-      goto DiskNotThere;
-   }
+    if (hCursor)
+        SetCursor(hCursor);
+    ShowCursor(FALSE);
 
-   return 1;
+    if (err) {
+        goto DiskNotThere;
+    }
+
+    return 1;
 
 DiskNotThere:
-   dwError = GetLastError();
+    dwError = GetLastError();
 
-   switch (dwError) {
+    switch (dwError) {
+        case ERROR_PATH_NOT_FOUND:
+        case ERROR_FILE_NOT_FOUND:
 
-   case ERROR_PATH_NOT_FOUND:
-   case ERROR_FILE_NOT_FOUND:
+            if (bTriedRoot)
+                break;
 
-      if (bTriedRoot)
-         break;
+            //
+            // The directory may have been removed.
+            // Go to the root directory and try once.
+            //
+            bTriedRoot = TRUE;
+            DRIVESET(szDrive, drive);
 
-      //
-      // The directory may have been removed.
-      // Go to the root directory and try once.
-      //
-      bTriedRoot = TRUE;
-      DRIVESET(szDrive, drive);
+            SetCurrentDirectory(szDrive);
 
-      SetCurrentDirectory(szDrive);
+            goto Retry;
 
-      goto Retry;
+        case ERROR_INVALID_PARAMETER:
 
-   case ERROR_INVALID_PARAMETER:
+            // Handle INVALID PARAMETER from GetDriveDirectory from GetFileAttributes
+            dwError = ERROR_NOT_READY;
+            break;
 
-      // Handle INVALID PARAMETER from GetDriveDirectory from GetFileAttributes
-      dwError = ERROR_NOT_READY;
-      break;
+        case ERROR_ACCESS_DENIED:
 
+            //
+            // If failed due to security, return 2
+            // (this is non-zero which means sorta error)
+            //
+            // old: return 2;
+            break;
 
-   case ERROR_ACCESS_DENIED:
+        case ERROR_NOT_READY:
 
-      //
-      // If failed due to security, return 2
-      // (this is non-zero which means sorta error)
-      //
-      // old: return 2;
-      break;
+            //
+            // WAS ERROR_NO_MEDIA_IN_DRIVE, but changed back due to
+            // wow incompatibilities.
+            //
+            // drive not ready (no disk in the drive)
+            //
+            LoadString(hAppInstance, IDS_COPYERROR + dwFunc, szTitle, COUNTOF(szTitle));
+            LoadString(hAppInstance, IDS_DRIVENOTREADY, szTemp, COUNTOF(szTemp));
+            wsprintf(szMessage, szTemp, drive + CHAR_A);
+            if (MessageBox(hwnd, szMessage, szTitle, MB_ICONEXCLAMATION | MB_RETRYCANCEL) == IDRETRY)
+                goto Retry;
+            else
+                return 0;
+        case ERROR_BAD_NET_NAME:
 
-   case ERROR_NOT_READY:
+            MyMessageBox(hwnd, IDS_BADNETNAMETITLE, IDS_BADNETNAME, MB_OK | MB_ICONEXCLAMATION);
+            return 0;
 
-      //
-      // WAS ERROR_NO_MEDIA_IN_DRIVE, but changed back due to
-      // wow incompatibilities.
-      //
-      // drive not ready (no disk in the drive)
-      //
-      LoadString(hAppInstance, IDS_COPYERROR + dwFunc, szTitle, COUNTOF(szTitle));
-      LoadString(hAppInstance, IDS_DRIVENOTREADY, szTemp, COUNTOF(szTemp));
-      wsprintf(szMessage, szTemp, drive + CHAR_A);
-      if (MessageBox(hwnd, szMessage, szTitle, MB_ICONEXCLAMATION | MB_RETRYCANCEL) == IDRETRY)
-         goto Retry;
-      else
-         return 0;
-   case ERROR_BAD_NET_NAME:
+        case ERROR_UNRECOGNIZED_VOLUME:  // 0x1F  huh?  What's this?
 
-      MyMessageBox(hwnd, IDS_BADNETNAMETITLE, IDS_BADNETNAME, MB_OK|MB_ICONEXCLAMATION);
-      return 0;
+            // general failure (disk not formatted)
 
-   case ERROR_UNRECOGNIZED_VOLUME:              // 0x1F  huh?  What's this?
+            LoadString(hAppInstance, IDS_COPYERROR + dwFunc, szTitle, COUNTOF(szTitle));
 
-      // general failure (disk not formatted)
+            FormatError(TRUE, szTemp, COUNTOF(szTemp), ERROR_UNRECOGNIZED_VOLUME);
+            MessageBox(hwnd, szTemp, szTitle, MB_OK | MB_ICONSTOP);
 
-      LoadString(hAppInstance, IDS_COPYERROR + dwFunc, szTitle, COUNTOF(szTitle));
+            return 0;
 
-      FormatError(TRUE, szTemp, COUNTOF(szTemp), ERROR_UNRECOGNIZED_VOLUME);
-      MessageBox(hwnd, szTemp, szTitle, MB_OK | MB_ICONSTOP);
+        default:
+            break;
+    }
 
-      return 0;
+    LoadString(hAppInstance, IDS_COPYERROR + dwFunc, szTitle, COUNTOF(szTitle));
 
-   default:
-      break;
+    FormatError(TRUE, szTemp, COUNTOF(szTemp), dwError);
+    MessageBox(hwnd, szTemp, szTitle, MB_OK | MB_ICONSTOP);
 
-   }
-
-   LoadString(hAppInstance, IDS_COPYERROR + dwFunc, szTitle, COUNTOF(szTitle));
-
-   FormatError(TRUE, szTemp, COUNTOF(szTemp), dwError);
-   MessageBox(hwnd, szTemp, szTitle, MB_OK | MB_ICONSTOP);
-
-   return 0;
+    return 0;
 }
 
-
-
-VOID
-BuildDateLine(LPTSTR szTemp, PLFNDTA plfndta)
-{
-   wsprintf(szTemp, szBytes, plfndta->fd.nFileSizeLow);
-   lstrcat(szTemp, szSpace);
-   PutDate(&plfndta->fd.ftLastWriteTime, szTemp + lstrlen(szTemp));
-   lstrcat(szTemp, szSpace);
-   PutTime(&plfndta->fd.ftLastWriteTime, szTemp + lstrlen(szTemp));
+VOID BuildDateLine(LPTSTR szTemp, PLFNDTA plfndta) {
+    wsprintf(szTemp, szBytes, plfndta->fd.nFileSizeLow);
+    lstrcat(szTemp, szSpace);
+    PutDate(&plfndta->fd.ftLastWriteTime, szTemp + lstrlen(szTemp));
+    lstrcat(szTemp, szSpace);
+    PutTime(&plfndta->fd.ftLastWriteTime, szTemp + lstrlen(szTemp));
 }
-
 
 typedef struct {
-   LPTSTR pFileDest;
-   LPTSTR pFileSource;
-   PLFNDTA plfndtaDest;
-   PLFNDTA plfndtaSrc;
-   INT bWriteProtect;
-   BOOL bNoAccess;
-} PARAM_REPLACEDLG, FAR *LPPARAM_REPLACEDLG;
+    LPTSTR pFileDest;
+    LPTSTR pFileSource;
+    PLFNDTA plfndtaDest;
+    PLFNDTA plfndtaSrc;
+    INT bWriteProtect;
+    BOOL bNoAccess;
+} PARAM_REPLACEDLG, FAR* LPPARAM_REPLACEDLG;
 
+VOID SetDlgItemPath(HWND hDlg, INT id, LPTSTR pszPath) {
+    RECT rc;
+    HDC hdc;
+    HFONT hFont;
+    TCHAR szPath[MAXPATHLEN + 1];  // can have one extra TCHAR
+    HWND hwnd;
 
-VOID
-SetDlgItemPath(HWND hDlg, INT id, LPTSTR pszPath)
-{
-   RECT rc;
-   HDC hdc;
-   HFONT hFont;
-   TCHAR szPath[MAXPATHLEN+1];      // can have one extra TCHAR
-   HWND hwnd;
+    hwnd = GetDlgItem(hDlg, id);
 
-   hwnd = GetDlgItem(hDlg, id);
+    if (!hwnd)
+        return;
 
-   if (!hwnd)
-      return;
+    lstrcpy(szPath, pszPath);
 
-   lstrcpy(szPath, pszPath);
+    GetClientRect(hwnd, &rc);
 
-   GetClientRect(hwnd, &rc);
+    hdc = GetDC(hDlg);
 
-   hdc = GetDC(hDlg);
+    hFont = (HFONT)SendMessage(hwnd, WM_GETFONT, 0, 0L);
+    if (hFont = (HFONT)SelectObject(hdc, hFont)) {
+        CompactPath(hdc, szPath, rc.right);
+        SelectObject(hdc, hFont);
+    }
 
-   hFont = (HFONT)SendMessage(hwnd, WM_GETFONT, 0, 0L);
-   if (hFont = (HFONT)SelectObject(hdc, hFont)) {
-      CompactPath(hdc, szPath, rc.right);
-      SelectObject(hdc, hFont);
-   }
-
-   ReleaseDC(hDlg, hdc);
-   SetWindowText(hwnd, szPath);
+    ReleaseDC(hDlg, hdc);
+    SetWindowText(hwnd, szPath);
 }
-
-
 
 INT_PTR
 CALLBACK
-ReplaceDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-   WCHAR szMessage[MAXMESSAGELEN];
+ReplaceDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
+    WCHAR szMessage[MAXMESSAGELEN];
 
-   switch (wMsg) {
-   case WM_INITDIALOG:
-      {
-         LPPARAM_REPLACEDLG lpdlgparams = (LPPARAM_REPLACEDLG)lParam;
+    switch (wMsg) {
+        case WM_INITDIALOG: {
+            LPPARAM_REPLACEDLG lpdlgparams = (LPPARAM_REPLACEDLG)lParam;
 
-         if (lpdlgparams->bWriteProtect) {
-            LoadString(hAppInstance, IDS_WRITEPROTECTFILE, szMessage, COUNTOF(szMessage));
-            SetDlgItemText(hDlg, IDD_STATUS, szMessage);
+            if (lpdlgparams->bWriteProtect) {
+                LoadString(hAppInstance, IDS_WRITEPROTECTFILE, szMessage, COUNTOF(szMessage));
+                SetDlgItemText(hDlg, IDD_STATUS, szMessage);
 
-            LoadString(hAppInstance, IDS_ALLFILES, szMessage, COUNTOF(szMessage));
-            SetDlgItemText(hDlg, IDD_OTHER, szMessage);
-         }
-
-         EnableWindow(GetDlgItem(hDlg, IDD_YESALL),
-            !lpdlgparams->bNoAccess && ManySource);
-
-         EnableWindow(GetDlgItem(hDlg, IDCANCEL), !lpdlgparams->bNoAccess);
-
-         lstrcpy(szMessage, lpdlgparams->pFileSource);
-         lstrcat(szMessage, SZ_QUESTION);
-         SetDlgItemPath(hDlg, IDD_FROM, szMessage);
-
-         if (lpdlgparams->pFileDest) {
-            BuildDateLine(szMessage, lpdlgparams->plfndtaSrc);
-            SetDlgItemText(hDlg, IDD_DATE2, szMessage);
-
-            SetDlgItemPath(hDlg, IDD_TO, lpdlgparams->pFileDest);
-            BuildDateLine(szMessage, lpdlgparams->plfndtaDest);
-            SetDlgItemText(hDlg, IDD_DATE1, szMessage);
-         }
-
-         SetWindowLongPtr(hDlg, GWLP_USERDATA, (LPARAM)lpdlgparams);
-         break;
-      }
-
-   case WM_COMMAND:
-      {
-         WORD id;
-
-         id = GET_WM_COMMAND_ID(wParam, lParam);
-         switch (id) {
-         case IDD_FLAGS:
-            break;
-
-         case IDD_YESALL:
-            *pbConfirmAll = TRUE;
-
-            if (((LPPARAM_REPLACEDLG)GetWindowLongPtr(hDlg, GWLP_USERDATA))->bWriteProtect) {
-               *pbConfirmReadOnlyAll = TRUE;
+                LoadString(hAppInstance, IDS_ALLFILES, szMessage, COUNTOF(szMessage));
+                SetDlgItemText(hDlg, IDD_OTHER, szMessage);
             }
-            id = IDYES;
-            // fall through
-         case IDYES:
-            // fall through
-         default:        // this is IDNO and IDCANCEL
-            EndDialog(hDlg, id);
+
+            EnableWindow(GetDlgItem(hDlg, IDD_YESALL), !lpdlgparams->bNoAccess && ManySource);
+
+            EnableWindow(GetDlgItem(hDlg, IDCANCEL), !lpdlgparams->bNoAccess);
+
+            lstrcpy(szMessage, lpdlgparams->pFileSource);
+            lstrcat(szMessage, SZ_QUESTION);
+            SetDlgItemPath(hDlg, IDD_FROM, szMessage);
+
+            if (lpdlgparams->pFileDest) {
+                BuildDateLine(szMessage, lpdlgparams->plfndtaSrc);
+                SetDlgItemText(hDlg, IDD_DATE2, szMessage);
+
+                SetDlgItemPath(hDlg, IDD_TO, lpdlgparams->pFileDest);
+                BuildDateLine(szMessage, lpdlgparams->plfndtaDest);
+                SetDlgItemText(hDlg, IDD_DATE1, szMessage);
+            }
+
+            SetWindowLongPtr(hDlg, GWLP_USERDATA, (LPARAM)lpdlgparams);
+            break;
+        }
+
+        case WM_COMMAND: {
+            WORD id;
+
+            id = GET_WM_COMMAND_ID(wParam, lParam);
+            switch (id) {
+                case IDD_FLAGS:
+                    break;
+
+                case IDD_YESALL:
+                    *pbConfirmAll = TRUE;
+
+                    if (((LPPARAM_REPLACEDLG)GetWindowLongPtr(hDlg, GWLP_USERDATA))->bWriteProtect) {
+                        *pbConfirmReadOnlyAll = TRUE;
+                    }
+                    id = IDYES;
+                    // fall through
+                case IDYES:
+                    // fall through
+                default:  // this is IDNO and IDCANCEL
+                    EndDialog(hDlg, id);
+                    return FALSE;
+            }
+        } break;
+
+        default:
             return FALSE;
-         }
-      }
-      break;
-
-   default:
-         return FALSE;
-   }
-   return TRUE;
+    }
+    return TRUE;
 }
-
-
-
-
 
 DWORD
 ConfirmDialog(
-   HWND hDlg, DWORD dlg,
-   LPTSTR pFileDest, PLFNDTA plfndtaDest,
-   LPTSTR pFileSource, PLFNDTA plfndtaSrc,
-   BOOL bConfirmByDefault,
-   BOOL *pbAll,
-   BOOL bConfirmReadOnlyByDefault,
-   BOOL *pbReadOnlyAll)
-{
-   INT nRetVal;
-   PARAM_REPLACEDLG params;
-   WCHAR szMessage[MAXMESSAGELEN];
+    HWND hDlg,
+    DWORD dlg,
+    LPTSTR pFileDest,
+    PLFNDTA plfndtaDest,
+    LPTSTR pFileSource,
+    PLFNDTA plfndtaSrc,
+    BOOL bConfirmByDefault,
+    BOOL* pbAll,
+    BOOL bConfirmReadOnlyByDefault,
+    BOOL* pbReadOnlyAll) {
+    INT nRetVal;
+    PARAM_REPLACEDLG params;
+    WCHAR szMessage[MAXMESSAGELEN];
 
-   params.pFileDest = pFileDest;
-   params.pFileSource = pFileSource;
-   params.plfndtaDest = plfndtaDest;
-   params.plfndtaSrc = plfndtaSrc;
-   params.bWriteProtect = FALSE;
-   params.bNoAccess = FALSE;
-   pbConfirmAll = pbAll;         // set global for dialog box
+    params.pFileDest = pFileDest;
+    params.pFileSource = pFileSource;
+    params.plfndtaDest = plfndtaDest;
+    params.plfndtaSrc = plfndtaSrc;
+    params.bWriteProtect = FALSE;
+    params.bNoAccess = FALSE;
+    pbConfirmAll = pbAll;  // set global for dialog box
 
-   pbConfirmReadOnlyAll = pbReadOnlyAll;
+    pbConfirmReadOnlyAll = pbReadOnlyAll;
 
-   if ( CONFIRMNOACCESS == dlg || CONFIRMNOACCESSDEST == dlg) {
-      params.bNoAccess = TRUE;
-      nRetVal = (INT)DialogBoxParam(hAppInstance, (LPTSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
+    if (CONFIRMNOACCESS == dlg || CONFIRMNOACCESSDEST == dlg) {
+        params.bNoAccess = TRUE;
+        nRetVal = (INT)DialogBoxParam(
+            hAppInstance, (LPTSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
 
-   } else if (plfndtaDest->fd.dwFileAttributes & (ATTR_READONLY | ATTR_SYSTEM | ATTR_HIDDEN)) {
+    } else if (plfndtaDest->fd.dwFileAttributes & (ATTR_READONLY | ATTR_SYSTEM | ATTR_HIDDEN)) {
+        if ((!bConfirmReadOnlyByDefault && !bConfirmByDefault) || *pbConfirmReadOnlyAll) {
+            nRetVal = IDYES;
+        } else {
+            params.bWriteProtect = TRUE;
+            nRetVal = (INT)DialogBoxParam(
+                hAppInstance, (LPTSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
+        }
 
-      if ((!bConfirmReadOnlyByDefault && !bConfirmByDefault) ||
-         *pbConfirmReadOnlyAll) {
+        if (nRetVal == IDYES) {
+            if (!(plfndtaDest->fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+                lstrcpy(szMessage, pFileDest ? pFileDest : pFileSource);
 
-         nRetVal = IDYES;
-      } else {
-         params.bWriteProtect = TRUE;
-         nRetVal = (INT)DialogBoxParam(hAppInstance, (LPTSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
-      }
+                WFSetAttr(szMessage, plfndtaDest->fd.dwFileAttributes & ~(ATTR_READONLY | ATTR_HIDDEN | ATTR_SYSTEM));
+            }
+        }
 
-      if (nRetVal == IDYES) {
+    } else if (!bConfirmByDefault || *pbConfirmAll) {
+        nRetVal = IDYES;
+    } else {
+        nRetVal = (INT)DialogBoxParam(
+            hAppInstance, (LPTSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
+    }
 
-         if (!(plfndtaDest->fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-            lstrcpy(szMessage, pFileDest ? pFileDest : pFileSource);
+    if (nRetVal == -1)
+        nRetVal = DE_INSMEM;
 
-            WFSetAttr(szMessage, plfndtaDest->fd.dwFileAttributes & ~(ATTR_READONLY|ATTR_HIDDEN|ATTR_SYSTEM));
-         }
-      }
-
-   } else if (!bConfirmByDefault || *pbConfirmAll) {
-      nRetVal = IDYES;
-   } else {
-
-      nRetVal = (INT)DialogBoxParam(hAppInstance, (LPTSTR) MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
-   }
-
-   if (nRetVal == -1)
-      nRetVal = DE_INSMEM;
-
-   return (DWORD)nRetVal;
+    return (DWORD)nRetVal;
 }
-
 
 #ifdef NETCHECK
 /*--------------------------------------------------------------------------*/
@@ -974,44 +893,40 @@ ConfirmDialog(
 /*--------------------------------------------------------------------------*/
 
 DWORD
-NetCheck(LPTSTR pPath, DWORD dwType)
-{
-   DWORD err;
-   TCHAR szT[MAXSUGGESTLEN];
-   TCHAR szProvider[128];
-   TCHAR szTitle[128];
+NetCheck(LPTSTR pPath, DWORD dwType) {
+    DWORD err;
+    TCHAR szT[MAXSUGGESTLEN];
+    TCHAR szProvider[128];
+    TCHAR szTitle[128];
 
-   //
-   // we will notify the winnet driver on all directory operations
-   // so we can implement cool net stuff on a local drives
-   //
+    //
+    // we will notify the winnet driver on all directory operations
+    // so we can implement cool net stuff on a local drives
+    //
 
-   WAITNET();
+    WAITNET();
 
-   if (!lpfnWNetDirectoryNotifyW)
-      return WN_SUCCESS;
+    if (!lpfnWNetDirectoryNotifyW)
+        return WN_SUCCESS;
 
+    err = WNetDirectoryNotifyW(hdlgProgress, pPath, dwType);
+    switch (err) {
+        case WN_SUCCESS:
+        case WN_CONTINUE:
+        case WN_CANCEL:
+            return err;
+        case WN_NOT_SUPPORTED:
+            return WN_SUCCESS;
+    }
 
-   err = WNetDirectoryNotifyW(hdlgProgress, pPath, dwType);
-   switch (err) {
-   case WN_SUCCESS:
-   case WN_CONTINUE:
-   case WN_CANCEL:
-      return err;
-   case WN_NOT_SUPPORTED:
-      return WN_SUCCESS;
-   }
+    WNetGetLastError(&err, szT, COUNTOF(szT), szProvider, COUNTOF(szProvider));
 
-   WNetGetLastError(&err, szT, COUNTOF(szT), szProvider, COUNTOF(szProvider));
+    LoadString(hAppInstance, IDS_NETERR, szTitle, COUNTOF(szTitle));
+    MessageBox(hdlgProgress, szT, szTitle, MB_OK | MB_ICONEXCLAMATION);
 
-   LoadString(hAppInstance, IDS_NETERR, szTitle, COUNTOF(szTitle));
-   MessageBox(hdlgProgress, szT, szTitle, MB_OK|MB_ICONEXCLAMATION);
-
-   return WN_CANCEL;
+    return WN_CANCEL;
 }
 #endif
-
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1024,47 +939,43 @@ NetCheck(LPTSTR pPath, DWORD dwType)
  */
 
 DWORD
-IsInvalidPath(LPTSTR pPath)
-{
-  TCHAR  sz[9];
-  INT   n = 0;
+IsInvalidPath(LPTSTR pPath) {
+    TCHAR sz[9];
+    INT n = 0;
 
-  if (lstrlen(pPath) >= MAXPATHLEN)
-      return ERROR_FILENAME_EXCED_RANGE;
+    if (lstrlen(pPath) >= MAXPATHLEN)
+        return ERROR_FILENAME_EXCED_RANGE;
 
-  pPath = FindFileName(pPath);
+    pPath = FindFileName(pPath);
 
-  while (*pPath && *pPath != CHAR_DOT && *pPath != CHAR_COLON && n < 8)
-      sz[n++] = *pPath++;
+    while (*pPath && *pPath != CHAR_DOT && *pPath != CHAR_COLON && n < 8)
+        sz[n++] = *pPath++;
 
-  sz[n] = CHAR_NULL;
+    sz[n] = CHAR_NULL;
 
-  if (!lstrcmpi(sz,TEXT("CON")))
-      return ERROR_INVALID_NAME;
+    if (!lstrcmpi(sz, TEXT("CON")))
+        return ERROR_INVALID_NAME;
 
-  if (!lstrcmpi(sz,TEXT("MS$MOUSE")))
-      return ERROR_INVALID_NAME;
+    if (!lstrcmpi(sz, TEXT("MS$MOUSE")))
+        return ERROR_INVALID_NAME;
 
-  if (!lstrcmpi(sz,TEXT("EMMXXXX0")))
-      return ERROR_INVALID_NAME;
+    if (!lstrcmpi(sz, TEXT("EMMXXXX0")))
+        return ERROR_INVALID_NAME;
 
-  if (!lstrcmpi(sz,TEXT("CLOCK$")))
-      return ERROR_INVALID_NAME;
+    if (!lstrcmpi(sz, TEXT("CLOCK$")))
+        return ERROR_INVALID_NAME;
 
-  return ERROR_SUCCESS;
+    return ERROR_SUCCESS;
 }
-
 
 PLFNDTA
-CurPDTA(PCOPYROOT pcr)
-{
-   if (pcr->cDepth) {
-      return (pcr->rgDTA + pcr->cDepth - 1);
-   } else {
-      return pcr->rgDTA;
-   }
+CurPDTA(PCOPYROOT pcr) {
+    if (pcr->cDepth) {
+        return (pcr->rgDTA + pcr->cDepth - 1);
+    } else {
+        return pcr->rgDTA;
+    }
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1072,15 +983,12 @@ CurPDTA(PCOPYROOT pcr)
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID
-GetNextCleanup(PCOPYROOT pcr)
-{
-   while (pcr->cDepth) {
-      WFFindClose(CurPDTA(pcr));
-      pcr->cDepth--;
-   }
+VOID GetNextCleanup(PCOPYROOT pcr) {
+    while (pcr->cDepth) {
+        WFFindClose(CurPDTA(pcr));
+        pcr->cDepth--;
+    }
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1125,471 +1033,441 @@ GetNextCleanup(PCOPYROOT pcr)
 //
 /////////////////////////////////////////////////////////////////////
 
-
 DWORD
-GetNextPair(PCOPYROOT pcr, LPTSTR pFrom,
-   LPTSTR pToPath, LPTSTR pToSpec,
-   DWORD dwFunc, PDWORD pdwError,
-   BOOL bIsLFNDriveDest)
-{
-   LPTSTR pT;                     // Temporary pointer
-   DWORD dwOp;                    // Return value (operation to perform
-   PLFNDTA pDTA;                  // Pointer to file DTA data
+GetNextPair(
+    PCOPYROOT pcr,
+    LPTSTR pFrom,
+    LPTSTR pToPath,
+    LPTSTR pToSpec,
+    DWORD dwFunc,
+    PDWORD pdwError,
+    BOOL bIsLFNDriveDest) {
+    LPTSTR pT;     // Temporary pointer
+    DWORD dwOp;    // Return value (operation to perform
+    PLFNDTA pDTA;  // Pointer to file DTA data
 
-   STKCHK();
-   *pFrom = CHAR_NULL;
-   *pdwError = 0 ;
-   pDTA = NULL;
+    STKCHK();
+    *pFrom = CHAR_NULL;
+    *pdwError = 0;
+    pDTA = NULL;
 
-   //
-   // Keep recursing directory structure until we get to the bottom
-   //
-   while (TRUE) {
-      if (pcr->cDepth) {
-
-         //
-         // The directory we returned last call needs to be recursed.
-         //
-         pDTA = pcr->rgDTA + pcr->cDepth - 1;   // use this DTA below
-
-         if (pcr->fRecurse && pcr->cDepth == 1 && !pcr->rgDTA[0].fd.cFileName[0])
-
+    //
+    // Keep recursing directory structure until we get to the bottom
+    //
+    while (TRUE) {
+        if (pcr->cDepth) {
             //
-            // The last one was the recursion root.
+            // The directory we returned last call needs to be recursed.
             //
-            goto BeginDirSearch;
+            pDTA = pcr->rgDTA + pcr->cDepth - 1;  // use this DTA below
 
-         if (pcr->cDepth >= (MAXDIRDEPTH - 1)) {    // reached the limit?
-            dwOp = OPER_ERROR;
-            *pdwError = ERROR_FILENAME_EXCED_RANGE;
-            goto ReturnPair;
-         }
+            if (pcr->fRecurse && pcr->cDepth == 1 && !pcr->rgDTA[0].fd.cFileName[0])
 
-         if (pcr->fRecurse && (pDTA->fd.dwFileAttributes & ATTR_DIR) &&
-            !(pDTA->fd.dwFileAttributes & ATTR_RETURNED)) {
+                //
+                // The last one was the recursion root.
+                //
+                goto BeginDirSearch;
 
-            //
-            // Was returned on last call, begin search.
-            //
-            pDTA->fd.dwFileAttributes |= ATTR_RETURNED;
-
-#ifdef FASTMOVE
-            if (pcr->bFastMove)
-               goto FastMoveSkipDir;
-#endif
-            // Check if we should skip an entry because it was e.g. an reparse point
-            if (pDTA->fd.dwFileAttributes & ( ATTR_SYMBOLIC | ATTR_JUNCTION) ) {
-               RemoveLast(pcr->szDest);
-               dwOp = OPER_RMDIR;
-               goto ReturnPair;
+            if (pcr->cDepth >= (MAXDIRDEPTH - 1)) {  // reached the limit?
+                dwOp = OPER_ERROR;
+                *pdwError = ERROR_FILENAME_EXCED_RANGE;
+                goto ReturnPair;
             }
 
-            pcr->cDepth++;
-            pDTA++;
-
-BeginDirSearch:
-
-            //
-            // Search for all subfiles in directory.
-            //
-            AppendToPath (pcr->sz,szStarDotStar);
-            goto BeginSearch;
-         }
-
-SkipThisFile:
-
-         //
-         // Search for the next matching file.
-         //
-         if (!WFFindNext (pDTA)) {
-            WFFindClose (pDTA);
-
-LeaveDirectory:
-
-            //
-            // This spec has been exhausted...
-            //
-            pcr->cDepth--;
-
-            //
-            // Remove the child file spec.
-            //
-            RemoveLast (pcr->sz);
+            if (pcr->fRecurse && (pDTA->fd.dwFileAttributes & ATTR_DIR) &&
+                !(pDTA->fd.dwFileAttributes & ATTR_RETURNED)) {
+                //
+                // Was returned on last call, begin search.
+                //
+                pDTA->fd.dwFileAttributes |= ATTR_RETURNED;
 
 #ifdef FASTMOVE
-FastMoveSkipDir:
+                if (pcr->bFastMove)
+                    goto FastMoveSkipDir;
+#endif
+                // Check if we should skip an entry because it was e.g. an reparse point
+                if (pDTA->fd.dwFileAttributes & (ATTR_SYMBOLIC | ATTR_JUNCTION)) {
+                    RemoveLast(pcr->szDest);
+                    dwOp = OPER_RMDIR;
+                    goto ReturnPair;
+                }
+
+                pcr->cDepth++;
+                pDTA++;
+
+            BeginDirSearch:
+
+                //
+                // Search for all subfiles in directory.
+                //
+                AppendToPath(pcr->sz, szStarDotStar);
+                goto BeginSearch;
+            }
+
+        SkipThisFile:
+
+            //
+            // Search for the next matching file.
+            //
+            if (!WFFindNext(pDTA)) {
+                WFFindClose(pDTA);
+
+            LeaveDirectory:
+
+                //
+                // This spec has been exhausted...
+                //
+                pcr->cDepth--;
+
+                //
+                // Remove the child file spec.
+                //
+                RemoveLast(pcr->sz);
+
+#ifdef FASTMOVE
+            FastMoveSkipDir:
 #endif
 
-            RemoveLast (pcr->szDest);
+                RemoveLast(pcr->szDest);
 
 #ifdef FASTMOVE
-            if (pcr->fRecurse && !pcr->bFastMove) {
+                if (pcr->fRecurse && !pcr->bFastMove) {
 #else
-            if (pcr->fRecurse) {
+                if (pcr->fRecurse) {
 #endif
 
-               //
-               // Tell the move/copy driver it can now delete
-               // the source directory if necessary.
-               //
-               // (Don't do on a fast move since the directory was
-               // removed on the move.)
+                    //
+                    // Tell the move/copy driver it can now delete
+                    // the source directory if necessary.
+                    //
+                    // (Don't do on a fast move since the directory was
+                    // removed on the move.)
 
-               dwOp = OPER_RMDIR;
-               goto ReturnPair;
-            }
+                    dwOp = OPER_RMDIR;
+                    goto ReturnPair;
+                }
 
 #ifdef FASTMOVE
-            pcr->bFastMove = FALSE;
+                pcr->bFastMove = FALSE;
 #endif
 
+                //
+                // Not recursing, get more stuff.
+                //
+                continue;
+            }
+
+        ProcessSearchResult:
+
             //
-            // Not recursing, get more stuff.
+            // Got a file or dir in the DTA which matches the wild card
+            // originally passed in...
             //
+            if (pDTA->fd.dwFileAttributes & ATTR_DIR) {
+                //
+                // Ignore directories if we're not recursing.
+                //
+                if (!pcr->fRecurse)
+                    goto SkipThisFile;
+
+                //
+                // Skip the current and parent directories.
+                //
+                if (ISDOTDIR(pDTA->fd.cFileName)) {
+                    goto SkipThisFile;
+                }
+
+                // We need to create this directory, and then begin searching
+                // for subfiles.
+
+                dwOp = OPER_MKDIR;
+                RemoveLast(pcr->sz);
+                AppendToPath(pcr->sz, pDTA->fd.cFileName);
+                AppendToPath(pcr->szDest, pDTA->fd.cFileName);
+                goto ReturnPair;
+            }
+
+            if (pcr->fRecurse || !(pDTA->fd.dwFileAttributes & ATTR_DIR)) {
+                /* Remove the original spec. */
+
+                RemoveLast(pcr->sz);
+
+                /* Replace it. */
+
+                AppendToPath(pcr->sz, pDTA->fd.cFileName);
+
+                /* Convert to ANSI. */
+
+                pT = FindFileName(pcr->sz);
+
+                // If its a dir, tell the driver to create it
+                // otherwise, tell the driver to "operate" on the file.
+
+                dwOp = (pDTA->fd.dwFileAttributes & ATTR_DIR) ? OPER_RMDIR : OPER_DOFILE;
+                goto ReturnPair;
+            }
             continue;
-         }
-
-ProcessSearchResult:
-
-         //
-         // Got a file or dir in the DTA which matches the wild card
-         // originally passed in...
-         //
-         if (pDTA->fd.dwFileAttributes & ATTR_DIR) {
-
+        } else {
             //
-            // Ignore directories if we're not recursing.
+            // Read the next source spec out of the raw source string.
             //
-            if (!pcr->fRecurse)
-               goto SkipThisFile;
+            pcr->fRecurse = FALSE;
+            pcr->pSource = GetNextFile(pcr->pSource, pcr->sz, COUNTOF(pcr->sz));
+
+            pcr->szDest[0] = CHAR_NULL;
+
+            if (!pcr->pSource)
+                return (0);
 
             //
-            // Skip the current and parent directories.
+            // Fully qualify the path
             //
-            if (ISDOTDIR(pDTA->fd.cFileName)) {
-               goto SkipThisFile;
+            QualifyPath(pcr->sz);
+
+            // Ensure the source disk really exists before doing anything.
+            // Only call IsTheDiskReallyThere once for each drive letter.
+            // Set pcr->cIsDiskThereCheck[DRIVEID] after disk has been
+            // checked.  Modified by C. Stevens, August 1991
+
+            if (pcr->sz[1] == CHAR_COLON && !pcr->cIsDiskThereCheck[DRIVEID(pcr->sz)]) {
+                if (!IsTheDiskReallyThere(hdlgProgress, pcr->sz, dwFunc, FALSE))
+                    return (0);
+                pcr->cIsDiskThereCheck[DRIVEID(pcr->sz)] = 1;
             }
 
-            // We need to create this directory, and then begin searching
-            // for subfiles.
-
-            dwOp = OPER_MKDIR;
-            RemoveLast (pcr->sz);
-            AppendToPath (pcr->sz,pDTA->fd.cFileName);
-            AppendToPath (pcr->szDest,pDTA->fd.cFileName);
-            goto ReturnPair;
-         }
-
-         if (pcr->fRecurse || !(pDTA->fd.dwFileAttributes & ATTR_DIR)) {
-
-            /* Remove the original spec. */
-
-            RemoveLast (pcr->sz);
-
-            /* Replace it. */
-
-            AppendToPath (pcr->sz,pDTA->fd.cFileName);
-
-            /* Convert to ANSI. */
-
-            pT = FindFileName (pcr->sz);
-
-            // If its a dir, tell the driver to create it
-            // otherwise, tell the driver to "operate" on the file.
-
-            dwOp = (pDTA->fd.dwFileAttributes & ATTR_DIR) ? OPER_RMDIR : OPER_DOFILE;
-            goto ReturnPair;
-         }
-         continue;
-      } else {
-
-         //
-         // Read the next source spec out of the raw source string.
-         //
-         pcr->fRecurse = FALSE;
-         pcr->pSource = GetNextFile (pcr->pSource,pcr->sz,COUNTOF(pcr->sz));
-
-         pcr->szDest[0] = CHAR_NULL;
-
-         if (!pcr->pSource)
-            return (0);
-
-         //
-         // Fully qualify the path
-         //
-         QualifyPath(pcr->sz);
-
-         // Ensure the source disk really exists before doing anything.
-         // Only call IsTheDiskReallyThere once for each drive letter.
-         // Set pcr->cIsDiskThereCheck[DRIVEID] after disk has been
-         // checked.  Modified by C. Stevens, August 1991
-
-         if (pcr->sz[1]==CHAR_COLON && !pcr->cIsDiskThereCheck[DRIVEID (pcr->sz)]) {
-            if (!IsTheDiskReallyThere(hdlgProgress, pcr->sz, dwFunc, FALSE))
-               return(0);
-            pcr->cIsDiskThereCheck[DRIVEID (pcr->sz)] = 1;
-         }
-
-         //
-         // Classify the input string.
-         //
-         if (IsWild (pcr->sz)) {
-
             //
-            // Wild card... operate on all matches but not recursively.
+            // Classify the input string.
             //
-            pcr->cDepth = 1;
-            pDTA = pcr->rgDTA;
-            pcr->pRoot = NULL;
+            if (IsWild(pcr->sz)) {
+                //
+                // Wild card... operate on all matches but not recursively.
+                //
+                pcr->cDepth = 1;
+                pDTA = pcr->rgDTA;
+                pcr->pRoot = NULL;
 
-BeginSearch:
-            //
-            // Quit if pcr->sz gets too big.
-            //
-            if (lstrlen (pcr->sz) - lstrlen (FindFileName (pcr->sz)) >= MAXPATHLEN)
-               goto SearchStartFail;
+            BeginSearch:
+                //
+                // Quit if pcr->sz gets too big.
+                //
+                if (lstrlen(pcr->sz) - lstrlen(FindFileName(pcr->sz)) >= MAXPATHLEN)
+                    goto SearchStartFail;
 
-            //
-            // Search for the wildcard spec in pcr->sz.
-            //
-            if (!WFFindFirst(pDTA, pcr->sz, ATTR_ALL)) {
+                //
+                // Search for the wildcard spec in pcr->sz.
+                //
+                if (!WFFindFirst(pDTA, pcr->sz, ATTR_ALL)) {
+                SearchStartFail:
 
-SearchStartFail:
+                    if (pcr->fRecurse) {
+                        // We are inside a recursive directory delete, so
+                        // instead of erroring out, go back a level
 
-               if (pcr->fRecurse) {
+                        goto LeaveDirectory;
+                    }
+                    lstrcpy(pFrom, pcr->sz);
 
-                  // We are inside a recursive directory delete, so
-                  // instead of erroring out, go back a level
+                    //
+                    // Back up as if we completed a search.
+                    //
+                    RemoveLast(pcr->sz);
+                    pcr->cDepth--;
 
-                  goto LeaveDirectory;
-               }
-               lstrcpy (pFrom,pcr->sz);
+                    //
+                    // Find First returned an error.  Return FileNotFound.
+                    //
+                    dwOp = OPER_ERROR;
+                    *pdwError = ERROR_FILE_NOT_FOUND;
 
-               //
-               // Back up as if we completed a search.
-               //
-               RemoveLast (pcr->sz);
-               pcr->cDepth--;
-
-               //
-               // Find First returned an error.  Return FileNotFound.
-               //
-               dwOp = OPER_ERROR;
-               *pdwError = ERROR_FILE_NOT_FOUND;
-
-               goto ReturnPair;
-            }
-            goto ProcessSearchResult;
-         } else {
-
-            // This could be a file or a directory.  Fill in the DTA
-            // structure for attrib check
-
-            if (!IsRootDirectory(pcr->sz)) {
-
-               if (!WFFindFirst(pcr->rgDTA, pcr->sz, ATTR_ALL)) {
-
-                  dwOp = OPER_ERROR;
-                  *pdwError = GetLastError();
-
-                  goto ReturnPair;
-               }
-               WFFindClose(pcr->rgDTA);
-
-               // Mega hack fix by adding else clause
-
+                    goto ReturnPair;
+                }
+                goto ProcessSearchResult;
             } else {
-               pcr->rgDTA->hFindFile = INVALID_HANDLE_VALUE;
+                // This could be a file or a directory.  Fill in the DTA
+                // structure for attrib check
+
+                if (!IsRootDirectory(pcr->sz)) {
+                    if (!WFFindFirst(pcr->rgDTA, pcr->sz, ATTR_ALL)) {
+                        dwOp = OPER_ERROR;
+                        *pdwError = GetLastError();
+
+                        goto ReturnPair;
+                    }
+                    WFFindClose(pcr->rgDTA);
+
+                    // Mega hack fix by adding else clause
+
+                } else {
+                    pcr->rgDTA->hFindFile = INVALID_HANDLE_VALUE;
+                }
+
+                //
+                // Now determine if its a file or a directory
+                //
+                pDTA = pcr->rgDTA;
+                if (IsRootDirectory(pcr->sz) || (pDTA->fd.dwFileAttributes & ATTR_DIR)) {
+                    //
+                    // Process directory
+                    //
+                    if (dwFunc == FUNC_RENAME) {
+                        if (IsRootDirectory(pcr->sz)) {
+                            dwOp = OPER_ERROR;
+                            *pdwError = DE_ROOTDIR;
+                        } else
+                            dwOp = OPER_DOFILE;
+                        goto ReturnPair;
+                    }
+
+                    // Return reparse point and delete it via OPER_RMDIR
+                    if (dwFunc == FUNC_DELETE && pDTA->fd.dwFileAttributes & (ATTR_SYMBOLIC | ATTR_JUNCTION)) {
+                        pcr->fRecurse = FALSE;
+                        dwOp = OPER_RMDIR;
+                        goto ReturnPair;
+                    }
+
+                    //
+                    // Directory: operation is recursive, but not for junctions and symlinks
+                    //
+                    if (pDTA->fd.dwFileAttributes & (ATTR_SYMBOLIC | ATTR_JUNCTION))
+                        pcr->fRecurse = FALSE;
+                    else
+                        pcr->fRecurse = TRUE;
+
+                    pcr->cDepth = 1;
+                    pDTA->fd.cFileName[0] = CHAR_NULL;
+                    pcr->pRoot = FindFileName(pcr->sz);
+
+                    lstrcpy(pcr->szDest, pcr->pRoot);
+
+                    dwOp = OPER_MKDIR;
+                    goto ReturnPair;
+                } else {
+                    //
+                    // Process file
+                    //
+                    pcr->pRoot = NULL;
+                    dwOp = OPER_DOFILE;
+                    goto ReturnPair;
+                }
             }
-
-            //
-            // Now determine if its a file or a directory
-            //
-            pDTA = pcr->rgDTA;
-            if (IsRootDirectory(pcr->sz) || (pDTA->fd.dwFileAttributes & ATTR_DIR)) {
-
-               //
-               // Process directory
-               //
-               if (dwFunc == FUNC_RENAME) {
-                  if (IsRootDirectory (pcr->sz)) {
-
-                     dwOp = OPER_ERROR;
-                     *pdwError = DE_ROOTDIR;
-                  }
-                  else
-                     dwOp = OPER_DOFILE;
-                  goto ReturnPair;
-               }
-
-               // Return reparse point and delete it via OPER_RMDIR
-               if (dwFunc == FUNC_DELETE && pDTA->fd.dwFileAttributes & (ATTR_SYMBOLIC | ATTR_JUNCTION)) {
-                  pcr->fRecurse = FALSE;
-                  dwOp = OPER_RMDIR;
-                  goto ReturnPair;
-               }
-
-               //
-               // Directory: operation is recursive, but not for junctions and symlinks
-               //
-               if (pDTA->fd.dwFileAttributes & (ATTR_SYMBOLIC | ATTR_JUNCTION))
-                  pcr->fRecurse = FALSE;
-               else
-                  pcr->fRecurse = TRUE;
-
-               pcr->cDepth = 1;
-               pDTA->fd.cFileName[0] = CHAR_NULL;
-               pcr->pRoot = FindFileName (pcr->sz);
-
-               lstrcpy (pcr->szDest,pcr->pRoot);
-
-               dwOp = OPER_MKDIR;
-               goto ReturnPair;
-            } else {
-
-               //
-               // Process file
-               //
-               pcr->pRoot = NULL;
-               dwOp = OPER_DOFILE;
-               goto ReturnPair;
-            }
-         }
-      }
-   }
+        }
+    }
 
 ReturnPair:
 
-   // The source filespec has been derived into pcr->sz
-   // that is copied to pFrom.  pcr->sz and pToSpec are merged into pTo.
+    // The source filespec has been derived into pcr->sz
+    // that is copied to pFrom.  pcr->sz and pToSpec are merged into pTo.
 
-   if (!*pFrom)
-      lstrcpy(pFrom,pcr->sz);
-   QualifyPath(pFrom);
+    if (!*pFrom)
+        lstrcpy(pFrom, pcr->sz);
+    QualifyPath(pFrom);
 
-   if (dwFunc != FUNC_DELETE) {
-      if (dwFunc == FUNC_RENAME && !*pToPath) {
-         lstrcpy(pToPath, pFrom);
-         RemoveLast(pToPath);
-         AppendToPath(pToPath, pToSpec);
-      } else {
-
-         AppendToPath(pToPath,pcr->szDest);
-         if (dwOp == OPER_MKDIR)
+    if (dwFunc != FUNC_DELETE) {
+        if (dwFunc == FUNC_RENAME && !*pToPath) {
+            lstrcpy(pToPath, pFrom);
             RemoveLast(pToPath);
+            AppendToPath(pToPath, pToSpec);
+        } else {
+            AppendToPath(pToPath, pcr->szDest);
+            if (dwOp == OPER_MKDIR)
+                RemoveLast(pToPath);
 
-         AppendToPath(pToPath,pToSpec);
-      }
+            AppendToPath(pToPath, pToSpec);
+        }
 
+        if ((dwOp == OPER_MKDIR || dwOp == OPER_DOFILE) &&
 
-      if ((dwOp == OPER_MKDIR || dwOp == OPER_DOFILE) &&
+            (!bIsLFNDriveDest) && IsLFN(FindFileName(pFrom)) && (IsWild(pToSpec) || IsLFN(pToSpec))) {
+            //
+            // Don't check if ntfs, just if has altname!
+            //
+            if (pDTA->fd.cAlternateFileName[0]) {
+                RemoveLast(pToPath);
+                AppendToPath(pToPath, pDTA->fd.cAlternateFileName);
+                QualifyPath(pToPath);
 
-         (!bIsLFNDriveDest) &&
-         IsLFN (FindFileName (pFrom)) &&
-         (IsWild(pToSpec) || IsLFN(pToSpec))) {
+                if (dwOp == OPER_MKDIR) {
+                    RemoveLast(pcr->szDest);
+                    AppendToPath(pcr->szDest, pDTA->fd.cAlternateFileName);
+                }
 
-         //
-         // Don't check if ntfs, just if has altname!
-         //
-         if (pDTA->fd.cAlternateFileName[0]) {
-
-            RemoveLast(pToPath);
-            AppendToPath(pToPath,pDTA->fd.cAlternateFileName);
-            QualifyPath(pToPath);
-
-            if (dwOp == OPER_MKDIR) {
-               RemoveLast(pcr->szDest);
-               AppendToPath(pcr->szDest, pDTA->fd.cAlternateFileName);
+            } else {
+                goto MergeNames;
             }
+        } else {
+        MergeNames:
+            if (IsWild(pToPath)) {
+                LFNMergePath(pToPath, FindFileName(pFrom));
+            }
+        }
+    }
 
-         } else {
-            goto MergeNames;
-         }
-      } else {
+    if (dwOp == OPER_MKDIR) {
+        //
+        // For a directory copy to the same name, append the "- Copy", "- Symlink", "-Hardlink" suffix
+        // to both the target of this operation, and the target directory for
+        // recursive operations.  Unlike the regular file case, this does not
+        // consider file name extensions, since it is specific to directories.
+        //
 
-MergeNames:
-         if (IsWild(pToPath)) {
-            LFNMergePath(pToPath, FindFileName(pFrom));
-         }
-      }
-   }
+        if (!_wcsicmp(pFrom, pToPath)) {
+            switch (dwFunc) {
+                case FUNC_COPY:
+                    lstrcat(pToPath, L" - Copy");
+                    lstrcat(pcr->szDest, L" - Copy");
+                    break;
 
-   if (dwOp == OPER_MKDIR) {
+                case FUNC_LINK:
+                    lstrcat(pToPath, L" - Symlink");
+                    lstrcat(pcr->szDest, L" - Symlink");
+                    break;
 
-      //
-      // For a directory copy to the same name, append the "- Copy", "- Symlink", "-Hardlink" suffix
-      // to both the target of this operation, and the target directory for
-      // recursive operations.  Unlike the regular file case, this does not
-      // consider file name extensions, since it is specific to directories.
-      //
+                case FUNC_HARD:
+                    lstrcat(pToPath, L" - Junction");
+                    lstrcat(pcr->szDest, L" - Junction");
+                    break;
+            }
+        } else {
+            //
+            // Make sure the new directory is not a subdir of the original...
+            // Assumes case insensitivity.
+            //
+            pT = pToPath;
 
-      if (!_wcsicmp(pFrom, pToPath)) {
-         switch (dwFunc) {
-         case FUNC_COPY:
-            lstrcat(pToPath, L" - Copy");
-            lstrcat(pcr->szDest, L" - Copy");
-            break;
+            while (*pFrom && CharUpper((LPTSTR)(TUCHAR)*pFrom) == CharUpper((LPTSTR)(TUCHAR)*pT)) {
+                pFrom++;
+                pT++;
+            }
+            if (!*pFrom && (!*pT || *pT == CHAR_BACKSLASH)) {
+                // The two fully qualified strings are equal up to the end of the
+                //   source directory ==> the destination is a subdir.Must return
+                //   an error.
 
-         case FUNC_LINK:
-            lstrcat(pToPath, L" - Symlink");
-            lstrcat(pcr->szDest, L" - Symlink");
-            break;
+                dwOp = OPER_ERROR;
+                *pdwError = DE_DESTSUBTREE;
+            }
+        }
+    }
 
-         case FUNC_HARD:
-            lstrcat(pToPath, L" - Junction");
-            lstrcat(pcr->szDest, L" - Junction");
-            break;
-         }
-      } else {
-         //
-         // Make sure the new directory is not a subdir of the original...
-         // Assumes case insensitivity.
-         //
-         pT = pToPath;
-
-         while (*pFrom &&
-            CharUpper((LPTSTR)(TUCHAR)*pFrom) == CharUpper((LPTSTR)(TUCHAR)*pT)) {
-
-            pFrom++;
-            pT++;
-         }
-         if (!*pFrom && (!*pT || *pT == CHAR_BACKSLASH)) {
-
-            // The two fully qualified strings are equal up to the end of the
-            //   source directory ==> the destination is a subdir.Must return
-            //   an error.
-
-            dwOp = OPER_ERROR;
-            *pdwError = DE_DESTSUBTREE;
-         }
-      }
-   }
-
-   return dwOp;
+    return dwOp;
 }
 
+VOID CdDotDot(LPTSTR szOrig) {
+    TCHAR szTemp[MAXPATHLEN];
 
-VOID
-CdDotDot (LPTSTR szOrig)
-{
-   TCHAR szTemp[MAXPATHLEN];
-
-   lstrcpy(szTemp, szOrig);
-   StripFilespec(szTemp);
-   SetCurrentDirectory(szTemp);
+    lstrcpy(szTemp, szOrig);
+    StripFilespec(szTemp);
+    SetCurrentDirectory(szTemp);
 }
 
 /* p is a fully qualified ANSI string. */
-BOOL
-IsCurrentDirectory (LPTSTR p)
-{
-   TCHAR szTemp[MAXPATHLEN];
+BOOL IsCurrentDirectory(LPTSTR p) {
+    TCHAR szTemp[MAXPATHLEN];
 
-   GetDriveDirectory(DRIVEID(p) + 1, szTemp);
+    GetDriveDirectory(DRIVEID(p) + 1, szTemp);
 
-   return (lstrcmpi(szTemp, p) == 0);
+    return (lstrcmpi(szTemp, p) == 0);
 }
-
 
 //
 // test input for "multiple" filespec
@@ -1603,31 +1481,28 @@ IsCurrentDirectory (LPTSTR p)
 // note: this may hit the disk in the directory check
 //
 
-INT
-CheckMultiple(LPTSTR pInput)
-{
-  LPTSTR pT;
-  TCHAR szTemp[MAXPATHLEN];
+INT CheckMultiple(LPTSTR pInput) {
+    LPTSTR pT;
+    TCHAR szTemp[MAXPATHLEN];
 
-  /* Wildcards imply multiple files. */
-  if (IsWild(pInput))
-      return 1;     // wild card
+    /* Wildcards imply multiple files. */
+    if (IsWild(pInput))
+        return 1;  // wild card
 
-  /* More than one thing implies multiple files. */
-  pT = GetNextFile(pInput, szTemp, COUNTOF(szTemp));
-  if (!pT)
-      return 0;     // blank string
+    /* More than one thing implies multiple files. */
+    pT = GetNextFile(pInput, szTemp, COUNTOF(szTemp));
+    if (!pT)
+        return 0;  // blank string
 
-  StripBackslash(szTemp);
+    StripBackslash(szTemp);
 
-  if (IsDirectory(szTemp))
-      return 2;     // directory
+    if (IsDirectory(szTemp))
+        return 2;  // directory
 
-  pT = GetNextFile(pT, szTemp, COUNTOF(szTemp));
+    pT = GetNextFile(pT, szTemp, COUNTOF(szTemp));
 
-  return pT ? 1 : 0;    // several files, or just one
+    return pT ? 1 : 0;  // several files, or just one
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1637,32 +1512,29 @@ CheckMultiple(LPTSTR pInput)
 
 /* Prevents the user from diddling anything other than the cancel button. */
 
-VOID
-DialogEnterFileStuff(HWND hwnd)
-{
-   HWND hwndT;
+VOID DialogEnterFileStuff(HWND hwnd) {
+    HWND hwndT;
 
-   //
-   // set the focus to the cancel button so the user can hit space or esc
-   //
-   if (hwndT = GetDlgItem(hwnd, IDCANCEL)) {
-      SetFocus(hwndT);
-      SendMessage(hwnd,DM_SETDEFID,IDCANCEL,0L);
-   }
+    //
+    // set the focus to the cancel button so the user can hit space or esc
+    //
+    if (hwndT = GetDlgItem(hwnd, IDCANCEL)) {
+        SetFocus(hwndT);
+        SendMessage(hwnd, DM_SETDEFID, IDCANCEL, 0L);
+    }
 
-   //
-   // disable the ok button and the edit controls
-   //
-   if (hwndT = GetDlgItem(hwnd, IDOK))
-      EnableWindow(hwndT, FALSE);
+    //
+    // disable the ok button and the edit controls
+    //
+    if (hwndT = GetDlgItem(hwnd, IDOK))
+        EnableWindow(hwndT, FALSE);
 
-   if (hwndT = GetDlgItem(hwnd, IDD_TO))
-      EnableWindow(hwndT, FALSE);
+    if (hwndT = GetDlgItem(hwnd, IDD_TO))
+        EnableWindow(hwndT, FALSE);
 
-   if (hwndT = GetDlgItem(hwnd, IDD_FROM))
-      EnableWindow(hwndT, FALSE);
+    if (hwndT = GetDlgItem(hwnd, IDD_FROM))
+        EnableWindow(hwndT, FALSE);
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -1675,24 +1547,21 @@ DialogEnterFileStuff(HWND hwnd)
 // used for both the drag drop status dialogs and the manual user
 // entry dialogs so be careful what you change
 
-VOID
-Notify(HWND hDlg, WORD idMessage, LPTSTR szFrom, LPTSTR szTo)
-{
-   TCHAR szTemp[40];
+VOID Notify(HWND hDlg, WORD idMessage, LPTSTR szFrom, LPTSTR szTo) {
+    TCHAR szTemp[40];
 
-   if (idMessage) {
-      LoadString(hAppInstance, idMessage, szTemp, COUNTOF(szTemp));
-      SetDlgItemText(hDlg, IDD_STATUS, szTemp);
-      SetDlgItemPath(hDlg, IDD_NAME, szFrom);
-   } else {
-      SetDlgItemText(hDlg, IDD_STATUS, szNULL);
-      SetDlgItemText(hDlg, IDD_NAME, szNULL);
-   }
+    if (idMessage) {
+        LoadString(hAppInstance, idMessage, szTemp, COUNTOF(szTemp));
+        SetDlgItemText(hDlg, IDD_STATUS, szTemp);
+        SetDlgItemPath(hDlg, IDD_NAME, szFrom);
+    } else {
+        SetDlgItemText(hDlg, IDD_STATUS, szNULL);
+        SetDlgItemText(hDlg, IDD_NAME, szNULL);
+    }
 
-   // is this the drag/drop status dialog or the move/copy dialog
+    // is this the drag/drop status dialog or the move/copy dialog
 
-   SetDlgItemPath(hDlg, IDD_TONAME, szTo);
-
+    SetDlgItemPath(hDlg, IDD_TONAME, szTo);
 }
 
 //
@@ -1706,47 +1575,42 @@ Notify(HWND hDlg, WORD idMessage, LPTSTR szFrom, LPTSTR szTo)
 //
 // LFN: detect long names and ignore them?
 
-BOOL
-IsWindowsFile(LPTSTR szFileOEM)
-{
-   HMODULE hMod;
-   TCHAR szModule[MAXPATHLEN];
+BOOL IsWindowsFile(LPTSTR szFileOEM) {
+    HMODULE hMod;
+    TCHAR szModule[MAXPATHLEN];
 
-   //
-   // kernel can't load an lfn...
-   //
-   if (GetNameType(szFileOEM) == FILE_LONG)
-      return FALSE;
+    //
+    // kernel can't load an lfn...
+    //
+    if (GetNameType(szFileOEM) == FILE_LONG)
+        return FALSE;
 
+    // kernel won't accept long paths
 
-   // kernel won't accept long paths
+    lstrcpy(szModule, szFileOEM);
+    StripPath(szModule);
 
-   lstrcpy(szModule, szFileOEM);
-   StripPath(szModule);
+    hMod = GetModuleHandle(szModule);
 
-   hMod = GetModuleHandle(szModule);
+    // check for one cause that's what's returned if its MSDOS
+    // but it isn't really loaded because of xl 2.1c kernel hack
+    if (!hMod || hMod == (HANDLE)1)
+        return FALSE;
 
-   // check for one cause that's what's returned if its MSDOS
-   // but it isn't really loaded because of xl 2.1c kernel hack
-   if (!hMod || hMod == (HANDLE)1)
-      return FALSE;
+    GetModuleFileName(hMod, szModule, COUNTOF(szModule));
 
-   GetModuleFileName(hMod, szModule, COUNTOF(szModule));
-
-   if (!lstrcmpi(szFileOEM, szModule))     // they are both OEM & we
-      return TRUE;                    // just care about equality
-   else
-      return FALSE;
+    if (!lstrcmpi(szFileOEM, szModule))  // they are both OEM & we
+        return TRUE;                     // just care about equality
+    else
+        return FALSE;
 }
 
-
 DWORD
-SafeFileRemove(LPTSTR szFileOEM)
-{
-   if (IsWindowsFile(szFileOEM))
-      return DE_WINDOWSFILE;
-   else
-      return WFRemove(szFileOEM);
+SafeFileRemove(LPTSTR szFileOEM) {
+    if (IsWindowsFile(szFileOEM))
+        return DE_WINDOWSFILE;
+    else
+        return WFRemove(szFileOEM);
 }
 
 #ifdef NETCHECK
@@ -1756,92 +1620,81 @@ SafeFileRemove(LPTSTR szFileOEM)
 //
 #endif
 
-
 DWORD
-WF_CreateDirectory(HWND hwndParent, LPTSTR szDest, LPTSTR szSrc)
-{
-   DWORD ret = 0;
-   TCHAR szTemp[MAXPATHLEN + 1];    // +1 for AddBackslash()
-   LPTSTR p, pLastSpecEnd;
+WF_CreateDirectory(HWND hwndParent, LPTSTR szDest, LPTSTR szSrc) {
+    DWORD ret = 0;
+    TCHAR szTemp[MAXPATHLEN + 1];  // +1 for AddBackslash()
+    LPTSTR p, pLastSpecEnd;
 
-   LFNDTA DTAHack;
-   BOOL bLastExists;
+    LFNDTA DTAHack;
+    BOOL bLastExists;
 
-   //
-   // now create the full dir tree on the destination
-   //
-   StrNCpy(szTemp, szDest, COUNTOF(szTemp)-1);
-   pLastSpecEnd = szTemp + AddBackslash(szTemp)-1;
+    //
+    // now create the full dir tree on the destination
+    //
+    StrNCpy(szTemp, szDest, COUNTOF(szTemp) - 1);
+    pLastSpecEnd = szTemp + AddBackslash(szTemp) - 1;
 
-   p = SkipPathHead(szTemp);
+    p = SkipPathHead(szTemp);
 
-   if (!p)
-      return ERROR_INVALID_NAME;
+    if (!p)
+        return ERROR_INVALID_NAME;
 
-   //
-   // create each part of the dir in order
-   //
-   while (*p) {
+    //
+    // create each part of the dir in order
+    //
+    while (*p) {
+        //
+        // Keep track if the last component exists already
+        // so that when we reach the very last one, we know if we need
+        // to return the error "Entire dir path exists."
+        //
+        bLastExists = FALSE;
 
-      //
-      // Keep track if the last component exists already
-      // so that when we reach the very last one, we know if we need
-      // to return the error "Entire dir path exists."
-      //
-      bLastExists = FALSE;
+        while (*p && *p != CHAR_BACKSLASH)
+            p++;
 
-      while (*p && *p != CHAR_BACKSLASH)
-         p++;
+        if (*p) {
+            *p = CHAR_NULL;
 
+            if (WFFindFirst(&DTAHack, szTemp, ATTR_ALL)) {
+                WFFindClose(&DTAHack);
 
-      if (*p) {
+                if (!(DTAHack.fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+                    return DE_DIREXISTSASFILE;
 
-         *p = CHAR_NULL;
-
-         if (WFFindFirst(&DTAHack, szTemp, ATTR_ALL)) {
-
-            WFFindClose(&DTAHack);
-
-            if (!(DTAHack.fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-               return DE_DIREXISTSASFILE;
-
-            bLastExists = TRUE;
-
-         } else {
-
-            //
-            // When we reach the last spec, create the directory
-            // using the template.
-            //
-            if (ret = MKDir(szTemp, (p == pLastSpecEnd) ? szSrc : NULL)) {
-
-               //
-               // Here we must also ignore the ERROR_ALREADY_EXISTS error.
-               // Even though we checked for existence above, on NTFS, we
-               // may only have WX privilege so it was not found by
-               // FindFirstFile.
-               //
-               if (ERROR_ALREADY_EXISTS == ret)
-                  ret = ERROR_SUCCESS;
-               else
-                  return ret;
+                bLastExists = TRUE;
 
             } else {
+                //
+                // When we reach the last spec, create the directory
+                // using the template.
+                //
+                if (ret = MKDir(szTemp, (p == pLastSpecEnd) ? szSrc : NULL)) {
+                    //
+                    // Here we must also ignore the ERROR_ALREADY_EXISTS error.
+                    // Even though we checked for existence above, on NTFS, we
+                    // may only have WX privilege so it was not found by
+                    // FindFirstFile.
+                    //
+                    if (ERROR_ALREADY_EXISTS == ret)
+                        ret = ERROR_SUCCESS;
+                    else
+                        return ret;
 
-               wfYield();
+                } else {
+                    wfYield();
+                }
             }
-         }
 
-         *p++ = CHAR_BACKSLASH;
-      }
-   }
-   if (bLastExists)
-      ret = ERROR_ALREADY_EXISTS;
+            *p++ = CHAR_BACKSLASH;
+        }
+    }
+    if (bLastExists)
+        ret = ERROR_ALREADY_EXISTS;
 
-   return ret;   // return the last error code
+    return ret;  // return the last error code
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1866,41 +1719,31 @@ WF_CreateDirectory(HWND hwndParent, LPTSTR szDest, LPTSTR szSrc)
 //
 /////////////////////////////////////////////////////////////////////
 
-
 DWORD
-WFMoveCopyDriver(PCOPYINFO pCopyInfo)
-{
-   HANDLE hThreadCopy;
-   DWORD dwIgnore;
+WFMoveCopyDriver(PCOPYINFO pCopyInfo) {
+    HANDLE hThreadCopy;
+    DWORD dwIgnore;
 
-   //
-   // Move/Copy things.
-   //
-   hThreadCopy = CreateThread( NULL,
-      0L,
-      WFMoveCopyDriverThread,
-      pCopyInfo,
-      0L,
-      &dwIgnore);
+    //
+    // Move/Copy things.
+    //
+    hThreadCopy = CreateThread(NULL, 0L, WFMoveCopyDriverThread, pCopyInfo, 0L, &dwIgnore);
 
-   if (!hThreadCopy) {
+    if (!hThreadCopy) {
+        //
+        // Must free everything
+        //
+        LocalFree(pCopyInfo->pFrom);
+        LocalFree(pCopyInfo->pTo);
+        LocalFree(pCopyInfo);
 
-      //
-      // Must free everything
-      //
-      LocalFree(pCopyInfo->pFrom);
-      LocalFree(pCopyInfo->pTo);
-      LocalFree(pCopyInfo);
+        return GetLastError();
+    }
 
-      return GetLastError();
-   }
+    CloseHandle(hThreadCopy);
 
-
-   CloseHandle(hThreadCopy);
-
-   return 0;
+    return 0;
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1937,1159 +1780,1081 @@ WFMoveCopyDriver(PCOPYINFO pCopyInfo)
 
 DWORD
 WINAPI
-WFMoveCopyDriverThread(LPVOID lpParameter)
-{
-   PCOPYINFO pCopyInfo = (PCOPYINFO)lpParameter;
-   DWORD ret = 0;                     // Return value from WFMoveCopyDriver
-   LPWSTR pSpec = NULL;               // Pointer to file spec
-   DWORD dwAttr;                      // File attributes
-   DWORD dwResponse;                  // Response from ConfirmDialog call
-   DWORD oper = 0;                    // Disk operation being performed
-   TCHAR szDestSpec[MAXFILENAMELEN+1]; // Dest file spec
-   TCHAR szDest[2*MAXPATHLEN];         // Dest file (ANSI string)
+WFMoveCopyDriverThread(LPVOID lpParameter) {
+    PCOPYINFO pCopyInfo = (PCOPYINFO)lpParameter;
+    DWORD ret = 0;                         // Return value from WFMoveCopyDriver
+    LPWSTR pSpec = NULL;                   // Pointer to file spec
+    DWORD dwAttr;                          // File attributes
+    DWORD dwResponse;                      // Response from ConfirmDialog call
+    DWORD oper = 0;                        // Disk operation being performed
+    TCHAR szDestSpec[MAXFILENAMELEN + 1];  // Dest file spec
+    TCHAR szDest[2 * MAXPATHLEN];          // Dest file (ANSI string)
 
-   TCHAR szTemp[MAXPATHLEN];
+    TCHAR szTemp[MAXPATHLEN];
 
-   TCHAR szSource[MAXPATHLEN];         // Source file (ANSI string)
-   LFNDTA DTADest;                    // DTA block for reporting dest errors
-   PLFNDTA pDTA = NULL;               // DTA pointer for source errors
-   PCOPYROOT pcr;                     // Structure for searching source tree
-   BOOL bReplaceAll = FALSE;          // Replace all flag
-   BOOL bSubtreeDelAll = FALSE;       // Delete entire subtree flag
-   BOOL bDeleteAll = FALSE;           // Delete all files flag
+    TCHAR szSource[MAXPATHLEN];   // Source file (ANSI string)
+    LFNDTA DTADest;               // DTA block for reporting dest errors
+    PLFNDTA pDTA = NULL;          // DTA pointer for source errors
+    PCOPYROOT pcr;                // Structure for searching source tree
+    BOOL bReplaceAll = FALSE;     // Replace all flag
+    BOOL bSubtreeDelAll = FALSE;  // Delete entire subtree flag
+    BOOL bDeleteAll = FALSE;      // Delete all files flag
 
-   BOOL bReplaceReadOnlyAll = FALSE;          // Replace all flag
-   BOOL bSubtreeDelReadOnlyAll = FALSE;       // Delete entire subtree flag
-   BOOL bDeleteReadOnlyAll = FALSE;           // Delete all files flag
+    BOOL bReplaceReadOnlyAll = FALSE;     // Replace all flag
+    BOOL bSubtreeDelReadOnlyAll = FALSE;  // Delete entire subtree flag
+    BOOL bDeleteReadOnlyAll = FALSE;      // Delete all files flag
 
-   BOOL bNoAccessAll = FALSE;
-   BOOL bDirNotEmpty = FALSE;
+    BOOL bNoAccessAll = FALSE;
+    BOOL bDirNotEmpty = FALSE;
 
-   BOOL bFalse = FALSE;               // For cases that aren't disableable
-   INT CurIDS = 0;                    // Current string displayed in status
+    BOOL bFalse = FALSE;  // For cases that aren't disableable
+    INT CurIDS = 0;       // Current string displayed in status
 
-   BOOL bErrorOnDest = FALSE;
-   BOOL bIsLFNDriveDest = FALSE;
+    BOOL bErrorOnDest = FALSE;
+    BOOL bIsLFNDriveDest = FALSE;
 
-   BOOL bSameFile;                    // Source, dest same file?
-   BOOL bDoMoveRename;                // OPER_DOFILE and FUNC_{RENAME,MOVE}
+    BOOL bSameFile;      // Source, dest same file?
+    BOOL bDoMoveRename;  // OPER_DOFILE and FUNC_{RENAME,MOVE}
 
-   BOOL bConfirmed;
-   BOOL bFatalError = FALSE;
-   BOOL bErrorOccured = FALSE;
+    BOOL bConfirmed;
+    BOOL bFatalError = FALSE;
+    BOOL bErrorOccured = FALSE;
 
 #ifdef NETCHECK
-   BOOL fInvalidate = FALSE;          // whether to invalidate net types
+    BOOL fInvalidate = FALSE;  // whether to invalidate net types
 #endif
 
-   // Initialization stuff.  Disable all file system change processing until
-   // we're all done
+    // Initialization stuff.  Disable all file system change processing until
+    // we're all done
 
-   SwitchToSafeDrive();
+    SwitchToSafeDrive();
 
-   szDest[0] = szSource[0] = CHAR_NULL;
-   SendMessage(hwndFrame, FS_DISABLEFSC, 0, 0L);
+    szDest[0] = szSource[0] = CHAR_NULL;
+    SendMessage(hwndFrame, FS_DISABLEFSC, 0, 0L);
 
-   //
-   // Change all '/' characters to '\' characters in dest spec
-   //
-   CheckSlashes(pCopyInfo->pFrom);
+    //
+    // Change all '/' characters to '\' characters in dest spec
+    //
+    CheckSlashes(pCopyInfo->pFrom);
 
-   //
-   // Check for multiple source files
-   //
-   ManySource = CheckMultiple(pCopyInfo->pFrom);
+    //
+    // Check for multiple source files
+    //
+    ManySource = CheckMultiple(pCopyInfo->pFrom);
 
-   //
-   // Allocate buffer for searching the source tree
-   //
-   pcr = (PCOPYROOT)LocalAlloc(LPTR, sizeof(COPYROOT));
-   if (!pcr) {
-      ret = DE_INSMEM;
-      goto ShowMessageBox;
-   }
+    //
+    // Allocate buffer for searching the source tree
+    //
+    pcr = (PCOPYROOT)LocalAlloc(LPTR, sizeof(COPYROOT));
+    if (!pcr) {
+        ret = DE_INSMEM;
+        goto ShowMessageBox;
+    }
 
-   // Skip destination specific processing if we are deleting files
+    // Skip destination specific processing if we are deleting files
 
-   if (pCopyInfo->dwFunc != FUNC_DELETE) {
+    if (pCopyInfo->dwFunc != FUNC_DELETE) {
+        // it is an error condition if there are multiple files
+        // specified as the dest (but not a single directory)
 
-      // it is an error condition if there are multiple files
-      // specified as the dest (but not a single directory)
+        pSpec = GetNextFile(pCopyInfo->pTo, szTemp, COUNTOF(szTemp));
 
-      pSpec = GetNextFile(pCopyInfo->pTo, szTemp, COUNTOF(szTemp));
+        if (GetNextFile(pSpec, szTemp, MAXPATHLEN) != NULL) {
+            // move, copy specified with multiple destinations
+            // not allowed, error case
 
-      if (GetNextFile(pSpec, szTemp, MAXPATHLEN) != NULL) {
-         // move, copy specified with multiple destinations
-         // not allowed, error case
-
-         ret = DE_MANYDEST;
-         goto ShowMessageBox;
-      }
-
-      lstrcpy(pCopyInfo->pTo, szTemp);
-
-      QualifyPath(pCopyInfo->pTo);
-
-      if (pCopyInfo->dwFunc == FUNC_RENAME) {
-         // don't let them rename multiple files to one single file
-
-         if ((ManySource == 1) && !IsWild(pCopyInfo->pTo)) {
-            ret = DE_MANYSRC1DEST;
+            ret = DE_MANYDEST;
             goto ShowMessageBox;
-         }
+        }
 
-      } else {
+        lstrcpy(pCopyInfo->pTo, szTemp);
 
-         // We are either executing FUNC_COPY or FUNC_MOVE at this point.
-         // Check that the destination disk is there.  NOTE: There's a disk
-         // access here slowing us down.
+        QualifyPath(pCopyInfo->pTo);
 
-         //
-         // Change this from IsTheDiskReallyThere to CheckDrive to handle
-         // restoring connections.
-         //
-         if (CHAR_COLON == pCopyInfo->pTo[1]) {
-            if (!CheckDrive(hdlgProgress,DRIVEID(pCopyInfo->pTo),pCopyInfo->dwFunc))
-               goto CancelWholeOperation;
-         }
+        if (pCopyInfo->dwFunc == FUNC_RENAME) {
+            // don't let them rename multiple files to one single file
 
-         // deal with case where directory is implicit in source
-         // move/copy: *.* -> c:\windows, c:\windows -> c:\temp
-         // or foo.bar -> c:\temp
-         // do this not for junction or symlinks
+            if ((ManySource == 1) && !IsWild(pCopyInfo->pTo)) {
+                ret = DE_MANYSRC1DEST;
+                goto ShowMessageBox;
+            }
 
-         if (!IsWild(pCopyInfo->pTo) && (ManySource || IsDirectory(pCopyInfo->pTo)) && pCopyInfo->dwFunc != FUNC_LINK && pCopyInfo->dwFunc != FUNC_HARD) {
-            AddBackslash(pCopyInfo->pTo);
-            lstrcat(pCopyInfo->pTo, szStarDotStar);
-         }
-      }
+        } else {
+            // We are either executing FUNC_COPY or FUNC_MOVE at this point.
+            // Check that the destination disk is there.  NOTE: There's a disk
+            // access here slowing us down.
 
-      // FUNC_RENAME or FUNC_MOVE FUNC_COPY with a file name dest
-      // (possibly including wildcards).  Save the filespec and the path
-      // part of the destination
+            //
+            // Change this from IsTheDiskReallyThere to CheckDrive to handle
+            // restoring connections.
+            //
+            if (CHAR_COLON == pCopyInfo->pTo[1]) {
+                if (!CheckDrive(hdlgProgress, DRIVEID(pCopyInfo->pTo), pCopyInfo->dwFunc))
+                    goto CancelWholeOperation;
+            }
 
-      pSpec = FindFileName(pCopyInfo->pTo);
-      lstrcpy(szDestSpec,pSpec);
-      lstrcpy(szDest,pCopyInfo->pTo);
-      RemoveLast(szDest);
+            // deal with case where directory is implicit in source
+            // move/copy: *.* -> c:\windows, c:\windows -> c:\temp
+            // or foo.bar -> c:\temp
+            // do this not for junction or symlinks
 
-      pSpec = szDest + lstrlen(szDest);
+            if (!IsWild(pCopyInfo->pTo) && (ManySource || IsDirectory(pCopyInfo->pTo)) &&
+                pCopyInfo->dwFunc != FUNC_LINK && pCopyInfo->dwFunc != FUNC_HARD) {
+                AddBackslash(pCopyInfo->pTo);
+                lstrcat(pCopyInfo->pTo, szStarDotStar);
+            }
+        }
 
-      bIsLFNDriveDest = IsLFNDrive(pCopyInfo->pTo);
-   }
-   pcr->pSource = pCopyInfo->pFrom;
+        // FUNC_RENAME or FUNC_MOVE FUNC_COPY with a file name dest
+        // (possibly including wildcards).  Save the filespec and the path
+        // part of the destination
 
-   //
-   // Set up arguments for queued copy commands
-   //
+        pSpec = FindFileName(pCopyInfo->pTo);
+        lstrcpy(szDestSpec, pSpec);
+        lstrcpy(szDest, pCopyInfo->pTo);
+        RemoveLast(szDest);
 
-   while (pcr) {
+        pSpec = szDest + lstrlen(szDest);
 
-      // Allow the user to abort the operation
+        bIsLFNDriveDest = IsLFNDrive(pCopyInfo->pTo);
+    }
+    pcr->pSource = pCopyInfo->pFrom;
 
-      if (pCopyInfo->bUserAbort)
-         goto CancelWholeOperation;
+    //
+    // Set up arguments for queued copy commands
+    //
 
-      // Clean off the last filespec for multiple file copies
+    while (pcr) {
+        // Allow the user to abort the operation
 
-      if (pCopyInfo->dwFunc != FUNC_DELETE) {
-         *pSpec = CHAR_NULL;
-      }
+        if (pCopyInfo->bUserAbort)
+            goto CancelWholeOperation;
 
-      oper = GetNextPair(pcr,szSource,szDest,szDestSpec,pCopyInfo->dwFunc,&ret, bIsLFNDriveDest);
+        // Clean off the last filespec for multiple file copies
+
+        if (pCopyInfo->dwFunc != FUNC_DELETE) {
+            *pSpec = CHAR_NULL;
+        }
+
+        oper = GetNextPair(pcr, szSource, szDest, szDestSpec, pCopyInfo->dwFunc, &ret, bIsLFNDriveDest);
 
 #ifdef FASTMOVE
-      pcr->bFastMove = FALSE;
+        pcr->bFastMove = FALSE;
 #endif
 
+        // Check for no operation or error
 
-      // Check for no operation or error
-
-      if (!oper) {
-         LocalFree((HANDLE)pcr);
-         pcr = NULL;
-         break;
-      }
-      if ((oper & OPER_MASK) == OPER_ERROR) {
-         oper = OPER_DOFILE;
-         bFatalError = TRUE;
-         goto ShowMessageBox;
-      }
-
-      pDTA = CurPDTA(pcr);
-
-
-      if (pCopyInfo->bUserAbort)
-         goto CancelWholeOperation;
-
-      // Don't MKDIR on the root.
-      // This is the one anomaly of winfile's drag/drop copy.
-      // Dragging a folder usually creates the dragged folder in
-      // the destination (drag directory "foo" to "bar" and the
-      // directory "foo" appears in "bar").  But when dragging the
-      // root directory, there is no directory "root" or "\\".
-      // Instead, the roots contents are placed directly in the
-      // destination folder.
-
-      // On other OSs, dragging a root (i.e., the entire disk) to
-      // another folder creates a new folder named after the source
-      // disk.
-
-      if ((oper == OPER_MKDIR) && (szSource[lstrlen(szSource) - 1] == CHAR_BACKSLASH)) {
-         continue;
-      }
-
-      // Fix up source spec
-
-      if (ret = IsInvalidPath(szSource)) {
-         goto ShowMessageBox;
-      }
-
-      // Moved up for the wacky case of copy to floppy,
-      // disk full, swap in new disk, new disk already has
-      // the same file on it --> now it will put up the confirm
-      // dialog (again).
-
-      bConfirmed = FALSE;
-
-   TRY_COPY_AGAIN:
-
-      if (pCopyInfo->dwFunc != FUNC_DELETE) {
-
-         //
-         // If same name and copying, attempt to add a "- Copy" suffix.
-         //
-         bSameFile = !lstrcmpi(szSource, szDest);
-         if (bSameFile &&
-            (pCopyInfo->dwFunc == FUNC_COPY || pCopyInfo->dwFunc == FUNC_LINK || pCopyInfo->dwFunc == FUNC_HARD) &&
-            (oper != OPER_RMDIR)) {
-
-            // Source and destination are exactly the same
-            WCHAR szDestAlt[MAXPATHLEN + 2] = { 0 };
-            WCHAR szExtension[MAXPATHLEN + 2] = { 0 };
-            LPTSTR pExt;
-
-            lstrcpy(szDestAlt, szDest);
-
-            // Lets try to apply the 'Copy' pattern, e.g. 'file.ext' -> 'file - Copy.ext'
-            pExt = PathFindExtension(szDestAlt);
-            if (*pExt) {
-               // Split of extension if available
-               lstrcpy(szExtension, pExt);
-               *pExt = '\0';
-            }
-
-            // Postfix the operation
-            switch (pCopyInfo->dwFunc) {
-            case FUNC_COPY:
-               lstrcat(szDestAlt, L" - Copy");
-               break;
-
-            case FUNC_LINK:
-               lstrcat(szDestAlt, L" - Symlink");
-               break;
-
-            case FUNC_HARD:
-               lstrcat(szDestAlt, L" - Hardlink");
-               break;
-            }
-
-            lstrcat(szDestAlt, szExtension);
-
-            // We only do a one level '- Copy' postfixing, and do intentionally not go for a '- Copy (n)' postfix
-            if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(szDestAlt)) {
-               lstrcpy(szDest, szDestAlt);
-               bSameFile = FALSE;
-            } else {
-               // If one already used this '- Copy' postfix, bail out. Just one level.
-               ret = DE_RENAMREPLACE;
-               goto ShowMessageBox;
-            }
-
-         }
-         if (ret = IsInvalidPath(szDest)) {
-
-            bErrorOnDest = TRUE;
+        if (!oper) {
+            LocalFree((HANDLE)pcr);
+            pcr = NULL;
+            break;
+        }
+        if ((oper & OPER_MASK) == OPER_ERROR) {
+            oper = OPER_DOFILE;
+            bFatalError = TRUE;
             goto ShowMessageBox;
-         }
+        }
 
-         //
-         // Check to see if we are overwriting an existing file.  If so,
-         // better confirm.
-         //
-         bDoMoveRename = OPER_DOFILE == oper &&
-            (FUNC_RENAME == pCopyInfo->dwFunc || FUNC_MOVE == pCopyInfo->dwFunc);
-         if (oper == OPER_DOFILE && !(bSameFile && bDoMoveRename)) {
+        pDTA = CurPDTA(pcr);
 
-            if (WFFindFirst(&DTADest, szDest, ATTR_ALL)) {
+        if (pCopyInfo->bUserAbort)
+            goto CancelWholeOperation;
 
-               WCHAR szShortSource[MAXPATHLEN];
-               WCHAR szShortDest[MAXPATHLEN];
+        // Don't MKDIR on the root.
+        // This is the one anomaly of winfile's drag/drop copy.
+        // Dragging a folder usually creates the dragged folder in
+        // the destination (drag directory "foo" to "bar" and the
+        // directory "foo" appears in "bar").  But when dragging the
+        // root directory, there is no directory "root" or "\\".
+        // Instead, the roots contents are placed directly in the
+        // destination folder.
 
-               WFFindClose(&DTADest);
+        // On other OSs, dragging a root (i.e., the entire disk) to
+        // another folder creates a new folder named after the source
+        // disk.
 
-               //
-               // We may be renaming a lfn to its shortname or backwards
-               // (e.g., "A Long Filename.txt" to "alongf~1.txt")
-               // Only put up the dialog if this _isn't_ the case.
-               //
-               // We are actually hosed since the any directory
-               // in the path could be a longname/shortname pair.
-               // The only "correct" way of doing this is to use
-               // GetShortPathName.
-               //
+        if ((oper == OPER_MKDIR) && (szSource[lstrlen(szSource) - 1] == CHAR_BACKSLASH)) {
+            continue;
+        }
 
-               GetShortPathName(szDest, szShortDest, COUNTOF(szShortDest));
+        // Fix up source spec
 
-               GetShortPathName(szSource, szShortSource, COUNTOF(szShortSource));
+        if (ret = IsInvalidPath(szSource)) {
+            goto ShowMessageBox;
+        }
 
-               if (!lstrcmpi(szShortSource, szShortDest)) {
+        // Moved up for the wacky case of copy to floppy,
+        // disk full, swap in new disk, new disk already has
+        // the same file on it --> now it will put up the confirm
+        // dialog (again).
 
-                  ret = DE_SAMEFILE;
-                  goto ShowMessageBox;
-               }
+        bConfirmed = FALSE;
 
-               if (pCopyInfo->dwFunc == FUNC_RENAME) {
-                  ret = DE_RENAMREPLACE;
-                  goto ShowMessageBox;
-               }
+    TRY_COPY_AGAIN:
 
-               //
-               //  Save the attributes, since ConfirmDialog may change them.
-               //
-               dwAttr = GetFileAttributes(szDest);
+        if (pCopyInfo->dwFunc != FUNC_DELETE) {
+            //
+            // If same name and copying, attempt to add a "- Copy" suffix.
+            //
+            bSameFile = !lstrcmpi(szSource, szDest);
+            if (bSameFile &&
+                (pCopyInfo->dwFunc == FUNC_COPY || pCopyInfo->dwFunc == FUNC_LINK || pCopyInfo->dwFunc == FUNC_HARD) &&
+                (oper != OPER_RMDIR)) {
+                // Source and destination are exactly the same
+                WCHAR szDestAlt[MAXPATHLEN + 2] = { 0 };
+                WCHAR szExtension[MAXPATHLEN + 2] = { 0 };
+                LPTSTR pExt;
 
-               // we need to check if we are trying to copy a file
-               // over a directory and give a reasonable error message
+                lstrcpy(szDestAlt, szDest);
 
-               dwResponse = bConfirmed ?
-                  IDYES :
-                  ConfirmDialog(hdlgProgress,CONFIRMREPLACE,
-                     szDest,&DTADest,szSource,
-                     pDTA,bConfirmReplace,
-                     &bReplaceAll,
-                     bConfirmReadOnly,
-                     &bReplaceReadOnlyAll);
+                // Lets try to apply the 'Copy' pattern, e.g. 'file.ext' -> 'file - Copy.ext'
+                pExt = PathFindExtension(szDestAlt);
+                if (*pExt) {
+                    // Split of extension if available
+                    lstrcpy(szExtension, pExt);
+                    *pExt = '\0';
+                }
 
-               switch (dwResponse) {
+                // Postfix the operation
+                switch (pCopyInfo->dwFunc) {
+                    case FUNC_COPY:
+                        lstrcat(szDestAlt, L" - Copy");
+                        break;
 
-               case IDYES:       // Perform the delete
+                    case FUNC_LINK:
+                        lstrcat(szDestAlt, L" - Symlink");
+                        break;
 
-                  if ((pCopyInfo->dwFunc == FUNC_MOVE) || (pCopyInfo->dwFunc == FUNC_HARD) || (pCopyInfo->dwFunc == FUNC_LINK)) {
+                    case FUNC_HARD:
+                        lstrcat(szDestAlt, L" - Hardlink");
+                        break;
+                }
 
-                     // For FUNC_MOVE/FUNC_HARD/FUNC_LINK we need to delete the
-                     // destination first.  Do that now.
+                lstrcat(szDestAlt, szExtension);
 
-                     if (DTADest.fd.dwFileAttributes & ATTR_DIR) {
-                        if (IsCurrentDirectory(szDest))
-                           CdDotDot(szDest);
+                // We only do a one level '- Copy' postfixing, and do intentionally not go for a '- Copy (n)' postfix
+                if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(szDestAlt)) {
+                    lstrcpy(szDest, szDestAlt);
+                    bSameFile = FALSE;
+                } else {
+                    // If one already used this '- Copy' postfix, bail out. Just one level.
+                    ret = DE_RENAMREPLACE;
+                    goto ShowMessageBox;
+                }
+            }
+            if (ret = IsInvalidPath(szDest)) {
+                bErrorOnDest = TRUE;
+                goto ShowMessageBox;
+            }
 
-                        // Remove directory
+            //
+            // Check to see if we are overwriting an existing file.  If so,
+            // better confirm.
+            //
+            bDoMoveRename = OPER_DOFILE == oper && (FUNC_RENAME == pCopyInfo->dwFunc || FUNC_MOVE == pCopyInfo->dwFunc);
+            if (oper == OPER_DOFILE && !(bSameFile && bDoMoveRename)) {
+                if (WFFindFirst(&DTADest, szDest, ATTR_ALL)) {
+                    WCHAR szShortSource[MAXPATHLEN];
+                    WCHAR szShortDest[MAXPATHLEN];
+
+                    WFFindClose(&DTADest);
+
+                    //
+                    // We may be renaming a lfn to its shortname or backwards
+                    // (e.g., "A Long Filename.txt" to "alongf~1.txt")
+                    // Only put up the dialog if this _isn't_ the case.
+                    //
+                    // We are actually hosed since the any directory
+                    // in the path could be a longname/shortname pair.
+                    // The only "correct" way of doing this is to use
+                    // GetShortPathName.
+                    //
+
+                    GetShortPathName(szDest, szShortDest, COUNTOF(szShortDest));
+
+                    GetShortPathName(szSource, szShortSource, COUNTOF(szShortSource));
+
+                    if (!lstrcmpi(szShortSource, szShortDest)) {
+                        ret = DE_SAMEFILE;
+                        goto ShowMessageBox;
+                    }
+
+                    if (pCopyInfo->dwFunc == FUNC_RENAME) {
+                        ret = DE_RENAMREPLACE;
+                        goto ShowMessageBox;
+                    }
+
+                    //
+                    //  Save the attributes, since ConfirmDialog may change them.
+                    //
+                    dwAttr = GetFileAttributes(szDest);
+
+                    // we need to check if we are trying to copy a file
+                    // over a directory and give a reasonable error message
+
+                    dwResponse = bConfirmed
+                        ? IDYES
+                        : ConfirmDialog(
+                              hdlgProgress, CONFIRMREPLACE, szDest, &DTADest, szSource, pDTA, bConfirmReplace,
+                              &bReplaceAll, bConfirmReadOnly, &bReplaceReadOnlyAll);
+
+                    switch (dwResponse) {
+                        case IDYES:  // Perform the delete
+
+                            if ((pCopyInfo->dwFunc == FUNC_MOVE) || (pCopyInfo->dwFunc == FUNC_HARD) ||
+                                (pCopyInfo->dwFunc == FUNC_LINK)) {
+                                // For FUNC_MOVE/FUNC_HARD/FUNC_LINK we need to delete the
+                                // destination first.  Do that now.
+
+                                if (DTADest.fd.dwFileAttributes & ATTR_DIR) {
+                                    if (IsCurrentDirectory(szDest))
+                                        CdDotDot(szDest);
+
+                                    // Remove directory
 #ifdef NETCHECK
-                        fInvalidate = TRUE;  // following may delete share
+                                    fInvalidate = TRUE;  // following may delete share
 
-                        ret = bConfirmed ?
-                           WN_SUCCESS :
-                           NetCheck(szDest, WNDN_RMDIR);
+                                    ret = bConfirmed ? WN_SUCCESS : NetCheck(szDest, WNDN_RMDIR);
 
-                        switch (ret) {
-
-                        case WN_SUCCESS:
+                                    switch (ret) {
+                                        case WN_SUCCESS:
 #endif
-                           //
-                           // Remove directory
-                           //
+                                            //
+                                            // Remove directory
+                                            //
 
-                           ret = RMDir(szDest);
+                                            ret = RMDir(szDest);
 
-                           if (ERROR_SHARING_VIOLATION == ret) {
+                                            if (ERROR_SHARING_VIOLATION == ret) {
+                                                //
+                                                // We could have been watching this
+                                                // with the notify system
+                                                //
 
-                              //
-                              // We could have been watching this
-                              // with the notify system
-                              //
-
-                              //
-                              // Only do this for non-UNC
-                              //
-                              if (CHAR_COLON == szSource[1]) {
-
-                                 NotifyPause(DRIVEID(szSource),(UINT)-1);
-                                 ret = RMDir(szSource);
-                              }
-                           }
+                                                //
+                                                // Only do this for non-UNC
+                                                //
+                                                if (CHAR_COLON == szSource[1]) {
+                                                    NotifyPause(DRIVEID(szSource), (UINT)-1);
+                                                    ret = RMDir(szSource);
+                                                }
+                                            }
 #ifdef NETCHECK
-                           break;
+                                            break;
+
+                                        case WN_CONTINUE:
+                                            break;
+
+                                        case WN_CANCEL:
+                                            goto CancelWholeOperation;
+                                    }
+#endif
+                                } else {
+                                    //
+                                    // On move, must delete destination file
+                                    // on copy, the fs does this for us.
+                                    //
+                                    ret = SafeFileRemove(szDest);
+
+                                    //
+                                    //  Reset the file attributes that may have been
+                                    //  changed in the ConfirmDialog call.
+                                    //
+                                    //  This only happens in the ID_YES case for a
+                                    //  file (directories are not affected).
+                                    //
+                                    if (ret) {
+                                        SetFileAttributes(szDest, dwAttr);
+                                    }
+                                }
+
+                                if (ret) {
+                                    bErrorOnDest = TRUE;
+                                    goto ShowMessageBox;
+                                }
+
+                                //
+                                // no need to:
+                                // else  ret = SafeFileRemove (szDest);
+                                //
+                                // since the dest will be handled by the fs.
+                                // (Note that the "if (ret)" is moved into the
+                                // upper if clause since we don't set ret to
+                                // the SafeFileRemove return value.
+                                //
+                            }
+                            break;
+
+                        case IDNO:
+
+                            // Don't perform operation on current file
+
+                            continue;
+
+                        case IDCANCEL:
+                            goto CancelWholeOperation;
+
+                        default:
+                            ret = dwResponse;
+                            goto ShowMessageBox;
+                    }
+                }
+            }
+        }
+
+        // Now determine which operation to perform
+
+        switch (oper | pCopyInfo->dwFunc) {
+            case OPER_MKDIR | FUNC_COPY:  // Create destination directory
+            case OPER_MKDIR | FUNC_MOVE:  // Create dest, verify source delete
+
+                CurIDS = IDS_CREATINGMSG;
+                Notify(hdlgProgress, IDS_CREATINGMSG, szDest, szNULL);
+
+#ifdef NETCHECK
+
+                if (!bConfirmed) {
+                    switch (NetCheck(szDest, WNDN_MKDIR)) {
+                        case WN_SUCCESS:
+                            break;
 
                         case WN_CONTINUE:
-                           break;
+                            goto SkipMKDir;
 
                         case WN_CANCEL:
-                           goto CancelWholeOperation;
+                            goto CancelWholeOperation;
+                    }
+                }
+#endif
+
+                if (pCopyInfo->dwFunc == FUNC_MOVE) {
+#ifdef NETCHECK
+                    if (!bConfirmed) {
+                        fInvalidate = TRUE;  // following may delete share
+
+                        switch (NetCheck(szSource, WNDN_MVDIR)) {
+                            case WN_SUCCESS:
+                                break;
+
+                            case WN_CONTINUE:
+                                goto SkipMKDir;
+
+                            case WN_CANCEL:
+                                goto CancelWholeOperation;
+                        }
+                    }
+#endif
+
+#ifdef FASTMOVE
+                    if ((CHAR_COLON == pcr->sz[1]) && (CHAR_COLON == szDest[1]) &&
+                        (DRIVEID(pcr->sz) == DRIVEID(szDest))) {
+                        //
+                        // Warning: This will not work on winball drives!
+                        // There is a problem here: if this is winball,
+                        // then we get an ERROR_ACCESS_DENIED when we try to do
+                        // the fastmove.  We could continue normally with the
+                        // slowmove.  However, in the case of moving NTFS directories,
+                        // we may get ERROR_ACCESS_DENIED because we don't have
+                        // write permission on the directory.  In this case, we
+                        // want to ignore the entire directory.
+                        //
+                        // For now, this works because DTAFast.err is neither
+                        // ERROR_PATH_NOT_FOUND ERROR_FILE_NOT_FOUND, do we're
+                        // ok by accident.
+                        //
+
+                        pcr->bFastMove = TRUE;
+                        goto DoMove;
+                    }
+#endif
+                }
+
+#ifdef FASTMOVE
+            DoMkDir:
+#endif
+
+                ret = WF_CreateDirectory(hdlgProgress, szDest, szSource);
+
+                if (!ret)
+                    //
+                    // set attributes of dest to source (not including the
+                    // subdir and vollabel bits)
+                    //
+                    WFSetAttr(szDest, pDTA->fd.dwFileAttributes & ~(ATTR_DIR | ATTR_VOLUME));
+
+                //
+                // If it already exists ignore the error return
+                // as long as it is a directory and not a file.
+                //
+                if (ret == ERROR_ALREADY_EXISTS) {
+                    ret = WFIsDir(szDest) ? ERROR_SUCCESS : DE_DIREXISTSASFILE;
+                }
+
+                if (ret)
+                    bErrorOnDest = TRUE;
+
+                // set attributes of new directory to those of the source
+
+#ifdef NETCHECK
+            SkipMKDir:
+#endif
+                break;
+
+            // FUNC_HARD is here, because one can select a directory in the file-pane and have SHIFT+CTRL+ALT pressed to
+            // create a junction. In this very case we get a Junction creation 'disguised' as FUNC_HARD
+            case OPER_MKDIR | FUNC_HARD:
+            case OPER_MKDIR | FUNC_LINK: {
+                // Create symbolic link or junction
+                if (WFFindFirst(&DTADest, szDest, ATTR_ALL)) {
+                    WFFindClose(&DTADest);
+
+                    dwResponse = ConfirmDialog(
+                        hdlgProgress, CONFIRMREPLACE, szDest, &DTADest, szSource, pDTA, bConfirmSubDel, &bSubtreeDelAll,
+                        bConfirmReadOnly, &bSubtreeDelReadOnlyAll);
+
+                    switch (dwResponse) {
+                        case IDYES:  // Perform the delete
+                            RMDir(szDest);
+                            break;
+
+                        case IDNO:
+                            continue;
+
+                        case IDCANCEL:
+                            goto CancelWholeOperation;
+                    }
+                }
+                CurIDS = IDS_CREATINGMSG;
+                Notify(hdlgProgress, IDS_CREATINGMSG, szDest, szNULL);
+                switch (pCopyInfo->dwFunc) {
+                    case FUNC_LINK:
+                        ret = WFSymbolicLink(szSource, szDest, SYMBOLIC_LINK_FLAG_DIRECTORY);
+                        break;
+
+                    case FUNC_HARD:
+                        ret = WFJunction(szDest, szSource);
+                        break;
+                }
+
+                //
+                // If symlink dir already exists ignore the error. return
+                // as long as it is a directory and not a file.
+                //
+                if (ERROR_ALREADY_EXISTS == ret) {
+                    ret = WFIsDir(szDest) ? ERROR_SUCCESS : DE_DIREXISTSASFILE;
+                }
+
+                // Don't follow a reparse point in the source. Stop recursion of GetNextPair for this entry
+                pcr->cDepth = 0;
+
+                if (ret != ERROR_SUCCESS)
+                    bErrorOnDest = TRUE;
+            } break;
+
+            case OPER_MKDIR | FUNC_DELETE:
+
+                // Confirm removal of directory on this pass.  The directories
+                // are actually removed on the OPER_RMDIR pass
+
+                // We can't delete the root directory, so don't bother
+                // confirming it
+
+                if (IsRootDirectory(szSource))
+                    break;
+
+                if (bConfirmed)
+                    break;
+
+                dwResponse = ConfirmDialog(
+                    hdlgProgress, CONFIRMRMDIR, NULL, pDTA, szSource, NULL, bConfirmSubDel, &bSubtreeDelAll,
+                    bConfirmReadOnly, &bSubtreeDelReadOnlyAll);
+
+                switch (dwResponse) {
+                    case IDYES:
+
+#ifdef NETCHECK
+                        fInvalidate = TRUE;  // following may delete share
+                        switch (NetCheck(szSource, WNDN_RMDIR)) {
+                            case WN_SUCCESS:
+                                break;
+                            case WN_CANCEL:
+                            default:
+                                goto CancelWholeOperation;
                         }
 #endif
-                     } else {
+                        break;
 
-                         //
-                         // On move, must delete destination file
-                         // on copy, the fs does this for us.
-                         //
-                         ret = SafeFileRemove (szDest);
+                    case IDNO:
+                    case IDCANCEL:
+                        goto CancelWholeOperation;
 
-                         //
-                         //  Reset the file attributes that may have been
-                         //  changed in the ConfirmDialog call.
-                         //
-                         //  This only happens in the ID_YES case for a
-                         //  file (directories are not affected).
-                         //
-                         if (ret)
-                         {
-                             SetFileAttributes(szDest, dwAttr);
-                         }
-                     }
-
-                     if (ret) {
-                        bErrorOnDest = TRUE;
+                    default:
+                        ret = dwResponse;
                         goto ShowMessageBox;
-                     }
+                }
+                break;
+
+            case OPER_RMDIR | FUNC_MOVE:
+            case OPER_RMDIR | FUNC_DELETE:
+
+                CurIDS = IDS_REMOVINGDIRMSG;
+                Notify(hdlgProgress, IDS_REMOVINGDIRMSG, szSource, szNULL);
+                if (IsRootDirectory(szSource))
+                    break;
+                if (IsCurrentDirectory(szSource))
+                    CdDotDot(szSource);
 
-                     //
-                     // no need to:
-                     // else  ret = SafeFileRemove (szDest);
-                     //
-                     // since the dest will be handled by the fs.
-                     // (Note that the "if (ret)" is moved into the
-                     // upper if clause since we don't set ret to
-                     // the SafeFileRemove return value.
-                     //
-                  }
-                  break;
-
-               case IDNO:
-
-                  // Don't perform operation on current file
-
-                  continue;
-
-               case IDCANCEL:
-                  goto CancelWholeOperation;
-
-               default:
-                  ret = dwResponse;
-                  goto ShowMessageBox;
-               }
-            }
-         }
-      }
-
-      // Now determine which operation to perform
-
-      switch (oper | pCopyInfo->dwFunc) {
-
-      case OPER_MKDIR | FUNC_COPY:  // Create destination directory
-      case OPER_MKDIR | FUNC_MOVE:  // Create dest, verify source delete
-
-         CurIDS = IDS_CREATINGMSG;
-         Notify(hdlgProgress, IDS_CREATINGMSG, szDest, szNULL);
-
-#ifdef NETCHECK
-
-         if (!bConfirmed) {
-
-            switch (NetCheck(szDest, WNDN_MKDIR)) {
-            case WN_SUCCESS:
-               break;
-
-            case WN_CONTINUE:
-               goto SkipMKDir;
-
-            case WN_CANCEL:
-               goto CancelWholeOperation;
-            }
-         }
-#endif
-
-         if (pCopyInfo->dwFunc == FUNC_MOVE) {
-
-#ifdef NETCHECK
-            if (!bConfirmed)  {
-
-               fInvalidate = TRUE;  // following may delete share
-
-               switch (NetCheck(szSource, WNDN_MVDIR)) {
-               case WN_SUCCESS:
-                  break;
-
-               case WN_CONTINUE:
-                  goto SkipMKDir;
-
-               case WN_CANCEL:
-                  goto CancelWholeOperation;
-               }
-            }
-#endif
-
-#ifdef FASTMOVE
-            if ((CHAR_COLON == pcr->sz[1]) &&
-               (CHAR_COLON == szDest[1]) &&
-               (DRIVEID(pcr->sz) == DRIVEID(szDest))) {
-
-               //
-               // Warning: This will not work on winball drives!
-               // There is a problem here: if this is winball,
-               // then we get an ERROR_ACCESS_DENIED when we try to do
-               // the fastmove.  We could continue normally with the
-               // slowmove.  However, in the case of moving NTFS directories,
-               // we may get ERROR_ACCESS_DENIED because we don't have
-               // write permission on the directory.  In this case, we
-               // want to ignore the entire directory.
-               //
-               // For now, this works because DTAFast.err is neither
-               // ERROR_PATH_NOT_FOUND ERROR_FILE_NOT_FOUND, do we're
-               // ok by accident.
-               //
-
-               pcr->bFastMove = TRUE;
-               goto DoMove;
-            }
-#endif
-         }
-
-#ifdef FASTMOVE
-DoMkDir:
-#endif
-
-         ret = WF_CreateDirectory(hdlgProgress, szDest, szSource);
-
-         if (!ret)
-            //
-            // set attributes of dest to source (not including the
-            // subdir and vollabel bits)
-            //
-            WFSetAttr(szDest, pDTA->fd.dwFileAttributes & ~(ATTR_DIR|ATTR_VOLUME));
-
-         //
-         // If it already exists ignore the error return
-         // as long as it is a directory and not a file.
-         //
-         if (ret == ERROR_ALREADY_EXISTS) {
-
-            ret = WFIsDir(szDest) ?
-               ERROR_SUCCESS :
-               DE_DIREXISTSASFILE;
-         }
-
-         if (ret)
-            bErrorOnDest = TRUE;
-
-         // set attributes of new directory to those of the source
-
-#ifdef NETCHECK
-SkipMKDir:
-#endif
-         break;
-
-      // FUNC_HARD is here, because one can select a directory in the file-pane and have SHIFT+CTRL+ALT pressed to 
-      // create a junction. In this very case we get a Junction creation 'disguised' as FUNC_HARD
-      case OPER_MKDIR | FUNC_HARD: 
-      case OPER_MKDIR | FUNC_LINK:  
-      {
-         // Create symbolic link or junction
-         if (WFFindFirst(&DTADest, szDest, ATTR_ALL)) {
-            WFFindClose(&DTADest);
-
-            dwResponse = ConfirmDialog(hdlgProgress, CONFIRMREPLACE,
-               szDest, &DTADest, szSource, pDTA,
-               bConfirmSubDel,
-               &bSubtreeDelAll,
-               bConfirmReadOnly,
-               &bSubtreeDelReadOnlyAll);
-
-            switch (dwResponse) {
-            case IDYES:       // Perform the delete
-               RMDir(szDest);
-               break;
-
-            case IDNO:
-               continue;
-
-            case IDCANCEL:
-               goto CancelWholeOperation;
-            }
-         }
-         CurIDS = IDS_CREATINGMSG;
-         Notify(hdlgProgress, IDS_CREATINGMSG, szDest, szNULL);
-         switch (pCopyInfo->dwFunc) {
-         case FUNC_LINK:
-            ret = WFSymbolicLink(szSource, szDest, SYMBOLIC_LINK_FLAG_DIRECTORY);
-            break;
-
-         case FUNC_HARD:
-            ret = WFJunction(szDest, szSource);
-            break;
-         }
-
-         //
-         // If symlink dir already exists ignore the error. return
-         // as long as it is a directory and not a file.
-         //
-         if (ERROR_ALREADY_EXISTS == ret) {
-
-            ret = WFIsDir(szDest) ?
-               ERROR_SUCCESS :
-               DE_DIREXISTSASFILE;
-         }
-
-         // Don't follow a reparse point in the source. Stop recursion of GetNextPair for this entry
-         pcr->cDepth = 0;
-
-         if (ret != ERROR_SUCCESS)
-            bErrorOnDest = TRUE;
-      }
-      break;
-
-      case OPER_MKDIR | FUNC_DELETE:
-
-         // Confirm removal of directory on this pass.  The directories
-         // are actually removed on the OPER_RMDIR pass
-
-         // We can't delete the root directory, so don't bother
-         // confirming it
-
-         if (IsRootDirectory(szSource))
-            break;
-
-         if (bConfirmed)
-            break;
-
-         dwResponse = ConfirmDialog (hdlgProgress,CONFIRMRMDIR,
-            NULL,pDTA,szSource, NULL,
-            bConfirmSubDel,
-            &bSubtreeDelAll,
-            bConfirmReadOnly,
-            &bSubtreeDelReadOnlyAll);
-
-         switch (dwResponse) {
-         case IDYES:
-
-#ifdef NETCHECK
-            fInvalidate = TRUE;  // following may delete share
-            switch (NetCheck(szSource,WNDN_RMDIR)) {
-            case WN_SUCCESS:
-               break;
-            case WN_CANCEL:
-            default:
-               goto CancelWholeOperation;
-            }
-#endif
-            break;
-
-         case IDNO:
-         case IDCANCEL:
-            goto CancelWholeOperation;
-
-         default:
-            ret = dwResponse;
-            goto ShowMessageBox;
-         }
-         break;
-
-      case OPER_RMDIR | FUNC_MOVE:
-      case OPER_RMDIR | FUNC_DELETE:
-
-         CurIDS = IDS_REMOVINGDIRMSG;
-         Notify(hdlgProgress, IDS_REMOVINGDIRMSG, szSource, szNULL);
-         if (IsRootDirectory (szSource))
-            break;
-         if (IsCurrentDirectory (szSource))
-            CdDotDot (szSource);
-
-         //
-         // We already confirmed the delete at MKDIR time, so attempt
-         // to delete the directory
-         //
-
-         //
-         // Tuck away the attribs in case we fail.
-         //
-         dwAttr = GetFileAttributes(szSource);
-
-         WFSetAttr(szSource, FILE_ATTRIBUTE_NORMAL);
-
-         ret = RMDir(szSource);
-
-         if (ERROR_SHARING_VIOLATION == ret) {
-
-            //
-            // We could have been watching this with the notify system
-            //
-
-            //
-            // Only do this for non-UNC
-            //
-            if (CHAR_COLON == szSource[1]) {
-
-               NotifyPause(DRIVEID(szSource),(UINT)-1);
-               ret = RMDir(szSource);
-            }
-         }
-         //
-         // On failure, restore attributes
-         //
-         if (ret && INVALID_FILE_ATTRIBUTES != dwAttr)
-            WFSetAttr(szSource, dwAttr);
-
-         break;
-
-      case OPER_RMDIR | FUNC_COPY:
-         break;
-
-      case OPER_DOFILE | FUNC_HARD:
-      case OPER_DOFILE | FUNC_LINK:
-      case OPER_DOFILE | FUNC_COPY:
-
-
-         if (IsWindowsFile(szDest)) {
-
-            ret = DE_WINDOWSFILE;
-            bErrorOnDest = TRUE;
-            break;
-         }
-
-         //
-         // Now try to process the file.  Do extra error processing only
-         //      in 2 cases:
-         //
-         //  1) If a floppy is full let the user stick in a new disk
-         //  2) If the path doesn't exist (the user typed in
-         //     an explicit path that doesn't exist) ask if
-         //     we should create it.
-
-         // NOTE:  This processing is normally done by WFCopy.  But in
-         //              the case where LFN copy support is invoked, we have
-         //              to support this error condition here.  Modified by
-         //    C. Stevens, August 1991
-
-         switch (pCopyInfo->dwFunc) {
-         case FUNC_COPY:
-            ret = WFCopy(szSource, szDest);
-            break;
-
-         case FUNC_LINK:
-            ret = WFSymbolicLink(szSource, szDest, 0);
-            break;
-
-         case FUNC_HARD:
-            ret = WFHardLink(szSource, szDest);
-            break;
-         }
-
-         if (pCopyInfo->bUserAbort)
-            goto CancelWholeOperation;
-
-         if (((ret == ERROR_DISK_FULL) && IsRemovableDrive(DRIVEID(szDest))) ||
-            (ret == ERROR_PATH_NOT_FOUND))
-         {
-            //
-            // There was an error, so delete the file that was just written
-            // incorrectly.
-            //
-            // NOTE:  Must first make sure the attributes are clear so that
-            //        the delete will always succeed.
-            //
-            SetFileAttributes(szDest, FILE_ATTRIBUTE_NORMAL);
-            DeleteFile(szDest);
-
-            //
-            // Show retry popup.
-            //
-            ret = CopyMoveRetry(szDest, ret, &bErrorOnDest);
-            if (!ret)
-               goto TRY_COPY_AGAIN;
-
-            else if (DE_OPCANCELLED == ret)
-               goto CancelWholeOperation;
-         }
-
-         break;
-
-      case OPER_DOFILE | FUNC_RENAME:
-         {
-            TCHAR save1,save2;
-            LPTSTR p;
-
-            if (CurIDS != IDS_RENAMINGMSG) {
-               CurIDS = IDS_RENAMINGMSG;
-               Notify(hdlgProgress, IDS_RENAMINGMSG, szNULL, szNULL);
-            }
-
-            // Get raw source and dest paths.  Check to make sure the
-            // paths are the same
-
-            p = FindFileName(szSource);
-            save1 = *p;
-            *p = CHAR_NULL;
-            p = FindFileName(szDest);
-            save2 = *p;
-            *p = CHAR_NULL;
-            ret = lstrcmpi(szSource, szDest);
-            szSource[lstrlen(szSource)] = save1;
-            szDest[lstrlen(szDest)] = save2;
-            if (ret)  {
-               ret = DE_DIFFDIR;
-               break;
-            }
-            goto DoMoveRename;
-         }
-
-      case OPER_DOFILE | FUNC_MOVE:
-
-DoMove:
-
-         if (CurIDS != IDS_MOVINGMSG) {
-            CurIDS = IDS_MOVINGMSG;
-            Notify(hdlgProgress, IDS_MOVINGMSG, szNULL, szNULL);
-         }
-DoMoveRename:
-
-         // Don't allow the user to rename from or to the root
-         // directory
-
-         if (IsRootDirectory(szSource)) {
-            ret = DE_ROOTDIR;
-            break;
-         }
-         if (IsRootDirectory(szDest)) {
-
-            ret = DE_ROOTDIR;
-            bErrorOnDest = TRUE;
-            break;
-         }
-
-         if (IsCurrentDirectory(szSource))
-            CdDotDot(szSource);
-
-         //
-         //  Save the attributes, since ConfirmDialog may change them.
-         //
-         dwAttr = GetFileAttributes(szSource);
-
-         // Confirm the rename
-
-         if (!bConfirmed) {
-
-            dwResponse = ConfirmDialog (hdlgProgress,
-                  (pCopyInfo->dwFunc == FUNC_MOVE ?
-                  CONFIRMMOVE : CONFIRMRENAME),
-                  NULL,pDTA,szSource,NULL,
-                  FALSE,
-                  &bFalse,
-                  bConfirmReadOnly,
-                  &bReplaceReadOnlyAll);
-
-            switch (dwResponse) {
-            case IDYES:
-               break;
-
-            case IDNO:
-               continue;
-
-            case IDCANCEL:
-               goto CancelWholeOperation;
-
-            default:
-               ret = dwResponse;
-               goto ShowMessageBox;
-            }
-
-#ifdef NETCHECK
-            if (IsDirectory(szSource)) {
-
-               fInvalidate = TRUE;  // following may delete share
-               switch (NetCheck (szSource,WNDN_MVDIR)) {
-               case WN_SUCCESS:
-                  break;
-
-               case WN_CONTINUE:
-                  goto RenameMoveDone;
-
-               case WN_CANCEL:
-                  goto CancelWholeOperation;
-               }
-            }
-#endif
-         }
-
-         if (IsWindowsFile(szSource)) {
-            ret = DE_WINDOWSFILE;
-         } else {
-
-            //
-            // always do move!  Even across partitions!
-            //
-            ret = WFMove(szSource, szDest, &bErrorOnDest, pcr->bFastMove);
-
-            if (ERROR_SHARING_VIOLATION == ret &&
-               pDTA->fd.dwFileAttributes & ATTR_DIR) {
-
-               //
-               // We could have been watching this with the notify system
-               //
-
-               //
-               // Only do this for non-UNC
-               //
-               if (CHAR_COLON == szSource[1]) {
-
-                  NotifyPause(DRIVEID(szSource),(UINT)-1);
-                  ret = WFMove(szSource, szDest, &bErrorOnDest, pcr->bFastMove);
-               }
-            }
-
-            if (ret == DE_OPCANCELLED)
-               goto CancelWholeOperation;
-
-#ifdef FASTMOVE
-
-            if (pcr->bFastMove) {
-
-               //
-               // In the case of access denied, don't try and recurse
-               // since on NTFS, this will fail also.
-               //
-
-               if (ret) {
-
-                  //
-                  // We failed.
-                  //
-                  // Go back to MkDir.  We are no longer doing a fast move.
-                  //
-
-                  pcr->bFastMove = FALSE;
-                  goto DoMkDir;
-               }
-            }
-#endif
-
-            if (!ret)
-            {
-               // set attributes of dest to those of the source
-               WFSetAttr(szDest, pDTA->fd.dwFileAttributes);
-            }
-            else
-            {
                 //
-                //  Reset the attributes on the source file, since they
-                //  may have been changed by ConfirmDialog.
+                // We already confirmed the delete at MKDIR time, so attempt
+                // to delete the directory
                 //
-                SetFileAttributes(szSource, dwAttr);
+
+                //
+                // Tuck away the attribs in case we fail.
+                //
+                dwAttr = GetFileAttributes(szSource);
+
+                WFSetAttr(szSource, FILE_ATTRIBUTE_NORMAL);
+
+                ret = RMDir(szSource);
+
+                if (ERROR_SHARING_VIOLATION == ret) {
+                    //
+                    // We could have been watching this with the notify system
+                    //
+
+                    //
+                    // Only do this for non-UNC
+                    //
+                    if (CHAR_COLON == szSource[1]) {
+                        NotifyPause(DRIVEID(szSource), (UINT)-1);
+                        ret = RMDir(szSource);
+                    }
+                }
+                //
+                // On failure, restore attributes
+                //
+                if (ret && INVALID_FILE_ATTRIBUTES != dwAttr)
+                    WFSetAttr(szSource, dwAttr);
+
+                break;
+
+            case OPER_RMDIR | FUNC_COPY:
+                break;
+
+            case OPER_DOFILE | FUNC_HARD:
+            case OPER_DOFILE | FUNC_LINK:
+            case OPER_DOFILE | FUNC_COPY:
+
+                if (IsWindowsFile(szDest)) {
+                    ret = DE_WINDOWSFILE;
+                    bErrorOnDest = TRUE;
+                    break;
+                }
+
+                //
+                // Now try to process the file.  Do extra error processing only
+                //      in 2 cases:
+                //
+                //  1) If a floppy is full let the user stick in a new disk
+                //  2) If the path doesn't exist (the user typed in
+                //     an explicit path that doesn't exist) ask if
+                //     we should create it.
+
+                // NOTE:  This processing is normally done by WFCopy.  But in
+                //              the case where LFN copy support is invoked, we have
+                //              to support this error condition here.  Modified by
+                //    C. Stevens, August 1991
+
+                switch (pCopyInfo->dwFunc) {
+                    case FUNC_COPY:
+                        ret = WFCopy(szSource, szDest);
+                        break;
+
+                    case FUNC_LINK:
+                        ret = WFSymbolicLink(szSource, szDest, 0);
+                        break;
+
+                    case FUNC_HARD:
+                        ret = WFHardLink(szSource, szDest);
+                        break;
+                }
+
+                if (pCopyInfo->bUserAbort)
+                    goto CancelWholeOperation;
+
+                if (((ret == ERROR_DISK_FULL) && IsRemovableDrive(DRIVEID(szDest))) || (ret == ERROR_PATH_NOT_FOUND)) {
+                    //
+                    // There was an error, so delete the file that was just written
+                    // incorrectly.
+                    //
+                    // NOTE:  Must first make sure the attributes are clear so that
+                    //        the delete will always succeed.
+                    //
+                    SetFileAttributes(szDest, FILE_ATTRIBUTE_NORMAL);
+                    DeleteFile(szDest);
+
+                    //
+                    // Show retry popup.
+                    //
+                    ret = CopyMoveRetry(szDest, ret, &bErrorOnDest);
+                    if (!ret)
+                        goto TRY_COPY_AGAIN;
+
+                    else if (DE_OPCANCELLED == ret)
+                        goto CancelWholeOperation;
+                }
+
+                break;
+
+            case OPER_DOFILE | FUNC_RENAME: {
+                TCHAR save1, save2;
+                LPTSTR p;
+
+                if (CurIDS != IDS_RENAMINGMSG) {
+                    CurIDS = IDS_RENAMINGMSG;
+                    Notify(hdlgProgress, IDS_RENAMINGMSG, szNULL, szNULL);
+                }
+
+                // Get raw source and dest paths.  Check to make sure the
+                // paths are the same
+
+                p = FindFileName(szSource);
+                save1 = *p;
+                *p = CHAR_NULL;
+                p = FindFileName(szDest);
+                save2 = *p;
+                *p = CHAR_NULL;
+                ret = lstrcmpi(szSource, szDest);
+                szSource[lstrlen(szSource)] = save1;
+                szDest[lstrlen(szDest)] = save2;
+                if (ret) {
+                    ret = DE_DIFFDIR;
+                    break;
+                }
+                goto DoMoveRename;
             }
 
-            if (pCopyInfo->bUserAbort)
-               goto CancelWholeOperation;
-         }
+            case OPER_DOFILE | FUNC_MOVE:
+
+            DoMove:
+
+                if (CurIDS != IDS_MOVINGMSG) {
+                    CurIDS = IDS_MOVINGMSG;
+                    Notify(hdlgProgress, IDS_MOVINGMSG, szNULL, szNULL);
+                }
+            DoMoveRename:
+
+                // Don't allow the user to rename from or to the root
+                // directory
+
+                if (IsRootDirectory(szSource)) {
+                    ret = DE_ROOTDIR;
+                    break;
+                }
+                if (IsRootDirectory(szDest)) {
+                    ret = DE_ROOTDIR;
+                    bErrorOnDest = TRUE;
+                    break;
+                }
+
+                if (IsCurrentDirectory(szSource))
+                    CdDotDot(szSource);
+
+                //
+                //  Save the attributes, since ConfirmDialog may change them.
+                //
+                dwAttr = GetFileAttributes(szSource);
+
+                // Confirm the rename
+
+                if (!bConfirmed) {
+                    dwResponse = ConfirmDialog(
+                        hdlgProgress, (pCopyInfo->dwFunc == FUNC_MOVE ? CONFIRMMOVE : CONFIRMRENAME), NULL, pDTA,
+                        szSource, NULL, FALSE, &bFalse, bConfirmReadOnly, &bReplaceReadOnlyAll);
+
+                    switch (dwResponse) {
+                        case IDYES:
+                            break;
+
+                        case IDNO:
+                            continue;
+
+                        case IDCANCEL:
+                            goto CancelWholeOperation;
+
+                        default:
+                            ret = dwResponse;
+                            goto ShowMessageBox;
+                    }
 
 #ifdef NETCHECK
-RenameMoveDone:
+                    if (IsDirectory(szSource)) {
+                        fInvalidate = TRUE;  // following may delete share
+                        switch (NetCheck(szSource, WNDN_MVDIR)) {
+                            case WN_SUCCESS:
+                                break;
+
+                            case WN_CONTINUE:
+                                goto RenameMoveDone;
+
+                            case WN_CANCEL:
+                                goto CancelWholeOperation;
+                        }
+                    }
 #endif
-         break;
+                }
 
-      case OPER_DOFILE | FUNC_DELETE:
+                if (IsWindowsFile(szSource)) {
+                    ret = DE_WINDOWSFILE;
+                } else {
+                    //
+                    // always do move!  Even across partitions!
+                    //
+                    ret = WFMove(szSource, szDest, &bErrorOnDest, pcr->bFastMove);
 
-         if (CurIDS != IDS_DELETINGMSG) {
-            CurIDS = IDS_DELETINGMSG;
-            Notify(hdlgProgress,IDS_DELETINGMSG,szNULL, szNULL);
-         }
+                    if (ERROR_SHARING_VIOLATION == ret && pDTA->fd.dwFileAttributes & ATTR_DIR) {
+                        //
+                        // We could have been watching this with the notify system
+                        //
 
-         //
-         //  Save the attributes, since ConfirmDialog may change them.
-         //
-         dwAttr = GetFileAttributes(szSource);
+                        //
+                        // Only do this for non-UNC
+                        //
+                        if (CHAR_COLON == szSource[1]) {
+                            NotifyPause(DRIVEID(szSource), (UINT)-1);
+                            ret = WFMove(szSource, szDest, &bErrorOnDest, pcr->bFastMove);
+                        }
+                    }
 
-         // Confirm the delete first
+                    if (ret == DE_OPCANCELLED)
+                        goto CancelWholeOperation;
 
-         if (!bConfirmed) {
-            dwResponse = ConfirmDialog (hdlgProgress,CONFIRMDELETE,
-                  NULL,pDTA,szSource,NULL,
-                  bConfirmDelete,&bDeleteAll,
-                  bConfirmReadOnly,
-                  &bDeleteReadOnlyAll);
+#ifdef FASTMOVE
 
-            switch (dwResponse) {
+                    if (pcr->bFastMove) {
+                        //
+                        // In the case of access denied, don't try and recurse
+                        // since on NTFS, this will fail also.
+                        //
 
-            case IDYES:
-               break;
+                        if (ret) {
+                            //
+                            // We failed.
+                            //
+                            // Go back to MkDir.  We are no longer doing a fast move.
+                            //
 
-            case IDNO:
+                            pcr->bFastMove = FALSE;
+                            goto DoMkDir;
+                        }
+                    }
+#endif
 
-               // Set flag: not all deleted!
-               bDirNotEmpty = TRUE;
+                    if (!ret) {
+                        // set attributes of dest to those of the source
+                        WFSetAttr(szDest, pDTA->fd.dwFileAttributes);
+                    } else {
+                        //
+                        //  Reset the attributes on the source file, since they
+                        //  may have been changed by ConfirmDialog.
+                        //
+                        SetFileAttributes(szSource, dwAttr);
+                    }
 
-               continue;
+                    if (pCopyInfo->bUserAbort)
+                        goto CancelWholeOperation;
+                }
 
-            case IDCANCEL:
-               goto CancelWholeOperation;
+#ifdef NETCHECK
+            RenameMoveDone:
+#endif
+                break;
+
+            case OPER_DOFILE | FUNC_DELETE:
+
+                if (CurIDS != IDS_DELETINGMSG) {
+                    CurIDS = IDS_DELETINGMSG;
+                    Notify(hdlgProgress, IDS_DELETINGMSG, szNULL, szNULL);
+                }
+
+                //
+                //  Save the attributes, since ConfirmDialog may change them.
+                //
+                dwAttr = GetFileAttributes(szSource);
+
+                // Confirm the delete first
+
+                if (!bConfirmed) {
+                    dwResponse = ConfirmDialog(
+                        hdlgProgress, CONFIRMDELETE, NULL, pDTA, szSource, NULL, bConfirmDelete, &bDeleteAll,
+                        bConfirmReadOnly, &bDeleteReadOnlyAll);
+
+                    switch (dwResponse) {
+                        case IDYES:
+                            break;
+
+                        case IDNO:
+
+                            // Set flag: not all deleted!
+                            bDirNotEmpty = TRUE;
+
+                            continue;
+
+                        case IDCANCEL:
+                            goto CancelWholeOperation;
+
+                        default:
+                            ret = dwResponse;
+                            goto ShowMessageBox;
+                    }
+                }
+
+                // make sure we don't delete any open windows
+                // apps or dlls (lets hope this isn't too slow)
+
+                ret = SafeFileRemove(szSource);
+
+                //
+                //  Reset the file attributes, since ConfirmDialog may have
+                //  changed them.
+                //
+                if (ret) {
+                    SetFileAttributes(szSource, dwAttr);
+                }
+
+                break;
 
             default:
-               ret = dwResponse;
-               goto ShowMessageBox;
-            }
-         }
+                ret = DE_HOWDIDTHISHAPPEN;  // internal error
+                break;
+        }
 
-         // make sure we don't delete any open windows
-         // apps or dlls (lets hope this isn't too slow)
+        // Report any errors which have occurred
 
-         ret = SafeFileRemove(szSource);
-
-         //
-         //  Reset the file attributes, since ConfirmDialog may have
-         //  changed them.
-         //
-         if (ret)
-         {
-             SetFileAttributes(szSource, dwAttr);
-         }
-
-         break;
-
-      default:
-         ret = DE_HOWDIDTHISHAPPEN;   // internal error
-         break;
-      }
-
-      // Report any errors which have occurred
-
-      if (ret) {
-
-ShowMessageBox:
-
-         //
-         // Currently, deleting a non-empty dir does NOT
-         // return an error if an error occurred before.
-         // This is allowed because the user may have chose
-         // ignore.
-         //
-         if (ERROR_DIR_NOT_EMPTY == ret) {
-
-            bDirNotEmpty = TRUE;
-
-            if (bErrorOccured)
-               continue;
-         }
-
-         if ( ERROR_ACCESS_DENIED == ret ) {
-            if ( IDYES == ConfirmDialog (hdlgProgress,
-               bErrorOnDest ? CONFIRMNOACCESSDEST : CONFIRMNOACCESS,
-               NULL,pDTA,szSource,NULL,
-               FALSE,&bNoAccessAll,
-               FALSE, &bFalse)) {
-
-               // Put up message after finishing that
-               // the dir is not empty (all files/dirs where
-               // not deleted!)
-
-               bDirNotEmpty = TRUE;
-               bErrorOccured = TRUE;
-
-               ret = 0;
-               bErrorOnDest = FALSE;
-
-               pcr->bFastMove = TRUE;
-
-               continue;
-
-            } else {
-               goto ExitLoop;
-            }
-         }
-
-         INT errorIndex = pCopyInfo->dwFunc;
-         if (errorIndex == FUNC_HARD && IsDirectory(szSource))
-           errorIndex = FUNC_JUNC;
-         ret = CopyError(szSource, szDest, ret, errorIndex, oper, bErrorOnDest, bFatalError);
-
-         switch (ret) {
-         case DE_RETRY:
-            bConfirmed = TRUE;
-            goto TRY_COPY_AGAIN;
-
-         case DE_OPCANCELLED:
+        if (ret) {
+        ShowMessageBox:
 
             //
-            // Since we are cancelling an op, we definitely know that
-            // an error occurred.
+            // Currently, deleting a non-empty dir does NOT
+            // return an error if an error occurred before.
+            // This is allowed because the user may have chose
+            // ignore.
             //
-            bErrorOccured = TRUE;
-            ret = 0;
+            if (ERROR_DIR_NOT_EMPTY == ret) {
+                bDirNotEmpty = TRUE;
 
-            break;
+                if (bErrorOccured)
+                    continue;
+            }
 
-         default:
+            if (ERROR_ACCESS_DENIED == ret) {
+                if (IDYES ==
+                    ConfirmDialog(
+                        hdlgProgress, bErrorOnDest ? CONFIRMNOACCESSDEST : CONFIRMNOACCESS, NULL, pDTA, szSource, NULL,
+                        FALSE, &bNoAccessAll, FALSE, &bFalse)) {
+                    // Put up message after finishing that
+                    // the dir is not empty (all files/dirs where
+                    // not deleted!)
 
-CancelWholeOperation:
+                    bDirNotEmpty = TRUE;
+                    bErrorOccured = TRUE;
 
-            // Force a CopyCleanup in case there are any files in the
-            // copy queue
+                    ret = 0;
+                    bErrorOnDest = FALSE;
 
-            pCopyInfo->bUserAbort = TRUE;
-            goto ExitLoop;
-         }
-      }
-   }
+                    pcr->bFastMove = TRUE;
+
+                    continue;
+
+                } else {
+                    goto ExitLoop;
+                }
+            }
+
+            INT errorIndex = pCopyInfo->dwFunc;
+            if (errorIndex == FUNC_HARD && IsDirectory(szSource))
+                errorIndex = FUNC_JUNC;
+            ret = CopyError(szSource, szDest, ret, errorIndex, oper, bErrorOnDest, bFatalError);
+
+            switch (ret) {
+                case DE_RETRY:
+                    bConfirmed = TRUE;
+                    goto TRY_COPY_AGAIN;
+
+                case DE_OPCANCELLED:
+
+                    //
+                    // Since we are cancelling an op, we definitely know that
+                    // an error occurred.
+                    //
+                    bErrorOccured = TRUE;
+                    ret = 0;
+
+                    break;
+
+                default:
+
+                CancelWholeOperation:
+
+                    // Force a CopyCleanup in case there are any files in the
+                    // copy queue
+
+                    pCopyInfo->bUserAbort = TRUE;
+                    goto ExitLoop;
+            }
+        }
+    }
 
 ExitLoop:
 
-   // Copy any outstanding files in the copy queue
+    // Copy any outstanding files in the copy queue
 
-   // this happens in error cases where we broke out of the pcr loop
-   // without hitting the end
+    // this happens in error cases where we broke out of the pcr loop
+    // without hitting the end
 
-   if (pcr) {
-     GetNextCleanup(pcr);
-     LocalFree((HANDLE)pcr);
-   }
+    if (pcr) {
+        GetNextCleanup(pcr);
+        LocalFree((HANDLE)pcr);
+    }
 
-   //
-   // goofy way to make sure we've gotten all the WM_FSC messages
-   //
-   CleanupMessages();
+    //
+    // goofy way to make sure we've gotten all the WM_FSC messages
+    //
+    CleanupMessages();
 
-   SendMessage(hwndFrame, FS_ENABLEFSC, 0, 0L);
+    SendMessage(hwndFrame, FS_ENABLEFSC, 0, 0L);
 
-   //
-   // If we left with anything extra, tell user.
-   //
-   // But not if we the user aborted.
-   //
-   if (bDirNotEmpty && !pCopyInfo->bUserAbort) {
+    //
+    // If we left with anything extra, tell user.
+    //
+    // But not if we the user aborted.
+    //
+    if (bDirNotEmpty && !pCopyInfo->bUserAbort) {
+        TCHAR szMessage[MAXMESSAGELEN];
+        TCHAR szTitle[MAXTITLELEN];
 
-      TCHAR szMessage[MAXMESSAGELEN];
-      TCHAR szTitle[MAXTITLELEN];
+        LoadString(hAppInstance, IDS_COPYMOVENOTCOMPLETED, szTitle, COUNTOF(szTitle));
+        LoadString(hAppInstance, IDS_DIRREMAINS, szMessage, COUNTOF(szMessage));
 
-      LoadString( hAppInstance, IDS_COPYMOVENOTCOMPLETED, szTitle, COUNTOF( szTitle ));
-      LoadString( hAppInstance, IDS_DIRREMAINS, szMessage, COUNTOF (szMessage));
+        MessageBox(hdlgProgress, szMessage, szTitle, MB_ICONSTOP);
+    }
 
-      MessageBox ( hdlgProgress, szMessage, szTitle, MB_ICONSTOP );
-   }
-
-   NotifyResume(-1, (UINT)-1);
+    NotifyResume(-1, (UINT)-1);
 
 #ifdef NETCHECK
-   if (fInvalidate)
-      InvalidateAllNetTypes();   /* update special icons */
+    if (fInvalidate)
+        InvalidateAllNetTypes(); /* update special icons */
 #endif
 
-   SendMessage(hdlgProgress, FS_COPYDONE, ret, (LPARAM)pCopyInfo);
+    SendMessage(hdlgProgress, FS_COPYDONE, ret, (LPARAM)pCopyInfo);
 
-   LocalFree(pCopyInfo->pFrom);
-   LocalFree(pCopyInfo->pTo);
-   LocalFree(pCopyInfo);
+    LocalFree(pCopyInfo->pFrom);
+    LocalFree(pCopyInfo->pTo);
+    LocalFree(pCopyInfo);
 
-   return 0;
+    return 0;
 }
-
 
 //--------------------------------------------------------------------------*/
 //
@@ -3100,156 +2865,140 @@ ExitLoop:
 // Used by Danger Mouse to do moves and copies.
 
 DWORD
-DMMoveCopyHelper(
-   LPTSTR pFrom,
-   LPTSTR pTo,
-   INT iOperation)
-{
-   DWORD       dwStatus;
-   LPWSTR      pTemp;
-   PCOPYINFO   pCopyInfo;
+DMMoveCopyHelper(LPTSTR pFrom, LPTSTR pTo, INT iOperation) {
+    DWORD dwStatus;
+    LPWSTR pTemp;
+    PCOPYINFO pCopyInfo;
 
-   WCHAR      szConfirmFile[MAXPATHLEN+1];
-   HDC hDC;
+    WCHAR szConfirmFile[MAXPATHLEN + 1];
+    HDC hDC;
 
-   //
-   //  If either pointer is null, then return.
-   //
-   if (!pFrom || !pTo)
-       return(0);
+    //
+    //  If either pointer is null, then return.
+    //
+    if (!pFrom || !pTo)
+        return (0);
 
-   //
-   // Confirm mouse operations.
-   //
-   if (bConfirmMouse) {
-      INT iConfirmMsg = IDS_MOVEMOUSECONFIRM;
-      switch (iOperation) {
-      case DROP_COPY:
-         iConfirmMsg = IDS_COPYMOUSECONFIRM;
-         break;
-      case DROP_LINK:
-      case DROP_HARD:
-         iConfirmMsg = IDS_LINKMOUSECONFIRM;
-         break;
+    //
+    // Confirm mouse operations.
+    //
+    if (bConfirmMouse) {
+        INT iConfirmMsg = IDS_MOVEMOUSECONFIRM;
+        switch (iOperation) {
+            case DROP_COPY:
+                iConfirmMsg = IDS_COPYMOUSECONFIRM;
+                break;
+            case DROP_LINK:
+            case DROP_HARD:
+                iConfirmMsg = IDS_LINKMOUSECONFIRM;
+                break;
 
-      default:
-      case DROP_MOVE:
-         iConfirmMsg = IDS_MOVEMOUSECONFIRM;
-      }
-      LoadString(hAppInstance, iConfirmMsg, szTitle, COUNTOF(szTitle));
+            default:
+            case DROP_MOVE:
+                iConfirmMsg = IDS_MOVEMOUSECONFIRM;
+        }
+        LoadString(hAppInstance, iConfirmMsg, szTitle, COUNTOF(szTitle));
 
-      lstrcpy(szConfirmFile,pTo);
-      pTemp = FindFileName(szConfirmFile);
+        lstrcpy(szConfirmFile, pTo);
+        pTemp = FindFileName(szConfirmFile);
 
-      // Kill trailing backslash if not to the root directory.
-      if ((pTemp - szConfirmFile) > 3)
-         pTemp--;
+        // Kill trailing backslash if not to the root directory.
+        if ((pTemp - szConfirmFile) > 3)
+            pTemp--;
 
-      // Do check by look at end...
-      // ( for "\"f:\\this is\\a\"\\test" string  (  "f:\this is\a"\test  )
-      // A better test would be to see if pTemp has an odd number of quotes
-      if ( CHAR_DQUOTE == pTemp[lstrlen( pTemp ) -1] ) {
+        // Do check by look at end...
+        // ( for "\"f:\\this is\\a\"\\test" string  (  "f:\this is\a"\test  )
+        // A better test would be to see if pTemp has an odd number of quotes
+        if (CHAR_DQUOTE == pTemp[lstrlen(pTemp) - 1]) {
+            *pTemp = CHAR_DQUOTE;
+            *(pTemp + 1) = CHAR_NULL;
+        } else {
+            *pTemp = CHAR_NULL;
+        }
 
-         *pTemp = CHAR_DQUOTE;
-         *(pTemp+1) = CHAR_NULL;
-      } else {
-         *pTemp = CHAR_NULL;
-      }
+        hDC = GetDC(NULL);
+        CompactPath(hDC, szConfirmFile, GetSystemMetrics(SM_CXSCREEN) / 4 * 3);
+        ReleaseDC(NULL, hDC);
+        wsprintf(szMessage, szTitle, szConfirmFile);
 
-      hDC = GetDC(NULL);
-      CompactPath(hDC, szConfirmFile, GetSystemMetrics(SM_CXSCREEN)/4*3);
-      ReleaseDC(NULL, hDC);
-      wsprintf(szMessage, szTitle, szConfirmFile);
+        LoadString(hAppInstance, IDS_MOUSECONFIRM, szTitle, COUNTOF(szTitle));
 
-      LoadString(hAppInstance, IDS_MOUSECONFIRM, szTitle, COUNTOF(szTitle));
+        if (MessageBox(hwndFrame, szMessage, szTitle, MB_YESNO | MB_ICONEXCLAMATION | MB_SETFOREGROUND) != IDYES)
+            return DE_OPCANCELLED;
+    }
 
-      if (MessageBox(hwndFrame, szMessage, szTitle, MB_YESNO | MB_ICONEXCLAMATION | MB_SETFOREGROUND) != IDYES)
-         return DE_OPCANCELLED;
-   }
+    pCopyInfo = (PCOPYINFO)LocalAlloc(LPTR, sizeof(COPYINFO));
 
+    if (!pCopyInfo) {
+    Error:
 
-   pCopyInfo = (PCOPYINFO) LocalAlloc(LPTR, sizeof(COPYINFO));
+        FormatError(TRUE, szMessage, COUNTOF(szMessage), GetLastError());
+        LoadString(hAppInstance, IDS_WINFILE, szTitle, COUNTOF(szTitle));
 
-   if (!pCopyInfo) {
+        MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONEXCLAMATION);
 
-Error:
+        //
+        // return error message
+        //
+        return ERROR_OUTOFMEMORY;
+    }
 
-      FormatError(TRUE, szMessage, COUNTOF(szMessage), GetLastError());
-      LoadString(hAppInstance, IDS_WINFILE, szTitle, COUNTOF(szTitle));
+    pCopyInfo->pFrom = (LPTSTR)LocalAlloc(LMEM_FIXED, ByteCountOf(lstrlen(pFrom) + 1));
 
-      MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONEXCLAMATION);
+    pCopyInfo->pTo = (LPTSTR)LocalAlloc(LMEM_FIXED, ByteCountOf(lstrlen(pTo) + 1));
 
-      //
-      // return error message
-      //
-      return ERROR_OUTOFMEMORY;
-   }
+    if (!pCopyInfo->pFrom || !pCopyInfo->pTo) {
+        if (pCopyInfo->pFrom)
+            LocalFree(pCopyInfo->pFrom);
 
-   pCopyInfo->pFrom = (LPTSTR) LocalAlloc(LMEM_FIXED,
-                                          ByteCountOf(lstrlen(pFrom)+1));
+        if (pCopyInfo->pTo)
+            LocalFree(pCopyInfo->pTo);
 
-   pCopyInfo->pTo = (LPTSTR) LocalAlloc(LMEM_FIXED,
-                                        ByteCountOf(lstrlen(pTo)+1));
+        goto Error;
+    }
 
-   if (!pCopyInfo->pFrom || !pCopyInfo->pTo) {
+    switch (iOperation) {
+        case DROP_COPY:
+            pCopyInfo->dwFunc = FUNC_COPY;
+            break;
+        case DROP_LINK:
+            pCopyInfo->dwFunc = FUNC_LINK;
+            break;
+        case DROP_HARD:
+            pCopyInfo->dwFunc = FUNC_HARD;
+            break;
 
-      if (pCopyInfo->pFrom)
-         LocalFree(pCopyInfo->pFrom);
+        default:
+        case DROP_MOVE:
+            pCopyInfo->dwFunc = FUNC_MOVE;
+            break;
+    }
+    pCopyInfo->bUserAbort = FALSE;
 
-      if (pCopyInfo->pTo)
-         LocalFree(pCopyInfo->pTo);
+    lstrcpy(pCopyInfo->pFrom, pFrom);
+    lstrcpy(pCopyInfo->pTo, pTo);
 
-      goto Error;
-   }
+    dwStatus = (DWORD)DialogBoxParam(
+        hAppInstance, (LPTSTR)MAKEINTRESOURCE(DMSTATUSDLG), hwndFrame, ProgressDlgProc, (LPARAM)pCopyInfo);
 
-   switch (iOperation) {
-   case DROP_COPY:
-      pCopyInfo->dwFunc = FUNC_COPY;
-      break;
-   case DROP_LINK:
-      pCopyInfo->dwFunc = FUNC_LINK;
-      break;
-   case DROP_HARD:
-      pCopyInfo->dwFunc = FUNC_HARD;
-      break;
-
-   default:
-   case DROP_MOVE:
-      pCopyInfo->dwFunc = FUNC_MOVE;
-      break;
-   }
-   pCopyInfo->bUserAbort = FALSE;
-
-   lstrcpy(pCopyInfo->pFrom, pFrom);
-   lstrcpy(pCopyInfo->pTo, pTo);
-
-   dwStatus = (DWORD)DialogBoxParam(hAppInstance,
-                                    (LPTSTR) MAKEINTRESOURCE(DMSTATUSDLG),
-                                    hwndFrame,
-                                    ProgressDlgProc,
-                                    (LPARAM)pCopyInfo);
-
-   return dwStatus;
+    return dwStatus;
 }
 
 DWORD
-FileRemove(LPTSTR pSpec)
-{
-   if (DeleteFile(pSpec))
-      return (DWORD)0;
-   else
-      return GetLastError();
+FileRemove(LPTSTR pSpec) {
+    if (DeleteFile(pSpec))
+        return (DWORD)0;
+    else
+        return GetLastError();
 }
 
-
 DWORD
-FileMove(LPTSTR pFrom, LPTSTR pTo, PBOOL pbErrorOnDest, BOOL bSilent)
-{
-   DWORD result;
-   BOOL bTried = FALSE;
-   LPTSTR pTemp;
+FileMove(LPTSTR pFrom, LPTSTR pTo, PBOOL pbErrorOnDest, BOOL bSilent) {
+    DWORD result;
+    BOOL bTried = FALSE;
+    LPTSTR pTemp;
 
-   *pbErrorOnDest = FALSE;
+    *pbErrorOnDest = FALSE;
 
 TryAgain:
     if (MoveFile((LPTSTR)pFrom, (LPTSTR)pTo))
@@ -3260,38 +3009,33 @@ TryAgain:
     // try to create the destination if it is not there
 
     if (result == ERROR_PATH_NOT_FOUND) {
+        if (bSilent) {
+            if (!bTried) {
+                //
+                // Silently create the directory
+                //
+                pTemp = FindFileName(pTo) - 1;
+                *pTemp = CHAR_NULL;
 
-       if (bSilent) {
+                result = WF_CreateDirectory(hdlgProgress, pTo, NULL);
 
-          if (!bTried) {
+                *pTemp = CHAR_BACKSLASH;
+                bTried = TRUE;
 
-             //
-             // Silently create the directory
-             //
-             pTemp = FindFileName(pTo) - 1;
-             *pTemp = CHAR_NULL;
+                if (!result)
+                    goto TryAgain;
+            }
+            return result;
+        }
 
-             result = WF_CreateDirectory(hdlgProgress, pTo, NULL);
-
-             *pTemp = CHAR_BACKSLASH;
-             bTried = TRUE;
-
-             if (!result)
-                goto TryAgain;
-          }
-          return result;
-       }
-
-       result = CopyMoveRetry(pTo, (INT)result, pbErrorOnDest);
-       if (!result)
-          goto TryAgain;
-       else
-          return result;
+        result = CopyMoveRetry(pTo, (INT)result, pbErrorOnDest);
+        if (!result)
+            goto TryAgain;
+        else
+            return result;
     }
-   return(result);
+    return (result);
 }
-
-
 
 /*============================================================================
 ;
@@ -3327,74 +3071,70 @@ TryAgain:
 ============================================================================*/
 
 DWORD
-CopyError(LPTSTR pszSource,
-   LPTSTR pszDest,
-   DWORD dwError,
-   DWORD dwFunc,
-   INT nOper,
-   BOOL bErrorOnDest,
-   BOOL bFatalError)
-{
-   TCHAR szVerb[MAXERRORLEN];          /* Verb describing error */
-   TCHAR szReason[MAXERRORLEN];        /* Reason for error */
-   TCHAR szFile[MAXPATHLEN+1];
-   TCHAR szTitle[MAXTITLELEN];
-   TCHAR szMessage[MAXMESSAGELEN];
-   HDC hDC;
+CopyError(
+    LPTSTR pszSource,
+    LPTSTR pszDest,
+    DWORD dwError,
+    DWORD dwFunc,
+    INT nOper,
+    BOOL bErrorOnDest,
+    BOOL bFatalError) {
+    TCHAR szVerb[MAXERRORLEN];   /* Verb describing error */
+    TCHAR szReason[MAXERRORLEN]; /* Reason for error */
+    TCHAR szFile[MAXPATHLEN + 1];
+    TCHAR szTitle[MAXTITLELEN];
+    TCHAR szMessage[MAXMESSAGELEN];
+    HDC hDC;
 
-   if (dwError == DE_OPCANCELLED)    // user abort
-      return DE_OPCANCELLED;
+    if (dwError == DE_OPCANCELLED)  // user abort
+        return DE_OPCANCELLED;
 
-   // Make sure the whole path name fits on the screen
+    // Make sure the whole path name fits on the screen
 
-   StrCpyN(szFile, bErrorOnDest ? pszDest : pszSource, COUNTOF(szFile));
-   hDC = GetDC(NULL);
-   CompactPath(hDC, szFile, GetSystemMetrics(SM_CXSCREEN)/4*3);
-   ReleaseDC(NULL, hDC);
+    StrCpyN(szFile, bErrorOnDest ? pszDest : pszSource, COUNTOF(szFile));
+    hDC = GetDC(NULL);
+    CompactPath(hDC, szFile, GetSystemMetrics(SM_CXSCREEN) / 4 * 3);
+    ReleaseDC(NULL, hDC);
 
-   LoadString(hAppInstance, IDS_COPYERROR + dwFunc, szTitle, COUNTOF(szTitle));
+    LoadString(hAppInstance, IDS_COPYERROR + dwFunc, szTitle, COUNTOF(szTitle));
 
-   // get the verb string
+    // get the verb string
 
-   if (nOper == OPER_DOFILE || !nOper) {
+    if (nOper == OPER_DOFILE || !nOper) {
+        if (bErrorOnDest)
+            // this is bogus, this could be IDS_CREATING as well...
+            LoadString(hAppInstance, IDS_REPLACING, szVerb, COUNTOF(szVerb));
+        else
+            LoadString(hAppInstance, IDS_VERBS + dwFunc, szVerb, COUNTOF(szVerb));
 
-      if (bErrorOnDest)
-         // this is bogus, this could be IDS_CREATING as well...
-         LoadString(hAppInstance, IDS_REPLACING, szVerb, COUNTOF(szVerb));
-      else
-         LoadString(hAppInstance, IDS_VERBS + dwFunc, szVerb, COUNTOF(szVerb));
+    } else {
+        LoadString(hAppInstance, IDS_ACTIONS + (nOper >> 8), szVerb, COUNTOF(szVerb));
+    }
 
-   } else {
-      LoadString(hAppInstance, IDS_ACTIONS + (nOper >> 8), szVerb, COUNTOF(szVerb));
-   }
+    // get the reason string
 
-   // get the reason string
+    FormatError(TRUE, szReason, COUNTOF(szReason), dwError);
 
-   FormatError(TRUE, szReason, COUNTOF(szReason), dwError);
+    // use the files names or "Selected files" if file list too long
 
-   // use the files names or "Selected files" if file list too long
+    if (!nOper && (lstrlen(pszSource) > 64))
+        LoadString(hAppInstance, IDS_SELECTEDFILES, pszSource, 64);
 
-   if (!nOper && (lstrlen(pszSource) > 64))
-      LoadString(hAppInstance, IDS_SELECTEDFILES, pszSource, 64);
+    wsprintf(szMessage, szVerb, szFile, szReason);
 
-   wsprintf(szMessage, szVerb, szFile, szReason);
-
-   switch (MessageBox(hdlgProgress, szMessage, szTitle,
-      bFatalError || !ManySource ?
-         MB_ICONSTOP | MB_OK :
-         MB_ABORTRETRYIGNORE | MB_ICONSTOP | MB_DEFBUTTON2)) {
-
-   case IDRETRY:
-      return DE_RETRY;
-   case IDIGNORE:
-      return DE_OPCANCELLED;
-   case IDABORT:
-   case IDOK:
-   default:
-      return dwError;
-   }
+    switch (MessageBox(
+        hdlgProgress, szMessage, szTitle,
+        bFatalError || !ManySource ? MB_ICONSTOP | MB_OK : MB_ABORTRETRYIGNORE | MB_ICONSTOP | MB_DEFBUTTON2)) {
+        case IDRETRY:
+            return DE_RETRY;
+        case IDIGNORE:
+            return DE_OPCANCELLED;
+        case IDABORT:
+        case IDOK:
+        default:
+            return dwError;
+    }
 }
-
 
 /*============================================================================
 ;
@@ -3418,79 +3158,74 @@ CopyError(LPTSTR pszSource,
 ;
 ============================================================================*/
 
-INT
-CopyMoveRetry(LPTSTR pszDest, INT nError, PBOOL pbErrorOnDest)
-{
-   TCHAR szReason[128]; /* Error message string */
-   LPTSTR pTemp;         /* Pointer into filename */
-   WORD wFlags;        /* Message box flags */
-   INT  result;        /* Return from MessageBox call */
-   WCHAR szMessage[MAXMESSAGELEN];
-   WCHAR szTitle[128];
+INT CopyMoveRetry(LPTSTR pszDest, INT nError, PBOOL pbErrorOnDest) {
+    TCHAR szReason[128]; /* Error message string */
+    LPTSTR pTemp;        /* Pointer into filename */
+    WORD wFlags;         /* Message box flags */
+    INT result;          /* Return from MessageBox call */
+    WCHAR szMessage[MAXMESSAGELEN];
+    WCHAR szTitle[128];
 
-   do {     // until the destination path has been created
+    do {  // until the destination path has been created
 
-      *pbErrorOnDest = FALSE;
+        *pbErrorOnDest = FALSE;
 
-      GetWindowText(hdlgProgress, szTitle, COUNTOF(szTitle));
+        GetWindowText(hdlgProgress, szTitle, COUNTOF(szTitle));
 
-      if (nError == ERROR_PATH_NOT_FOUND) {
+        if (nError == ERROR_PATH_NOT_FOUND) {
+            LoadString(hAppInstance, IDS_PATHNOTTHERE, szReason, COUNTOF(szReason));
 
-         LoadString(hAppInstance, IDS_PATHNOTTHERE, szReason, COUNTOF(szReason));
+            // Note the -1 below here is valid in both SBCS and DBCS because
+            // pszDest is fully qualified and the character preceding the
+            // file name must be a backslash
 
-         // Note the -1 below here is valid in both SBCS and DBCS because
-         // pszDest is fully qualified and the character preceding the
-         // file name must be a backslash
+            pTemp = FindFileName(pszDest) - 1;
+            *pTemp = CHAR_NULL;
+            wsprintf(szMessage, szReason, pszDest);
 
-         pTemp = FindFileName(pszDest) - 1;
-         *pTemp = CHAR_NULL;
-         wsprintf(szMessage, szReason, pszDest);
+            *pTemp = CHAR_BACKSLASH;
+            wFlags = MB_ICONEXCLAMATION | MB_YESNO;
 
-         *pTemp = CHAR_BACKSLASH;
-         wFlags = MB_ICONEXCLAMATION | MB_YESNO;
+        } else {
+            wFlags = MB_ICONEXCLAMATION | MB_OKCANCEL;
+            LoadString(hAppInstance, IDS_DESTFULL, szMessage, COUNTOF(szMessage));
+        }
 
-      } else {
-         wFlags = MB_ICONEXCLAMATION | MB_OKCANCEL;
-         LoadString(hAppInstance, IDS_DESTFULL, szMessage, COUNTOF(szMessage));
-      }
+        result = MessageBox(hdlgProgress, szMessage, szTitle, wFlags);
 
-      result = MessageBox(hdlgProgress,szMessage,szTitle,wFlags);
+        if (result == IDOK || result == IDYES) {
+            // Allow the disk to be formatted
+            // BOOL bModal added (TRUE)
+            if (!IsTheDiskReallyThere(hdlgProgress, pszDest, FUNC_COPY, TRUE))
+                return DE_OPCANCELLED;
 
-      if (result == IDOK || result == IDYES) {
+            pTemp = FindFileName(pszDest) - 1;
+            *pTemp = CHAR_NULL;
 
-         // Allow the disk to be formatted
-         // BOOL bModal added (TRUE)
-         if (!IsTheDiskReallyThere(hdlgProgress, pszDest, FUNC_COPY, TRUE))
+            //
+            // Is there a problem with this?
+            //
+            result = WF_CreateDirectory(hdlgProgress, pszDest, NULL);
+            *pTemp = CHAR_BACKSLASH;
+
+            // only as once if creating the destination failed
+
+            if (result == DE_OPCANCELLED)
+                return DE_OPCANCELLED;
+
+            if (result && (nError == ERROR_PATH_NOT_FOUND)) {
+                *pbErrorOnDest = TRUE;
+                return result;
+            }
+        } else
             return DE_OPCANCELLED;
 
-         pTemp = FindFileName(pszDest) - 1;
-         *pTemp = CHAR_NULL;
+        // If it already exists, that's ok too.
 
-         //
-         // Is there a problem with this?
-         //
-         result = WF_CreateDirectory(hdlgProgress, pszDest, NULL);
-         *pTemp = CHAR_BACKSLASH;
+        if (ERROR_ALREADY_EXISTS == result)
+            result = 0;
 
-         // only as once if creating the destination failed
+    } while (result);
 
-         if (result == DE_OPCANCELLED)
-            return DE_OPCANCELLED;
-
-         if (result && (nError == ERROR_PATH_NOT_FOUND)) {
-
-            *pbErrorOnDest = TRUE;
-            return result;
-         }
-      } else
-         return DE_OPCANCELLED;
-
-      // If it already exists, that's ok too.
-
-      if ( ERROR_ALREADY_EXISTS == result )
-         result = 0;
-
-   } while (result);
-
-   return 0;        // success
+    return 0;  // success
 }

@@ -22,63 +22,51 @@ VOID NotifyAddHandle(INT i, HWND hwnd, LPTSTR lpPath, DWORD dwFilter);
 // Maximum number of windows that are viewable
 // at once.
 //
-HWND   ahwndWindows[MAX_WINDOWS];
-DRIVE  adrive[MAX_WINDOWS];
+HWND ahwndWindows[MAX_WINDOWS];
+DRIVE adrive[MAX_WINDOWS];
 HANDLE ahEvents[MAX_WINDOWS];
-INT    nHandles;
+INT nHandles;
 
 #define bNOTIFYACTIVE uChangeNotifyTime
 
+VOID vWaitMessage() {
+    DWORD dwEvent;
 
-VOID
-vWaitMessage()
-{
-   DWORD dwEvent;
+    dwEvent = MsgWaitForMultipleObjects(nHandles, ahEvents, FALSE, INFINITE, QS_ALLINPUT);
 
-   dwEvent = MsgWaitForMultipleObjects(nHandles,
-                                       ahEvents,
-                                       FALSE,
-                                       INFINITE,
-                                       QS_ALLINPUT);
+    if (dwEvent != (DWORD)(WAIT_OBJECT_0 + nHandles)) {
+        if (dwEvent == (DWORD)-1) {
+            NotifyReset();
 
-   if (dwEvent != (DWORD) (WAIT_OBJECT_0 + nHandles)) {
-
-      if (dwEvent == (DWORD)-1) {
-
-         NotifyReset();
-
-      } else {
-
-         dwEvent -= WAIT_OBJECT_0;
-
-         //
-         // Check to see if this handle has been removed already, if so
-         // return before we try to refresh a non-existent window.
-         //
-         if ((dwEvent >= MAX_WINDOWS) || ahEvents[dwEvent] == NULL)
-            return;
-
-         //
-         // Modify GWL_FSCFLAG directly.
-         //
-         // We do the ModifyWatchList right before we read (close then
-         // open on the same path).  This clears out any extra notifications
-         // caused by fileman's move/copy etc.
-         //
-         SetWindowLongPtr(ahwndWindows[dwEvent], GWL_FSCFLAG, TRUE);
-         PostMessage(hwndFrame, FS_FSCREQUEST, 0, 0L);
-
-         if (FindNextChangeNotification(ahEvents[dwEvent]) == FALSE) {
+        } else {
+            dwEvent -= WAIT_OBJECT_0;
 
             //
-            // If we can't find the next change notification, remove it.
+            // Check to see if this handle has been removed already, if so
+            // return before we try to refresh a non-existent window.
             //
-            NotifyDeleteHandle(dwEvent);
-         }
-      }
-   }
+            if ((dwEvent >= MAX_WINDOWS) || ahEvents[dwEvent] == NULL)
+                return;
+
+            //
+            // Modify GWL_FSCFLAG directly.
+            //
+            // We do the ModifyWatchList right before we read (close then
+            // open on the same path).  This clears out any extra notifications
+            // caused by fileman's move/copy etc.
+            //
+            SetWindowLongPtr(ahwndWindows[dwEvent], GWL_FSCFLAG, TRUE);
+            PostMessage(hwndFrame, FS_FSCREQUEST, 0, 0L);
+
+            if (FindNextChangeNotification(ahEvents[dwEvent]) == FALSE) {
+                //
+                // If we can't find the next change notification, remove it.
+                //
+                NotifyDeleteHandle(dwEvent);
+            }
+        }
+    }
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -100,27 +88,23 @@ vWaitMessage()
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-InitializeWatchList(VOID)
-{
-   INT i;
+VOID InitializeWatchList(VOID) {
+    INT i;
 
-   //
-   // Change notify system is off if uChangeNotifyTime == 0
-   // No, this doesn't mean zero time.
-   //
-   if (!bNOTIFYACTIVE)
-      return;
+    //
+    // Change notify system is off if uChangeNotifyTime == 0
+    // No, this doesn't mean zero time.
+    //
+    if (!bNOTIFYACTIVE)
+        return;
 
-   for (i = 0; i < MAX_WINDOWS; i++) {
-      ahwndWindows[i] = NULL;
-      ahEvents[i] = NULL;
-   }
+    for (i = 0; i < MAX_WINDOWS; i++) {
+        ahwndWindows[i] = NULL;
+        ahEvents[i] = NULL;
+    }
 
-   nHandles = 0;
+    nHandles = 0;
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -141,34 +125,25 @@ InitializeWatchList(VOID)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-DestroyWatchList(VOID)
-{
-   PHANDLE phChange;
+VOID DestroyWatchList(VOID) {
+    PHANDLE phChange;
 
-   //
-   // Only destroy if successfully started
-   //
-   if (bNOTIFYACTIVE) {
-
-      //
-      // Clean up handles in hChange!
-      //
-      for(phChange = ahEvents;
-         nHandles;
-         nHandles--, phChange++) {
-
-         FindCloseChangeNotification(*phChange);
-      }
-   }
+    //
+    // Only destroy if successfully started
+    //
+    if (bNOTIFYACTIVE) {
+        //
+        // Clean up handles in hChange!
+        //
+        for (phChange = ahEvents; nHandles; nHandles--, phChange++) {
+            FindCloseChangeNotification(*phChange);
+        }
+    }
 }
 
-
-VOID
-NotifyReset()
-{
-   NotifyPause(-1, (UINT)-2);
-   nHandles = 0;
+VOID NotifyReset() {
+    NotifyPause(-1, (UINT)-2);
+    nHandles = 0;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -197,40 +172,33 @@ NotifyReset()
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-NotifyPause(DRIVE drive, UINT uType)
-{
-   INT i;
-   DRIVE driveCurrent;
+VOID NotifyPause(DRIVE drive, UINT uType) {
+    INT i;
+    DRIVE driveCurrent;
 
-   if (!bNOTIFYACTIVE)
-      return;
+    if (!bNOTIFYACTIVE)
+        return;
 
+    for (i = 0; i < nHandles; i++) {
+        driveCurrent = adrive[i];
 
-   for(i=0;i<nHandles;i++) {
+        if (-2 == drive ||
+            ((-1 == drive || drive == driveCurrent) &&
+             ((UINT)-1 == uType || aDriveInfo[driveCurrent].uType == uType))) {
+            if (-2 != drive)
+                SetWindowLongPtr(ahwndWindows[i], GWL_NOTIFYPAUSE, 1L);
 
-      driveCurrent = adrive[i];
+            NotifyDeleteHandle(i);
 
-      if (-2 == drive ||
-          ((-1 == drive || drive == driveCurrent) &&
-          ((UINT)-1 == uType || aDriveInfo[driveCurrent].uType == uType))) {
-
-         if (-2 != drive)
-            SetWindowLongPtr(ahwndWindows[i], GWL_NOTIFYPAUSE, 1L);
-
-         NotifyDeleteHandle(i);
-
-         //
-         // This is the traverse while compact problem.
-         // We get around this by decrementing i so the i++ is
-         // negated.
-         //
-         i--;
-      }
-   }
+            //
+            // This is the traverse while compact problem.
+            // We get around this by decrementing i so the i++ is
+            // negated.
+            //
+            i--;
+        }
+    }
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -256,51 +224,42 @@ NotifyPause(DRIVE drive, UINT uType)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-NotifyResume(DRIVE drive, UINT uType)
-{
-   DRIVE driveCurrent;
-   HWND hwnd;
+VOID NotifyResume(DRIVE drive, UINT uType) {
+    DRIVE driveCurrent;
+    HWND hwnd;
 
-   if (!bNOTIFYACTIVE)
-      return;
+    if (!bNOTIFYACTIVE)
+        return;
 
-   //
-   // Scan though all open windows looking for dir windows that
-   // are not matched up.
-   //
-   for (hwnd = GetWindow(hwndMDIClient, GW_CHILD);
-      hwnd;
-      hwnd = GetWindow(hwnd, GW_HWNDNEXT)) {
+    //
+    // Scan though all open windows looking for dir windows that
+    // are not matched up.
+    //
+    for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = GetWindow(hwnd, GW_HWNDNEXT)) {
+        driveCurrent = (DRIVE)GetWindowLongPtr(hwnd, GWL_TYPE);
 
-      driveCurrent = (DRIVE)GetWindowLongPtr(hwnd, GWL_TYPE);
+        //
+        // Skip search window
+        //
+        if (-1 == driveCurrent)
+            continue;
 
-      //
-      // Skip search window
-      //
-      if (-1 == driveCurrent)
-         continue;
+        //
+        // Check if this drive is paused and meets the restart criteria
+        //
 
-      //
-      // Check if this drive is paused and meets the restart criteria
-      //
+        if (-2 == drive ||
+            ((-1 == drive || drive == driveCurrent) && ((UINT)-1 == uType || aDriveInfo[driveCurrent].uType == uType) &&
+             GetWindowLongPtr(hwnd, GWL_NOTIFYPAUSE))) {
+            //
+            // Restart notifications on this window
+            //
 
-      if (-2 == drive ||
-          ((-1 == drive || drive == driveCurrent) &&
-          ((UINT)-1 == uType || aDriveInfo[driveCurrent].uType == uType) &&
-          GetWindowLongPtr(hwnd, GWL_NOTIFYPAUSE))) {
-
-         //
-         // Restart notifications on this window
-         //
-
-         SendMessage(hwnd, FS_NOTIFYRESUME, 0, 0L);
-         SetWindowLongPtr(hwnd, GWL_NOTIFYPAUSE, 0L);
-      }
-   }
+            SendMessage(hwnd, FS_NOTIFYRESUME, 0, 0L);
+            SetWindowLongPtr(hwnd, GWL_NOTIFYPAUSE, 0L);
+        }
+    }
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -328,87 +287,75 @@ NotifyResume(DRIVE drive, UINT uType)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-ModifyWatchList(HWND hwnd,
-                LPTSTR lpPath,
-                DWORD fdwFilter)
-{
-   INT i;
+VOID ModifyWatchList(HWND hwnd, LPTSTR lpPath, DWORD fdwFilter) {
+    INT i;
 
-   if (!bNOTIFYACTIVE)
-      return;
+    if (!bNOTIFYACTIVE)
+        return;
 
-   //
-   // First we must see if this window already has a watch handle
-   // assigned to it.  If so, then we must close that watch, and
-   // restart a new one for it.  UNLESS lpPath is NULL, in which
-   // case the window will be removed from our list.
-   //
+    //
+    // First we must see if this window already has a watch handle
+    // assigned to it.  If so, then we must close that watch, and
+    // restart a new one for it.  UNLESS lpPath is NULL, in which
+    // case the window will be removed from our list.
+    //
 
-   for (i = 0;
-      i < nHandles && ahwndWindows[i] != NULL &&
-      ahwndWindows[i] != hwnd; i++ )
+    for (i = 0; i < nHandles && ahwndWindows[i] != NULL && ahwndWindows[i] != hwnd; i++)
 
-      ;
+        ;
 
-   if (i < nHandles && ahwndWindows[i] != NULL) {
+    if (i < nHandles && ahwndWindows[i] != NULL) {
+        //
+        // Now check to see if we are just changing the handle or removing
+        // the window all together.
+        //
 
-      //
-      // Now check to see if we are just changing the handle or removing
-      // the window all together.
-      //
-
-      if (lpPath == NULL) {
-
-         NotifyDeleteHandle(i);
-         //
-         // Now we need to clean up and exit.
-         //
-         return;
-
-      } else {
-
-         if (FindCloseChangeNotification(ahEvents[i]) == FALSE) {
+        if (lpPath == NULL) {
+            NotifyDeleteHandle(i);
             //
-            // BUGBUG:   In the event that this fails we will need to do
-            //           something about it....I am not sure what at this
-            //           point.
+            // Now we need to clean up and exit.
             //
-         }
+            return;
 
-         //
-         // We now need to issue a new FindFirstChangeNotification for
-         // the new path and modify the structures appropriately.
-         //
+        } else {
+            if (FindCloseChangeNotification(ahEvents[i]) == FALSE) {
+                //
+                // BUGBUG:   In the event that this fails we will need to do
+                //           something about it....I am not sure what at this
+                //           point.
+                //
+            }
 
-         NotifyAddHandle(i, hwnd, lpPath, fdwFilter);
+            //
+            // We now need to issue a new FindFirstChangeNotification for
+            // the new path and modify the structures appropriately.
+            //
 
-         //
-         // Now we need to clean up and exit.
-         //
-         return;
+            NotifyAddHandle(i, hwnd, lpPath, fdwFilter);
 
-      }
-   } else {
-      if (lpPath == NULL) {
-         //
-         // BUGBUG: We didn't find the window handle but we are being
-         //         asked to remove it from the list....Something went
-         //         wrong.
-         //
-         return;
-      }
-   }
+            //
+            // Now we need to clean up and exit.
+            //
+            return;
+        }
+    } else {
+        if (lpPath == NULL) {
+            //
+            // BUGBUG: We didn't find the window handle but we are being
+            //         asked to remove it from the list....Something went
+            //         wrong.
+            //
+            return;
+        }
+    }
 
-   //
-   // We now need to issue a new FindFirstChangeNotification for
-   // the new path and modify the structures appropriately.
-   //
+    //
+    // We now need to issue a new FindFirstChangeNotification for
+    // the new path and modify the structures appropriately.
+    //
 
-   NotifyAddHandle(i, hwnd, lpPath, fdwFilter);
+    NotifyAddHandle(i, hwnd, lpPath, fdwFilter);
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -431,33 +378,28 @@ ModifyWatchList(HWND hwnd,
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-NotifyDeleteHandle(INT i)
-{
-   if (INVALID_HANDLE_VALUE != ahEvents[i] &&
-      FindCloseChangeNotification(ahEvents[i]) == FALSE) {
-   }
+VOID NotifyDeleteHandle(INT i) {
+    if (INVALID_HANDLE_VALUE != ahEvents[i] && FindCloseChangeNotification(ahEvents[i]) == FALSE) {
+    }
 
-   //
-   // We now need to delete the window all together...So compact
-   // the list of change handles and window handles to reflect this.
-   // Since order isn't important, just copy the last
-   // item to the empty spot, and write NULL in the
-   // last position.
-   //
-   nHandles--;
+    //
+    // We now need to delete the window all together...So compact
+    // the list of change handles and window handles to reflect this.
+    // Since order isn't important, just copy the last
+    // item to the empty spot, and write NULL in the
+    // last position.
+    //
+    nHandles--;
 
-   ahwndWindows[i]  = ahwndWindows[ nHandles ];
-   ahEvents[i] = ahEvents[nHandles];
-   adrive[i] = adrive[nHandles];
+    ahwndWindows[i] = ahwndWindows[nHandles];
+    ahEvents[i] = ahEvents[nHandles];
+    adrive[i] = adrive[nHandles];
 
-   ahwndWindows[nHandles]  = NULL;
-   ahEvents[nHandles] = NULL;
+    ahwndWindows[nHandles] = NULL;
+    ahEvents[nHandles] = NULL;
 
-   return;
+    return;
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -481,26 +423,20 @@ NotifyDeleteHandle(INT i)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-NotifyAddHandle(INT i, HWND hwnd, LPTSTR lpPath, DWORD fdwFilter)
-{
-   adrive[i] = DRIVEID(lpPath);
+VOID NotifyAddHandle(INT i, HWND hwnd, LPTSTR lpPath, DWORD fdwFilter) {
+    adrive[i] = DRIVEID(lpPath);
 
-   ahwndWindows[i] = hwnd;
+    ahwndWindows[i] = hwnd;
 
-   ahEvents[i] = FindFirstChangeNotification(lpPath,
-      FALSE,
-      fdwFilter);
+    ahEvents[i] = FindFirstChangeNotification(lpPath, FALSE, fdwFilter);
 
-   if (nHandles == i)
-      nHandles++;
+    if (nHandles == i)
+        nHandles++;
 
-   if (ahEvents[i] == INVALID_HANDLE_VALUE) {
-
-      //
-      // Since this handle is invalid, delete it.
-      //
-      NotifyDeleteHandle(i);
-   }
+    if (ahEvents[i] == INVALID_HANDLE_VALUE) {
+        //
+        // Since this handle is invalid, delete it.
+        //
+        NotifyDeleteHandle(i);
+    }
 }
-

@@ -45,12 +45,12 @@
 #define LONG_PTR LONG
 #define DWLP_MSGRESULT DWL_MSGRESULT
 #define DWLP_USER DWL_USER
-#define SetWindowLongPtr( HWND, INDEX, DATA ) SetWindowLong( HWND, INDEX, DATA )
-#define GetWindowLongPtr( HWND, INDEX ) GetWindowLong( HWND, INDEX )
+#define SetWindowLongPtr(HWND, INDEX, DATA) SetWindowLong(HWND, INDEX, DATA)
+#define GetWindowLongPtr(HWND, INDEX) GetWindowLong(HWND, INDEX)
 #endif
 
 #ifndef WS_EX_LAYOUTRTL
-#define WS_EX_LAYOUTRTL         0x00400000L
+#define WS_EX_LAYOUTRTL 0x00400000L
 #endif
 
 //
@@ -77,9 +77,9 @@
 
 #pragma pack(push, 2)
 typedef struct _RESIZE_DIALOG_INFO {
-    RECT  InitialClientRect;
-    RECT  InitialWindowRect;
-    HDWP  hDwp;
+    RECT InitialClientRect;
+    RECT InitialWindowRect;
+    HDWP hDwp;
     ULONG NumberResizeControlsPresent;
 } RESIZE_DIALOG_INFO, *PRESIZE_DIALOG_INFO;
 
@@ -129,28 +129,24 @@ typedef struct _RESIZE_DIALOG_CONTROL_WINDOW_EXTRA {
 //  effectively useless.
 //
 
-#pragma pack( push )
-#pragma pack( 2 )
+#pragma pack(push)
+#pragma pack(2)
 typedef struct _RESIZE_DIALOG_CONTROL_CREATION_INFO {
     USHORT SizeOfData;
     SMALL_RECT AdjustmentToBuddyRect;
 } RESIZE_DIALOG_CONTROL_CREATION_INFO, *PRESIZE_DIALOG_CONTROL_CREATION_INFO;
-#pragma pack( pop )
+#pragma pack(pop)
 
-BOOL CALLBACK
-ProcessResizeOnChildren( HWND hChildWnd, LPARAM lParam );
+BOOL CALLBACK ProcessResizeOnChildren(HWND hChildWnd, LPARAM lParam);
 
-BOOL CALLBACK
-FindMetadataFromChildren( HWND hChildWnd, LPARAM lParam );
+BOOL CALLBACK FindMetadataFromChildren(HWND hChildWnd, LPARAM lParam);
 
 #ifdef DFC_SCROLL
 
 //
 //  This will display a sizing grip at the appropriate location on the dialog.
 //
-BOOL
-RenderSizingGrip( HWND hDlg )
-{
+BOOL RenderSizingGrip(HWND hDlg) {
     RECT SizeGripArea;
     PAINTSTRUCT PaintStruct;
     HDC hDC;
@@ -160,24 +156,24 @@ RenderSizingGrip( HWND hDlg )
     //  If the dialog isn't resizable, don't render the grip.
     //
 
-    if ((GetWindowLong( hDlg, GWL_STYLE ) & WS_THICKFRAME) == 0) {
+    if ((GetWindowLong(hDlg, GWL_STYLE) & WS_THICKFRAME) == 0) {
         return TRUE;
     }
 
-    GetClientRect( hDlg, &SizeGripArea );
+    GetClientRect(hDlg, &SizeGripArea);
 
-    SizeBoxSize = GetSystemMetrics( SM_CXHSCROLL );
+    SizeBoxSize = GetSystemMetrics(SM_CXHSCROLL);
 
     SizeGripArea.left = SizeGripArea.right - SizeBoxSize;
     SizeGripArea.top = SizeGripArea.bottom - SizeBoxSize;
 
-    InvalidateRect( hDlg, &SizeGripArea, TRUE );
+    InvalidateRect(hDlg, &SizeGripArea, TRUE);
 
-    hDC = BeginPaint( hDlg, &PaintStruct );
+    hDC = BeginPaint(hDlg, &PaintStruct);
 
-    DrawFrameControl( hDC, &SizeGripArea, DFC_SCROLL, DFCS_SCROLLSIZEGRIP );
+    DrawFrameControl(hDC, &SizeGripArea, DFC_SCROLL, DFCS_SCROLLSIZEGRIP);
 
-    EndPaint( hDlg, &PaintStruct );
+    EndPaint(hDlg, &PaintStruct);
 
     return TRUE;
 }
@@ -185,9 +181,7 @@ RenderSizingGrip( HWND hDlg )
 //
 //  This will force the sizing grip to be redisplayed on resize
 //
-BOOL
-InvalidateSizingGrip( HWND hWnd, PRECT NewSize )
-{
+BOOL InvalidateSizingGrip(HWND hWnd, PRECT NewSize) {
     RECT SizeGripArea;
     DWORD SizeBoxSize;
 
@@ -195,14 +189,14 @@ InvalidateSizingGrip( HWND hWnd, PRECT NewSize )
     //  First invalidate the old location of the grip.
     //
 
-    GetClientRect( hWnd, &SizeGripArea );
+    GetClientRect(hWnd, &SizeGripArea);
 
-    SizeBoxSize = GetSystemMetrics( SM_CXHSCROLL );
+    SizeBoxSize = GetSystemMetrics(SM_CXHSCROLL);
 
     SizeGripArea.left = SizeGripArea.right - SizeBoxSize;
     SizeGripArea.top = SizeGripArea.bottom - SizeBoxSize;
 
-    InvalidateRect( hWnd, &SizeGripArea, FALSE );
+    InvalidateRect(hWnd, &SizeGripArea, FALSE);
 
     //
     //  Now invalidate the new location of the grip.
@@ -213,7 +207,7 @@ InvalidateSizingGrip( HWND hWnd, PRECT NewSize )
     SizeGripArea.left = SizeGripArea.right - SizeBoxSize;
     SizeGripArea.top = SizeGripArea.bottom - SizeBoxSize;
 
-    InvalidateRect( hWnd, &SizeGripArea, FALSE );
+    InvalidateRect(hWnd, &SizeGripArea, FALSE);
 
     return TRUE;
 }
@@ -222,9 +216,7 @@ InvalidateSizingGrip( HWND hWnd, PRECT NewSize )
 //  This will check if we're within the sizing grip, so that the
 //  resize action will be performed if the user attempts to drag
 //
-BOOL
-IsWithinSizingGrip( HWND hWnd, DWORD OriginalPoint )
-{
+BOOL IsWithinSizingGrip(HWND hWnd, DWORD OriginalPoint) {
     RECT SizeGripArea;
     DWORD SizeBoxSize;
     POINT MousePoint;
@@ -233,18 +225,18 @@ IsWithinSizingGrip( HWND hWnd, DWORD OriginalPoint )
     //  If the dialog isn't resizable, we have no grip.
     //
 
-    if ((GetWindowLong( hWnd, GWL_STYLE ) & WS_THICKFRAME) == 0) {
+    if ((GetWindowLong(hWnd, GWL_STYLE) & WS_THICKFRAME) == 0) {
         return FALSE;
     }
 
-    MousePoint.x = GET_X_LPARAM( OriginalPoint );
-    MousePoint.y = GET_Y_LPARAM( OriginalPoint );
+    MousePoint.x = GET_X_LPARAM(OriginalPoint);
+    MousePoint.y = GET_Y_LPARAM(OriginalPoint);
 
-    ScreenToClient( hWnd, &MousePoint );
+    ScreenToClient(hWnd, &MousePoint);
 
-    GetClientRect( hWnd, &SizeGripArea );
+    GetClientRect(hWnd, &SizeGripArea);
 
-    SizeBoxSize = GetSystemMetrics( SM_CXHSCROLL );
+    SizeBoxSize = GetSystemMetrics(SM_CXHSCROLL);
 
     SizeGripArea.left = SizeGripArea.right - SizeBoxSize;
     SizeGripArea.top = SizeGripArea.bottom - SizeBoxSize;
@@ -256,14 +248,13 @@ IsWithinSizingGrip( HWND hWnd, DWORD OriginalPoint )
     //  half.
     //
 
-    if (MousePoint.x > SizeGripArea.left && MousePoint.x <= SizeGripArea.right &&
-        MousePoint.y > SizeGripArea.top && MousePoint.y <= SizeGripArea.bottom &&
+    if (MousePoint.x > SizeGripArea.left && MousePoint.x <= SizeGripArea.right && MousePoint.y > SizeGripArea.top &&
+        MousePoint.y <= SizeGripArea.bottom &&
         (DWORD)(MousePoint.x + MousePoint.y - SizeGripArea.left - SizeGripArea.top) > SizeBoxSize) {
-
-        if (GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYOUTRTL) {
-            SetWindowLongPtr( hWnd, DWLP_MSGRESULT, HTBOTTOMLEFT );
+        if (GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) {
+            SetWindowLongPtr(hWnd, DWLP_MSGRESULT, HTBOTTOMLEFT);
         } else {
-            SetWindowLongPtr( hWnd, DWLP_MSGRESULT, HTBOTTOMRIGHT );
+            SetWindowLongPtr(hWnd, DWLP_MSGRESULT, HTBOTTOMRIGHT);
         }
         return TRUE;
     }
@@ -286,119 +277,114 @@ IsWithinSizingGrip( HWND hWnd, DWORD OriginalPoint )
 //  indicates no processing or that the caller may continue
 //
 
-BOOL CALLBACK
-ResizeDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
+BOOL CALLBACK ResizeDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     PRESIZE_DIALOG_INFO DialogInfo;
 
     UNREFERENCED_PARAMETER(wParam);
 
-    switch( uMsg ) {
-
-        //
-        //  We're done and need to clean up any state.
-        //
+    switch (uMsg) {
+            //
+            //  We're done and need to clean up any state.
+            //
 
         case WM_DESTROY:
 
-            DialogInfo = (PRESIZE_DIALOG_INFO)GetWindowLongPtr( hDlg, DWLP_USER );
+            DialogInfo = (PRESIZE_DIALOG_INFO)GetWindowLongPtr(hDlg, DWLP_USER);
 
             if (DialogInfo != NULL) {
-                HeapFree( GetProcessHeap(), 0, DialogInfo );
+                HeapFree(GetProcessHeap(), 0, DialogInfo);
             }
 
-            SetWindowLongPtr( hDlg, DWLP_USER, 0 );
+            SetWindowLongPtr(hDlg, DWLP_USER, 0);
 
             return FALSE;
 
-        //
-        //  We have to make sure we don't resize smaller than the initial
-        //  size.  The layout management is concerned with how to allocate
-        //  additional size - it won't work well if that additional size
-        //  is less than zero.
-        //
+            //
+            //  We have to make sure we don't resize smaller than the initial
+            //  size.  The layout management is concerned with how to allocate
+            //  additional size - it won't work well if that additional size
+            //  is less than zero.
+            //
 
-        case WM_GETMINMAXINFO:
-            {
-                LPMINMAXINFO MinMaxInfo = (LPMINMAXINFO)lParam;
-                PRESIZE_DIALOG_DATA_WINDOW_EXTRA ExtraData = NULL;
-                DialogInfo = (PRESIZE_DIALOG_INFO)GetWindowLongPtr( hDlg, DWLP_USER );
+        case WM_GETMINMAXINFO: {
+            LPMINMAXINFO MinMaxInfo = (LPMINMAXINFO)lParam;
+            PRESIZE_DIALOG_DATA_WINDOW_EXTRA ExtraData = NULL;
+            DialogInfo = (PRESIZE_DIALOG_INFO)GetWindowLongPtr(hDlg, DWLP_USER);
 
-                EnumChildWindows( hDlg, FindMetadataFromChildren, (LPARAM)&ExtraData );
+            EnumChildWindows(hDlg, FindMetadataFromChildren, (LPARAM)&ExtraData);
 
-                if (ExtraData != NULL) {
-
-                    if (ExtraData->MaximumWidthPercent != 0) {
-
-                        MinMaxInfo->ptMaxTrackSize.x = (DialogInfo->InitialWindowRect.right - DialogInfo->InitialWindowRect.left) * ExtraData->MaximumWidthPercent / 100;
-
-                    }
-
-                    if (ExtraData->MaximumHeightPercent != 0) {
-
-                        MinMaxInfo->ptMaxTrackSize.y = (DialogInfo->InitialWindowRect.bottom - DialogInfo->InitialWindowRect.top) * ExtraData->MaximumHeightPercent / 100;
-
-                    }
+            if (ExtraData != NULL) {
+                if (ExtraData->MaximumWidthPercent != 0) {
+                    MinMaxInfo->ptMaxTrackSize.x =
+                        (DialogInfo->InitialWindowRect.right - DialogInfo->InitialWindowRect.left) *
+                        ExtraData->MaximumWidthPercent / 100;
                 }
-                MinMaxInfo->ptMinTrackSize.x = DialogInfo->InitialWindowRect.right - DialogInfo->InitialWindowRect.left;
-                MinMaxInfo->ptMinTrackSize.y = DialogInfo->InitialWindowRect.bottom - DialogInfo->InitialWindowRect.top;
-                return TRUE;
-            }
 
-        //
-        //  Display and give effect to the sizing grip
-        //
+                if (ExtraData->MaximumHeightPercent != 0) {
+                    MinMaxInfo->ptMaxTrackSize.y =
+                        (DialogInfo->InitialWindowRect.bottom - DialogInfo->InitialWindowRect.top) *
+                        ExtraData->MaximumHeightPercent / 100;
+                }
+            }
+            MinMaxInfo->ptMinTrackSize.x = DialogInfo->InitialWindowRect.right - DialogInfo->InitialWindowRect.left;
+            MinMaxInfo->ptMinTrackSize.y = DialogInfo->InitialWindowRect.bottom - DialogInfo->InitialWindowRect.top;
+            return TRUE;
+        }
+
+            //
+            //  Display and give effect to the sizing grip
+            //
 
         case WM_PAINT:
-            if (GetUpdateRect( hDlg, NULL, FALSE )) {
-                RenderSizingGrip( hDlg );
+            if (GetUpdateRect(hDlg, NULL, FALSE)) {
+                RenderSizingGrip(hDlg);
             }
             return FALSE;
 
         case WM_NCHITTEST:
-            return IsWithinSizingGrip( hDlg, (DWORD)lParam );
+            return IsWithinSizingGrip(hDlg, (DWORD)lParam);
 
 #ifdef WM_SIZING
         case WM_SIZING:
-            InvalidateSizingGrip( hDlg, (PRECT)lParam );
+            InvalidateSizingGrip(hDlg, (PRECT)lParam);
             return FALSE;
 #endif
 
-        //
-        //  Save off the initial window size and client area.  We use the
-        //  initial window size to ensure the window can't be shrunk
-        //  smaller than it, and we use the initial client size to
-        //  determine how much the window is growing.
-        //
+            //
+            //  Save off the initial window size and client area.  We use the
+            //  initial window size to ensure the window can't be shrunk
+            //  smaller than it, and we use the initial client size to
+            //  determine how much the window is growing.
+            //
 
         case WM_INITDIALOG:
-            DialogInfo = (PRESIZE_DIALOG_INFO)HeapAlloc( GetProcessHeap(), 0, sizeof(*DialogInfo) );
-            
+            DialogInfo = (PRESIZE_DIALOG_INFO)HeapAlloc(GetProcessHeap(), 0, sizeof(*DialogInfo));
+
             if (DialogInfo == NULL) {
-                EndDialog( hDlg, -1 );
+                EndDialog(hDlg, -1);
                 return TRUE;
             }
-            
-            GetClientRect( hDlg, &DialogInfo->InitialClientRect );
-            GetWindowRect( hDlg, &DialogInfo->InitialWindowRect );
+
+            GetClientRect(hDlg, &DialogInfo->InitialClientRect);
+            GetWindowRect(hDlg, &DialogInfo->InitialWindowRect);
 
             DialogInfo->NumberResizeControlsPresent = 0;
 
-            SetWindowLongPtr( hDlg, DWLP_USER, (LONG_PTR)DialogInfo );
+            SetWindowLongPtr(hDlg, DWLP_USER, (LONG_PTR)DialogInfo);
             break;
 
-        //
-        //  The user changed the size of the window.  Walk through all
-        //  the resize helper controls and tell them this happened, and
-        //  how big we were when created.  From there, the helper controls
-        //  can resize their associated buddy controls appropriately.
-        //
+            //
+            //  The user changed the size of the window.  Walk through all
+            //  the resize helper controls and tell them this happened, and
+            //  how big we were when created.  From there, the helper controls
+            //  can resize their associated buddy controls appropriately.
+            //
 
         case WM_SIZE:
 
-            DialogInfo = (PRESIZE_DIALOG_INFO)GetWindowLongPtr( hDlg, DWLP_USER );
+            DialogInfo = (PRESIZE_DIALOG_INFO)GetWindowLongPtr(hDlg, DWLP_USER);
 
-            RenderSizingGrip( hDlg );
+            RenderSizingGrip(hDlg);
 
             //
             //  If we "know" how many controls are present, use that.  If
@@ -406,9 +392,9 @@ ResizeDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             //
 
             if (DialogInfo->NumberResizeControlsPresent != 0) {
-                DialogInfo->hDwp = BeginDeferWindowPos( DialogInfo->NumberResizeControlsPresent );
+                DialogInfo->hDwp = BeginDeferWindowPos(DialogInfo->NumberResizeControlsPresent);
             } else {
-                DialogInfo->hDwp = BeginDeferWindowPos( 20 );
+                DialogInfo->hDwp = BeginDeferWindowPos(20);
             }
 
             //
@@ -418,7 +404,7 @@ ResizeDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             DialogInfo->NumberResizeControlsPresent = 0;
 
-            EnumChildWindows( hDlg, ProcessResizeOnChildren, (LPARAM)DialogInfo );
+            EnumChildWindows(hDlg, ProcessResizeOnChildren, (LPARAM)DialogInfo);
 
             //
             //  It's possible that controls have been added or our initial
@@ -428,14 +414,13 @@ ResizeDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             //
 
             if (DialogInfo->hDwp) {
-                EndDeferWindowPos( DialogInfo->hDwp );
+                EndDeferWindowPos(DialogInfo->hDwp);
                 DialogInfo->hDwp = NULL;
             } else {
                 DialogInfo->NumberResizeControlsPresent = 0;
-                EnumChildWindows( hDlg, ProcessResizeOnChildren, (LPARAM)DialogInfo );
+                EnumChildWindows(hDlg, ProcessResizeOnChildren, (LPARAM)DialogInfo);
             }
             return FALSE;
-
     }
     return FALSE;
 }
@@ -445,9 +430,7 @@ ResizeDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //  appropriate messages to our resize helper controls to fix things up.
 //
 
-BOOL CALLBACK
-FindMetadataFromChildren( HWND hChildWnd, LPARAM lParam )
-{
+BOOL CALLBACK FindMetadataFromChildren(HWND hChildWnd, LPARAM lParam) {
     WCHAR szText[100];
     int CharsCopied;
 
@@ -456,14 +439,14 @@ FindMetadataFromChildren( HWND hChildWnd, LPARAM lParam )
     //  we're Unicode.
     //
 
-    CharsCopied = GetClassNameW( hChildWnd, (PWCHAR)szText, sizeof( szText ) / sizeof( WCHAR ));
+    CharsCopied = GetClassNameW(hChildWnd, (PWCHAR)szText, sizeof(szText) / sizeof(WCHAR));
 
     //
     //  If we couldn't get this into our buffer, assume it's not our
     //  class, but keep enumerating.
     //
 
-    if (CharsCopied == 0 || CharsCopied >= (sizeof( szText ) / sizeof( WCHAR ))) {
+    if (CharsCopied == 0 || CharsCopied >= (sizeof(szText) / sizeof(WCHAR))) {
         return TRUE;
     }
 
@@ -472,8 +455,8 @@ FindMetadataFromChildren( HWND hChildWnd, LPARAM lParam )
     //  find it, we're done.
     //
 
-    if (wcscmp( (PWCHAR)szText, DIALOGRESIZEDATACLASSW ) == 0) {
-        SendMessage( hChildWnd, WM_GETDIALOGMETADATA, 0, lParam );
+    if (wcscmp((PWCHAR)szText, DIALOGRESIZEDATACLASSW) == 0) {
+        SendMessage(hChildWnd, WM_GETDIALOGMETADATA, 0, lParam);
         return FALSE;
     }
 
@@ -485,14 +468,11 @@ FindMetadataFromChildren( HWND hChildWnd, LPARAM lParam )
 //  about how the dialog can be resized.
 //
 
-LRESULT CALLBACK
-ResizeDialogDataWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
+LRESULT CALLBACK ResizeDialogDataWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     PRESIZE_DIALOG_DATA_WINDOW_EXTRA ExtraData;
 
-    switch( uMsg ) {
-        case WM_CREATE:
-        {
+    switch (uMsg) {
+        case WM_CREATE: {
             LPCREATESTRUCT CreateStruct;
             PRESIZE_DIALOG_DATA_CREATION_INFO CreationInfo;
 
@@ -505,7 +485,8 @@ ResizeDialogDataWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             CreateStruct = (LPCREATESTRUCT)lParam;
             CreationInfo = (PRESIZE_DIALOG_DATA_CREATION_INFO)CreateStruct->lpCreateParams;
 
-            ExtraData = (PRESIZE_DIALOG_DATA_WINDOW_EXTRA)HeapAlloc( GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*ExtraData) );
+            ExtraData =
+                (PRESIZE_DIALOG_DATA_WINDOW_EXTRA)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*ExtraData));
             if (ExtraData == NULL) {
                 return -1;
             }
@@ -520,7 +501,6 @@ ResizeDialogDataWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             //
 
             if (CreationInfo != NULL && CreationInfo->SizeOfData >= (sizeof(WORD) * 2)) {
-
                 //
                 //  Record the amount to adjust the buddy control, and
                 //  attach it to our window data.
@@ -543,7 +523,6 @@ ResizeDialogDataWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
 
             } else {
-
                 //
                 //  Don't resize anything.
                 //
@@ -552,32 +531,31 @@ ResizeDialogDataWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 ExtraData->MaximumHeightPercent = 100;
             }
 
-            SetWindowLongPtr( hWnd, 0, (LONG_PTR)ExtraData );
+            SetWindowLongPtr(hWnd, 0, (LONG_PTR)ExtraData);
             break;
         }
 
         case WM_DESTROY:
-            
+
             //
             //  Our resize helper control is being destroyed.  Tear down
             //  any data we're keeping to assist with resize operations.
             //
 
-            ExtraData = (PRESIZE_DIALOG_DATA_WINDOW_EXTRA)GetWindowLongPtr( hWnd, 0 );
+            ExtraData = (PRESIZE_DIALOG_DATA_WINDOW_EXTRA)GetWindowLongPtr(hWnd, 0);
             if (ExtraData != NULL) {
-                SetWindowLongPtr( hWnd, 0, 0 );
-                HeapFree( GetProcessHeap(), 0, ExtraData );
+                SetWindowLongPtr(hWnd, 0, 0);
+                HeapFree(GetProcessHeap(), 0, ExtraData);
             }
             break;
 
-        case WM_GETDIALOGMETADATA:
-        {
-            ExtraData = (PRESIZE_DIALOG_DATA_WINDOW_EXTRA)GetWindowLongPtr( hWnd, 0 );
-            *(PRESIZE_DIALOG_DATA_WINDOW_EXTRA *)lParam = ExtraData;
+        case WM_GETDIALOGMETADATA: {
+            ExtraData = (PRESIZE_DIALOG_DATA_WINDOW_EXTRA)GetWindowLongPtr(hWnd, 0);
+            *(PRESIZE_DIALOG_DATA_WINDOW_EXTRA*)lParam = ExtraData;
             return TRUE;
         }
     }
-    return DefWindowProc( hWnd, uMsg, wParam, lParam );
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 //
@@ -585,9 +563,7 @@ ResizeDialogDataWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //  appropriate messages to our resize helper controls to fix things up.
 //
 
-BOOL CALLBACK
-ProcessResizeOnChildren( HWND hChildWnd, LPARAM lParam )
-{
+BOOL CALLBACK ProcessResizeOnChildren(HWND hChildWnd, LPARAM lParam) {
     WCHAR szText[100];
     int CharsCopied;
 
@@ -596,19 +572,19 @@ ProcessResizeOnChildren( HWND hChildWnd, LPARAM lParam )
     //  we're Unicode.
     //
 
-    CharsCopied = GetClassNameW( hChildWnd, (PWCHAR)szText, sizeof( szText ) / sizeof( WCHAR ));
+    CharsCopied = GetClassNameW(hChildWnd, (PWCHAR)szText, sizeof(szText) / sizeof(WCHAR));
 
     //
     //  If we couldn't get this into our buffer, assume it's not our
     //  class, but keep enumerating.
     //
 
-    if (CharsCopied == 0 || CharsCopied >= (sizeof( szText ) / sizeof( WCHAR ))) {
+    if (CharsCopied == 0 || CharsCopied >= (sizeof(szText) / sizeof(WCHAR))) {
         return TRUE;
     }
 
-    if (wcscmp( (PWCHAR)szText, DIALOGRESIZECONTROLCLASSW ) == 0) {
-        SendMessage( hChildWnd, WM_RESIZEPARENT, 0, lParam );
+    if (wcscmp((PWCHAR)szText, DIALOGRESIZECONTROLCLASSW) == 0) {
+        SendMessage(hChildWnd, WM_RESIZEPARENT, 0, lParam);
     }
 
     return TRUE;
@@ -619,16 +595,13 @@ ProcessResizeOnChildren( HWND hChildWnd, LPARAM lParam )
 //  controls on a dialog.
 //
 
-LRESULT CALLBACK
-ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    HWND hWndParent = GetParent( hWnd );
+LRESULT CALLBACK ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    HWND hWndParent = GetParent(hWnd);
 
     PRESIZE_DIALOG_CONTROL_WINDOW_EXTRA ExtraData;
 
-    switch( uMsg ) {
-        case WM_CREATE:
-        {
+    switch (uMsg) {
+        case WM_CREATE: {
             LPCREATESTRUCT CreateStruct;
             PRESIZE_DIALOG_CONTROL_CREATION_INFO CreationInfo;
 
@@ -636,13 +609,14 @@ ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             //  Allocate memory and save off the additional parameters
             //  defined for the resize helper control.  These define how
             //  much of the additional space to allocate to our buddy
-            //  control. 
+            //  control.
             //
 
             CreateStruct = (LPCREATESTRUCT)lParam;
             CreationInfo = (PRESIZE_DIALOG_CONTROL_CREATION_INFO)CreateStruct->lpCreateParams;
 
-            ExtraData = (PRESIZE_DIALOG_CONTROL_WINDOW_EXTRA)HeapAlloc( GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*ExtraData) );
+            ExtraData =
+                (PRESIZE_DIALOG_CONTROL_WINDOW_EXTRA)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*ExtraData));
             if (ExtraData == NULL) {
                 return -1;
             }
@@ -658,7 +632,6 @@ ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             //
 
             if (CreationInfo != NULL && CreationInfo->SizeOfData >= sizeof(CreationInfo->AdjustmentToBuddyRect)) {
-
                 //
                 //  Record the amount to adjust the buddy control, and
                 //  attach it to our window data.
@@ -667,7 +640,6 @@ ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 ExtraData->AdjustmentToBuddyRect = CreationInfo->AdjustmentToBuddyRect;
 
             } else {
-
                 //
                 //  Don't resize anything.
                 //
@@ -678,28 +650,27 @@ ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 ExtraData->AdjustmentToBuddyRect.Bottom = 0;
             }
 
-            SetWindowLongPtr( hWnd, 0, (LONG_PTR)ExtraData );
+            SetWindowLongPtr(hWnd, 0, (LONG_PTR)ExtraData);
             break;
         }
 
         case WM_DESTROY:
-            
+
             //
             //  Our resize helper control is being destroyed.  Tear down
             //  any data we're keeping to assist with resize operations.
             //
 
-            ExtraData = (PRESIZE_DIALOG_CONTROL_WINDOW_EXTRA)GetWindowLongPtr( hWnd, 0 );
+            ExtraData = (PRESIZE_DIALOG_CONTROL_WINDOW_EXTRA)GetWindowLongPtr(hWnd, 0);
             if (ExtraData != NULL) {
-                SetWindowLongPtr( hWnd, 0, 0 );
-                HeapFree( GetProcessHeap(), 0, ExtraData );
+                SetWindowLongPtr(hWnd, 0, 0);
+                HeapFree(GetProcessHeap(), 0, ExtraData);
             }
             break;
 
-        case WM_RESIZEPARENT:
-        {
+        case WM_RESIZEPARENT: {
             PRESIZE_DIALOG_INFO DialogInfo = (PRESIZE_DIALOG_INFO)lParam;
-            HWND hWndBuddy = GetNextWindow( hWnd, GW_HWNDNEXT );
+            HWND hWndBuddy = GetNextWindow(hWnd, GW_HWNDNEXT);
             PRECT InitialParentRect;
             RECT CurrentParentRect;
 
@@ -715,7 +686,7 @@ ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             //  Initialize our brains.
             //
 
-            ExtraData = (PRESIZE_DIALOG_CONTROL_WINDOW_EXTRA)GetWindowLongPtr( hWnd, 0 );
+            ExtraData = (PRESIZE_DIALOG_CONTROL_WINDOW_EXTRA)GetWindowLongPtr(hWnd, 0);
             InitialParentRect = &DialogInfo->InitialClientRect;
 
             //
@@ -741,9 +712,9 @@ ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 //  coordinates relative to the top left of the dialog.
                 //
 
-                GetWindowRect( hWndBuddy, &buddyrect );
+                GetWindowRect(hWndBuddy, &buddyrect);
 
-                MapWindowPoints( NULL, hWndParent, (LPPOINT)&buddyrect, 2 );
+                MapWindowPoints(NULL, hWndParent, (LPPOINT)&buddyrect, 2);
 
                 ExtraData->InitialBuddyRect = buddyrect;
 
@@ -754,7 +725,7 @@ ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             //  Find out how big the dialog now is.
             //
 
-            GetClientRect( hWndParent, &CurrentParentRect );
+            GetClientRect(hWndParent, &CurrentParentRect);
 
             //
             //  Now calculate how much the dialog has grown by since it
@@ -769,17 +740,20 @@ ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             //  We take the initial positions and add the adjustment as a percentage.
             //
 
-            NewLeft = ExtraData->InitialBuddyRect.left + IncreaseHorizontal * ExtraData->AdjustmentToBuddyRect.Left / 100;
+            NewLeft =
+                ExtraData->InitialBuddyRect.left + IncreaseHorizontal * ExtraData->AdjustmentToBuddyRect.Left / 100;
             NewTop = ExtraData->InitialBuddyRect.top + IncreaseVertical * ExtraData->AdjustmentToBuddyRect.Top / 100;
-            NewWidth = (ExtraData->InitialBuddyRect.right - ExtraData->InitialBuddyRect.left) + IncreaseHorizontal * ExtraData->AdjustmentToBuddyRect.Right / 100;
-            NewHeight = (ExtraData->InitialBuddyRect.bottom - ExtraData->InitialBuddyRect.top) + IncreaseVertical * ExtraData->AdjustmentToBuddyRect.Bottom / 100;
+            NewWidth = (ExtraData->InitialBuddyRect.right - ExtraData->InitialBuddyRect.left) +
+                IncreaseHorizontal * ExtraData->AdjustmentToBuddyRect.Right / 100;
+            NewHeight = (ExtraData->InitialBuddyRect.bottom - ExtraData->InitialBuddyRect.top) +
+                IncreaseVertical * ExtraData->AdjustmentToBuddyRect.Bottom / 100;
 
             //
             //  We're going to be moving and resizing our buddy, so make sure
             //  it repaints itself.
             //
 
-            InvalidateRect( hWndBuddy, NULL, TRUE );
+            InvalidateRect(hWndBuddy, NULL, TRUE);
 
             //
             //  Now position the buddy control.  We will typically optimize this
@@ -788,14 +762,9 @@ ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             //
 
             if (DialogInfo->hDwp != NULL) {
-                DialogInfo->hDwp = DeferWindowPos( DialogInfo->hDwp,
-                    hWndBuddy,
-                    NULL,
-                    NewLeft,
-                    NewTop,
-                    NewWidth,
-                    NewHeight,
-                    SWP_NOZORDER | SWP_NOACTIVATE );
+                DialogInfo->hDwp = DeferWindowPos(
+                    DialogInfo->hDwp, hWndBuddy, NULL, NewLeft, NewTop, NewWidth, NewHeight,
+                    SWP_NOZORDER | SWP_NOACTIVATE);
             }
 
             //
@@ -805,26 +774,16 @@ ResizeDialogControlWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             //
 
             if (DialogInfo->hDwp == NULL) {
-
-                MoveWindow( hWndBuddy,
-                    NewLeft,
-                    NewTop,
-                    NewWidth,
-                    NewHeight,
-                    TRUE );
+                MoveWindow(hWndBuddy, NewLeft, NewTop, NewWidth, NewHeight, TRUE);
             }
 
             break;
         }
-
     }
-    return DefWindowProc( hWnd, uMsg, wParam, lParam );
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-
-BOOL
-ResizeDialogInitialize( HINSTANCE hInst )
-{
+BOOL ResizeDialogInitialize(HINSTANCE hInst) {
     WNDCLASSW ResizeDialogClassW;
 
     //
@@ -833,7 +792,7 @@ ResizeDialogInitialize( HINSTANCE hInst )
     //  be manipulated when resizes occur.
     //
 
-    ZeroMemory( &ResizeDialogClassW, sizeof( ResizeDialogClassW ));
+    ZeroMemory(&ResizeDialogClassW, sizeof(ResizeDialogClassW));
 
     ResizeDialogClassW.style = 0;
     ResizeDialogClassW.lpfnWndProc = ResizeDialogControlWindowProc;
@@ -846,9 +805,9 @@ ResizeDialogInitialize( HINSTANCE hInst )
     ResizeDialogClassW.lpszMenuName = NULL;
     ResizeDialogClassW.lpszClassName = DIALOGRESIZECONTROLCLASSW;
 
-    RegisterClassW( &ResizeDialogClassW );
+    RegisterClassW(&ResizeDialogClassW);
 
-    ZeroMemory( &ResizeDialogClassW, sizeof( ResizeDialogClassW ));
+    ZeroMemory(&ResizeDialogClassW, sizeof(ResizeDialogClassW));
 
     ResizeDialogClassW.style = 0;
     ResizeDialogClassW.lpfnWndProc = ResizeDialogDataWindowProc;
@@ -861,8 +820,7 @@ ResizeDialogInitialize( HINSTANCE hInst )
     ResizeDialogClassW.lpszMenuName = NULL;
     ResizeDialogClassW.lpszClassName = DIALOGRESIZEDATACLASSW;
 
-    RegisterClassW( &ResizeDialogClassW );
+    RegisterClassW(&ResizeDialogClassW);
 
     return TRUE;
 }
-

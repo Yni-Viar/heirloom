@@ -4,18 +4,17 @@
 #include <wincodec.h>
 
 #ifndef IStream_Release
-#define IStream_Release(This)	\
-    ( (This)->lpVtbl -> Release(This) ) 
+#define IStream_Release(This) ((This)->lpVtbl->Release(This))
 #endif
 
 typedef struct {
     HBITMAP hbmOrig;
-    UINT    origCX, origCY;   // physical pixels of hbmOrig
+    UINT origCX, origCY;  // physical pixels of hbmOrig
 
     // Cached scaled image for the target DPI
-    HBITMAP hbmScaled;        // scaled copy (may be NULL)
-    UINT    scaledCX, scaledCY;
-    UINT    dpiCached;        // DPI it was built for (0 = none yet)
+    HBITMAP hbmScaled;  // scaled copy (may be NULL)
+    UINT scaledCX, scaledCY;
+    UINT dpiCached;  // DPI it was built for (0 = none yet)
 } PNG_BITMAP;
 
 #define NUM_DRIVE_PNGS 6
@@ -25,29 +24,27 @@ static BOOL s_initialized = FALSE;
 static PNG_BITMAP s_drivePNGs[NUM_DRIVE_PNGS];
 static PNG_BITMAP s_iconPNGs[NUM_ICON_PNGS];
 
-static HGLOBAL LoadPNGResource(HINSTANCE hInst, WORD id, DWORD *pcb)
-{
-    HRSRC  hrsrc = FindResourceW(hInst,
-                                 MAKEINTRESOURCEW(id),
-                                 RT_RCDATA);      // or L"PNG"
+static HGLOBAL LoadPNGResource(HINSTANCE hInst, WORD id, DWORD* pcb) {
+    HRSRC hrsrc = FindResourceW(hInst, MAKEINTRESOURCEW(id),
+                                RT_RCDATA);  // or L"PNG"
     if (!hrsrc) {
         return NULL;
     }
 
-    DWORD  cb    = SizeofResource(hInst, hrsrc);
+    DWORD cb = SizeofResource(hInst, hrsrc);
     HGLOBAL hmem = LoadResource(hInst, hrsrc);
 
     *pcb = cb;
-    return hmem;          // pointer = LockResource(hmem);
+    return hmem;  // pointer = LockResource(hmem);
 }
 
-static BOOL CreateBitmapFromPNGRes(HINSTANCE hInst, WORD id, PNG_BITMAP *out)
-{
+static BOOL CreateBitmapFromPNGRes(HINSTANCE hInst, WORD id, PNG_BITMAP* out) {
     *out = {};
 
     DWORD cb;
     HGLOBAL hmem = LoadPNGResource(hInst, id, &cb);
-    if (!hmem) return FALSE;
+    if (!hmem)
+        return FALSE;
 
     // copy bytes into a sharable HGLOBAL that IStream can own
     HGLOBAL hdup = GlobalAlloc(GMEM_MOVEABLE, cb);
@@ -59,59 +56,57 @@ static BOOL CreateBitmapFromPNGRes(HINSTANCE hInst, WORD id, PNG_BITMAP *out)
         GlobalUnlock(hdup);
     }
 
-    IStream *pStream = NULL;
+    IStream* pStream = NULL;
     if (FAILED(CreateStreamOnHGlobal(hdup, TRUE, &pStream)))
         return FALSE;  // stream will now own hdup if TRUE
 
-    IWICImagingFactory *wic = NULL;
-    IWICBitmapDecoder   *dec = NULL;
-    IWICBitmapFrameDecode *frm = NULL;
-    IWICFormatConverter *conv = NULL;
+    IWICImagingFactory* wic = NULL;
+    IWICBitmapDecoder* dec = NULL;
+    IWICBitmapFrameDecode* frm = NULL;
+    IWICFormatConverter* conv = NULL;
     BOOL ok = FALSE;
 
-    if (SUCCEEDED(CoCreateInstance(CLSID_WICImagingFactory, NULL,
-                   CLSCTX_INPROC_SERVER, IID_IWICImagingFactory,
-                   (void **)&wic)) &&
-        SUCCEEDED(wic->CreateDecoderFromStream(
-                   pStream, NULL, WICDecodeMetadataCacheOnLoad, &dec)) &&
-        SUCCEEDED(dec->GetFrame(0, &frm)) &&
-        SUCCEEDED(wic->CreateFormatConverter(&conv)) &&
-        SUCCEEDED(conv->Initialize((IWICBitmapSource*)frm,
-                   GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone,
-                   NULL, 0.0f, WICBitmapPaletteTypeCustom))) {
-
-        UINT w, h; conv->GetSize(&w, &h);
+    if (SUCCEEDED(CoCreateInstance(
+            CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&wic)) &&
+        SUCCEEDED(wic->CreateDecoderFromStream(pStream, NULL, WICDecodeMetadataCacheOnLoad, &dec)) &&
+        SUCCEEDED(dec->GetFrame(0, &frm)) && SUCCEEDED(wic->CreateFormatConverter(&conv)) &&
+        SUCCEEDED(conv->Initialize(
+            (IWICBitmapSource*)frm, GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, NULL, 0.0f,
+            WICBitmapPaletteTypeCustom))) {
+        UINT w, h;
+        conv->GetSize(&w, &h);
         BITMAPINFO bi = { 0 };
-        bi.bmiHeader.biSize        = sizeof(bi.bmiHeader);
-        bi.bmiHeader.biWidth       =  w;
-        bi.bmiHeader.biHeight      = -((LONG)h);   // top-down
-        bi.bmiHeader.biPlanes      = 1;
-        bi.bmiHeader.biBitCount    = 32;
+        bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+        bi.bmiHeader.biWidth = w;
+        bi.bmiHeader.biHeight = -((LONG)h);  // top-down
+        bi.bmiHeader.biPlanes = 1;
+        bi.bmiHeader.biBitCount = 32;
         bi.bmiHeader.biCompression = BI_RGB;
 
-        void *pvBits;
-        HBITMAP hbm = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS,
-                                       &pvBits, NULL, 0);
-        if (hbm &&
-            SUCCEEDED(conv->CopyPixels(NULL, w * 4, h * w * 4, (LPBYTE)pvBits))) {
+        void* pvBits;
+        HBITMAP hbm = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, &pvBits, NULL, 0);
+        if (hbm && SUCCEEDED(conv->CopyPixels(NULL, w * 4, h * w * 4, (LPBYTE)pvBits))) {
             *out = { hbm, w, h, NULL, 0, 0, 0 };
             ok = TRUE;
         }
     }
 
-    if (conv) conv->Release();
-    if (frm)  frm->Release();
-    if (dec)  dec->Release();
-    if (wic)  wic->Release();
-    if (pStream) pStream->Release();
+    if (conv)
+        conv->Release();
+    if (frm)
+        frm->Release();
+    if (dec)
+        dec->Release();
+    if (wic)
+        wic->Release();
+    if (pStream)
+        pStream->Release();
     return ok;
 }
 
-static BOOL
-EnsureScaledForDpi(PNG_BITMAP *png, UINT dpiTarget)
-{
+static BOOL EnsureScaledForDpi(PNG_BITMAP* png, UINT dpiTarget) {
     if (png->dpiCached == dpiTarget && png->hbmScaled)
-        return TRUE;                       // already ready
+        return TRUE;  // already ready
 
     // dispose of any previous scaled copy
     if (png->hbmScaled) {
@@ -124,57 +119,54 @@ EnsureScaledForDpi(PNG_BITMAP *png, UINT dpiTarget)
     //  baseline = master / 16
     UINT cxNew = (png->origCX * dpiTarget) / (96 * 16);
     UINT cyNew = (png->origCY * dpiTarget) / (96 * 16);
-    if (cxNew == 0 || cyNew == 0)          // never shrink below 1 px
+    if (cxNew == 0 || cyNew == 0)  // never shrink below 1 px
         cxNew = cyNew = 1;
 
     // ----- create destination DIB -----
     BITMAPINFO bi = { 0 };
-    bi.bmiHeader.biSize        = sizeof(bi.bmiHeader);
-    bi.bmiHeader.biWidth       =  cxNew;
-    bi.bmiHeader.biHeight      = -((LONG)cyNew);   // top-down
-    bi.bmiHeader.biPlanes      = 1;
-    bi.bmiHeader.biBitCount    = 32;
+    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+    bi.bmiHeader.biWidth = cxNew;
+    bi.bmiHeader.biHeight = -((LONG)cyNew);  // top-down
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = 32;
     bi.bmiHeader.biCompression = BI_RGB;
 
-    void  *pvBitsDest;
-    HBITMAP hbmDest = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS,
-                                       &pvBitsDest, NULL, 0);
+    void* pvBitsDest;
+    HBITMAP hbmDest = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, &pvBitsDest, NULL, 0);
     if (!hbmDest)
         return FALSE;
 
     // ----- stretch once into the new DIB -----
     HDC hdcScreen = GetDC(NULL);
-    HDC hdcSrc  = CreateCompatibleDC(hdcScreen);
+    HDC hdcSrc = CreateCompatibleDC(hdcScreen);
     HDC hdcDest = CreateCompatibleDC(hdcScreen);
-    HGDIOBJ hOldSrc  = SelectObject(hdcSrc,  png->hbmOrig);
+    HGDIOBJ hOldSrc = SelectObject(hdcSrc, png->hbmOrig);
     HGDIOBJ hOldDest = SelectObject(hdcDest, hbmDest);
 
     // Use HALFTONE for better quality scaling
     SetStretchBltMode(hdcDest, HALFTONE);
-    SetBrushOrgEx(hdcDest, 0, 0, NULL);    // HALFTONE hint
+    SetBrushOrgEx(hdcDest, 0, 0, NULL);  // HALFTONE hint
 
     // Use AlphaBlend instead of StretchBlt to preserve alpha channel
     BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-    AlphaBlend(hdcDest, 0, 0, cxNew, cyNew,
-               hdcSrc, 0, 0, png->origCX, png->origCY, bf);
+    AlphaBlend(hdcDest, 0, 0, cxNew, cyNew, hdcSrc, 0, 0, png->origCX, png->origCY, bf);
 
     // cleanup
-    SelectObject(hdcSrc,  hOldSrc);
+    SelectObject(hdcSrc, hOldSrc);
     SelectObject(hdcDest, hOldDest);
     DeleteDC(hdcSrc);
     DeleteDC(hdcDest);
     ReleaseDC(NULL, hdcScreen);
 
     // commit
-    png->hbmScaled  = hbmDest;
-    png->scaledCX   = cxNew;
-    png->scaledCY   = cyNew;
-    png->dpiCached  = dpiTarget;
+    png->hbmScaled = hbmDest;
+    png->scaledCX = cxNew;
+    png->scaledCY = cyNew;
+    png->dpiCached = dpiTarget;
     return TRUE;
 }
 
-void PngStartup(void)
-{
+void PngStartup(void) {
     if (s_initialized) {
         return;
     }
@@ -192,8 +184,7 @@ void PngStartup(void)
     s_initialized = TRUE;
 }
 
-void PngShutdown(void)
-{
+void PngShutdown(void) {
     if (!s_initialized) {
         return;
     }
@@ -215,12 +206,11 @@ void PngShutdown(void)
     s_initialized = FALSE;
 }
 
-void PngDraw(HDC hdc, UINT dpi, int x, int y, PNG_TYPE type, int index)
-{
+void PngDraw(HDC hdc, UINT dpi, int x, int y, PNG_TYPE type, int index) {
     if (!s_initialized) {
         return;
     }
-    
+
     PNG_BITMAP* png = NULL;
     switch (type) {
         case PNG_TYPE_DRIVE:
@@ -250,8 +240,7 @@ void PngDraw(HDC hdc, UINT dpi, int x, int y, PNG_TYPE type, int index)
     }
 
     BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-    if (!AlphaBlend(hdc, x, y, png->scaledCX, png->scaledCY,
-                    hdcMemScaled, 0, 0, png->scaledCX, png->scaledCY, bf)) {
+    if (!AlphaBlend(hdc, x, y, png->scaledCX, png->scaledCY, hdcMemScaled, 0, 0, png->scaledCX, png->scaledCY, bf)) {
         SelectObject(hdcMemScaled, hOld);
         DeleteDC(hdcMemScaled);
         return;

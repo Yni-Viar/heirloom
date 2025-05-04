@@ -14,48 +14,42 @@
 #include <commdlg.h>
 #include "resize.h"
 
-
 #define DDETYPECOMBOBOXSIZ 20
-#define DDETYPEMAX  (sizeof(aDDEType) / sizeof(aDDEType[0]))
+#define DDETYPEMAX (sizeof(aDDEType) / sizeof(aDDEType[0]))
 
-#define STRINGSIZ  MAXPATHLEN   // at least >= {DESCSIZ, IDENTSIZ}
-#define DESCSIZ    MAXPATHLEN
+#define STRINGSIZ MAXPATHLEN  // at least >= {DESCSIZ, IDENTSIZ}
+#define DESCSIZ MAXPATHLEN
 #define COMMANDSIZ MAXPATHLEN
-#define DDESIZ     MAXPATHLEN
+#define DDESIZ MAXPATHLEN
 
 #define FILETYPEBLOCK MAX_PATH
 
 #undef OutputDebugString
 #define OutputDebugString(x)
-#define odf(x,y)
+#define odf(x, y)
 // structures
 
 typedef struct _DDE_INFO {
-   BOOL  bUsesDDE;
-   TCHAR  szCommand[COMMANDSIZ];   // doesn't really belong here..
-   TCHAR  szDDEMesg[DDESIZ];
-   TCHAR  szDDEApp[DDESIZ];
-   TCHAR  szDDENotRun[DDESIZ];
-   TCHAR  szDDETopic[DDESIZ];
+    BOOL bUsesDDE;
+    TCHAR szCommand[COMMANDSIZ];  // doesn't really belong here..
+    TCHAR szDDEMesg[DDESIZ];
+    TCHAR szDDEApp[DDESIZ];
+    TCHAR szDDENotRun[DDESIZ];
+    TCHAR szDDETopic[DDESIZ];
 } DDEINFO, *PDDEINFO;
 
 typedef struct _DDE_TYPE {
-   UINT  uiComboBox;              // String in the combo box "action!"
-   LPTSTR lpszRegistry;           // Registry entry under "shell"
+    UINT uiComboBox;      // String in the combo box "action!"
+    LPTSTR lpszRegistry;  // Registry entry under "shell"
 } DDETYPE, *PDDETYPE;
 
 // Allow the Action drop list to be extensible.
 // To add new action types, just add new lines to this list.
 
-DDETYPE aDDEType[] = {
-   { IDS_ASSOC_OPEN,    TEXT("open") },
-   { IDS_ASSOC_PRINT,   TEXT("print") }
-};
+DDETYPE aDDEType[] = { { IDS_ASSOC_OPEN, TEXT("open") }, { IDS_ASSOC_PRINT, TEXT("print") } };
 
-
-typedef struct _FILETYPE *PFILETYPE;
-typedef struct _EXT *PEXT;
-
+typedef struct _FILETYPE* PFILETYPE;
+typedef struct _EXT* PEXT;
 
 //
 // Normal state of lpszBuf:   "FMA000_FileType\0Nice name\0(blah.exe %1"
@@ -63,63 +57,61 @@ typedef struct _EXT *PEXT;
 //                                        uDesc/       uExe/   uExeSpace
 
 typedef struct _FILETYPE {
-   PFILETYPE next;
-   UINT   uDesc;
-   UINT   uExe;
-   UINT   uExeSpace;
-   UINT   cchBufSiz;
-   LPTSTR lpszBuf;                      // Ident then desc then exe
-   PEXT  pExt;
+    PFILETYPE next;
+    UINT uDesc;
+    UINT uExe;
+    UINT uExeSpace;
+    UINT cchBufSiz;
+    LPTSTR lpszBuf;  // Ident then desc then exe
+    PEXT pExt;
 } FILETYPE;
 
-
 typedef struct _EXT {
-   PEXT next;
-   PEXT pftNext;
-   BOOL bAdd    : 1;
-   BOOL bDelete : 1;
-   PFILETYPE pFileType;
-   PFILETYPE pftOrig;
-   TCHAR szExt[EXTSIZ+1];   // +1 for dot
-   TCHAR szIdent[1];        // Variable length; must be last
-                            // This is ONLY USED BY ClassesRead
-                            // Do NOT rely on this being stable;
+    PEXT next;
+    PEXT pftNext;
+    BOOL bAdd : 1;
+    BOOL bDelete : 1;
+    PFILETYPE pFileType;
+    PFILETYPE pftOrig;
+    TCHAR szExt[EXTSIZ + 1];  // +1 for dot
+    TCHAR szIdent[1];         // Variable length; must be last
+                              // This is ONLY USED BY ClassesRead
+                              // Do NOT rely on this being stable;
 } EXT;
-
 
 // Must be defined AFTER aDDEType[]!
 
 typedef struct _ASSOCIATE_FILE_DLG_INFO {
-   BOOL       bRefresh  : 1;
-   BOOL       bExtFocus : 1;
-   BOOL       bReadOnly : 1;
-   BOOL       bChange   : 1;
-   BOOL       bOKEnable : 1;
-   UINT       mode;                      // IDD_NEW, IDD_CONFIG, IDD_COMMAND
-   PFILETYPE  pFileType;
-   INT        iAction;
-   HWND       hDlg;
-   INT        iClassList;                // HACK: == LB_ERR for winini editing
-   DDEINFO    DDEInfo[DDETYPEMAX];
-   TCHAR      szExt[EXTSIZ+2];           // for dots (ALWAYS has prefix dot)
+    BOOL bRefresh : 1;
+    BOOL bExtFocus : 1;
+    BOOL bReadOnly : 1;
+    BOOL bChange : 1;
+    BOOL bOKEnable : 1;
+    UINT mode;  // IDD_NEW, IDD_CONFIG, IDD_COMMAND
+    PFILETYPE pFileType;
+    INT iAction;
+    HWND hDlg;
+    INT iClassList;  // HACK: == LB_ERR for winini editing
+    DDEINFO DDEInfo[DDETYPEMAX];
+    TCHAR szExt[EXTSIZ + 2];  // for dots (ALWAYS has prefix dot)
 } ASSOCIATEFILEDLGINFO, *PASSOCIATEFILEDLGINFO;
 
 typedef union _VFILETYPEEXT {
-   PFILETYPE pFileType;
-   PEXT pExt;
-   VOID* vBoth;
+    PFILETYPE pFileType;
+    PEXT pExt;
+    VOID* vBoth;
 } VFILETYPEEXT, *PVFILETYPEEXT;
 
 // globals
 
 TCHAR szShellOpenCommand[] = TEXT("\\shell\\open\\command");
 
-TCHAR szShell[]   = TEXT("\\shell\\");
+TCHAR szShell[] = TEXT("\\shell\\");
 TCHAR szCommand[] = TEXT("\\command");
 TCHAR szDDEExec[] = TEXT("\\ddeexec");
-TCHAR szApp[]     = TEXT("\\application");
-TCHAR szTopic[]   = TEXT("\\topic");
-TCHAR szIFExec[]  = TEXT("\\ifexec");
+TCHAR szApp[] = TEXT("\\application");
+TCHAR szTopic[] = TEXT("\\topic");
+TCHAR szIFExec[] = TEXT("\\ifexec");
 
 TCHAR szDDEDefaultTopic[] = TEXT("System");
 
@@ -153,10 +145,10 @@ VOID ActionDlgRead(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo);
 VOID UpdateOKEnable(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo);
 VOID UpdateSelectionExt(HWND hDlg, BOOL bForce);
 
-VOID  DDEUpdate(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT iAction);
+VOID DDEUpdate(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT iAction);
 DWORD DDERead(PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT i);
 DWORD DDEWrite(PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT i);
-VOID  DDEDlgRead(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT iAction);
+VOID DDEDlgRead(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT iAction);
 
 INT ClassListFileTypeAdd(HWND hDlg, PFILETYPE pFileType);
 DWORD CommandWrite(HWND hDlg, LPTSTR lpszExt, LPTSTR lpszCommand);
@@ -164,12 +156,12 @@ DWORD RegNodeDelete(HKEY hk, LPTSTR lpszKey);
 DWORD RegExtAddHelper(HKEY hk, LPTSTR lpszExt, PFILETYPE pFileType);
 VOID FileAssociateErrorCheck(HWND hwnd, UINT idsTitle, UINT idsText, DWORD dwError);
 
-BOOL  FileTypeGrow(PFILETYPE pFileType, UINT uNewSize);
+BOOL FileTypeGrow(PFILETYPE pFileType, UINT uNewSize);
 DWORD FileTypeRead(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo);
 DWORD FileTypeWrite(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, HKEY hk, LPTSTR lpszKey);
 DWORD FileTypeAddString(PFILETYPE pFileType, LPTSTR lpstr, PUINT pcchOffset);
-BOOL  FileTypeDupIdentCheck(HWND hDlg, UINT uIDD_FOCUS, LPTSTR lpszIdent);
-VOID  FileTypeFree(PFILETYPE pFileType);
+BOOL FileTypeDupIdentCheck(HWND hDlg, UINT uIDD_FOCUS, LPTSTR lpszIdent);
+VOID FileTypeFree(PFILETYPE pFileType);
 
 DWORD RegExtAdd(HWND hDlg, HKEY hk, PEXT pExt, PFILETYPE pFileType);
 DWORD RegExtDelete(HWND hDlg, HKEY hk, PEXT pExt);
@@ -187,27 +179,22 @@ LPTSTR GenerateFriendlyName(LPTSTR lpszCommand);
 
 // endproto
 
-
 // since LoadString() only reads up to a null we have to mark
 // special characters where we want nulls then convert them
 // after loading.
 
-VOID
-FixupNulls(LPTSTR p)
-{
-   LPTSTR pT;
+VOID FixupNulls(LPTSTR p) {
+    LPTSTR pT;
 
-   while (*p) {
-      if (*p == CHAR_HASH) {
-         pT = p;
-         p = CharNext(p);
-         *pT = CHAR_NULL;
-      }
-      else
-         p = CharNext(p);
-   }
+    while (*p) {
+        if (*p == CHAR_HASH) {
+            pT = p;
+            p = CharNext(p);
+            *pT = CHAR_NULL;
+        } else
+            p = CharNext(p);
+    }
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -230,41 +217,35 @@ FixupNulls(LPTSTR p)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-ValidateClass(HWND hDlg)
-{
-   INT i;
-   PFILETYPE pFileType;
+VOID ValidateClass(HWND hDlg) {
+    INT i;
+    PFILETYPE pFileType;
 
-   //
-   // If (none) is selected, we can't config or delete.
-   //
-   i = (INT)SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETCURSEL, 0, 0L);
+    //
+    // If (none) is selected, we can't config or delete.
+    //
+    i = (INT)SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETCURSEL, 0, 0L);
 
-   if (-1 == i) {
-      SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL, 0, 0L);
-      i=0;
-   }
+    if (-1 == i) {
+        SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL, 0, 0L);
+        i = 0;
+    }
 
-   EnableWindow(GetDlgItem(hDlg, IDD_CONFIG), i);
-   EnableWindow(GetDlgItem(hDlg, IDD_DELETE), i);
+    EnableWindow(GetDlgItem(hDlg, IDD_CONFIG), i);
+    EnableWindow(GetDlgItem(hDlg, IDD_DELETE), i);
 
-   if (i) {
+    if (i) {
+        pFileType = (PFILETYPE)SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETITEMDATA, i, 0L);
 
-      pFileType = (PFILETYPE) SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETITEMDATA, i, 0L);
+        //
+        // Put command string there
+        //
+        SendDlgItemMessage(hDlg, IDD_COMMAND, WM_SETTEXT, 0, (LPARAM)&pFileType->lpszBuf[pFileType->uDesc]);
 
-      //
-      // Put command string there
-      //
-      SendDlgItemMessage(hDlg, IDD_COMMAND, WM_SETTEXT, 0,
-         (LPARAM) &pFileType->lpszBuf[pFileType->uDesc]);
-
-   } else {
-
-      SendDlgItemMessage(hDlg, IDD_COMMAND, WM_SETTEXT, 0, (LPARAM)szNone);
-   }
+    } else {
+        SendDlgItemMessage(hDlg, IDD_COMMAND, WM_SETTEXT, 0, (LPARAM)szNone);
+    }
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -290,110 +271,101 @@ ValidateClass(HWND hDlg)
 //
 /////////////////////////////////////////////////////////////////////
 
+VOID UpdateSelectionExt(HWND hDlg, BOOL bForce) {
+    TCHAR szExt[EXTSIZ + 1];
+    PEXT pExt;
+    INT i;
+    TCHAR c, c2;
+    PTCHAR p;
+    PFILETYPE pFileType;
 
-VOID
-UpdateSelectionExt(HWND hDlg, BOOL bForce)
-{
-   TCHAR szExt[EXTSIZ+1];
-   PEXT pExt;
-   INT i;
-   TCHAR c, c2;
-   PTCHAR p;
-   PFILETYPE pFileType;
+    TCHAR szTemp[MAXPATHLEN];
 
-   TCHAR szTemp[MAXPATHLEN];
+    //
+    // bForce is used when we base the ext on GETCURSEL rather than
+    // the text in the edit field.
+    //
+    if (bForce) {
+        i = (INT)SendDlgItemMessage(hDlg, IDD_EXT, CB_GETCURSEL, 0, 0L);
+        SendDlgItemMessage(hDlg, IDD_EXT, CB_GETLBTEXT, i, (LPARAM)szExt);
+    } else {
+        //
+        // Get the current extension
+        //
+        GetDlgItemText(hDlg, IDD_EXT, szExt, COUNTOF(szExt));
+    }
 
-   //
-   // bForce is used when we base the ext on GETCURSEL rather than
-   // the text in the edit field.
-   //
-   if (bForce) {
-      i = (INT)SendDlgItemMessage(hDlg, IDD_EXT, CB_GETCURSEL, 0, 0L);
-      SendDlgItemMessage(hDlg, IDD_EXT, CB_GETLBTEXT, i, (LPARAM)szExt);
-   } else {
+    //
+    // Search for present association
+    //
+    pExt = BaseExtFind(szExt);
 
-      //
-      // Get the current extension
-      //
-      GetDlgItemText(hDlg, IDD_EXT, szExt, COUNTOF(szExt));
-   }
+    //
+    // Add only if not deleted and has associated filetype
+    //
+    if (pExt && pExt->pFileType && !pExt->bDelete) {
+        pFileType = pExt->pFileType;
 
-   //
-   // Search for present association
-   //
-   pExt = BaseExtFind(szExt);
+        //
+        // Munge data structure for string... ugly
+        //
+        p = &pFileType->lpszBuf[pFileType->uExeSpace];
 
-   //
-   // Add only if not deleted and has associated filetype
-   //
-   if (pExt && pExt->pFileType && !pExt->bDelete) {
+        c = *p;
+        c2 = *(p + 1);
 
-      pFileType=pExt->pFileType;
+        *p = CHAR_CLOSEPAREN;
+        *(p + 1) = CHAR_NULL;
 
-      //
-      // Munge data structure for string... ugly
-      //
-      p = &pFileType->lpszBuf[pFileType->uExeSpace];
+        pFileType->lpszBuf[pFileType->uExe - 2] = CHAR_SPACE;
 
-      c = *p;
-      c2 = *(p+1);
+        // Found one, set the selection!
+        SendDlgItemMessage(
+            hDlg, IDD_CLASSLIST, LB_SELECTSTRING, (WPARAM)-1,
+            (LPARAM)&pExt->pFileType->lpszBuf[pExt->pFileType->uDesc]);
 
-      *p = CHAR_CLOSEPAREN;
-      *(p+1) = CHAR_NULL;
+        pFileType->lpszBuf[pFileType->uExe - 2] = CHAR_NULL;
 
-      pFileType->lpszBuf[pFileType->uExe-2] = CHAR_SPACE;
+        *p = c;
+        *(p + 1) = c2;
 
-      // Found one, set the selection!
-      SendDlgItemMessage(hDlg,
-         IDD_CLASSLIST,
-         LB_SELECTSTRING,
-         (WPARAM)-1,
-         (LPARAM)&pExt->pFileType->lpszBuf[pExt->pFileType->uDesc]);
+    } else {
+        if (GetProfileString(szExtensions, szExt + 1, szNULL, szTemp, COUNTOF(szTemp))) {
+            //
+            // Remove the "^." bulloney.
+            //
+            p = szTemp;
+            while ((*p) && (CHAR_CARET != *p) && (CHAR_PERCENT != *p))
+                p++;
 
-      pFileType->lpszBuf[pFileType->uExe-2] = CHAR_NULL;
-
-      *p = c;
-      *(p+1) = c2;
-
-   } else {
-
-      if (GetProfileString(szExtensions, szExt+1, szNULL, szTemp, COUNTOF(szTemp))) {
-
-         //
-         // Remove the "^." bulloney.
-         //
-         p = szTemp;
-         while ((*p) && (CHAR_CARET != *p) && (CHAR_PERCENT != *p))
-            p++;
-
-         *p = CHAR_NULL;
-
-         p--;
-
-         if (CHAR_SPACE == *p)
             *p = CHAR_NULL;
 
-         SetDlgItemText(hDlg, IDD_COMMAND, szTemp);
+            p--;
 
-         //
-         // Set clear the selection.
-         SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL, (WPARAM)-1, 0L);
+            if (CHAR_SPACE == *p)
+                *p = CHAR_NULL;
 
-         EnableWindow(GetDlgItem(hDlg, IDD_CONFIG), TRUE);
-         EnableWindow(GetDlgItem(hDlg, IDD_DELETE), FALSE);
+            SetDlgItemText(hDlg, IDD_COMMAND, szTemp);
 
-         return;
-      }
+            //
+            // Set clear the selection.
+            SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL, (WPARAM)-1, 0L);
 
-      // Not found: only do selecting if not already at 0
+            EnableWindow(GetDlgItem(hDlg, IDD_CONFIG), TRUE);
+            EnableWindow(GetDlgItem(hDlg, IDD_DELETE), FALSE);
 
-      if (0 != SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETCURSEL, 0, 0L)) {
-         SendDlgItemMessage(hDlg, IDD_CLASSLIST,LB_SETCURSEL, 0, 0L);
-      }
-   }
+            return;
+        }
 
-   // Now turn on/off class buttons (config/del)
-   ValidateClass(hDlg);
+        // Not found: only do selecting if not already at 0
+
+        if (0 != SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETCURSEL, 0, 0L)) {
+            SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL, 0, 0L);
+        }
+    }
+
+    // Now turn on/off class buttons (config/del)
+    ValidateClass(hDlg);
 }
 
 //--------------------------------------------------------------------------
@@ -403,556 +375,506 @@ UpdateSelectionExt(HWND hDlg, BOOL bForce)
 //  GWL_USERDATA = do we need to rebuild document string?
 //--------------------------------------------------------------------------
 
-
 INT_PTR
 CALLBACK
-AssociateDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-   TCHAR szTemp[STRINGSIZ];
-   PFILETYPE pFileType, pft2;
-   INT i;
-   DWORD dwError;
-   PEXT pExt, pExtNext;
-
-   if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
-      return TRUE;
-   }
-
-   // Make sure szTemp is initialized.
-   szTemp[0] = CHAR_NULL;
-
-   switch (wMsg) {
-   case WM_INITDIALOG:
-      {
-         LPTSTR p;
-         LPTSTR pSave;
-         INT iItem;
-
-         // Turn off refresh flag (GWL_USERDATA)
-         SetWindowLongPtr(hDlg, GWLP_USERDATA, 0L);
-
-         // Make 'p' point to the file's extension.
-         pSave = GetSelection(1, NULL);
-         if (pSave) {
-            p = GetExtension(pSave);
-
-            //
-            // hack fix: check for " or > 4 chars then add \0.
-            // Better fix: GetExtension should axe \" , but this
-            // would be bad if the callee expects the \" .  So for
-            // now just axe it here since we immediately delete it.
-            //  Also, 4 is a magic number and should be #defined.
-            //
-            for (iItem=0;iItem<EXTSIZ-1 && p[iItem] && p[iItem]!=CHAR_DQUOTE ;iItem++)
-               ;
-
-            p[iItem] = CHAR_NULL;
-
-            if (!IsProgramFile(pSave)) {
-               lstrcpy(szTemp,p);
-            } else {
-               szTemp[0] = CHAR_NULL;
-            }
-            LocalFree((HLOCAL)pSave);
-         }
-
-         SendDlgItemMessage(hDlg, IDD_EXT, CB_LIMITTEXT, EXTSIZ-1, 0L);
-
-         //
-         // Save space for ".exe"" %1"
-         //
-         SendDlgItemMessage(hDlg, IDD_COMMAND, EM_LIMITTEXT,
-            COMMANDSIZ-1-(COUNTOF(szDotEXE)-1)-(COUNTOF(szSpacePercentOne)-1),
-            0L);
-
-         if (!AssociateDlgInit(hDlg, szTemp, -1)) {
-            EndDialog(hDlg, FALSE);
-            return TRUE;
-         }
-
-         break;
-      }
-
-   case WM_COMMAND:
-      switch (GET_WM_COMMAND_ID(wParam, lParam)) {
-
-      case IDD_HELP:
-         goto DoHelp;
-
-      case IDD_EXT:
-         {
-            BOOL bForce = FALSE;
-
-            if (GET_WM_COMMAND_CMD(wParam, lParam) == CBN_EDITCHANGE ||
-               (bForce = (GET_WM_COMMAND_CMD(wParam, lParam) == CBN_SELCHANGE))) {
-
-               UpdateSelectionExt(hDlg, bForce);
-            }
-            break;
-         }
-
-      case IDD_CLASSLIST:
-
-         if (LBN_SELCHANGE == GET_WM_COMMAND_CMD(wParam, lParam)) {
-            ValidateClass(hDlg);
-            break;
-         }
-
-         // If not double click or (none) selected, break
-
-         if (GET_WM_COMMAND_CMD(wParam, lParam) != LBN_DBLCLK ||
-            !SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETCURSEL, 0, 0L)) {
-            break;
-         }
-
-         // !! WARNING !!
-         //
-         // Non-portable usage of wParam BUGBUG (LATER)
-
-         wParam = IDD_CONFIG;
-         //
-         // Fall though to config.
-         //
-      case IDD_NEW:
-      case IDD_CONFIG:
-         {
-            // Allocate space for dialog info
-
-            ASSOCIATEFILEDLGINFO AssociateFileDlgInfo;
-
-            // Init stuff
-            AssociateFileDlgInfo.bRefresh = FALSE;
-            AssociateFileDlgInfo.bReadOnly = FALSE;
-            //
-            // No need to set AssociateFileDlgInfo.bChange = FALSE;
-            // since this is done in WM_INITDIALOG.
-            //
-            AssociateFileDlgInfo.hDlg = hDlg;
-
-            // copy extension
-            GetDlgItemText(hDlg,
-               IDD_EXT,
-               AssociateFileDlgInfo.szExt,
-               COUNTOF(AssociateFileDlgInfo.szExt));
-
-            ExtClean(AssociateFileDlgInfo.szExt);
-
-            AssociateFileDlgInfo.iClassList =
-               (INT) SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETCURSEL,0,0L);
-
-            if (IDD_NEW == GET_WM_COMMAND_ID(wParam, lParam)) {
-
-               AssociateFileDlgInfo.mode = IDD_NEW;
-DoConfigWinIni:
-
-               AssociateFileDlgInfo.pFileType =
-                  (PFILETYPE) LocalAlloc(LPTR, sizeof(FILETYPE));
-
-               if (!AssociateFileDlgInfo.pFileType) {
-                  FileAssociateErrorCheck(hDlg, IDS_EXTTITLE,
-                     0L, GetLastError());
-
-                  break;
-               }
-
-            } else {
-               AssociateFileDlgInfo.mode = IDD_CONFIG;
-
-               //
-               // If we are configing a winini ext, fake it
-               // by doing a new
-               //
-
-               if (LB_ERR == AssociateFileDlgInfo.iClassList) {
-
-                  AssociateFileDlgInfo.mode = IDD_COMMAND;
-                  goto DoConfigWinIni;
-               }
-
-               AssociateFileDlgInfo.pFileType =
-                  (PFILETYPE) SendDlgItemMessage(hDlg, IDD_CLASSLIST,
-                     LB_GETITEMDATA, AssociateFileDlgInfo.iClassList, 0L);
-            }
-
-            DialogBoxParam(hAppInstance,
-               (LPTSTR) MAKEINTRESOURCE(ASSOCIATEFILEDLG),
-               hDlg, AssociateFileDlgProc,
-               (LPARAM) &AssociateFileDlgInfo);
-
-            ValidateClass(hDlg);
-
-            // If prev dialog requests build doc refresh, set our flag
-
-            if (AssociateFileDlgInfo.bRefresh)
-               SetWindowLongPtr(hDlg, GWLP_USERDATA, 1L);
-
-            //
-            // Instead of clearing IDD_EXT, go ahead and leave
-            // it.  Just be sure to validate IDD_CLASSLIST
-            // based on ext.
-            //
-            UpdateSelectionExt(hDlg, FALSE);
-
-            break;
-         }
-      case IDD_DELETE:
-
-         //
-         // Find which item to remove
-         //
-         i = (INT)SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETCURSEL, 0, 0L);
-
-         //
-         // Should never be 0...  If so, we're in trouble since
-         // the delete key should have been disabled.
-         //
-         if (!i || LB_ERR == i)
-            break;
-
-         pFileType = (PFILETYPE) SendDlgItemMessage(hDlg, IDD_CLASSLIST,
-            LB_GETITEMDATA, i , 0L);
-
-         //
-         // Verify with dialog
-         //
-         {
-            TCHAR szText[MAXERRORLEN];
-            TCHAR szTitle[MAXTITLELEN];
-            TCHAR szTemp[MAXERRORLEN];
-
-            LoadString(hAppInstance, IDS_FILETYPEDELCONFIRMTITLE, szTitle,
-               COUNTOF(szTitle));
-
-            LoadString(hAppInstance, IDS_FILETYPEDELCONFIRMTEXT, szTemp,
-               COUNTOF(szTemp));
-
-            wsprintf(szText,szTemp,&pFileType->lpszBuf[pFileType->uDesc]);
-
-            if (IDYES != MessageBox(hDlg, szText, szTitle,
-               MB_TASKMODAL|MB_YESNO|MB_ICONEXCLAMATION)) {
-
-               break;
-            }
-         }
-
-         //
-         // Delete the actual file type....
-         // If the filetype is deleted successfully but the user can't
-         // delete an extension, we'll have a left over extension.
-         // This could occur if the admin incorrectly sets up security
-         // on HKEY_CLASSES_ROOT: filetype is deleteable, but ext is not.
-         //
-         // LATER: better error checking; delete filetype node only after
-         // deleting all exts without error
-         //
-         dwError = RegNodeDelete(HKEY_CLASSES_ROOT, pFileType->lpszBuf);
-
-         //
-         // Flush it!
-         //
-         RegFlushKey(HKEY_CLASSES_ROOT);
-
-         FileAssociateErrorCheck(hDlg, IDS_EXTTITLE,
-            IDS_FILETYPEDELERROR, dwError);
-
-         LoadString(hAppInstance, IDS_CLOSE, szTitle, COUNTOF(szTitle));
-         SetDlgItemText(hDlg, IDCANCEL, szTitle);
-
-         if (ERROR_SUCCESS != dwError)
-            break;
-
-         if (pFileType->pExt) {
-            //
-            // Only set refresh if we deleted one of them.
-            //
-            SetWindowLongPtr(hDlg, GWLP_USERDATA, 1L);
-         }
-
-         //
-         // Now go through all .exts and delete them too.
-         //
-         for (pExt = pFileType->pExt; pExt; pExt=pExtNext) {
-
-            pExtNext = pExt->pftNext;
-
-            //
-            // No longer associated with a filetype
-            //
-            RegExtDelete(hDlg, HKEY_CLASSES_ROOT, pExt);
-         }
-
-         //
-         // Done deleting everything, now free pFileType after
-         // delinking
-         //
-         if (pFileType == pFileTypeBase) {
-            pFileTypeBase = pFileType->next;
-         } else {
-            for (pft2 = pFileTypeBase; pft2->next != pFileType; pft2=pft2->next)
-               ;
-
-            pft2->next = pFileType->next;
-         }
-
-         FileTypeFree(pFileType);
-
-         //
-         // Set text of IDD_EXT to szNULL so that the user doesn't
-         // hit OK and change the extension
-         // Alternatively, we could have a new button called "associate"
-         //
-         SetDlgItemText(hDlg, IDD_EXT, szNULL);
-
-         SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_DELETESTRING, i, 0L);
-
-         //
-         // Set it to the next thing
-         //
-         dwError = (DWORD)SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL, i, 0L);
-         if (LB_ERR == dwError)
-            i--;
-
-
-         //
-         // i Must always be > 0 (since deleting (none) is disallowed)
-         //
-         SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL, i, 0L);
-         ValidateClass(hDlg);
-
-         break;
-
-      case IDOK:
-         {
-            PEXT pExt;
-            WCHAR szExt[EXTSIZ+1];
-            WCHAR szCommand[COMMANDSIZ];
-
-            GetDlgItemText(hDlg, IDD_EXT, szExt, COUNTOF(szExt));
-            GetDlgItemText(hDlg, IDD_COMMAND, szCommand, COUNTOF(szCommand));
-
-            //
-            // Need to clean up szExt by adding .!
-            //
-
-            ExtClean(szExt);
-
-            if (!szExt[1])
-               goto Cancel;
-
-            //
-            // Now make sure it isn't a program extension
-            //
-
-            if (IsProgramFile(szExt)) {
-
-               LoadString(hAppInstance, IDS_NOEXEASSOC, szCommand, COUNTOF(szCommand));
-
-               wsprintf(szMessage, szCommand, szExt);
-               GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
-
-               MessageBox(hDlg, szMessage, szTitle, MB_OK | MB_ICONSTOP);
-               SetDlgItemText(hDlg, IDD_EXT, szNULL);
-
-               break;
-            }
-
-
-            pExt = BaseExtFind(szExt);
-
-            //
-            // Check for delete case
-            //
-            // ALSO: if szCommand is szNULL ("")
-            //
-            if (!lstrcmpi(szCommand, szNone) || !szCommand[0]) {
-
-               //
-               // Axe it in winini
-               //
-               WriteProfileString(szExtensions, szExt+1, NULL);
-
-               // If !pExt then it was never associated!
-               if (pExt) {
-                  FileAssociateErrorCheck(hDlg, IDS_EXTTITLE,
-                     IDS_EXTDELERROR, RegExtDelete(hDlg, HKEY_CLASSES_ROOT,pExt));
-
-               } else {
-                  RegNodeDelete(HKEY_CLASSES_ROOT, szExt);
-               }
-
-               // Request refresh
-               SetWindowLongPtr(hDlg, GWLP_USERDATA, 1L);
-
-               goto Done;
-            }
-
-            //
-            // There are two cases here:
-            //
-            //  1. Add to exe that the user typed in
-            //  2. Add to preexisting selection
-            //
-
-            //
-            // Strategy: Scan through all pFileTypes, using
-            // lstrcmpi (case insensitive).  Don't clean up name
-            // at all; leave heading/trailing spaces
-            //
-
-            for (pFileType=pFileTypeBase; pFileType; pFileType=pFileType->next) {
-
-               if (!lstrcmpi(&pFileType->lpszBuf[pFileType->uDesc], szCommand))
-                  break;
-            }
-
-            if (pFileType) {
-
-               FileAssociateErrorCheck(hDlg,
-                  IDS_EXTTITLE,
-                  IDS_EXTADDERROR,
-                  RegExtAddHelper(HKEY_CLASSES_ROOT, szExt, pFileType));
-
-            } else {
-
-               //
-               // make sure it has an extension
-               //
-               if (*GetExtension(szCommand) == 0) {
-
-                  lstrcat(szTemp, L".exe");
-
-               } else {
-
-                  if (!IsProgramFile(szCommand)) {
-
-                     LoadString(hAppInstance,
-                                IDS_ASSOCNOTEXE,
-                                szTemp,
-                                COUNTOF(szTemp));
-
-                     wsprintf(szMessage, szTemp, szCommand);
-                     GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
-
-                     MessageBox(hDlg, szMessage, szTitle, MB_OK | MB_ICONSTOP);
-                     SetDlgItemText(hDlg, IDD_COMMAND, szNULL);
-
-                     break;
-                  }
-               }
-
-               //
-               // Create one.
-               //
-               if (DE_RETRY == CommandWrite(hDlg, szExt, szCommand))
-                  break;
-            }
-
-            //
-            // Request refresh
-            //
-            SetWindowLongPtr(hDlg, GWLP_USERDATA, 1L);
-
-            // Flush it!
-Done:
-            RegFlushKey(HKEY_CLASSES_ROOT);
-
-         }
-         // FALL THROUGH
-
-      case IDCANCEL:
-Cancel:
-         {
-            HWND hwndNext, hwndT;
-
-            //
-            // If refresh request, then do it.
-            //
-            if (GetWindowLongPtr(hDlg, GWLP_USERDATA)) {
-
-               BuildDocumentString();
-
-               // Update all of the Directory Windows in order to see
-               // the effect of the new extensions.
-
-               hwndT = GetWindow(hwndMDIClient, GW_CHILD);
-               while (hwndT) {
-                  hwndNext = GetWindow(hwndT, GW_HWNDNEXT);
-                  if (!GetWindow(hwndT, GW_OWNER))
-                     SendMessage(hwndT, WM_FSC, FSC_REFRESH, 0L);
-                  hwndT = hwndNext;
-               }
-            }
-
-            // Free up class list
-            RegUnload();
-
-            EndDialog(hDlg, TRUE);
-            break;
-         }
-
-      case IDD_BROWSE:
-         {
-            OPENFILENAME ofn;
-
-            TCHAR szFile[MAXPATHLEN + 2];
-
+AssociateDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
+    TCHAR szTemp[STRINGSIZ];
+    PFILETYPE pFileType, pft2;
+    INT i;
+    DWORD dwError;
+    PEXT pExt, pExtNext;
+
+    if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
+        return TRUE;
+    }
+
+    // Make sure szTemp is initialized.
+    szTemp[0] = CHAR_NULL;
+
+    switch (wMsg) {
+        case WM_INITDIALOG: {
             LPTSTR p;
+            LPTSTR pSave;
+            INT iItem;
 
-            LoadString(hAppInstance, IDS_PROGRAMS, szTemp, COUNTOF(szTemp));
-            FixupNulls(szTemp);
-            LoadString(hAppInstance, IDS_ASSOCIATE, szTitle, COUNTOF(szTitle));
+            // Turn off refresh flag (GWL_USERDATA)
+            SetWindowLongPtr(hDlg, GWLP_USERDATA, 0L);
 
-            szFile[1] = CHAR_NULL;
+            // Make 'p' point to the file's extension.
+            pSave = GetSelection(1, NULL);
+            if (pSave) {
+                p = GetExtension(pSave);
 
-            ofn.lStructSize          = sizeof(ofn);
-            ofn.hwndOwner            = hDlg;
-            ofn.hInstance            = NULL;
-            ofn.lpstrFilter          = szTemp;
-            ofn.lpstrCustomFilter    = NULL;
-            ofn.nFilterIndex         = 1;
-            ofn.lpstrFile            = szFile + 1;
-            ofn.lpstrFileTitle       = NULL;
-            ofn.nMaxFile             = COUNTOF(szFile)-2;
-            ofn.lpstrInitialDir      = NULL;
-            ofn.lpstrTitle           = szTitle;
-            ofn.Flags                = OFN_SHOWHELP | OFN_HIDEREADONLY;
-            ofn.lpfnHook             = NULL;
-            ofn.lpstrDefExt          = NULL;
+                //
+                // hack fix: check for " or > 4 chars then add \0.
+                // Better fix: GetExtension should axe \" , but this
+                // would be bad if the callee expects the \" .  So for
+                // now just axe it here since we immediately delete it.
+                //  Also, 4 is a magic number and should be #defined.
+                //
+                for (iItem = 0; iItem < EXTSIZ - 1 && p[iItem] && p[iItem] != CHAR_DQUOTE; iItem++)
+                    ;
 
-            if (GetOpenFileNameW(&ofn)) {
+                p[iItem] = CHAR_NULL;
 
-               if (StrChr(szFile+1, CHAR_SPACE)) {
-
-                  szFile[0] = CHAR_DQUOTE;
-                  lstrcat(szFile, SZ_DQUOTE);
-
-                  p = szFile;
-               } else {
-
-                  p = szFile+1;
-               }
-
-               SetDlgItemText(hDlg, IDD_COMMAND, p);
+                if (!IsProgramFile(pSave)) {
+                    lstrcpy(szTemp, p);
+                } else {
+                    szTemp[0] = CHAR_NULL;
+                }
+                LocalFree((HLOCAL)pSave);
             }
-         }
-         break;
 
-      default:
-         return(FALSE);
-      }
-      break;
+            SendDlgItemMessage(hDlg, IDD_EXT, CB_LIMITTEXT, EXTSIZ - 1, 0L);
 
-   default:
-      if (wMsg == wHelpMessage || wMsg == wBrowseMessage) {
-DoHelp:
-         return TRUE;
-      } else
-         return FALSE;
-   }
-   return(TRUE);
+            //
+            // Save space for ".exe"" %1"
+            //
+            SendDlgItemMessage(
+                hDlg, IDD_COMMAND, EM_LIMITTEXT,
+                COMMANDSIZ - 1 - (COUNTOF(szDotEXE) - 1) - (COUNTOF(szSpacePercentOne) - 1), 0L);
+
+            if (!AssociateDlgInit(hDlg, szTemp, -1)) {
+                EndDialog(hDlg, FALSE);
+                return TRUE;
+            }
+
+            break;
+        }
+
+        case WM_COMMAND:
+            switch (GET_WM_COMMAND_ID(wParam, lParam)) {
+                case IDD_HELP:
+                    goto DoHelp;
+
+                case IDD_EXT: {
+                    BOOL bForce = FALSE;
+
+                    if (GET_WM_COMMAND_CMD(wParam, lParam) == CBN_EDITCHANGE ||
+                        (bForce = (GET_WM_COMMAND_CMD(wParam, lParam) == CBN_SELCHANGE))) {
+                        UpdateSelectionExt(hDlg, bForce);
+                    }
+                    break;
+                }
+
+                case IDD_CLASSLIST:
+
+                    if (LBN_SELCHANGE == GET_WM_COMMAND_CMD(wParam, lParam)) {
+                        ValidateClass(hDlg);
+                        break;
+                    }
+
+                    // If not double click or (none) selected, break
+
+                    if (GET_WM_COMMAND_CMD(wParam, lParam) != LBN_DBLCLK ||
+                        !SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETCURSEL, 0, 0L)) {
+                        break;
+                    }
+
+                    // !! WARNING !!
+                    //
+                    // Non-portable usage of wParam BUGBUG (LATER)
+
+                    wParam = IDD_CONFIG;
+                    //
+                    // Fall though to config.
+                    //
+                case IDD_NEW:
+                case IDD_CONFIG: {
+                    // Allocate space for dialog info
+
+                    ASSOCIATEFILEDLGINFO AssociateFileDlgInfo;
+
+                    // Init stuff
+                    AssociateFileDlgInfo.bRefresh = FALSE;
+                    AssociateFileDlgInfo.bReadOnly = FALSE;
+                    //
+                    // No need to set AssociateFileDlgInfo.bChange = FALSE;
+                    // since this is done in WM_INITDIALOG.
+                    //
+                    AssociateFileDlgInfo.hDlg = hDlg;
+
+                    // copy extension
+                    GetDlgItemText(hDlg, IDD_EXT, AssociateFileDlgInfo.szExt, COUNTOF(AssociateFileDlgInfo.szExt));
+
+                    ExtClean(AssociateFileDlgInfo.szExt);
+
+                    AssociateFileDlgInfo.iClassList = (INT)SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETCURSEL, 0, 0L);
+
+                    if (IDD_NEW == GET_WM_COMMAND_ID(wParam, lParam)) {
+                        AssociateFileDlgInfo.mode = IDD_NEW;
+                    DoConfigWinIni:
+
+                        AssociateFileDlgInfo.pFileType = (PFILETYPE)LocalAlloc(LPTR, sizeof(FILETYPE));
+
+                        if (!AssociateFileDlgInfo.pFileType) {
+                            FileAssociateErrorCheck(hDlg, IDS_EXTTITLE, 0L, GetLastError());
+
+                            break;
+                        }
+
+                    } else {
+                        AssociateFileDlgInfo.mode = IDD_CONFIG;
+
+                        //
+                        // If we are configing a winini ext, fake it
+                        // by doing a new
+                        //
+
+                        if (LB_ERR == AssociateFileDlgInfo.iClassList) {
+                            AssociateFileDlgInfo.mode = IDD_COMMAND;
+                            goto DoConfigWinIni;
+                        }
+
+                        AssociateFileDlgInfo.pFileType = (PFILETYPE)SendDlgItemMessage(
+                            hDlg, IDD_CLASSLIST, LB_GETITEMDATA, AssociateFileDlgInfo.iClassList, 0L);
+                    }
+
+                    DialogBoxParam(
+                        hAppInstance, (LPTSTR)MAKEINTRESOURCE(ASSOCIATEFILEDLG), hDlg, AssociateFileDlgProc,
+                        (LPARAM)&AssociateFileDlgInfo);
+
+                    ValidateClass(hDlg);
+
+                    // If prev dialog requests build doc refresh, set our flag
+
+                    if (AssociateFileDlgInfo.bRefresh)
+                        SetWindowLongPtr(hDlg, GWLP_USERDATA, 1L);
+
+                    //
+                    // Instead of clearing IDD_EXT, go ahead and leave
+                    // it.  Just be sure to validate IDD_CLASSLIST
+                    // based on ext.
+                    //
+                    UpdateSelectionExt(hDlg, FALSE);
+
+                    break;
+                }
+                case IDD_DELETE:
+
+                    //
+                    // Find which item to remove
+                    //
+                    i = (INT)SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETCURSEL, 0, 0L);
+
+                    //
+                    // Should never be 0...  If so, we're in trouble since
+                    // the delete key should have been disabled.
+                    //
+                    if (!i || LB_ERR == i)
+                        break;
+
+                    pFileType = (PFILETYPE)SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_GETITEMDATA, i, 0L);
+
+                    //
+                    // Verify with dialog
+                    //
+                    {
+                        TCHAR szText[MAXERRORLEN];
+                        TCHAR szTitle[MAXTITLELEN];
+                        TCHAR szTemp[MAXERRORLEN];
+
+                        LoadString(hAppInstance, IDS_FILETYPEDELCONFIRMTITLE, szTitle, COUNTOF(szTitle));
+
+                        LoadString(hAppInstance, IDS_FILETYPEDELCONFIRMTEXT, szTemp, COUNTOF(szTemp));
+
+                        wsprintf(szText, szTemp, &pFileType->lpszBuf[pFileType->uDesc]);
+
+                        if (IDYES != MessageBox(hDlg, szText, szTitle, MB_TASKMODAL | MB_YESNO | MB_ICONEXCLAMATION)) {
+                            break;
+                        }
+                    }
+
+                    //
+                    // Delete the actual file type....
+                    // If the filetype is deleted successfully but the user can't
+                    // delete an extension, we'll have a left over extension.
+                    // This could occur if the admin incorrectly sets up security
+                    // on HKEY_CLASSES_ROOT: filetype is deleteable, but ext is not.
+                    //
+                    // LATER: better error checking; delete filetype node only after
+                    // deleting all exts without error
+                    //
+                    dwError = RegNodeDelete(HKEY_CLASSES_ROOT, pFileType->lpszBuf);
+
+                    //
+                    // Flush it!
+                    //
+                    RegFlushKey(HKEY_CLASSES_ROOT);
+
+                    FileAssociateErrorCheck(hDlg, IDS_EXTTITLE, IDS_FILETYPEDELERROR, dwError);
+
+                    LoadString(hAppInstance, IDS_CLOSE, szTitle, COUNTOF(szTitle));
+                    SetDlgItemText(hDlg, IDCANCEL, szTitle);
+
+                    if (ERROR_SUCCESS != dwError)
+                        break;
+
+                    if (pFileType->pExt) {
+                        //
+                        // Only set refresh if we deleted one of them.
+                        //
+                        SetWindowLongPtr(hDlg, GWLP_USERDATA, 1L);
+                    }
+
+                    //
+                    // Now go through all .exts and delete them too.
+                    //
+                    for (pExt = pFileType->pExt; pExt; pExt = pExtNext) {
+                        pExtNext = pExt->pftNext;
+
+                        //
+                        // No longer associated with a filetype
+                        //
+                        RegExtDelete(hDlg, HKEY_CLASSES_ROOT, pExt);
+                    }
+
+                    //
+                    // Done deleting everything, now free pFileType after
+                    // delinking
+                    //
+                    if (pFileType == pFileTypeBase) {
+                        pFileTypeBase = pFileType->next;
+                    } else {
+                        for (pft2 = pFileTypeBase; pft2->next != pFileType; pft2 = pft2->next)
+                            ;
+
+                        pft2->next = pFileType->next;
+                    }
+
+                    FileTypeFree(pFileType);
+
+                    //
+                    // Set text of IDD_EXT to szNULL so that the user doesn't
+                    // hit OK and change the extension
+                    // Alternatively, we could have a new button called "associate"
+                    //
+                    SetDlgItemText(hDlg, IDD_EXT, szNULL);
+
+                    SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_DELETESTRING, i, 0L);
+
+                    //
+                    // Set it to the next thing
+                    //
+                    dwError = (DWORD)SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL, i, 0L);
+                    if (LB_ERR == dwError)
+                        i--;
+
+                    //
+                    // i Must always be > 0 (since deleting (none) is disallowed)
+                    //
+                    SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL, i, 0L);
+                    ValidateClass(hDlg);
+
+                    break;
+
+                case IDOK: {
+                    PEXT pExt;
+                    WCHAR szExt[EXTSIZ + 1];
+                    WCHAR szCommand[COMMANDSIZ];
+
+                    GetDlgItemText(hDlg, IDD_EXT, szExt, COUNTOF(szExt));
+                    GetDlgItemText(hDlg, IDD_COMMAND, szCommand, COUNTOF(szCommand));
+
+                    //
+                    // Need to clean up szExt by adding .!
+                    //
+
+                    ExtClean(szExt);
+
+                    if (!szExt[1])
+                        goto Cancel;
+
+                    //
+                    // Now make sure it isn't a program extension
+                    //
+
+                    if (IsProgramFile(szExt)) {
+                        LoadString(hAppInstance, IDS_NOEXEASSOC, szCommand, COUNTOF(szCommand));
+
+                        wsprintf(szMessage, szCommand, szExt);
+                        GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
+
+                        MessageBox(hDlg, szMessage, szTitle, MB_OK | MB_ICONSTOP);
+                        SetDlgItemText(hDlg, IDD_EXT, szNULL);
+
+                        break;
+                    }
+
+                    pExt = BaseExtFind(szExt);
+
+                    //
+                    // Check for delete case
+                    //
+                    // ALSO: if szCommand is szNULL ("")
+                    //
+                    if (!lstrcmpi(szCommand, szNone) || !szCommand[0]) {
+                        //
+                        // Axe it in winini
+                        //
+                        WriteProfileString(szExtensions, szExt + 1, NULL);
+
+                        // If !pExt then it was never associated!
+                        if (pExt) {
+                            FileAssociateErrorCheck(
+                                hDlg, IDS_EXTTITLE, IDS_EXTDELERROR, RegExtDelete(hDlg, HKEY_CLASSES_ROOT, pExt));
+
+                        } else {
+                            RegNodeDelete(HKEY_CLASSES_ROOT, szExt);
+                        }
+
+                        // Request refresh
+                        SetWindowLongPtr(hDlg, GWLP_USERDATA, 1L);
+
+                        goto Done;
+                    }
+
+                    //
+                    // There are two cases here:
+                    //
+                    //  1. Add to exe that the user typed in
+                    //  2. Add to preexisting selection
+                    //
+
+                    //
+                    // Strategy: Scan through all pFileTypes, using
+                    // lstrcmpi (case insensitive).  Don't clean up name
+                    // at all; leave heading/trailing spaces
+                    //
+
+                    for (pFileType = pFileTypeBase; pFileType; pFileType = pFileType->next) {
+                        if (!lstrcmpi(&pFileType->lpszBuf[pFileType->uDesc], szCommand))
+                            break;
+                    }
+
+                    if (pFileType) {
+                        FileAssociateErrorCheck(
+                            hDlg, IDS_EXTTITLE, IDS_EXTADDERROR, RegExtAddHelper(HKEY_CLASSES_ROOT, szExt, pFileType));
+
+                    } else {
+                        //
+                        // make sure it has an extension
+                        //
+                        if (*GetExtension(szCommand) == 0) {
+                            lstrcat(szTemp, L".exe");
+
+                        } else {
+                            if (!IsProgramFile(szCommand)) {
+                                LoadString(hAppInstance, IDS_ASSOCNOTEXE, szTemp, COUNTOF(szTemp));
+
+                                wsprintf(szMessage, szTemp, szCommand);
+                                GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
+
+                                MessageBox(hDlg, szMessage, szTitle, MB_OK | MB_ICONSTOP);
+                                SetDlgItemText(hDlg, IDD_COMMAND, szNULL);
+
+                                break;
+                            }
+                        }
+
+                        //
+                        // Create one.
+                        //
+                        if (DE_RETRY == CommandWrite(hDlg, szExt, szCommand))
+                            break;
+                    }
+
+                    //
+                    // Request refresh
+                    //
+                    SetWindowLongPtr(hDlg, GWLP_USERDATA, 1L);
+
+                    // Flush it!
+                Done:
+                    RegFlushKey(HKEY_CLASSES_ROOT);
+                }
+                    // FALL THROUGH
+
+                case IDCANCEL:
+                Cancel: {
+                    HWND hwndNext, hwndT;
+
+                    //
+                    // If refresh request, then do it.
+                    //
+                    if (GetWindowLongPtr(hDlg, GWLP_USERDATA)) {
+                        BuildDocumentString();
+
+                        // Update all of the Directory Windows in order to see
+                        // the effect of the new extensions.
+
+                        hwndT = GetWindow(hwndMDIClient, GW_CHILD);
+                        while (hwndT) {
+                            hwndNext = GetWindow(hwndT, GW_HWNDNEXT);
+                            if (!GetWindow(hwndT, GW_OWNER))
+                                SendMessage(hwndT, WM_FSC, FSC_REFRESH, 0L);
+                            hwndT = hwndNext;
+                        }
+                    }
+
+                    // Free up class list
+                    RegUnload();
+
+                    EndDialog(hDlg, TRUE);
+                    break;
+                }
+
+                case IDD_BROWSE: {
+                    OPENFILENAME ofn;
+
+                    TCHAR szFile[MAXPATHLEN + 2];
+
+                    LPTSTR p;
+
+                    LoadString(hAppInstance, IDS_PROGRAMS, szTemp, COUNTOF(szTemp));
+                    FixupNulls(szTemp);
+                    LoadString(hAppInstance, IDS_ASSOCIATE, szTitle, COUNTOF(szTitle));
+
+                    szFile[1] = CHAR_NULL;
+
+                    ofn.lStructSize = sizeof(ofn);
+                    ofn.hwndOwner = hDlg;
+                    ofn.hInstance = NULL;
+                    ofn.lpstrFilter = szTemp;
+                    ofn.lpstrCustomFilter = NULL;
+                    ofn.nFilterIndex = 1;
+                    ofn.lpstrFile = szFile + 1;
+                    ofn.lpstrFileTitle = NULL;
+                    ofn.nMaxFile = COUNTOF(szFile) - 2;
+                    ofn.lpstrInitialDir = NULL;
+                    ofn.lpstrTitle = szTitle;
+                    ofn.Flags = OFN_SHOWHELP | OFN_HIDEREADONLY;
+                    ofn.lpfnHook = NULL;
+                    ofn.lpstrDefExt = NULL;
+
+                    if (GetOpenFileNameW(&ofn)) {
+                        if (StrChr(szFile + 1, CHAR_SPACE)) {
+                            szFile[0] = CHAR_DQUOTE;
+                            lstrcat(szFile, SZ_DQUOTE);
+
+                            p = szFile;
+                        } else {
+                            p = szFile + 1;
+                        }
+
+                        SetDlgItemText(hDlg, IDD_COMMAND, p);
+                    }
+                } break;
+
+                default:
+                    return (FALSE);
+            }
+            break;
+
+        default:
+            if (wMsg == wHelpMessage || wMsg == wBrowseMessage) {
+            DoHelp:
+                return TRUE;
+            } else
+                return FALSE;
+    }
+    return (TRUE);
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -971,149 +893,137 @@ DoHelp:
 //
 /////////////////////////////////////////////////////////////////////
 
-
 INT_PTR
 CALLBACK
-AssociateFileDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-   INT i;
-   DWORD dwError;
+AssociateFileDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
+    INT i;
+    DWORD dwError;
 
-   PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo;
-   PTCHAR p;
+    PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo;
+    PTCHAR p;
 
-   pAssociateFileDlgInfo = (PASSOCIATEFILEDLGINFO)GetWindowLongPtr(hDlg, GWLP_USERDATA);
+    pAssociateFileDlgInfo = (PASSOCIATEFILEDLGINFO)GetWindowLongPtr(hDlg, GWLP_USERDATA);
 
-   switch (wMsg) {
-   case WM_INITDIALOG:
-      {
-         TCHAR szComboBoxString[DDETYPECOMBOBOXSIZ];
+    switch (wMsg) {
+        case WM_INITDIALOG: {
+            TCHAR szComboBoxString[DDETYPECOMBOBOXSIZ];
 
-         // Set limit on # TCHARs on everything
+            // Set limit on # TCHARs on everything
 
-         SendDlgItemMessage(hDlg, IDD_EXT, EM_LIMITTEXT,
-            EXTSIZ-1, 0L);
-
-         //
-         // Save 3 characters of szCommand for " %1"
-         //
-         SendDlgItemMessage(hDlg, IDD_COMMAND, EM_LIMITTEXT,
-            COUNTOF(pAssociateFileDlgInfo->DDEInfo[0].szCommand)-1-
-            (COUNTOF(szDotEXE)-1),
-            0L);
-
-         SendDlgItemMessage(hDlg, IDD_DDEMESGTEXT, EM_LIMITTEXT,
-            COUNTOF(pAssociateFileDlgInfo->DDEInfo[0].szDDEMesg)-1, 0L);
-
-         SendDlgItemMessage(hDlg, IDD_DDEAPP, EM_LIMITTEXT,
-            COUNTOF(pAssociateFileDlgInfo->DDEInfo[0].szDDEApp)-1, 0L);
-
-         SendDlgItemMessage(hDlg, IDD_DDENOTRUN, EM_LIMITTEXT,
-            COUNTOF(pAssociateFileDlgInfo->DDEInfo[0].szDDENotRun)-1, 0L);
-
-         SendDlgItemMessage(hDlg, IDD_DDETOPIC, EM_LIMITTEXT,
-            COUNTOF(pAssociateFileDlgInfo->DDEInfo[0].szDDETopic)-1, 0L);
-
-         //
-         // Initialize pAssociateFileDlgInfo;
-         //
-         pAssociateFileDlgInfo = (PASSOCIATEFILEDLGINFO) lParam;
-         SetWindowLongPtr(hDlg, GWLP_USERDATA, (LONG_PTR)pAssociateFileDlgInfo);
-
-         //
-         // Set up combo box
-         // Use aDDEType for entries to put in
-         //
-         SendDlgItemMessage(hDlg, IDD_ACTION, CB_RESETCONTENT, 0, 0L);
-
-         for (i=0;i<DDETYPEMAX;i++) {
+            SendDlgItemMessage(hDlg, IDD_EXT, EM_LIMITTEXT, EXTSIZ - 1, 0L);
 
             //
-            // Load in the string from the structure
-            // Store as resource for localization
+            // Save 3 characters of szCommand for " %1"
             //
-            LoadString(hAppInstance, aDDEType[i].uiComboBox,
-               szComboBoxString, COUNTOF(szComboBoxString));
+            SendDlgItemMessage(
+                hDlg, IDD_COMMAND, EM_LIMITTEXT,
+                COUNTOF(pAssociateFileDlgInfo->DDEInfo[0].szCommand) - 1 - (COUNTOF(szDotEXE) - 1), 0L);
 
-            SendDlgItemMessage(hDlg, IDD_ACTION, CB_ADDSTRING,
-               0, (LPARAM) szComboBoxString);
+            SendDlgItemMessage(
+                hDlg, IDD_DDEMESGTEXT, EM_LIMITTEXT, COUNTOF(pAssociateFileDlgInfo->DDEInfo[0].szDDEMesg) - 1, 0L);
 
-            //
-            // Set the default item to the first thing
-            //
-            if (!i)
-               SendDlgItemMessage(hDlg, IDD_ACTION, CB_SETCURSEL, 0, 0L);
-         }
+            SendDlgItemMessage(
+                hDlg, IDD_DDEAPP, EM_LIMITTEXT, COUNTOF(pAssociateFileDlgInfo->DDEInfo[0].szDDEApp) - 1, 0L);
 
-         dwError = FileTypeRead(hDlg, pAssociateFileDlgInfo);
+            SendDlgItemMessage(
+                hDlg, IDD_DDENOTRUN, EM_LIMITTEXT, COUNTOF(pAssociateFileDlgInfo->DDEInfo[0].szDDENotRun) - 1, 0L);
 
-         if (ERROR_SUCCESS != dwError) {
-
-            FileAssociateErrorCheck(hDlg, IDS_EXTTITLE,
-               IDS_FILETYPEREADERROR, dwError);
-         }
-
-         //
-         // put in extension from prev dialog
-         //
-         SetDlgItemText(hDlg, IDD_EXT, &pAssociateFileDlgInfo->szExt[1]);
-
-         //
-         // HACK: for editing winini, go ahead and add the extension
-         //
-         if (IDD_COMMAND == pAssociateFileDlgInfo->mode) {
-
-            AssociateFileDlgExtAdd(hDlg, pAssociateFileDlgInfo);
-
-            GetProfileString(szExtensions, &pAssociateFileDlgInfo->szExt[1],
-               szNULL, szTitle, COUNTOF(szTitle)-COUNTOF(szSpacePercentOne));
-
-            p = StrChrQuote(szTitle, CHAR_SPACE);
-            if (p)
-               *p = CHAR_NULL;
-
-            lstrcat(szTitle, szSpacePercentOne);
-            SetDlgItemText(hDlg, IDD_COMMAND, szTitle);
+            SendDlgItemMessage(
+                hDlg, IDD_DDETOPIC, EM_LIMITTEXT, COUNTOF(pAssociateFileDlgInfo->DDEInfo[0].szDDETopic) - 1, 0L);
 
             //
-            // Setup the default name
+            // Initialize pAssociateFileDlgInfo;
             //
-            p = GenerateFriendlyName(szTitle);
-            SetDlgItemText(hDlg, IDD_DESC, p);
+            pAssociateFileDlgInfo = (PASSOCIATEFILEDLGINFO)lParam;
+            SetWindowLongPtr(hDlg, GWLP_USERDATA, (LONG_PTR)pAssociateFileDlgInfo);
 
-            // UpdateOKEnable(hDlg, pAssociateFileDlgInfo);
-            pAssociateFileDlgInfo->bChange = TRUE;
+            //
+            // Set up combo box
+            // Use aDDEType for entries to put in
+            //
+            SendDlgItemMessage(hDlg, IDD_ACTION, CB_RESETCONTENT, 0, 0L);
 
-         } else {
-            pAssociateFileDlgInfo->bChange = FALSE;
-         }
+            for (i = 0; i < DDETYPEMAX; i++) {
+                //
+                // Load in the string from the structure
+                // Store as resource for localization
+                //
+                LoadString(hAppInstance, aDDEType[i].uiComboBox, szComboBoxString, COUNTOF(szComboBoxString));
 
-         pAssociateFileDlgInfo->bOKEnable = TRUE;
+                SendDlgItemMessage(hDlg, IDD_ACTION, CB_ADDSTRING, 0, (LPARAM)szComboBoxString);
 
-         UpdateOKEnable(hDlg, pAssociateFileDlgInfo);
+                //
+                // Set the default item to the first thing
+                //
+                if (!i)
+                    SendDlgItemMessage(hDlg, IDD_ACTION, CB_SETCURSEL, 0, 0L);
+            }
 
-         //
-         // Send notification of change
-         //
-         SendMessage(hDlg, WM_COMMAND,
-            GET_WM_COMMAND_MPS(IDD_EXT, GetDlgItem(hDlg, IDD_EXT), EN_CHANGE));
+            dwError = FileTypeRead(hDlg, pAssociateFileDlgInfo);
 
-         break;
-      }
-   case WM_COMMAND:
+            if (ERROR_SUCCESS != dwError) {
+                FileAssociateErrorCheck(hDlg, IDS_EXTTITLE, IDS_FILETYPEREADERROR, dwError);
+            }
 
-      return AssociateFileDlgCommand(hDlg, wParam, lParam, pAssociateFileDlgInfo);
+            //
+            // put in extension from prev dialog
+            //
+            SetDlgItemText(hDlg, IDD_EXT, &pAssociateFileDlgInfo->szExt[1]);
 
-   default:
-      if (wMsg == wHelpMessage || wMsg == wBrowseMessage) {
-         return TRUE;
-      } else {
-         return FALSE;
-      }
-   }
-   return(TRUE);
+            //
+            // HACK: for editing winini, go ahead and add the extension
+            //
+            if (IDD_COMMAND == pAssociateFileDlgInfo->mode) {
+                AssociateFileDlgExtAdd(hDlg, pAssociateFileDlgInfo);
+
+                GetProfileString(
+                    szExtensions, &pAssociateFileDlgInfo->szExt[1], szNULL, szTitle,
+                    COUNTOF(szTitle) - COUNTOF(szSpacePercentOne));
+
+                p = StrChrQuote(szTitle, CHAR_SPACE);
+                if (p)
+                    *p = CHAR_NULL;
+
+                lstrcat(szTitle, szSpacePercentOne);
+                SetDlgItemText(hDlg, IDD_COMMAND, szTitle);
+
+                //
+                // Setup the default name
+                //
+                p = GenerateFriendlyName(szTitle);
+                SetDlgItemText(hDlg, IDD_DESC, p);
+
+                // UpdateOKEnable(hDlg, pAssociateFileDlgInfo);
+                pAssociateFileDlgInfo->bChange = TRUE;
+
+            } else {
+                pAssociateFileDlgInfo->bChange = FALSE;
+            }
+
+            pAssociateFileDlgInfo->bOKEnable = TRUE;
+
+            UpdateOKEnable(hDlg, pAssociateFileDlgInfo);
+
+            //
+            // Send notification of change
+            //
+            SendMessage(hDlg, WM_COMMAND, GET_WM_COMMAND_MPS(IDD_EXT, GetDlgItem(hDlg, IDD_EXT), EN_CHANGE));
+
+            break;
+        }
+        case WM_COMMAND:
+
+            return AssociateFileDlgCommand(hDlg, wParam, lParam, pAssociateFileDlgInfo);
+
+        default:
+            if (wMsg == wHelpMessage || wMsg == wBrowseMessage) {
+                return TRUE;
+            } else {
+                return FALSE;
+            }
+    }
+    return (TRUE);
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1137,399 +1047,359 @@ AssociateFileDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-AssociateFileDlgCommand(HWND hDlg,
-   WPARAM wParam,
-   LPARAM lParam,
-   PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
-{
-   INT i;
-   TCHAR szExt[EXTSIZ];
-   BOOL bChange;
+BOOL AssociateFileDlgCommand(HWND hDlg, WPARAM wParam, LPARAM lParam, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo) {
+    INT i;
+    TCHAR szExt[EXTSIZ];
+    BOOL bChange;
 
-   switch (GET_WM_COMMAND_ID(wParam, lParam)) {
+    switch (GET_WM_COMMAND_ID(wParam, lParam)) {
+        case IDD_EXTLIST:
+            switch (GET_WM_COMMAND_CMD(wParam, lParam)) {
+                case LBN_SELCHANGE:
 
-   case IDD_EXTLIST:
-      switch(GET_WM_COMMAND_CMD(wParam, lParam)) {
-      case LBN_SELCHANGE:
+                    EnableWindow(GetDlgItem(hDlg, IDD_DELETE), TRUE);
+                    EnableWindow(GetDlgItem(hDlg, IDD_ADD), FALSE);
 
-         EnableWindow(GetDlgItem(hDlg, IDD_DELETE), TRUE);
-         EnableWindow(GetDlgItem(hDlg, IDD_ADD), FALSE);
+                    //
+                    // Now set the edit text to the current selection
+                    //
+                    i = (INT)SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_GETCURSEL, 0, 0L);
 
-         //
-         // Now set the edit text to the current selection
-         //
-         i = (INT) SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_GETCURSEL, 0, 0L);
+                    SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_GETTEXT, i, (LPARAM)szExt);
+                    SendDlgItemMessage(hDlg, IDD_EXT, WM_SETTEXT, 0, (LPARAM)szExt);
 
-         SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_GETTEXT, i, (LPARAM)szExt);
-         SendDlgItemMessage(hDlg, IDD_EXT, WM_SETTEXT, 0, (LPARAM)szExt);
-
-         break;
-      default:
-         break;
-      }
-      break;
-
-   case IDD_EXT:
-      {
-         PEXT pExt;
-         PEXT pExtNext;
-         BOOL bForceOff = FALSE;
-         HWND hwndAdd;
-         HWND hwndDelete;
-         HWND hwnd;
-
-         switch(GET_WM_COMMAND_CMD(wParam, lParam)) {
-         case EN_CHANGE:
-
-            GetDlgItemText(hDlg, IDD_EXT, szExt, COUNTOF(szExt));
-
-            ExtClean(szExt);
-
-            //
-            // If no match, turn everything off!
-            //
-            if (!szExt[0])
-            {
-               pExt = NULL;
-               bForceOff = TRUE;
+                    break;
+                default:
+                    break;
             }
-            else
-            {
-               //
-               // Now scan through to see if there is a match
-               //
-               for (pExt = pAssociateFileDlgInfo->pFileType->pExt;
-                    pExt;
-                    pExt = pExtNext)
-               {
-                  pExtNext = pExt->pftNext;
+            break;
 
-                  if (!pExt->bDelete && !lstrcmpi(szExt, pExt->szExt))
-                  {
-                     //
-                     // Found one, Highlight!
-                     //
-                     i = (INT)SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_FINDSTRINGEXACT,
-                        (WPARAM)-1, (LPARAM) &szExt[1]);
+        case IDD_EXT: {
+            PEXT pExt;
+            PEXT pExtNext;
+            BOOL bForceOff = FALSE;
+            HWND hwndAdd;
+            HWND hwndDelete;
+            HWND hwnd;
 
-                     SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_SETCURSEL, i, 0L);
-                     break;
-                  }
-               }
+            switch (GET_WM_COMMAND_CMD(wParam, lParam)) {
+                case EN_CHANGE:
 
-               if (!pExt)
-               {
-                  //
-                  // No match, so deselect
-                  //
-                  SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_SETCURSEL, (WPARAM) -1, 0L);
-               }
+                    GetDlgItemText(hDlg, IDD_EXT, szExt, COUNTOF(szExt));
+
+                    ExtClean(szExt);
+
+                    //
+                    // If no match, turn everything off!
+                    //
+                    if (!szExt[0]) {
+                        pExt = NULL;
+                        bForceOff = TRUE;
+                    } else {
+                        //
+                        // Now scan through to see if there is a match
+                        //
+                        for (pExt = pAssociateFileDlgInfo->pFileType->pExt; pExt; pExt = pExtNext) {
+                            pExtNext = pExt->pftNext;
+
+                            if (!pExt->bDelete && !lstrcmpi(szExt, pExt->szExt)) {
+                                //
+                                // Found one, Highlight!
+                                //
+                                i = (INT)SendDlgItemMessage(
+                                    hDlg, IDD_EXTLIST, LB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)&szExt[1]);
+
+                                SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_SETCURSEL, i, 0L);
+                                break;
+                            }
+                        }
+
+                        if (!pExt) {
+                            //
+                            // No match, so deselect
+                            //
+                            SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_SETCURSEL, (WPARAM)-1, 0L);
+                        }
+                    }
+
+                    hwnd = GetFocus();
+
+                    EnableWindow(hwndDelete = GetDlgItem(hDlg, IDD_DELETE), pExt ? TRUE : FALSE);
+
+                    EnableWindow(hwndAdd = GetDlgItem(hDlg, IDD_ADD), bForceOff || pExt ? FALSE : TRUE);
+
+                    //
+                    // If we are disabling a button that has focus,
+                    // we must reassign focus to the other button
+                    //
+                    // (Can't get into the state where neither button is
+                    // enabled since this would require no text on the combobox
+                    // line, which can't happen since one of the add/del buttons
+                    // was enabled a second ago
+                    //
+
+                    if ((hwnd == hwndDelete && !pExt) || (hwnd == hwndAdd && pExt)) {
+                        SendMessage(hwnd, BM_SETSTYLE, MAKELONG(BS_PUSHBUTTON, 0), MAKELPARAM(FALSE, 0));
+
+                        hwnd = GetDlgItem(hDlg, IDOK);
+
+                        SendMessage(hwnd, BM_SETSTYLE, MAKELONG(BS_DEFPUSHBUTTON, 0), MAKELPARAM(TRUE, 0));
+
+                        SetFocus(hwnd);
+                    }
+
+                    break;
+
+                case EN_SETFOCUS:
+
+                    pAssociateFileDlgInfo->bExtFocus = TRUE;
+                    break;
+
+                case EN_KILLFOCUS:
+
+                    pAssociateFileDlgInfo->bExtFocus = FALSE;
+                    break;
+
+                default:
+                    break;
             }
+        }
 
-            hwnd = GetFocus();
+        break;
+        case IDD_ADD:
 
-            EnableWindow(hwndDelete = GetDlgItem(hDlg, IDD_DELETE),
-                         pExt ? TRUE: FALSE);
+            AssociateFileDlgExtAdd(hDlg, pAssociateFileDlgInfo);
 
-            EnableWindow(hwndAdd = GetDlgItem(hDlg, IDD_ADD),
-                         bForceOff || pExt ? FALSE: TRUE);
+            goto AddDelUpdate;
+
+            break;
+        case IDD_DELETE:
+
+            AssociateFileDlgExtDelete(hDlg, pAssociateFileDlgInfo);
+
+        AddDelUpdate:
+
+            // Send notification of change
+
+            SendMessage(hDlg, WM_COMMAND, GET_WM_COMMAND_MPS(IDD_EXT, GetDlgItem(hDlg, IDD_EXT), EN_CHANGE));
+
+            if (pAssociateFileDlgInfo->bExtFocus)
+                SendDlgItemMessage(hDlg, IDD_EXT, EM_SETSEL, 0L, MAKELPARAM(0, -1));
+
+            break;
+
+        case IDD_ACTION:
 
             //
-            // If we are disabling a button that has focus,
-            // we must reassign focus to the other button
+            // If changing selection, update.
             //
-            // (Can't get into the state where neither button is
-            // enabled since this would require no text on the combobox
-            // line, which can't happen since one of the add/del buttons
-            // was enabled a second ago
-            //
+            if (CBN_SELCHANGE == GET_WM_COMMAND_CMD(wParam, lParam)) {
+                //
+                // We must save bChange since any changes due to Action updates
+                // aren't really changes by the user.
+                //
+                bChange = pAssociateFileDlgInfo->bChange;
 
-            if ((hwnd == hwndDelete && !pExt) || (hwnd == hwndAdd && pExt))
-            {
-               SendMessage(hwnd, BM_SETSTYLE,
-                  MAKELONG(BS_PUSHBUTTON, 0), MAKELPARAM(FALSE, 0));
+                ActionDlgRead(hDlg, pAssociateFileDlgInfo);
+                ActionUpdate(hDlg, pAssociateFileDlgInfo);
 
-               hwnd = GetDlgItem(hDlg, IDOK);
-
-               SendMessage(hwnd, BM_SETSTYLE,
-                  MAKELONG(BS_DEFPUSHBUTTON, 0), MAKELPARAM(TRUE, 0));
-
-               SetFocus(hwnd);
+                pAssociateFileDlgInfo->bChange = bChange;
             }
 
             break;
 
-         case EN_SETFOCUS:
+        case IDD_DDE:
 
-            pAssociateFileDlgInfo->bExtFocus = TRUE;
-            break;
+            if (BN_CLICKED == GET_WM_COMMAND_CMD(wParam, lParam)) {
+                i = pAssociateFileDlgInfo->iAction = (INT)SendDlgItemMessage(hDlg, IDD_ACTION, CB_GETCURSEL, 0, 0L);
 
-         case EN_KILLFOCUS:
+                DDEDlgRead(hDlg, pAssociateFileDlgInfo, i);
+                pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE =
+                    SendDlgItemMessage(hDlg, IDD_DDE, BM_GETCHECK, 0, 0L) != BST_UNCHECKED;
 
-            pAssociateFileDlgInfo->bExtFocus = FALSE;
-            break;
+                DDEUpdate(hDlg, pAssociateFileDlgInfo, i);
 
-         default:
-            break;
-         }
-      }
-
-      break;
-   case IDD_ADD:
-
-      AssociateFileDlgExtAdd(hDlg, pAssociateFileDlgInfo);
-
-      goto AddDelUpdate;
-
-      break;
-   case IDD_DELETE:
-
-      AssociateFileDlgExtDelete(hDlg, pAssociateFileDlgInfo);
-
-AddDelUpdate:
-
-      // Send notification of change
-
-      SendMessage(hDlg, WM_COMMAND,
-         GET_WM_COMMAND_MPS(IDD_EXT, GetDlgItem(hDlg, IDD_EXT), EN_CHANGE));
-
-      if (pAssociateFileDlgInfo->bExtFocus)
-         SendDlgItemMessage(hDlg, IDD_EXT, EM_SETSEL, 0L, MAKELPARAM(0,-1));
-
-      break;
-
-   case IDD_ACTION:
-
-      //
-      // If changing selection, update.
-      //
-      if (CBN_SELCHANGE == GET_WM_COMMAND_CMD(wParam, lParam))
-      {
-         //
-         // We must save bChange since any changes due to Action updates
-         // aren't really changes by the user.
-         //
-         bChange = pAssociateFileDlgInfo->bChange;
-
-         ActionDlgRead(hDlg, pAssociateFileDlgInfo);
-         ActionUpdate(hDlg, pAssociateFileDlgInfo);
-
-         pAssociateFileDlgInfo->bChange = bChange;
-      }
-
-      break;
-
-   case IDD_DDE:
-
-      if (BN_CLICKED == GET_WM_COMMAND_CMD(wParam, lParam))
-      {
-         i = pAssociateFileDlgInfo->iAction =
-            (INT)SendDlgItemMessage(hDlg, IDD_ACTION, CB_GETCURSEL, 0, 0L);
-
-         DDEDlgRead(hDlg, pAssociateFileDlgInfo, i);
-         pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE =
-            SendDlgItemMessage(hDlg, IDD_DDE, BM_GETCHECK, 0, 0L) != BST_UNCHECKED;
-
-         DDEUpdate(hDlg, pAssociateFileDlgInfo,i);
-
-         //
-         // Modified, must update!
-         //
-         pAssociateFileDlgInfo->bChange = TRUE;
-      }
-      break;
-
-   case IDCANCEL:
-
-      //
-      // If IDD_NEW or IDD_COMMAND, then free it (!IDD_CONFIG)
-      //
-      if (IDD_CONFIG != pAssociateFileDlgInfo->mode)
-      {
-         FileTypeFree(pAssociateFileDlgInfo->pFileType);
-      }
-
-Reload:
-      //
-      // Reload it!
-      //
-      RegUnload();
-
-      //
-      // We don't check errors here; put up what we can.
-      //
-      AssociateDlgInit(pAssociateFileDlgInfo->hDlg,
-         pAssociateFileDlgInfo->szExt, pAssociateFileDlgInfo->iClassList);
-
-      EndDialog(hDlg, TRUE);
-      break;
-
-   case IDOK:
-
-      if (!pAssociateFileDlgInfo->bOKEnable)
-      {
-         MyMessageBox(hDlg, IDS_EXTTITLE, IDS_FILETYPECOMMANDNULLTEXT,
-            MB_TASKMODAL|MB_OK|MB_ICONEXCLAMATION);
-
-         SetFocus(GetDlgItem(hDlg, IDD_COMMAND));
-
-         break;
-      }
-
-      ActionDlgRead(hDlg, pAssociateFileDlgInfo);
-      i = AssociateFileWrite(hDlg, pAssociateFileDlgInfo);
-
-      switch (i) {
-      case DE_RETRY:
-         break;
-
-      case ERROR_SUCCESS:
-         {
-            SendDlgItemMessage(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST,
-               WM_SETREDRAW, (WPARAM)FALSE, 0L);
-
-            //
-            // Delete the (None) entry at the beginning.
-            //
-            SendDlgItemMessage(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST, LB_DELETESTRING, 0, 0L);
-
-            if (IDD_CONFIG != pAssociateFileDlgInfo->mode)
-            {
-               //
-               // Add item..
-               // Update pAssociateFileDlgInfo->iClassList for selection below
-               //
-               pAssociateFileDlgInfo->iClassList =
-                  ClassListFileTypeAdd(pAssociateFileDlgInfo->hDlg, pFileTypeBase);
+                //
+                // Modified, must update!
+                //
+                pAssociateFileDlgInfo->bChange = TRUE;
             }
-            else
-            {
-               //
-               // Now delete the old selection and reinsert
-               //
-               SendDlgItemMessage(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST,
-                  LB_DELETESTRING, pAssociateFileDlgInfo->iClassList-1, 0L);
+            break;
 
-               ClassListFileTypeAdd(pAssociateFileDlgInfo->hDlg,
-                  pAssociateFileDlgInfo->pFileType);
+        case IDCANCEL:
+
+            //
+            // If IDD_NEW or IDD_COMMAND, then free it (!IDD_CONFIG)
+            //
+            if (IDD_CONFIG != pAssociateFileDlgInfo->mode) {
+                FileTypeFree(pAssociateFileDlgInfo->pFileType);
             }
 
+        Reload:
             //
-            // Add the (None) entry at the beginning.
+            // Reload it!
             //
-            SendDlgItemMessage(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST, LB_INSERTSTRING,0,(LPARAM)szNone);
-
-            //
-            // Select the item
-            //
-            SendDlgItemMessage(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST,
-               LB_SETCURSEL, pAssociateFileDlgInfo->iClassList, 0L);
-
-            SendDlgItemMessage(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST,
-               WM_SETREDRAW, (WPARAM)TRUE, 0L);
-
-            InvalidateRect(GetDlgItem(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST),
-               NULL, TRUE);
+            RegUnload();
 
             //
-            // Notify previous dialog it needs to rebuild doc string
+            // We don't check errors here; put up what we can.
             //
-            pAssociateFileDlgInfo->bRefresh = TRUE;
-
-            // At this point, we change the previous dialog's "cancel"
-            // button to Close.
-
-            LoadString(hAppInstance, IDS_CLOSE, szTitle, COUNTOF(szTitle));
-
-            SetDlgItemText(pAssociateFileDlgInfo->hDlg, IDCANCEL, szTitle);
+            AssociateDlgInit(
+                pAssociateFileDlgInfo->hDlg, pAssociateFileDlgInfo->szExt, pAssociateFileDlgInfo->iClassList);
 
             EndDialog(hDlg, TRUE);
             break;
-         }
-      default:
 
-         //
-         // Oops, couldn't write, simulate escape: discard all
-         //
-         goto Reload;
-      }
-      break;
+        case IDOK:
 
-   case IDD_BROWSE:
-      {
-         OPENFILENAME ofn;
-         LPTSTR p;
+            if (!pAssociateFileDlgInfo->bOKEnable) {
+                MyMessageBox(
+                    hDlg, IDS_EXTTITLE, IDS_FILETYPECOMMANDNULLTEXT, MB_TASKMODAL | MB_OK | MB_ICONEXCLAMATION);
 
-         TCHAR szFile[MAXPATHLEN + 2];
-         TCHAR szTemp2[MAXPATHLEN];
+                SetFocus(GetDlgItem(hDlg, IDD_COMMAND));
 
-         LoadString(hAppInstance, IDS_PROGRAMS, szTemp2, COUNTOF(szTemp2));
-         FixupNulls(szTemp2);
-         LoadString(hAppInstance, IDS_ASSOCIATE, szTitle, COUNTOF(szTitle));
-
-         szFile[1] = 0L;
-
-         ofn.lStructSize          = sizeof(ofn);
-         ofn.hwndOwner            = hDlg;
-         ofn.hInstance            = NULL;
-         ofn.lpstrFilter          = szTemp2;
-         ofn.lpstrCustomFilter    = NULL;
-         ofn.nFilterIndex         = 1;
-         ofn.lpstrFile            = szFile+1;
-         ofn.lpstrFileTitle       = NULL;
-         ofn.nMaxFile             = COUNTOF(szFile)-2;
-         ofn.lpstrInitialDir      = NULL;
-         ofn.lpstrTitle           = szTitle;
-         ofn.Flags                = OFN_SHOWHELP | OFN_HIDEREADONLY;
-         ofn.lpfnHook             = NULL;
-         ofn.lpstrDefExt          = NULL;
-
-         if (GetOpenFileNameW(&ofn))
-         {
-            if (StrChr(szFile+1, CHAR_SPACE))
-            {
-               szFile[0] = CHAR_DQUOTE;
-               lstrcat(szFile, SZ_DQUOTE);
-
-               p = szFile;
-            }
-            else
-            {
-               p = szFile+1;
+                break;
             }
 
-            SetDlgItemText(hDlg, IDD_COMMAND, p);
-         }
-      }
-      break;
+            ActionDlgRead(hDlg, pAssociateFileDlgInfo);
+            i = AssociateFileWrite(hDlg, pAssociateFileDlgInfo);
 
-   case IDD_COMMAND:
+            switch (i) {
+                case DE_RETRY:
+                    break;
 
-      UpdateOKEnable(hDlg, pAssociateFileDlgInfo);
+                case ERROR_SUCCESS: {
+                    SendDlgItemMessage(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST, WM_SETREDRAW, (WPARAM)FALSE, 0L);
 
-      //
-      // Fall through
-      //
-   case IDD_DESC:
-   case IDD_DDEMESG:
-   case IDD_DDENOTRUN:
-   case IDD_DDEAPP:
-   case IDD_DDETOPIC:
+                    //
+                    // Delete the (None) entry at the beginning.
+                    //
+                    SendDlgItemMessage(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST, LB_DELETESTRING, 0, 0L);
 
-      if (EN_CHANGE == GET_WM_COMMAND_CMD(wParam, lParam))
-      {
-         pAssociateFileDlgInfo->bChange = TRUE;
-      }
-      break;
+                    if (IDD_CONFIG != pAssociateFileDlgInfo->mode) {
+                        //
+                        // Add item..
+                        // Update pAssociateFileDlgInfo->iClassList for selection below
+                        //
+                        pAssociateFileDlgInfo->iClassList =
+                            ClassListFileTypeAdd(pAssociateFileDlgInfo->hDlg, pFileTypeBase);
+                    } else {
+                        //
+                        // Now delete the old selection and reinsert
+                        //
+                        SendDlgItemMessage(
+                            pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST, LB_DELETESTRING,
+                            pAssociateFileDlgInfo->iClassList - 1, 0L);
 
-   default:
-      return FALSE;
-   }
+                        ClassListFileTypeAdd(pAssociateFileDlgInfo->hDlg, pAssociateFileDlgInfo->pFileType);
+                    }
 
-   return TRUE;
+                    //
+                    // Add the (None) entry at the beginning.
+                    //
+                    SendDlgItemMessage(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST, LB_INSERTSTRING, 0, (LPARAM)szNone);
+
+                    //
+                    // Select the item
+                    //
+                    SendDlgItemMessage(
+                        pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST, LB_SETCURSEL, pAssociateFileDlgInfo->iClassList,
+                        0L);
+
+                    SendDlgItemMessage(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST, WM_SETREDRAW, (WPARAM)TRUE, 0L);
+
+                    InvalidateRect(GetDlgItem(pAssociateFileDlgInfo->hDlg, IDD_CLASSLIST), NULL, TRUE);
+
+                    //
+                    // Notify previous dialog it needs to rebuild doc string
+                    //
+                    pAssociateFileDlgInfo->bRefresh = TRUE;
+
+                    // At this point, we change the previous dialog's "cancel"
+                    // button to Close.
+
+                    LoadString(hAppInstance, IDS_CLOSE, szTitle, COUNTOF(szTitle));
+
+                    SetDlgItemText(pAssociateFileDlgInfo->hDlg, IDCANCEL, szTitle);
+
+                    EndDialog(hDlg, TRUE);
+                    break;
+                }
+                default:
+
+                    //
+                    // Oops, couldn't write, simulate escape: discard all
+                    //
+                    goto Reload;
+            }
+            break;
+
+        case IDD_BROWSE: {
+            OPENFILENAME ofn;
+            LPTSTR p;
+
+            TCHAR szFile[MAXPATHLEN + 2];
+            TCHAR szTemp2[MAXPATHLEN];
+
+            LoadString(hAppInstance, IDS_PROGRAMS, szTemp2, COUNTOF(szTemp2));
+            FixupNulls(szTemp2);
+            LoadString(hAppInstance, IDS_ASSOCIATE, szTitle, COUNTOF(szTitle));
+
+            szFile[1] = 0L;
+
+            ofn.lStructSize = sizeof(ofn);
+            ofn.hwndOwner = hDlg;
+            ofn.hInstance = NULL;
+            ofn.lpstrFilter = szTemp2;
+            ofn.lpstrCustomFilter = NULL;
+            ofn.nFilterIndex = 1;
+            ofn.lpstrFile = szFile + 1;
+            ofn.lpstrFileTitle = NULL;
+            ofn.nMaxFile = COUNTOF(szFile) - 2;
+            ofn.lpstrInitialDir = NULL;
+            ofn.lpstrTitle = szTitle;
+            ofn.Flags = OFN_SHOWHELP | OFN_HIDEREADONLY;
+            ofn.lpfnHook = NULL;
+            ofn.lpstrDefExt = NULL;
+
+            if (GetOpenFileNameW(&ofn)) {
+                if (StrChr(szFile + 1, CHAR_SPACE)) {
+                    szFile[0] = CHAR_DQUOTE;
+                    lstrcat(szFile, SZ_DQUOTE);
+
+                    p = szFile;
+                } else {
+                    p = szFile + 1;
+                }
+
+                SetDlgItemText(hDlg, IDD_COMMAND, p);
+            }
+        } break;
+
+        case IDD_COMMAND:
+
+            UpdateOKEnable(hDlg, pAssociateFileDlgInfo);
+
+            //
+            // Fall through
+            //
+        case IDD_DESC:
+        case IDD_DDEMESG:
+        case IDD_DDENOTRUN:
+        case IDD_DDEAPP:
+        case IDD_DDETOPIC:
+
+            if (EN_CHANGE == GET_WM_COMMAND_CMD(wParam, lParam)) {
+                pAssociateFileDlgInfo->bChange = TRUE;
+            }
+            break;
+
+        default:
+            return FALSE;
+    }
+
+    return TRUE;
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1552,45 +1422,40 @@ Reload:
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-UpdateOKEnable(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
-{
-   BOOL bOKEnable;
-   INT i;
+VOID UpdateOKEnable(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo) {
+    BOOL bOKEnable;
+    INT i;
 
-   //
-   // The code here handles enablement of the OK button.
-   // We want to disable this button when the command strings
-   // for _all_ actions is NULL.
-   //
-   // Note that the command string for the current action isn't in
-   // szCommand, but rather in the edit control.  That's why we skip
-   // it and set bChange to the IDD_COMMAND len next.
-   //
-   bOKEnable=SendDlgItemMessage(hDlg, IDD_COMMAND, WM_GETTEXTLENGTH, 0, 0L)!=0;
+    //
+    // The code here handles enablement of the OK button.
+    // We want to disable this button when the command strings
+    // for _all_ actions is NULL.
+    //
+    // Note that the command string for the current action isn't in
+    // szCommand, but rather in the edit control.  That's why we skip
+    // it and set bChange to the IDD_COMMAND len next.
+    //
+    bOKEnable = SendDlgItemMessage(hDlg, IDD_COMMAND, WM_GETTEXTLENGTH, 0, 0L) != 0;
 
-   for (i=0; i<DDETYPEMAX; i++) {
+    for (i = 0; i < DDETYPEMAX; i++) {
+        //
+        // Don't let strings that the user is about to overwrite in
+        // IDD_COMMAND count as a non-null command.
+        //
+        if (i == pAssociateFileDlgInfo->iAction)
+            continue;
 
-      //
-      // Don't let strings that the user is about to overwrite in
-      // IDD_COMMAND count as a non-null command.
-      //
-      if (i == pAssociateFileDlgInfo->iAction)
-         continue;
+        if (pAssociateFileDlgInfo->DDEInfo[i].szCommand[0]) {
+            bOKEnable = TRUE;
+            break;
+        }
+    }
 
-      if (pAssociateFileDlgInfo->DDEInfo[i].szCommand[0]) {
-         bOKEnable = TRUE;
-         break;
-      }
-   }
-
-   if (bOKEnable != pAssociateFileDlgInfo->bOKEnable) {
-
-      EnableWindow(GetDlgItem(hDlg, IDOK), bOKEnable);
-      pAssociateFileDlgInfo->bOKEnable = bOKEnable;
-   }
+    if (bOKEnable != pAssociateFileDlgInfo->bOKEnable) {
+        EnableWindow(GetDlgItem(hDlg, IDOK), bOKEnable);
+        pAssociateFileDlgInfo->bOKEnable = bOKEnable;
+    }
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1619,51 +1484,40 @@ UpdateOKEnable(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-RegLoad(VOID)
-{
-   PEXT pExt, pExtPrev = NULL;
-   PEXT pExtNext;
+BOOL RegLoad(VOID) {
+    PEXT pExt, pExtPrev = NULL;
+    PEXT pExtNext;
 
-   if (!ClassesRead(HKEY_CLASSES_ROOT,szNULL, &pFileTypeBase, &pExtBase))
-      return FALSE;
+    if (!ClassesRead(HKEY_CLASSES_ROOT, szNULL, &pFileTypeBase, &pExtBase))
+        return FALSE;
 
-   //
-   // Traverse through all exts and initialize them
-   // since ClassesRead must wait for all pFileTypes
-   // to be read in before scanning.
-   //
+    //
+    // Traverse through all exts and initialize them
+    // since ClassesRead must wait for all pFileTypes
+    // to be read in before scanning.
+    //
 
-   for (pExt = pExtBase; pExt; pExt = pExtNext)
-   {
-      //
-      // Get the next pointer
-      //
-      pExtNext = pExt->next;
+    for (pExt = pExtBase; pExt; pExt = pExtNext) {
+        //
+        // Get the next pointer
+        //
+        pExtNext = pExt->next;
 
-      if (!ExtLinkToFileType(pExt, pExt->szIdent))
-      {
-         if (pExtPrev)
-         {
-            pExtPrev->next = pExtNext;
-         }
-         else
-         {
-            pExtBase = pExtNext;
-         }
+        if (!ExtLinkToFileType(pExt, pExt->szIdent)) {
+            if (pExtPrev) {
+                pExtPrev->next = pExtNext;
+            } else {
+                pExtBase = pExtNext;
+            }
 
-         ExtFree(pExt);
-      }
-      else
-      {
-         pExtPrev = pExt;
-      }
-   }
+            ExtFree(pExt);
+        } else {
+            pExtPrev = pExt;
+        }
+    }
 
-   return TRUE;
+    return TRUE;
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1691,373 +1545,326 @@ RegLoad(VOID)
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-ClassesRead(HKEY hKey,
-   LPTSTR lpszSubKey,
-   PFILETYPE *ppFileTypeBase,
-   PEXT *ppExtBase)
-{
-   HKEY hk;
-   DWORD dwNameSiz;
-   LONG  lNameSiz;
-   UINT  uNameSiz;
-   FILETIME ftLastWrite;
-   DWORD dwError1, dwError2;
-   PFILETYPE pFileTypePrev, pFileType;
-   PEXT pExtPrev, pExt;
-   BOOL retval;
-   INT iKey;
-   TCHAR szIdent[DESCSIZ+COUNTOF(szFileManPrefix)];
-   TCHAR szExt[EXTSIZ+1];
-   BOOL bFileType;
+BOOL ClassesRead(HKEY hKey, LPTSTR lpszSubKey, PFILETYPE* ppFileTypeBase, PEXT* ppExtBase) {
+    HKEY hk;
+    DWORD dwNameSiz;
+    LONG lNameSiz;
+    UINT uNameSiz;
+    FILETIME ftLastWrite;
+    DWORD dwError1, dwError2;
+    PFILETYPE pFileTypePrev, pFileType;
+    PEXT pExtPrev, pExt;
+    BOOL retval;
+    INT iKey;
+    TCHAR szIdent[DESCSIZ + COUNTOF(szFileManPrefix)];
+    TCHAR szExt[EXTSIZ + 1];
+    BOOL bFileType;
 
-   // Open the requested location
+    // Open the requested location
 
-   if (ERROR_SUCCESS != RegOpenKeyEx(hKey, lpszSubKey, 0, KEY_ALL_ACCESS, &hk)) {
-      return FALSE;
-   }
+    if (ERROR_SUCCESS != RegOpenKeyEx(hKey, lpszSubKey, 0, KEY_ALL_ACCESS, &hk)) {
+        return FALSE;
+    }
 
-   //
-   // iKey is the index we use to
-   // traverse through the keys
-   //
+    //
+    // iKey is the index we use to
+    // traverse through the keys
+    //
 
-   iKey = 0;
+    iKey = 0;
 
-   pFileType = NULL;
-   pExt = NULL;
+    pFileType = NULL;
+    pExt = NULL;
 
-   pFileTypePrev = *ppFileTypeBase;
-   pExtPrev = *ppExtBase;
+    pFileTypePrev = *ppFileTypeBase;
+    pExtPrev = *ppExtBase;
 
-   while (TRUE) {
+    while (TRUE) {
+        //
+        // Begin enumerating all keys.  In one pass, we check
+        // both filetypes and extensions.  We can't match
+        // exts->filetypes until all filetypes are read in.
+        //
 
-      //
-      // Begin enumerating all keys.  In one pass, we check
-      // both filetypes and extensions.  We can't match
-      // exts->filetypes until all filetypes are read in.
-      //
+        //
+        // Leave one character off for the NULL
+        // These must be BYTES, not CHARACTERS!
 
-      //
-      // Leave one character off for the NULL
-      // These must be BYTES, not CHARACTERS!
+        dwNameSiz = sizeof(szIdent) - sizeof(*szIdent);
 
-      dwNameSiz = sizeof(szIdent)-sizeof(*szIdent);
+        // NOTE!  The returned length of the copied string
+        // does not include the null terminator!
+        // (contrast with RegQueryValue!)
 
-      // NOTE!  The returned length of the copied string
-      // does not include the null terminator!
-      // (contrast with RegQueryValue!)
+        dwError1 = RegEnumKeyEx(hk, iKey, szIdent, &dwNameSiz, NULL, NULL, NULL, &ftLastWrite);
 
-      dwError1 = RegEnumKeyEx(hk,
-         iKey,
-         szIdent,
-         &dwNameSiz,
-         NULL, NULL, NULL, &ftLastWrite);
+        switch (dwError1) {
+            case ERROR_NO_MORE_ITEMS:
 
-      switch (dwError1) {
+                //
+                // This is the only case where we return true
+                //
 
-      case ERROR_NO_MORE_ITEMS:
+                retval = TRUE;
+                goto ProcExit;
 
-         //
-         // This is the only case where we return true
-         //
+            case ERROR_MORE_DATA:
 
-         retval = TRUE;
-         goto ProcExit;
+                // We can't handle this error!
+                // Just truncate!
 
-      case ERROR_MORE_DATA:
+                szIdent[COUNTOF(szIdent) - 1] = CHAR_NULL;
 
-         // We can't handle this error!
-         // Just truncate!
+            case ERROR_SUCCESS:
 
-         szIdent[COUNTOF(szIdent)-1] = CHAR_NULL;
+                // Add zero delimiter
+                szIdent[dwNameSiz] = CHAR_NULL;
 
-      case ERROR_SUCCESS:
+                break;
 
-         // Add zero delimiter
-         szIdent[dwNameSiz] = CHAR_NULL;
+            default:
+                odf(TEXT("Error #%d\n"), dwError1);
 
-         break;
+                retval = FALSE;
+                bFileType = FALSE;
 
-      default:
-         odf(TEXT("Error #%d\n"),dwError1);
+                goto RestoreProcExit;
+        }
 
-         retval = FALSE;
-         bFileType = FALSE;
+        // Now add to pFileTypeBase or pExtBase
 
-         goto RestoreProcExit;
-      }
-
-      // Now add to pFileTypeBase or pExtBase
-
-      if (bFileType = (CHAR_DOT != szIdent[0])) {
-
-         //
-         // It's a file type
-         //
-
-         pFileType = (PFILETYPE) LocalAlloc(LPTR, sizeof(FILETYPE));
-
-         // Should put up dialog box error then
-         // gracefully quit, keeping read in entries.
-
-         if (!pFileType) {
-
-            retval = FALSE;
-            goto RestoreProcExit;
-         }
-
-         pFileType->uDesc = 0;
-         if (FileTypeAddString(pFileType, szIdent, &pFileType->uDesc)) {
-
-            retval = FALSE;
-            goto RestoreProcExit;
-         }
-
-      } else {
-
-         // truncate if necessary
-         szIdent[COUNTOF(szExt)-1] = CHAR_NULL;
-         lstrcpy(szExt,szIdent);
-      }
-
-      // It is valid, read in nice description/identifier
-
-      lNameSiz = sizeof(szIdent);
-
-      // Note!  RegQueryValue's return length does include
-      // the null terminator!
-
-      dwError2 = (DWORD) RegQueryValue(hk,
-         bFileType ?
-            pFileType->lpszBuf:
-            szExt,
-         szIdent,
-         &lNameSiz);
-
-      //
-      // Divide by size of char to get character count
-      // (not used)
-      //
-      // lNameSiz /= sizeof(*szIdent);
-
-      switch (dwError2) {
-
-      case ERROR_SUCCESS:
-         break;
-
-      case ERROR_FILE_NOT_FOUND:
-
-         odf(TEXT("File not found: %s\n"),bFileType ? pFileType->lpszBuf:szExt);
-
-         if (bFileType) {
-            szIdent[0] = CHAR_NULL;
-            dwError2 = ERROR_SUCCESS;
-         } else {
-
-            iKey++;
-            continue;
-         }
-         break;
-
-      case ERROR_MORE_DATA:
-
-         // truncate
-         szIdent[COUNTOF(szIdent)-1] = CHAR_NULL;
-         dwError2 = ERROR_SUCCESS;
-         break;
-
-      default:
-
-         odf(TEXT("2 Error #%d\n"),dwError2);
-
-         if (bFileType) {
-            szIdent[0] = CHAR_NULL;
-            dwError2 = ERROR_SUCCESS;
-         } else {
-
-            iKey++;
-            continue;
-         }
-//
-//         retval = FALSE;
-//         goto RestoreProcExit;
-//
-      }
-
-      // Now read in \\shell\\open\\command
-      // or Link up ext to filetype
-
-      if (bFileType) {
-
-         TCHAR szTemp[DESCSIZ+COUNTOF(szShellOpenCommand)];
-         TCHAR szCommand[COMMANDSIZ];
-
-         //
-         // Copy in nice name
-         //
-
-         pFileType->uExe = pFileType->uDesc;
-         if (FileTypeAddString(pFileType, szIdent, &pFileType->uExe)) {
-
-            retval = FALSE;
-            goto RestoreProcExit;
-         }
-
-
-         //
-         // Create the new shell open command key
-         //
-         lstrcpy(szTemp, pFileType->lpszBuf);
-         lstrcat(szTemp, szShellOpenCommand);
-
-         lNameSiz = sizeof(szCommand);
-
-         //
-         // Get the exe
-         //
-         dwError2 = (DWORD) RegQueryValue(hk,
-            szTemp,
-            szCommand,
-            &lNameSiz);
-
-         //
-         // Divide by char size to get cch.  (not used)
-         //
-         // lNameSiz /= sizeof(*szCommand);
-
-         switch (dwError2) {
-         case ERROR_SUCCESS:
-            break;
-
-         case ERROR_FILE_NOT_FOUND:
-
+        if (bFileType = (CHAR_DOT != szIdent[0])) {
             //
-            // Bogus entry; continue.
+            // It's a file type
             //
 
-            FileTypeFree(pFileType);
+            pFileType = (PFILETYPE)LocalAlloc(LPTR, sizeof(FILETYPE));
 
-            iKey++;
-            continue;
+            // Should put up dialog box error then
+            // gracefully quit, keeping read in entries.
 
-         case ERROR_MORE_DATA:
+            if (!pFileType) {
+                retval = FALSE;
+                goto RestoreProcExit;
+            }
 
-            // truncate
+            pFileType->uDesc = 0;
+            if (FileTypeAddString(pFileType, szIdent, &pFileType->uDesc)) {
+                retval = FALSE;
+                goto RestoreProcExit;
+            }
 
-            szCommand[COUNTOF(szCommand)-1] = CHAR_NULL;
-            dwError2 = ERROR_SUCCESS;
+        } else {
+            // truncate if necessary
+            szIdent[COUNTOF(szExt) - 1] = CHAR_NULL;
+            lstrcpy(szExt, szIdent);
+        }
 
-            break;
+        // It is valid, read in nice description/identifier
 
-         default:
-            odf(TEXT("2a Error #%d\n"),dwError2);
+        lNameSiz = sizeof(szIdent);
+
+        // Note!  RegQueryValue's return length does include
+        // the null terminator!
+
+        dwError2 = (DWORD)RegQueryValue(hk, bFileType ? pFileType->lpszBuf : szExt, szIdent, &lNameSiz);
+
+        //
+        // Divide by size of char to get character count
+        // (not used)
+        //
+        // lNameSiz /= sizeof(*szIdent);
+
+        switch (dwError2) {
+            case ERROR_SUCCESS:
+                break;
+
+            case ERROR_FILE_NOT_FOUND:
+
+                odf(TEXT("File not found: %s\n"), bFileType ? pFileType->lpszBuf : szExt);
+
+                if (bFileType) {
+                    szIdent[0] = CHAR_NULL;
+                    dwError2 = ERROR_SUCCESS;
+                } else {
+                    iKey++;
+                    continue;
+                }
+                break;
+
+            case ERROR_MORE_DATA:
+
+                // truncate
+                szIdent[COUNTOF(szIdent) - 1] = CHAR_NULL;
+                dwError2 = ERROR_SUCCESS;
+                break;
+
+            default:
+
+                odf(TEXT("2 Error #%d\n"), dwError2);
+
+                if (bFileType) {
+                    szIdent[0] = CHAR_NULL;
+                    dwError2 = ERROR_SUCCESS;
+                } else {
+                    iKey++;
+                    continue;
+                }
+                //
+                //         retval = FALSE;
+                //         goto RestoreProcExit;
+                //
+        }
+
+        // Now read in \\shell\\open\\command
+        // or Link up ext to filetype
+
+        if (bFileType) {
+            TCHAR szTemp[DESCSIZ + COUNTOF(szShellOpenCommand)];
+            TCHAR szCommand[COMMANDSIZ];
 
             //
-            // Bogus entry; continue.
+            // Copy in nice name
             //
 
-            FileTypeFree(pFileType);
+            pFileType->uExe = pFileType->uDesc;
+            if (FileTypeAddString(pFileType, szIdent, &pFileType->uExe)) {
+                retval = FALSE;
+                goto RestoreProcExit;
+            }
 
-            iKey++;
-            continue;
-//
-//            retval = FALSE;
-//            goto RestoreProcExit;
-//
-         }
+            //
+            // Create the new shell open command key
+            //
+            lstrcpy(szTemp, pFileType->lpszBuf);
+            lstrcat(szTemp, szShellOpenCommand);
 
-         //
-         // Jam in the '(' and make the previous character a space
-         //
+            lNameSiz = sizeof(szCommand);
 
-         pFileType->lpszBuf[pFileType->uExe-1] = CHAR_SPACE;
-         pFileType->lpszBuf[pFileType->uExe++] = CHAR_OPENPAREN;
+            //
+            // Get the exe
+            //
+            dwError2 = (DWORD)RegQueryValue(hk, szTemp, szCommand, &lNameSiz);
 
-         uNameSiz = pFileType->uExe;
-         FileTypeAddString(pFileType, szCommand, &uNameSiz);
-      }
-      else
-      {
-         //
-         // Check for duplicate extensions
-         //
-         if (ExtDupCheck(szExt, pExtPrev))
-         {
-            iKey++;
-            continue;
-         }
+            //
+            // Divide by char size to get cch.  (not used)
+            //
+            // lNameSiz /= sizeof(*szCommand);
 
-         // Put ident into pExt
+            switch (dwError2) {
+                case ERROR_SUCCESS:
+                    break;
 
-         pExt = (PEXT) LocalAlloc(LPTR, sizeof(EXT) + ByteCountOf(lstrlen(szIdent)));
-         if (!pExt)
-         {
-            retval = FALSE;
-            goto RestoreProcExit;
-         }
+                case ERROR_FILE_NOT_FOUND:
 
-         lstrcpy(pExt->szExt, szExt);
-         lstrcpy(pExt->szIdent, szIdent);
-      }
+                    //
+                    // Bogus entry; continue.
+                    //
 
-      // Don't call ExtLinkToFileType!
-      // Go through linked list only when everything read
+                    FileTypeFree(pFileType);
 
-      // Now either link up or initialize
+                    iKey++;
+                    continue;
 
-      if (bFileType) {
+                case ERROR_MORE_DATA:
 
-         //
-         // If prev exists, then we have already linked so just
-         // append.  Otherwise, it's the first one.
-         //
-         if (pFileTypePrev)
-         {
-            pFileTypePrev->next = pFileType;
-         }
-         else
-         {
-            *ppFileTypeBase = pFileType;
-         }
+                    // truncate
 
-         pFileTypePrev = pFileType;
-      }
-      else
-      {
-         if (pExtPrev)
-         {
-            pExtPrev->next = pExt;
-         }
-         else
-         {
-            *ppExtBase = pExt;
-         }
+                    szCommand[COUNTOF(szCommand) - 1] = CHAR_NULL;
+                    dwError2 = ERROR_SUCCESS;
 
-         pExtPrev = pExt;
-      }
+                    break;
 
-      iKey++;
-   }
+                default:
+                    odf(TEXT("2a Error #%d\n"), dwError2);
+
+                    //
+                    // Bogus entry; continue.
+                    //
+
+                    FileTypeFree(pFileType);
+
+                    iKey++;
+                    continue;
+                    //
+                    //            retval = FALSE;
+                    //            goto RestoreProcExit;
+                    //
+            }
+
+            //
+            // Jam in the '(' and make the previous character a space
+            //
+
+            pFileType->lpszBuf[pFileType->uExe - 1] = CHAR_SPACE;
+            pFileType->lpszBuf[pFileType->uExe++] = CHAR_OPENPAREN;
+
+            uNameSiz = pFileType->uExe;
+            FileTypeAddString(pFileType, szCommand, &uNameSiz);
+        } else {
+            //
+            // Check for duplicate extensions
+            //
+            if (ExtDupCheck(szExt, pExtPrev)) {
+                iKey++;
+                continue;
+            }
+
+            // Put ident into pExt
+
+            pExt = (PEXT)LocalAlloc(LPTR, sizeof(EXT) + ByteCountOf(lstrlen(szIdent)));
+            if (!pExt) {
+                retval = FALSE;
+                goto RestoreProcExit;
+            }
+
+            lstrcpy(pExt->szExt, szExt);
+            lstrcpy(pExt->szIdent, szIdent);
+        }
+
+        // Don't call ExtLinkToFileType!
+        // Go through linked list only when everything read
+
+        // Now either link up or initialize
+
+        if (bFileType) {
+            //
+            // If prev exists, then we have already linked so just
+            // append.  Otherwise, it's the first one.
+            //
+            if (pFileTypePrev) {
+                pFileTypePrev->next = pFileType;
+            } else {
+                *ppFileTypeBase = pFileType;
+            }
+
+            pFileTypePrev = pFileType;
+        } else {
+            if (pExtPrev) {
+                pExtPrev->next = pExt;
+            } else {
+                *ppExtBase = pExt;
+            }
+
+            pExtPrev = pExt;
+        }
+
+        iKey++;
+    }
 
 ProcExit:
-   RegCloseKey(hk);
-   return retval;
+    RegCloseKey(hk);
+    return retval;
 
 RestoreProcExit:
 
-   // Memory error; restore and get out
-   // Free as much as we can
-   if (bFileType && pFileType) {
-
-      FileTypeFree(pFileType);
-   }
-   goto ProcExit;
+    // Memory error; restore and get out
+    // Free as much as we can
+    if (bFileType && pFileType) {
+        FileTypeFree(pFileType);
+    }
+    goto ProcExit;
 }
-
-
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -2078,44 +1885,39 @@ RestoreProcExit:
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-ClassesFree(BOOL bFileType)
-{
-   VFILETYPEEXT vNext;
-   VFILETYPEEXT vCur;
+VOID ClassesFree(BOOL bFileType) {
+    VFILETYPEEXT vNext;
+    VFILETYPEEXT vCur;
 
-   if (bFileType) {
-      vCur.pFileType = pFileTypeBase;
-   } else {
-      vCur.pExt = pExtBase;
-   }
+    if (bFileType) {
+        vCur.pFileType = pFileTypeBase;
+    } else {
+        vCur.pExt = pExtBase;
+    }
 
-   while (vCur.vBoth) {
+    while (vCur.vBoth) {
+        if (bFileType) {
+            vNext.pFileType = vCur.pFileType->next;
+        } else {
+            vNext.pExt = vCur.pExt->next;
+        }
 
-      if (bFileType) {
-         vNext.pFileType = vCur.pFileType->next;
-      } else {
-         vNext.pExt = vCur.pExt->next;
-      }
+        if (bFileType) {
+            FileTypeFree(vCur.pFileType);
+        } else {
+            ExtFree(vCur.pExt);
+        }
 
-      if (bFileType) {
-         FileTypeFree(vCur.pFileType);
-      } else {
-         ExtFree(vCur.pExt);
-      }
+        // Should be ok til next Alloc, but if multithreaded...
+        vCur.vBoth = vNext.vBoth;
+    }
 
-      // Should be ok til next Alloc, but if multithreaded...
-      vCur.vBoth=vNext.vBoth;
-   }
-
-   if (bFileType) {
-      pFileTypeBase = NULL;
-   } else {
-      pExtBase = NULL;
-   }
+    if (bFileType) {
+        pFileTypeBase = NULL;
+    } else {
+        pExtBase = NULL;
+    }
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -2136,16 +1938,10 @@ ClassesFree(BOOL bFileType)
 //
 /////////////////////////////////////////////////////////////////////
 
-
-VOID
-RegUnload(VOID)
-{
-   ClassesFree(TRUE);
-   ClassesFree(FALSE);
+VOID RegUnload(VOID) {
+    ClassesFree(TRUE);
+    ClassesFree(FALSE);
 }
-
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -2170,129 +1966,115 @@ RegUnload(VOID)
 /////////////////////////////////////////////////////////////////////
 
 DWORD
-FileTypeRead(HWND hDlg,
-   PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
-{
-   UINT i;
-   PEXT pExt;
-   PEXT pExtNext;
-   PFILETYPE pFileType = pAssociateFileDlgInfo->pFileType;
-   DWORD dwError;
-   HKEY hk;
+FileTypeRead(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo) {
+    UINT i;
+    PEXT pExt;
+    PEXT pExtNext;
+    PFILETYPE pFileType = pAssociateFileDlgInfo->pFileType;
+    DWORD dwError;
+    HKEY hk;
 
-   TCHAR szTemp[STRINGSIZ];
+    TCHAR szTemp[STRINGSIZ];
 
-   // If we are in IDD_NEW mode, just return success
-   // since we don't read anything for new ones.
-   // We must clear out the lists
+    // If we are in IDD_NEW mode, just return success
+    // since we don't read anything for new ones.
+    // We must clear out the lists
 
-   pAssociateFileDlgInfo->iAction = 0;
+    pAssociateFileDlgInfo->iAction = 0;
 
-   // Clear out DDEInfo
-   for (i=0; i < DDETYPEMAX; i++) {
-      pAssociateFileDlgInfo->DDEInfo[i].szCommand[0] = CHAR_NULL;
-      pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE = 0;
-      pAssociateFileDlgInfo->DDEInfo[i].szDDEMesg[0] = CHAR_NULL;
-      pAssociateFileDlgInfo->DDEInfo[i].szDDEApp[0] = CHAR_NULL;
-      pAssociateFileDlgInfo->DDEInfo[i].szDDENotRun[0] = CHAR_NULL;
-      pAssociateFileDlgInfo->DDEInfo[i].szDDETopic[0] = CHAR_NULL;
-   }
+    // Clear out DDEInfo
+    for (i = 0; i < DDETYPEMAX; i++) {
+        pAssociateFileDlgInfo->DDEInfo[i].szCommand[0] = CHAR_NULL;
+        pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE = 0;
+        pAssociateFileDlgInfo->DDEInfo[i].szDDEMesg[0] = CHAR_NULL;
+        pAssociateFileDlgInfo->DDEInfo[i].szDDEApp[0] = CHAR_NULL;
+        pAssociateFileDlgInfo->DDEInfo[i].szDDENotRun[0] = CHAR_NULL;
+        pAssociateFileDlgInfo->DDEInfo[i].szDDETopic[0] = CHAR_NULL;
+    }
 
-   if (IDD_CONFIG != pAssociateFileDlgInfo->mode) {
+    if (IDD_CONFIG != pAssociateFileDlgInfo->mode) {
+        if (IDD_NEW == pAssociateFileDlgInfo->mode) {
+            //
+            // Set the dialog window title
+            //
+            if (LoadString(hAppInstance, IDS_NEWFILETYPETITLE, szTemp, COUNTOF(szTemp))) {
+                SetWindowText(hDlg, szTemp);
+            }
+        }
 
-      if (IDD_NEW == pAssociateFileDlgInfo->mode) {
+        dwError = ERROR_SUCCESS;
 
-         //
-         // Set the dialog window title
-         //
-         if (LoadString(hAppInstance, IDS_NEWFILETYPETITLE, szTemp, COUNTOF(szTemp))) {
-            SetWindowText(hDlg, szTemp);
-         }
-      }
+    } else {
+        // Put in the description!
+        SetDlgItemText(hDlg, IDD_DESC, &pFileType->lpszBuf[pFileType->uDesc]);
 
-      dwError = ERROR_SUCCESS;
+        // Put up the open executable by default!
+        SetDlgItemText(hDlg, IDD_COMMAND, &pFileType->lpszBuf[pFileType->uExe]);
 
-   } else {
+        // Put in the extensions!
 
-      // Put in the description!
-      SetDlgItemText(hDlg, IDD_DESC, &pFileType->lpszBuf[pFileType->uDesc]);
+        for (pExt = pFileType->pExt; pExt; pExt = pExtNext) {
+            pExtNext = pExt->pftNext;
 
-      // Put up the open executable by default!
-      SetDlgItemText(hDlg, IDD_COMMAND, &pFileType->lpszBuf[pFileType->uExe]);
+            if (!pExt->bDelete) {
+                CharLower(&pExt->szExt[1]);
+                i = (UINT)SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_ADDSTRING, 0, (LPARAM)&pExt->szExt[1]);
 
-      // Put in the extensions!
+                SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_SETITEMDATA, i, (LPARAM)pExt);
+            }
+        }
 
-      for (pExt = pFileType->pExt; pExt; pExt = pExtNext)
-      {
-         pExtNext = pExt->pftNext;
+        //
+        // Certain file types will be read only
+        // If so, we want to disable all the editing fields
+        // To check this, we do a RegOpenKeyEx with KEY_WRITE privilege
+        //
 
-         if (!pExt->bDelete)
-         {
-            CharLower(&pExt->szExt[1]);
-            i = (UINT)SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_ADDSTRING, 0, (LPARAM)&pExt->szExt[1]);
+        if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CLASSES_ROOT, pFileType->lpszBuf, 0L, KEY_WRITE, &hk)) {
+            RegCloseKey(hk);
 
-            SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_SETITEMDATA, i, (LPARAM)pExt);
-         }
-      }
+        } else {
+            pAssociateFileDlgInfo->bReadOnly = TRUE;
 
-      //
-      // Certain file types will be read only
-      // If so, we want to disable all the editing fields
-      // To check this, we do a RegOpenKeyEx with KEY_WRITE privilege
-      //
-
-      if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CLASSES_ROOT,
-         pFileType->lpszBuf, 0L, KEY_WRITE, &hk)) {
-
-         RegCloseKey(hk);
-
-      } else {
-         pAssociateFileDlgInfo->bReadOnly = TRUE;
-
-         //
-         // Disable EVERYTHING (well, almost)
-         //
+            //
+            // Disable EVERYTHING (well, almost)
+            //
 
 #define DISABLE(x) EnableWindow(GetDlgItem(hDlg, x), FALSE)
 
-         DISABLE( IDD_DESCTEXT );
-         DISABLE( IDD_COMMANDTEXT );
-         DISABLE( IDD_BROWSE );
-         DISABLE( IDD_DDEMESGTEXT );
-         DISABLE( IDD_DDEAPPTEXT );
-         DISABLE( IDD_DDENOTRUNTEXT );
-         DISABLE( IDD_DDETOPICTEXT );
-         DISABLE( IDD_DDEOPTIONALTEXT );
+            DISABLE(IDD_DESCTEXT);
+            DISABLE(IDD_COMMANDTEXT);
+            DISABLE(IDD_BROWSE);
+            DISABLE(IDD_DDEMESGTEXT);
+            DISABLE(IDD_DDEAPPTEXT);
+            DISABLE(IDD_DDENOTRUNTEXT);
+            DISABLE(IDD_DDETOPICTEXT);
+            DISABLE(IDD_DDEOPTIONALTEXT);
 
-         DISABLE( IDD_DESC );
-         DISABLE( IDD_COMMAND );
-         DISABLE( IDD_SEARCHALL );
-         DISABLE( IDD_DDE );
-         DISABLE( IDD_DDEMESG );
-         DISABLE( IDD_DDEAPP );
-         DISABLE( IDD_DDENOTRUN );
-         DISABLE( IDD_DDETOPIC );
+            DISABLE(IDD_DESC);
+            DISABLE(IDD_COMMAND);
+            DISABLE(IDD_SEARCHALL);
+            DISABLE(IDD_DDE);
+            DISABLE(IDD_DDEMESG);
+            DISABLE(IDD_DDEAPP);
+            DISABLE(IDD_DDENOTRUN);
+            DISABLE(IDD_DDETOPIC);
 
 #undef DISABLE
-      }
+        }
 
+        // Read in DDE Stuff.
 
-      // Read in DDE Stuff.
+        for (i = 0; i < DDETYPEMAX; i++) {
+            // Read in everything
+            if (ERROR_SUCCESS != (dwError = DDERead(pAssociateFileDlgInfo, i)))
+                break;
+        }
+    }
 
-      for (i=0; i < DDETYPEMAX; i++) {
-         // Read in everything
-         if (ERROR_SUCCESS != (dwError = DDERead(pAssociateFileDlgInfo, i)))
-            break;
-      }
-   }
-
-   ActionUpdate(hDlg, pAssociateFileDlgInfo);
-   return dwError;
+    ActionUpdate(hDlg, pAssociateFileDlgInfo);
+    return dwError;
 }
-
-
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -2333,208 +2115,191 @@ FileTypeRead(HWND hDlg,
 /////////////////////////////////////////////////////////////////////
 
 DWORD
-FileTypeWrite(HWND hDlg,
-   PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo,
-   HKEY hk,
-   LPTSTR lpszKey)
-{
-   INT i;
-   PFILETYPE pFileType = pAssociateFileDlgInfo->pFileType;
-   DWORD dwError;
-   LPTSTR p, p2;
-   UINT uOffset;
-   TCHAR szDesc[DESCSIZ];
-   BOOL bSpace;
-   BOOL bNotSpace;
+FileTypeWrite(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, HKEY hk, LPTSTR lpszKey) {
+    INT i;
+    PFILETYPE pFileType = pAssociateFileDlgInfo->pFileType;
+    DWORD dwError;
+    LPTSTR p, p2;
+    UINT uOffset;
+    TCHAR szDesc[DESCSIZ];
+    BOOL bSpace;
+    BOOL bNotSpace;
 
-   //
-   // If read only, the user couldn't have changed anything,
-   // so don't bother writing
-   //
+    //
+    // If read only, the user couldn't have changed anything,
+    // so don't bother writing
+    //
 
-   if (pAssociateFileDlgInfo->bReadOnly)
-      return ERROR_SUCCESS;
+    if (pAssociateFileDlgInfo->bReadOnly)
+        return ERROR_SUCCESS;
 
-   if (!pAssociateFileDlgInfo->bChange)
-      return ERROR_SUCCESS;
+    if (!pAssociateFileDlgInfo->bChange)
+        return ERROR_SUCCESS;
 
-   //
-   // First check if an identifier exists.  If it doesn't,
-   // generate one.
-   //
+    //
+    // First check if an identifier exists.  If it doesn't,
+    // generate one.
+    //
 
-   if (IDD_CONFIG != pAssociateFileDlgInfo->mode) {
+    if (IDD_CONFIG != pAssociateFileDlgInfo->mode) {
+        //
+        // Algo for generating ident begins here.
+        // Just use the Desc for now...
+        //
 
-      //
-      // Algo for generating ident begins here.
-      // Just use the Desc for now...
-      //
+        GetDlgItemText(hDlg, IDD_DESC, szDesc, COUNTOF(szDesc));
 
-      GetDlgItemText(hDlg, IDD_DESC, szDesc, COUNTOF(szDesc));
+        pFileType->uDesc = 0;
 
-      pFileType->uDesc = 0;
+        //
+        // Create prefix
+        //
+        wsprintf(szFileManPrefix, szFileManPrefixGen, 0);
 
-      //
-      // Create prefix
-      //
-      wsprintf(szFileManPrefix, szFileManPrefixGen, 0);
+        p = StrChrQuote(szFileManPrefix, CHAR_SPACE);
 
-      p=StrChrQuote(szFileManPrefix, CHAR_SPACE);
+        if (p)
+            *p = CHAR_NULL;
 
-      if (p)
-         *p = CHAR_NULL;
+        if (dwError = FileTypeAddString(pFileType, szFileManPrefix, &pFileType->uDesc)) {
+            goto Error;
+        }
 
-      if (dwError = FileTypeAddString(pFileType,
-         szFileManPrefix, &pFileType->uDesc)) {
-         goto Error;
-      }
+        //
+        // Safe since szFileManPrefix is non-null.
+        //
 
-      //
-      // Safe since szFileManPrefix is non-null.
-      //
+        pFileType->uDesc--;
 
-      pFileType->uDesc--;
+        if (dwError = FileTypeAddString(pFileType, szDesc, &pFileType->uDesc))
+            goto Error;
 
-      if (dwError = FileTypeAddString(pFileType, szDesc, &pFileType->uDesc))
-         goto Error;
+        //
+        // Algo ends here
+        // Now make sure that the ident is unique
+        //
 
-      //
-      // Algo ends here
-      // Now make sure that the ident is unique
-      //
+        if (FileTypeDupIdentCheck(hDlg, IDD_DESC, pFileType->lpszBuf))
+            return DE_RETRY;
+    }
 
-      if (FileTypeDupIdentCheck(hDlg, IDD_DESC, pFileType->lpszBuf))
-         return DE_RETRY;
-   }
+    //
+    // Get new desc
+    //
+    i = GetWindowTextLength(GetDlgItem(hDlg, IDD_DESC));
 
-   //
-   // Get new desc
-   //
-   i = GetWindowTextLength(GetDlgItem(hDlg, IDD_DESC));
+    // Make sure that it's non-NULL.
+    if (!i) {
+        //
+        // Warn user to use non-NULL desc
+        //
 
-   // Make sure that it's non-NULL.
-   if (!i) {
+        MyMessageBox(hDlg, IDS_EXTTITLE, IDS_FILETYPENULLDESCERROR, MB_TASKMODAL | MB_OK | MB_ICONEXCLAMATION);
 
-      //
-      // Warn user to use non-NULL desc
-      //
+        //
+        // Set focus to IDD_DESC
+        //
+        SetFocus(GetDlgItem(hDlg, IDD_DESC));
 
-      MyMessageBox(hDlg, IDS_EXTTITLE, IDS_FILETYPENULLDESCERROR,
-         MB_TASKMODAL|MB_OK|MB_ICONEXCLAMATION);
+        return DE_RETRY;
+    }
 
-      //
-      // Set focus to IDD_DESC
-      //
-      SetFocus(GetDlgItem(hDlg, IDD_DESC));
+    GetDlgItemText(hDlg, IDD_DESC, szDesc, COUNTOF(szDesc));
 
-      return DE_RETRY;
-   }
+    uOffset = pFileType->uDesc;
+    if (dwError = FileTypeAddString(pFileType, szDesc, &uOffset))
+        goto Error;
 
-   GetDlgItemText(hDlg, IDD_DESC, szDesc, COUNTOF(szDesc));
+    //
+    // We add 1 because we substitute our paren here
+    //
+    pFileType->lpszBuf[uOffset] = CHAR_OPENPAREN;
+    pFileType->uExe = uOffset + 1;
 
-   uOffset = pFileType->uDesc;
-   if (dwError = FileTypeAddString(pFileType, szDesc, &uOffset))
-      goto Error;
+    for (i = 0; i < DDETYPEMAX; i++) {
+        p = pAssociateFileDlgInfo->DDEInfo[i].szCommand;
 
-   //
-   // We add 1 because we substitute our paren here
-   //
-   pFileType->lpszBuf[uOffset] = CHAR_OPENPAREN;
-   pFileType->uExe = uOffset+1;
+        //
+        // Get Application: add %1 if not present and does not use dde
+        // and there is at least one non-space character
+        //
 
-   for (i=0; i < DDETYPEMAX; i++) {
-      p = pAssociateFileDlgInfo->DDEInfo[i].szCommand;
+        if (!pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE) {
+            // Scan through for % after space
+            for (p2 = p, bSpace = FALSE, bNotSpace = FALSE; *p2; p2++) {
+                if (CHAR_SPACE == *p2)
+                    bSpace = TRUE;
+                else
+                    bNotSpace = TRUE;
 
-      //
-      // Get Application: add %1 if not present and does not use dde
-      // and there is at least one non-space character
-      //
+                if (szSpacePercentOne[1] == *p2 && bSpace)
+                    break;
+            }
 
-      if (!pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE) {
+            // lstrcat only if enough space and % wasn't found
 
-         // Scan through for % after space
-         for(p2 = p, bSpace = FALSE, bNotSpace = FALSE; *p2; p2++) {
+            if (!*p2 && bNotSpace &&
+                lstrlen(p) < COUNTOF(pAssociateFileDlgInfo->DDEInfo[i].szCommand) - COUNTOF(szSpacePercentOne) - 1) {
+                lstrcat(p, szSpacePercentOne);
+            }
+        }
+    }
 
-            if (CHAR_SPACE == *p2)
-               bSpace = TRUE;
-            else
-               bNotSpace = TRUE;
+    uOffset = pFileType->uExe;
 
-            if (szSpacePercentOne[1] == *p2 && bSpace)
-               break;
-         }
+    if (dwError = FileTypeAddString(pFileType, pAssociateFileDlgInfo->DDEInfo[0].szCommand, &uOffset)) {
+        goto Error;
+    }
 
-         // lstrcat only if enough space and % wasn't found
+    // Write out friendly name (desc)
+    // Add +1?  cf. other RegSetValues!
 
-         if (!*p2 && bNotSpace &&
-            lstrlen(p) < COUNTOF(pAssociateFileDlgInfo->DDEInfo[i].szCommand) -
-            COUNTOF(szSpacePercentOne) -1) {
+    dwError = RegSetValue(
+        hk, pFileType->lpszBuf, REG_SZ, &pFileType->lpszBuf[pFileType->uDesc],
+        lstrlen(&pFileType->lpszBuf[pFileType->uDesc]));
 
-            lstrcat(p, szSpacePercentOne);
-         }
-      }
-   }
+    if (ERROR_SUCCESS != dwError)
+        goto Error;
 
+    // Write out DDE Stuff.
 
-   uOffset = pFileType->uExe;
+    for (i = 0; i < DDETYPEMAX; i++) {
+        // Read in everything
+        if (ERROR_SUCCESS != (dwError = DDEWrite(pAssociateFileDlgInfo, i))) {
+            goto Error;
+        }
+    }
 
-   if (dwError = FileTypeAddString(pFileType,
-      pAssociateFileDlgInfo->DDEInfo[0].szCommand, &uOffset)) {
+    // Link up pFileType if this is new!
+    if (IDD_CONFIG != pAssociateFileDlgInfo->mode) {
+        pFileType->next = pFileTypeBase;
+        pFileTypeBase = pFileType;
+    }
 
-      goto Error;
-   }
-
-   // Write out friendly name (desc)
-   // Add +1?  cf. other RegSetValues!
-
-   dwError = RegSetValue(hk, pFileType->lpszBuf, REG_SZ,
-      &pFileType->lpszBuf[pFileType->uDesc],
-      lstrlen(&pFileType->lpszBuf[pFileType->uDesc]));
-
-   if (ERROR_SUCCESS != dwError)
-      goto Error;
-
-   // Write out DDE Stuff.
-
-   for (i=0; i < DDETYPEMAX; i++) {
-      // Read in everything
-      if (ERROR_SUCCESS != (dwError = DDEWrite(pAssociateFileDlgInfo, i))) {
-         goto Error;
-      }
-   }
-
-   // Link up pFileType if this is new!
-   if (IDD_CONFIG != pAssociateFileDlgInfo->mode) {
-      pFileType->next = pFileTypeBase;
-      pFileTypeBase = pFileType;
-   }
-
-   return ERROR_SUCCESS;
+    return ERROR_SUCCESS;
 
 Error:
 
-   // If creating a new file type
-   if (IDD_CONFIG != pAssociateFileDlgInfo->mode)
-   {
-      // Find any extensions pointing to it, remove them, and point them to
-      // any original file type if possible
-      PEXT pExt;
-      while (pFileType->pExt != NULL)
-      {
-         pExt = pFileType->pExt;
-         ExtDelink(pExt);
-         if (pExt->pftOrig != NULL) {
-            ExtLink(pExt, pExt->pftOrig);
-         }
-         // Indicate no update should occur for this extension
-         pExt->bAdd = FALSE;
-         pExt->bDelete = FALSE;
-      }
+    // If creating a new file type
+    if (IDD_CONFIG != pAssociateFileDlgInfo->mode) {
+        // Find any extensions pointing to it, remove them, and point them to
+        // any original file type if possible
+        PEXT pExt;
+        while (pFileType->pExt != NULL) {
+            pExt = pFileType->pExt;
+            ExtDelink(pExt);
+            if (pExt->pftOrig != NULL) {
+                ExtLink(pExt, pExt->pftOrig);
+            }
+            // Indicate no update should occur for this extension
+            pExt->bAdd = FALSE;
+            pExt->bDelete = FALSE;
+        }
 
-      // Free the file type and any associated buffer
-      FileTypeFree(pFileType);
-   }
-   return dwError;
+        // Free the file type and any associated buffer
+        FileTypeFree(pFileType);
+    }
+    return dwError;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -2557,132 +2322,125 @@ Error:
 //
 /////////////////////////////////////////////////////////////////////
 
-#define ERRORCHECK \
-   {  if (ERROR_SUCCESS!=dwError && ERROR_FILE_NOT_FOUND!=dwError) \
-      return dwError; }
+#define ERRORCHECK                                                       \
+    {                                                                    \
+        if (ERROR_SUCCESS != dwError && ERROR_FILE_NOT_FOUND != dwError) \
+            return dwError;                                              \
+    }
 
-#define BUSESDDECHECK \
-   {  if (ERROR_FILE_NOT_FOUND != dwError) \
-         pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE = TRUE; }
+#define BUSESDDECHECK                                          \
+    {                                                          \
+        if (ERROR_FILE_NOT_FOUND != dwError)                   \
+            pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE = TRUE; \
+    }
 
 // lSize => _byte_ count, not character count
 
-#define REGREAD(str)                                                      \
-   {                                                                      \
-       HKEY _hkey;                                                        \
-                                                                          \
-       str[0] = CHAR_NULL;                                                \
-       lSize = sizeof(str);                                               \
-       dwError = 0;                                                       \
-       if (RegOpenKey(HKEY_CLASSES_ROOT, szKey, &_hkey) == ERROR_SUCCESS) \
-       {                                                                  \
-           dwError = (DWORD)RegQueryValueEx( _hkey,                       \
-                                             TEXT(""),                    \
-                                             NULL,                        \
-                                             NULL,                        \
-                                             (LPBYTE)str,                 \
-                                             &lSize );                    \
-           RegCloseKey(_hkey);                                            \
-       }                                                                  \
-   }
+#define REGREAD(str)                                                                            \
+    {                                                                                           \
+        HKEY _hkey;                                                                             \
+                                                                                                \
+        str[0] = CHAR_NULL;                                                                     \
+        lSize = sizeof(str);                                                                    \
+        dwError = 0;                                                                            \
+        if (RegOpenKey(HKEY_CLASSES_ROOT, szKey, &_hkey) == ERROR_SUCCESS) {                    \
+            dwError = (DWORD)RegQueryValueEx(_hkey, TEXT(""), NULL, NULL, (LPBYTE)str, &lSize); \
+            RegCloseKey(_hkey);                                                                 \
+        }                                                                                       \
+    }
 
 DWORD
-DDERead(PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT i)
-{
-   TCHAR szKey[MAXPATHLEN];
-   INT iPoint;
-   DWORD lSize;
-   DWORD dwError;
-   LPTSTR p, p2;
+DDERead(PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT i) {
+    TCHAR szKey[MAXPATHLEN];
+    INT iPoint;
+    DWORD lSize;
+    DWORD dwError;
+    LPTSTR p, p2;
 
-   pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE = FALSE;
+    pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE = FALSE;
 
-   // BONK!  Should do length checking here.
+    // BONK!  Should do length checking here.
 
-   lstrcpy(szKey, pAssociateFileDlgInfo->pFileType->lpszBuf);
-   lstrcat(szKey, szShell);
-   lstrcat(szKey, aDDEType[i].lpszRegistry);
+    lstrcpy(szKey, pAssociateFileDlgInfo->pFileType->lpszBuf);
+    lstrcat(szKey, szShell);
+    lstrcat(szKey, aDDEType[i].lpszRegistry);
 
-   iPoint = lstrlen(szKey);
+    iPoint = lstrlen(szKey);
 
-   lstrcat(szKey, szCommand);
+    lstrcat(szKey, szCommand);
 
-   REGREAD(pAssociateFileDlgInfo->DDEInfo[i].szCommand);
+    REGREAD(pAssociateFileDlgInfo->DDEInfo[i].szCommand);
 
-   ERRORCHECK;
+    ERRORCHECK;
 
-   lstrcpy(&szKey[iPoint],szDDEExec);
+    lstrcpy(&szKey[iPoint], szDDEExec);
 
-   REGREAD(pAssociateFileDlgInfo->DDEInfo[i].szDDEMesg);
+    REGREAD(pAssociateFileDlgInfo->DDEInfo[i].szDDEMesg);
 
-   ERRORCHECK;
-   BUSESDDECHECK;
+    ERRORCHECK;
+    BUSESDDECHECK;
 
-   iPoint = lstrlen(szKey);
-   lstrcat(szKey, szApp);
+    iPoint = lstrlen(szKey);
+    lstrcat(szKey, szApp);
 
-   REGREAD(pAssociateFileDlgInfo->DDEInfo[i].szDDEApp);
+    REGREAD(pAssociateFileDlgInfo->DDEInfo[i].szDDEApp);
 
-   ERRORCHECK;
-   BUSESDDECHECK;
+    ERRORCHECK;
+    BUSESDDECHECK;
 
-   // Per win31, default to first (' '=delimiter) token's
-   // last filespec ('\'=delimiter)
-   p2 = pAssociateFileDlgInfo->DDEInfo[i].szDDEApp;
+    // Per win31, default to first (' '=delimiter) token's
+    // last filespec ('\'=delimiter)
+    p2 = pAssociateFileDlgInfo->DDEInfo[i].szDDEApp;
 
-   if (ERROR_SUCCESS != dwError || !p2[0]) {
+    if (ERROR_SUCCESS != dwError || !p2[0]) {
+        lstrcpy(p2, pAssociateFileDlgInfo->DDEInfo[i].szCommand);
 
+        //
+        // For the application string, default to the
+        // executable name without the extensions
+        //
+        for (p = p2; *p; p++) {
+            if (CHAR_DOT == *p || CHAR_SPACE == *p) {
+                *p = CHAR_NULL;
+                break;
+            }
+        }
 
-      lstrcpy(p2, pAssociateFileDlgInfo->DDEInfo[i].szCommand);
+        StripPath(p2);
 
-      //
-      // For the application string, default to the
-      // executable name without the extensions
-      //
-      for(p=p2;*p;p++) {
-         if (CHAR_DOT == *p || CHAR_SPACE == *p) {
-            *p = CHAR_NULL;
-            break;
-         }
-      }
+        if (*p2) {
+#pragma warning(disable : 4302)  // CharUpper smuggles a character through a pointer
+            *p2 = reinterpret_cast<WCHAR>(CharUpper((LPTSTR)*p2));
+#pragma warning(default : 4302)
+        }
+    }
 
-      StripPath(p2);
+    lstrcpy(&szKey[iPoint], szTopic);
 
-      if (*p2) {
-#pragma warning(disable:4302) // CharUpper smuggles a character through a pointer
-          *p2 = reinterpret_cast<WCHAR>(CharUpper((LPTSTR)*p2));
-#pragma warning(default:4302)
-      }
-   }
+    REGREAD(pAssociateFileDlgInfo->DDEInfo[i].szDDETopic);
 
-   lstrcpy(&szKey[iPoint],szTopic);
+    ERRORCHECK;
+    BUSESDDECHECK;
 
-   REGREAD(pAssociateFileDlgInfo->DDEInfo[i].szDDETopic);
+    // The default for no topic is system.
 
-   ERRORCHECK;
-   BUSESDDECHECK;
+    if (ERROR_SUCCESS != dwError || !pAssociateFileDlgInfo->DDEInfo[i].szDDETopic[0]) {
+        lstrcpy(pAssociateFileDlgInfo->DDEInfo[i].szDDETopic, szDDEDefaultTopic);
+    }
 
-   // The default for no topic is system.
+    lstrcpy(&szKey[iPoint], szIFExec);
 
-   if (ERROR_SUCCESS != dwError || !pAssociateFileDlgInfo->DDEInfo[i].szDDETopic[0]) {
-      lstrcpy(pAssociateFileDlgInfo->DDEInfo[i].szDDETopic, szDDEDefaultTopic);
-   }
+    REGREAD(pAssociateFileDlgInfo->DDEInfo[i].szDDENotRun);
 
-   lstrcpy(&szKey[iPoint],szIFExec);
+    ERRORCHECK;
+    BUSESDDECHECK;
 
-   REGREAD(pAssociateFileDlgInfo->DDEInfo[i].szDDENotRun);
-
-   ERRORCHECK;
-   BUSESDDECHECK;
-
-   return ERROR_SUCCESS;
+    return ERROR_SUCCESS;
 }
 
 #undef ERRORCHECK
 #undef BUSESDDECHECK
 #undef REGREAD
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -2705,97 +2463,87 @@ DDERead(PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT i)
 //
 /////////////////////////////////////////////////////////////////////
 
-#define ERRORCHECK \
-   {  if (ERROR_SUCCESS != dwError) \
-         return dwError; }
-
+#define ERRORCHECK                    \
+    {                                 \
+        if (ERROR_SUCCESS != dwError) \
+            return dwError;           \
+    }
 
 // +1 for RegSetValue???  (lstrlen)
 
-#define DDEREGSET(lpsz) \
-   {  \
-      dwSize = lstrlen(lpsz) * sizeof(*lpsz); \
-      dwError = RegSetValue(HKEY_CLASSES_ROOT,  \
-         szKey,                              \
-         REG_SZ,                             \
-         lpsz,                               \
-         dwSize);\
-   }
+#define DDEREGSET(lpsz)                                                        \
+    {                                                                          \
+        dwSize = lstrlen(lpsz) * sizeof(*lpsz);                                \
+        dwError = RegSetValue(HKEY_CLASSES_ROOT, szKey, REG_SZ, lpsz, dwSize); \
+    }
 
 DWORD
-DDEWrite(PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT i)
-{
-   TCHAR szKey[MAXPATHLEN];
-   INT iPoint;
-   DWORD dwSize;
-   DWORD dwError;
+DDEWrite(PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT i) {
+    TCHAR szKey[MAXPATHLEN];
+    INT iPoint;
+    DWORD dwSize;
+    DWORD dwError;
 
-   //
-   // LATER:  Should do length checking here.
-   //
-   lstrcpy(szKey, pAssociateFileDlgInfo->pFileType->lpszBuf);
-   lstrcat(szKey, szShell);
-   lstrcat(szKey, aDDEType[i].lpszRegistry);
+    //
+    // LATER:  Should do length checking here.
+    //
+    lstrcpy(szKey, pAssociateFileDlgInfo->pFileType->lpszBuf);
+    lstrcat(szKey, szShell);
+    lstrcat(szKey, aDDEType[i].lpszRegistry);
 
-   //
-   // If we are not writing the main command (open) and
-   // there is no szCommand, then delete the node.
-   //
-   if (i && !pAssociateFileDlgInfo->DDEInfo[i].szCommand[0]) {
-      dwError = RegNodeDelete(HKEY_CLASSES_ROOT, szKey);
-      return dwError;
-   }
+    //
+    // If we are not writing the main command (open) and
+    // there is no szCommand, then delete the node.
+    //
+    if (i && !pAssociateFileDlgInfo->DDEInfo[i].szCommand[0]) {
+        dwError = RegNodeDelete(HKEY_CLASSES_ROOT, szKey);
+        return dwError;
+    }
 
-   //
-   // Save this point in the string since we will replace
-   // open with print.
-   //
-   iPoint = lstrlen(szKey);
-   lstrcat(szKey, szCommand);
+    //
+    // Save this point in the string since we will replace
+    // open with print.
+    //
+    iPoint = lstrlen(szKey);
+    lstrcat(szKey, szCommand);
 
-   dwSize = lstrlen(pAssociateFileDlgInfo->DDEInfo[i].szCommand) *
-      sizeof(*pAssociateFileDlgInfo->DDEInfo[i].szCommand);
+    dwSize =
+        lstrlen(pAssociateFileDlgInfo->DDEInfo[i].szCommand) * sizeof(*pAssociateFileDlgInfo->DDEInfo[i].szCommand);
 
-   dwError = RegSetValue(HKEY_CLASSES_ROOT,
-      szKey,
-      REG_SZ,
-      pAssociateFileDlgInfo->DDEInfo[i].szCommand,
-      dwSize);
+    dwError = RegSetValue(HKEY_CLASSES_ROOT, szKey, REG_SZ, pAssociateFileDlgInfo->DDEInfo[i].szCommand, dwSize);
 
-   ERRORCHECK;
+    ERRORCHECK;
 
-   lstrcpy(&szKey[iPoint],szDDEExec);
+    lstrcpy(&szKey[iPoint], szDDEExec);
 
-   if (!pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE) {
-      dwError = RegNodeDelete(HKEY_CLASSES_ROOT, szKey);
-      return dwError;
-   }
+    if (!pAssociateFileDlgInfo->DDEInfo[i].bUsesDDE) {
+        dwError = RegNodeDelete(HKEY_CLASSES_ROOT, szKey);
+        return dwError;
+    }
 
-   DDEREGSET(pAssociateFileDlgInfo->DDEInfo[i].szDDEMesg);
-   ERRORCHECK;
+    DDEREGSET(pAssociateFileDlgInfo->DDEInfo[i].szDDEMesg);
+    ERRORCHECK;
 
-   iPoint = lstrlen(szKey);
-   lstrcat(szKey, szApp);
+    iPoint = lstrlen(szKey);
+    lstrcat(szKey, szApp);
 
-   DDEREGSET(pAssociateFileDlgInfo->DDEInfo[i].szDDEApp);
-   ERRORCHECK;
+    DDEREGSET(pAssociateFileDlgInfo->DDEInfo[i].szDDEApp);
+    ERRORCHECK;
 
-   lstrcpy(&szKey[iPoint],szTopic);
+    lstrcpy(&szKey[iPoint], szTopic);
 
-   DDEREGSET(pAssociateFileDlgInfo->DDEInfo[i].szDDETopic);
-   ERRORCHECK;
+    DDEREGSET(pAssociateFileDlgInfo->DDEInfo[i].szDDETopic);
+    ERRORCHECK;
 
-   lstrcpy(&szKey[iPoint],szIFExec);
+    lstrcpy(&szKey[iPoint], szIFExec);
 
-   if (!pAssociateFileDlgInfo->DDEInfo[i].szDDENotRun[0]) {
+    if (!pAssociateFileDlgInfo->DDEInfo[i].szDDENotRun[0]) {
+        dwError = RegNodeDelete(HKEY_CLASSES_ROOT, szKey);
+    } else {
+        DDEREGSET(pAssociateFileDlgInfo->DDEInfo[i].szDDENotRun);
+    }
 
-      dwError = RegNodeDelete(HKEY_CLASSES_ROOT, szKey);
-   } else  {
-
-      DDEREGSET(pAssociateFileDlgInfo->DDEInfo[i].szDDENotRun);
-   }
-
-   return dwError;
+    return dwError;
 }
 
 #undef DDEREGSET
@@ -2822,10 +2570,7 @@ DDEWrite(PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT i)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-ActionUpdate(HWND hDlg,
-   PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
-{
+VOID ActionUpdate(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo) {
     INT i;
 
     i = (INT)SendDlgItemMessage(hDlg, IDD_ACTION, CB_GETCURSEL, 0, 0L);
@@ -2834,28 +2579,20 @@ ActionUpdate(HWND hDlg,
     // Update out internal variable
     //
     pAssociateFileDlgInfo->iAction = i;
-    SetDlgItemText( hDlg,
-                    IDD_COMMAND,
-                    pAssociateFileDlgInfo->DDEInfo[i].szCommand );
+    SetDlgItemText(hDlg, IDD_COMMAND, pAssociateFileDlgInfo->DDEInfo[i].szCommand);
 
     DDEUpdate(hDlg, pAssociateFileDlgInfo, i);
 }
 
+VOID ActionDlgRead(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo) {
+    INT iAction = pAssociateFileDlgInfo->iAction;
 
-VOID
-ActionDlgRead(HWND hDlg,
-   PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
-{
-   INT iAction = pAssociateFileDlgInfo->iAction;
+    GetDlgItemText(
+        hDlg, IDD_COMMAND, pAssociateFileDlgInfo->DDEInfo[iAction].szCommand,
+        COUNTOF(pAssociateFileDlgInfo->DDEInfo[iAction].szCommand));
 
-   GetDlgItemText(hDlg, IDD_COMMAND,
-      pAssociateFileDlgInfo->DDEInfo[iAction].szCommand,
-      COUNTOF(pAssociateFileDlgInfo->DDEInfo[iAction].szCommand));
-
-   DDEDlgRead(hDlg, pAssociateFileDlgInfo, iAction);
+    DDEDlgRead(hDlg, pAssociateFileDlgInfo, iAction);
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -2881,71 +2618,62 @@ ActionDlgRead(HWND hDlg,
 //
 /////////////////////////////////////////////////////////////////////
 
+VOID DDEDlgRead(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT iAction) {
+    if (!pAssociateFileDlgInfo->DDEInfo[iAction].bUsesDDE)
+        return;
 
-VOID
-DDEDlgRead(HWND hDlg,
-   PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo,
-   INT iAction)
-{
-   if (!pAssociateFileDlgInfo->DDEInfo[iAction].bUsesDDE)
-      return;
+    GetDlgItemText(
+        hDlg, IDD_DDEMESG, pAssociateFileDlgInfo->DDEInfo[iAction].szDDEMesg,
+        COUNTOF(pAssociateFileDlgInfo->DDEInfo[iAction].szDDEMesg));
 
-   GetDlgItemText(hDlg, IDD_DDEMESG, pAssociateFileDlgInfo->DDEInfo[iAction].szDDEMesg,
-      COUNTOF(pAssociateFileDlgInfo->DDEInfo[iAction].szDDEMesg));
+    GetDlgItemText(
+        hDlg, IDD_DDEAPP, pAssociateFileDlgInfo->DDEInfo[iAction].szDDEApp,
+        COUNTOF(pAssociateFileDlgInfo->DDEInfo[iAction].szDDEApp));
 
-   GetDlgItemText(hDlg, IDD_DDEAPP, pAssociateFileDlgInfo->DDEInfo[iAction].szDDEApp,
-      COUNTOF(pAssociateFileDlgInfo->DDEInfo[iAction].szDDEApp));
+    GetDlgItemText(
+        hDlg, IDD_DDENOTRUN, pAssociateFileDlgInfo->DDEInfo[iAction].szDDENotRun,
+        COUNTOF(pAssociateFileDlgInfo->DDEInfo[iAction].szDDENotRun));
 
-   GetDlgItemText(hDlg, IDD_DDENOTRUN, pAssociateFileDlgInfo->DDEInfo[iAction].szDDENotRun,
-      COUNTOF(pAssociateFileDlgInfo->DDEInfo[iAction].szDDENotRun));
-
-   GetDlgItemText(hDlg, IDD_DDETOPIC, pAssociateFileDlgInfo->DDEInfo[iAction].szDDETopic,
-      COUNTOF(pAssociateFileDlgInfo->DDEInfo[iAction].szDDETopic));
+    GetDlgItemText(
+        hDlg, IDD_DDETOPIC, pAssociateFileDlgInfo->DDEInfo[iAction].szDDETopic,
+        COUNTOF(pAssociateFileDlgInfo->DDEInfo[iAction].szDDETopic));
 }
 
-VOID
-DDEUpdate(HWND hDlg,
-   PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo,
-   INT iAction)
-{
-   BOOL bEnable;
+VOID DDEUpdate(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo, INT iAction) {
+    BOOL bEnable;
 
-   if ( pAssociateFileDlgInfo->DDEInfo[iAction].bUsesDDE ) {
-      // Signal on
-      bEnable = TRUE;
+    if (pAssociateFileDlgInfo->DDEInfo[iAction].bUsesDDE) {
+        // Signal on
+        bEnable = TRUE;
 
-      SetDlgItemText(hDlg, IDD_DDEMESG, pAssociateFileDlgInfo->DDEInfo[iAction].szDDEMesg);
-      SetDlgItemText(hDlg, IDD_DDEAPP, pAssociateFileDlgInfo->DDEInfo[iAction].szDDEApp);
-      SetDlgItemText(hDlg, IDD_DDENOTRUN, pAssociateFileDlgInfo->DDEInfo[iAction].szDDENotRun);
-      SetDlgItemText(hDlg, IDD_DDETOPIC, pAssociateFileDlgInfo->DDEInfo[iAction].szDDETopic);
-   } else {
-      bEnable = FALSE;
+        SetDlgItemText(hDlg, IDD_DDEMESG, pAssociateFileDlgInfo->DDEInfo[iAction].szDDEMesg);
+        SetDlgItemText(hDlg, IDD_DDEAPP, pAssociateFileDlgInfo->DDEInfo[iAction].szDDEApp);
+        SetDlgItemText(hDlg, IDD_DDENOTRUN, pAssociateFileDlgInfo->DDEInfo[iAction].szDDENotRun);
+        SetDlgItemText(hDlg, IDD_DDETOPIC, pAssociateFileDlgInfo->DDEInfo[iAction].szDDETopic);
+    } else {
+        bEnable = FALSE;
 
-      SetDlgItemText(hDlg, IDD_DDEMESG, szNULL);
-      SetDlgItemText(hDlg, IDD_DDEAPP, szNULL);
-      SetDlgItemText(hDlg, IDD_DDENOTRUN, szNULL);
-      SetDlgItemText(hDlg, IDD_DDETOPIC, szNULL);
-   }
+        SetDlgItemText(hDlg, IDD_DDEMESG, szNULL);
+        SetDlgItemText(hDlg, IDD_DDEAPP, szNULL);
+        SetDlgItemText(hDlg, IDD_DDENOTRUN, szNULL);
+        SetDlgItemText(hDlg, IDD_DDETOPIC, szNULL);
+    }
 
+    SendDlgItemMessage(hDlg, IDD_DDE, BM_SETCHECK, bEnable, 0L);
 
-   SendDlgItemMessage(hDlg, IDD_DDE, BM_SETCHECK, bEnable, 0L);
+    if (!pAssociateFileDlgInfo->bReadOnly) {
+        EnableWindow(GetDlgItem(hDlg, IDD_DDEMESG), bEnable);
+        EnableWindow(GetDlgItem(hDlg, IDD_DDEAPP), bEnable);
+        EnableWindow(GetDlgItem(hDlg, IDD_DDENOTRUN), bEnable);
+        EnableWindow(GetDlgItem(hDlg, IDD_DDETOPIC), bEnable);
 
-   if (!pAssociateFileDlgInfo->bReadOnly) {
-      EnableWindow(GetDlgItem(hDlg, IDD_DDEMESG), bEnable);
-      EnableWindow(GetDlgItem(hDlg, IDD_DDEAPP), bEnable);
-      EnableWindow(GetDlgItem(hDlg, IDD_DDENOTRUN), bEnable);
-      EnableWindow(GetDlgItem(hDlg, IDD_DDETOPIC), bEnable);
-
-      EnableWindow(GetDlgItem(hDlg, IDD_DDEMESGTEXT), bEnable);
-      EnableWindow(GetDlgItem(hDlg, IDD_DDEAPPTEXT), bEnable);
-      EnableWindow(GetDlgItem(hDlg, IDD_DDENOTRUNTEXT), bEnable);
-      EnableWindow(GetDlgItem(hDlg, IDD_DDETOPICTEXT), bEnable);
-      EnableWindow(GetDlgItem(hDlg, IDD_DDEOPTIONALTEXT), bEnable);
-   }
+        EnableWindow(GetDlgItem(hDlg, IDD_DDEMESGTEXT), bEnable);
+        EnableWindow(GetDlgItem(hDlg, IDD_DDEAPPTEXT), bEnable);
+        EnableWindow(GetDlgItem(hDlg, IDD_DDENOTRUNTEXT), bEnable);
+        EnableWindow(GetDlgItem(hDlg, IDD_DDETOPICTEXT), bEnable);
+        EnableWindow(GetDlgItem(hDlg, IDD_DDEOPTIONALTEXT), bEnable);
+    }
 }
-
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -2970,39 +2698,33 @@ DDEUpdate(HWND hDlg,
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-FileTypeGrow(PFILETYPE pFileType, UINT cchNewSiz)
-{
-   cchNewSiz = ((cchNewSiz-1)/FILETYPEBLOCK + 1) * FILETYPEBLOCK;
+BOOL FileTypeGrow(PFILETYPE pFileType, UINT cchNewSiz) {
+    cchNewSiz = ((cchNewSiz - 1) / FILETYPEBLOCK + 1) * FILETYPEBLOCK;
 
-   //
-   // If empty, initialize
-   //
-   if (!pFileType->cchBufSiz) {
+    //
+    // If empty, initialize
+    //
+    if (!pFileType->cchBufSiz) {
+        pFileType->cchBufSiz = cchNewSiz;
+        pFileType->lpszBuf = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(cchNewSiz));
 
-      pFileType->cchBufSiz = cchNewSiz;
-      pFileType->lpszBuf = (LPTSTR) LocalAlloc(LPTR,ByteCountOf(cchNewSiz));
+        if (!pFileType->lpszBuf)
+            return FALSE;
 
-      if (!pFileType->lpszBuf)
-          return FALSE;
+        return TRUE;
+    }
 
-      return TRUE;
-   }
+    //
+    // Grow the structure
+    //
+    pFileType->cchBufSiz = cchNewSiz;
+    pFileType->lpszBuf = (LPTSTR)LocalReAlloc(pFileType->lpszBuf, ByteCountOf(pFileType->cchBufSiz), LMEM_MOVEABLE);
 
-   //
-   // Grow the structure
-   //
-   pFileType->cchBufSiz = cchNewSiz;
-   pFileType->lpszBuf = (LPTSTR) LocalReAlloc(pFileType->lpszBuf,
-      ByteCountOf(pFileType->cchBufSiz), LMEM_MOVEABLE);
+    if (!pFileType->lpszBuf)
+        return FALSE;
 
-   if (!pFileType->lpszBuf)
-      return FALSE;
-
-   return TRUE;
+    return TRUE;
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3029,27 +2751,21 @@ FileTypeGrow(PFILETYPE pFileType, UINT cchNewSiz)
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-ExtLinkToFileType(PEXT pExt, LPTSTR lpszIdent)
-{
+BOOL ExtLinkToFileType(PEXT pExt, LPTSTR lpszIdent) {
     PFILETYPE pftCur;
     PFILETYPE pftNext;
 
-
-    if (CHAR_DOT == lpszIdent[0])
-    {
+    if (CHAR_DOT == lpszIdent[0]) {
         return (FALSE);
     }
 
     // Linear search of pFileTypeBase.
     // Slow, but that's ok.
 
-    for (pftCur = pFileTypeBase; pftCur; pftCur = pftNext)
-    {
+    for (pftCur = pFileTypeBase; pftCur; pftCur = pftNext) {
         pftNext = pftCur->next;
 
-        if (!lstrcmpi(pftCur->lpszBuf, lpszIdent))
-        {
+        if (!lstrcmpi(pftCur->lpszBuf, lpszIdent)) {
             //
             // Now link the ext to the pFileType
             //
@@ -3070,7 +2786,6 @@ ExtLinkToFileType(PEXT pExt, LPTSTR lpszIdent)
 
     return (FALSE);
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3096,28 +2811,20 @@ ExtLinkToFileType(PEXT pExt, LPTSTR lpszIdent)
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-AssociateFileDlgExtDelete(HWND hDlg,
-   PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
-{
+BOOL AssociateFileDlgExtDelete(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo) {
     PEXT pExt;
     INT i;
-
 
     GetDlgItemText(hDlg, IDD_EXT, pAssociateFileDlgInfo->szExt, COUNTOF(pAssociateFileDlgInfo->szExt));
     ExtClean(pAssociateFileDlgInfo->szExt);
 
-    i = (INT)SendDlgItemMessage( hDlg,
-                                 IDD_EXTLIST,
-                                 LB_FINDSTRINGEXACT,
-                                 (WPARAM)-1,
-                                 (LPARAM)&pAssociateFileDlgInfo->szExt[1]);
-    if (LB_ERR == i)
-    {
+    i = (INT)SendDlgItemMessage(
+        hDlg, IDD_EXTLIST, LB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)&pAssociateFileDlgInfo->szExt[1]);
+    if (LB_ERR == i) {
         return (FALSE);
     }
 
-    pExt = (PEXT) SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_GETITEMDATA, (WPARAM)i, 0L);
+    pExt = (PEXT)SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_GETITEMDATA, (WPARAM)i, 0L);
     pExt->bAdd = FALSE;
     pExt->bDelete = TRUE;
 
@@ -3167,127 +2874,112 @@ AssociateFileDlgExtDelete(HWND hDlg,
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-AssociateFileDlgExtAdd(HWND hDlg,
-   PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
-{
-   PEXT pExt;
-   PFILETYPE pFileType = pAssociateFileDlgInfo->pFileType;
-   INT i;
+BOOL AssociateFileDlgExtAdd(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo) {
+    PEXT pExt;
+    PFILETYPE pFileType = pAssociateFileDlgInfo->pFileType;
+    INT i;
 
-   // Get text
+    // Get text
 
-   GetDlgItemText(hDlg, IDD_EXT, pAssociateFileDlgInfo->szExt,
-      COUNTOF(pAssociateFileDlgInfo->szExt));
+    GetDlgItemText(hDlg, IDD_EXT, pAssociateFileDlgInfo->szExt, COUNTOF(pAssociateFileDlgInfo->szExt));
 
-   //
-   // Search through the known universe and beyond for intelligent
-   // life, or at least a matching extension
-   //
-   pExt = BaseExtFind(pAssociateFileDlgInfo->szExt);
+    //
+    // Search through the known universe and beyond for intelligent
+    // life, or at least a matching extension
+    //
+    pExt = BaseExtFind(pAssociateFileDlgInfo->szExt);
 
-   //
-   // BaseExtFind does a ExtClean, so don't do it here.
-   //
-   // ExtClean(pAssociateFileDlgInfo->szExt);
-   //
+    //
+    // BaseExtFind does a ExtClean, so don't do it here.
+    //
+    // ExtClean(pAssociateFileDlgInfo->szExt);
+    //
 
-   if (pExt) {
+    if (pExt) {
+        // If not deleted, we need to confirm with the user.
 
-      // If not deleted, we need to confirm with the user.
+        if (!pExt->bDelete) {
+            // Oops, already exists, and since we can safely assume
+            // That it belongs to some other pFileType, we must ask
+            // the user if we really can do this.
 
-      if (!pExt->bDelete) {
+            TCHAR szText[MAXPATHLEN];
+            TCHAR szTitle[MAXPATHLEN];
+            TCHAR szTemp[MAXPATHLEN];
 
-         // Oops, already exists, and since we can safely assume
-         // That it belongs to some other pFileType, we must ask
-         // the user if we really can do this.
+            //
+            // If it's already associated to something that's
+            // NOT deleted, warn the user.
+            //
+            if (pExt->pFileType) {
+                LoadString(hAppInstance, IDS_ADDEXTTITLE, szTitle, COUNTOF(szTitle));
+                LoadString(hAppInstance, IDS_ADDEXTTEXT, szTemp, COUNTOF(szTemp));
 
-         TCHAR szText[MAXPATHLEN];
-         TCHAR szTitle[MAXPATHLEN];
-         TCHAR szTemp[MAXPATHLEN];
+                wsprintf(szText, szTemp, pExt->szExt, &pExt->pFileType->lpszBuf[pExt->pFileType->uDesc]);
 
-         //
-         // If it's already associated to something that's
-         // NOT deleted, warn the user.
-         //
-         if (pExt->pFileType) {
-
-            LoadString(hAppInstance, IDS_ADDEXTTITLE, szTitle, COUNTOF(szTitle));
-            LoadString(hAppInstance, IDS_ADDEXTTEXT, szTemp, COUNTOF(szTemp));
-
-            wsprintf(szText, szTemp,
-               pExt->szExt,
-               &pExt->pFileType->lpszBuf[pExt->pFileType->uDesc]);
-
-            if (IDYES != MessageBox(hDlg, szText, szTitle, MB_TASKMODAL|MB_YESNO|MB_ICONEXCLAMATION)) {
-               goto Fail;
+                if (IDYES != MessageBox(hDlg, szText, szTitle, MB_TASKMODAL | MB_YESNO | MB_ICONEXCLAMATION)) {
+                    goto Fail;
+                }
+            } else {
+                // !! LATER  associated with .exe, not friendly !!
             }
-         } else {
+        }
 
-            // !! LATER  associated with .exe, not friendly !!
-         }
-      }
+        //
+        // Is this extension already associated with a filetype?
+        // (Even if this extension was already "deleted.")
+        //
+        if (pExt->pFileType) {
+            //
+            // split it out
+            //
+            ExtDelink(pExt);
+        }
 
-      //
-      // Is this extension already associated with a filetype?
-      // (Even if this extension was already "deleted.")
-      //
-      if (pExt->pFileType) {
-         //
-         // split it out
-         //
-         ExtDelink(pExt);
-      }
+        //
+        // Relink into pftExt chain
+        //
 
-      //
-      // Relink into pftExt chain
-      //
+        ExtLink(pExt, pFileType);
 
-      ExtLink(pExt, pFileType);
+        pExt->bAdd = TRUE;
+        pExt->bDelete = FALSE;
 
-      pExt->bAdd = TRUE;
-      pExt->bDelete = FALSE;
+    } else {
+        // Ok, doesn't exist so let's just throw it in.
+        pExt = (PEXT)LocalAlloc(LPTR, sizeof(EXT));
+        if (!pExt)
+            return FALSE;
 
-   } else {
+        lstrcpy(pExt->szExt, pAssociateFileDlgInfo->szExt);
 
-      // Ok, doesn't exist so let's just throw it in.
-      pExt = (PEXT)LocalAlloc (LPTR, sizeof(EXT));
-      if (!pExt)
-         return FALSE;
+        // Set it's flags
+        pExt->bAdd = TRUE;
+        pExt->bDelete = FALSE;
 
-      lstrcpy(pExt->szExt,pAssociateFileDlgInfo->szExt);
+        // Now link it up
+        ExtLink(pExt, pFileType);
 
-      // Set it's flags
-      pExt->bAdd = TRUE;
-      pExt->bDelete = FALSE;
+        // Since it's new, no original owner
+        pExt->pftOrig = NULL;
 
-      // Now link it up
-      ExtLink(pExt, pFileType);
+        // Now put it in pExtBase
+        pExt->next = pExtBase;
+        pExtBase = pExt;
+    }
 
-      // Since it's new, no original owner
-      pExt->pftOrig = NULL;
+    // Success!  Now add it into the listbox!
 
-      // Now put it in pExtBase
-      pExt->next = pExtBase;
-      pExtBase = pExt;
-   }
+    CharLower(&pExt->szExt[1]);
+    i = (INT)SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_ADDSTRING, 0, (LPARAM)&pExt->szExt[1]);
 
-   // Success!  Now add it into the listbox!
+    SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_SETITEMDATA, i, (LPARAM)pExt);
 
-   CharLower(&pExt->szExt[1]);
-   i = (INT) SendDlgItemMessage(hDlg,IDD_EXTLIST,
-      LB_ADDSTRING,0,(LPARAM)&pExt->szExt[1]);
-
-   SendDlgItemMessage(hDlg, IDD_EXTLIST, LB_SETITEMDATA, i, (LPARAM)pExt);
-
-   return TRUE;
+    return TRUE;
 
 Fail:
-   return FALSE;
+    return FALSE;
 }
-
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3315,45 +3007,34 @@ Fail:
 //
 /////////////////////////////////////////////////////////////////////
 
-
 DWORD
-RegExtAdd(HWND hDlg, HKEY hk, PEXT pExt, PFILETYPE pFileType)
-{
+RegExtAdd(HWND hDlg, HKEY hk, PEXT pExt, PFILETYPE pFileType) {
     DWORD dwError;
 
-   
-    if (!pExt)
-    {
+    if (!pExt) {
         return (ERROR_SUCCESS);
     }
-   
-    if (pExt->pftOrig == pFileType)
-    {
+
+    if (pExt->pftOrig == pFileType) {
         pExt->bAdd = FALSE;
         pExt->bDelete = FALSE;
-   
+
         return (ERROR_SUCCESS);
     }
-   
+
     // Now add it to the parent IDD_EXT if not new
-   
+
     dwError = RegExtAddHelper(hk, pExt->szExt, pFileType);
-   
-    if (ERROR_SUCCESS != dwError)
-    {
+
+    if (ERROR_SUCCESS != dwError) {
         return (dwError);
     }
-   
-    if (!pExt->pftOrig)
-    {
+
+    if (!pExt->pftOrig) {
         CharLower(&pExt->szExt[1]);
-        SendDlgItemMessage( hDlg,
-                            IDD_EXT,
-                            CB_ADDSTRING,
-                            0,
-                            (LPARAM) &pExt->szExt[1] );
+        SendDlgItemMessage(hDlg, IDD_EXT, CB_ADDSTRING, 0, (LPARAM)&pExt->szExt[1]);
     }
-   
+
     //
     // Now we set this because it is written in the registry.
     // Note that above we didn't write if this was set correctly.
@@ -3362,20 +3043,14 @@ RegExtAdd(HWND hDlg, HKEY hk, PEXT pExt, PFILETYPE pFileType)
 
     pExt->bAdd = FALSE;
     pExt->bDelete = FALSE;
-   
+
     return (dwError);
 }
 
 DWORD
-RegExtAddHelper(HKEY hk, LPTSTR lpszExt, PFILETYPE pFileType)
-{
-   return ( (DWORD) RegSetValue( hk,
-                                 lpszExt,
-                                 REG_SZ,
-                                 pFileType->lpszBuf,
-                                 pFileType->uDesc + 1 ) );
+RegExtAddHelper(HKEY hk, LPTSTR lpszExt, PFILETYPE pFileType) {
+    return ((DWORD)RegSetValue(hk, lpszExt, REG_SZ, pFileType->lpszBuf, pFileType->uDesc + 1));
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3408,45 +3083,35 @@ RegExtAddHelper(HKEY hk, LPTSTR lpszExt, PFILETYPE pFileType)
 /////////////////////////////////////////////////////////////////////
 
 DWORD
-RegExtDelete(HWND hDlg, HKEY hk, PEXT pExt)
-{
+RegExtDelete(HWND hDlg, HKEY hk, PEXT pExt) {
     DWORD dwError;
     INT i;
     PEXT pExt2;
 
-
-    if (!pExt)
-    {
+    if (!pExt) {
         return (ERROR_SUCCESS);
     }
-   
+
     //
     // Axe it in winini
     //
     WriteProfileString(szExtensions, pExt->szExt + 1, NULL);
-   
-    if (!pExt->pftOrig)
-    {
+
+    if (!pExt->pftOrig) {
         //
         // Doesn't exist in registry
         //
         return (ERROR_SUCCESS);
     }
-   
+
     dwError = RegNodeDelete(hk, pExt->szExt);
-   
-    if (ERROR_SUCCESS == dwError)
-    {
-        i = (INT)SendDlgItemMessage( hDlg,
-                                     IDD_EXT,
-                                     CB_FINDSTRINGEXACT,
-                                     (WPARAM)-1,
-                                     (LPARAM)&pExt->szExt[1] );
-        if (CB_ERR != i)
-        {
+
+    if (ERROR_SUCCESS == dwError) {
+        i = (INT)SendDlgItemMessage(hDlg, IDD_EXT, CB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)&pExt->szExt[1]);
+        if (CB_ERR != i) {
             SendDlgItemMessage(hDlg, IDD_EXT, CB_DELETESTRING, i, 0L);
         }
-       
+
         //
         // No longer associated with a filetype
         //
@@ -3455,15 +3120,11 @@ RegExtDelete(HWND hDlg, HKEY hk, PEXT pExt)
         //
         // Remove from backbone
         //
-        if (pExt == pExtBase)
-        {
+        if (pExt == pExtBase) {
             pExtBase = pExt->next;
-        }
-        else
-        {
+        } else {
             pExt2 = pExtBase;
-            while (pExt2->next != pExt)
-            {
+            while (pExt2->next != pExt) {
                 pExt2 = pExt2->next;
             }
             pExt2->next = pExt->next;
@@ -3471,10 +3132,9 @@ RegExtDelete(HWND hDlg, HKEY hk, PEXT pExt)
 
         ExtFree(pExt);
     }
-   
+
     return (dwError);
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3500,52 +3160,43 @@ RegExtDelete(HWND hDlg, HKEY hk, PEXT pExt)
 /////////////////////////////////////////////////////////////////////
 
 DWORD
-RegNodeDelete(HKEY hk, LPTSTR lpszKey)
-{
+RegNodeDelete(HKEY hk, LPTSTR lpszKey) {
     HKEY hkNode;
     DWORD dwError;
     TCHAR szKey[MAXPATHLEN];
-   
-   
+
     dwError = RegOpenKey(hk, lpszKey, &hkNode);
-   
-    if (ERROR_SUCCESS != dwError)
-    {
-        if (ERROR_FILE_NOT_FOUND == dwError)
-        {
+
+    if (ERROR_SUCCESS != dwError) {
+        if (ERROR_FILE_NOT_FOUND == dwError) {
             dwError = ERROR_SUCCESS;
         }
-   
-        return (dwError);
-    }
-   
-    // RegEnum key and recurse...
-   
-    while (TRUE)
-    {
-        dwError = RegEnumKey(hkNode, 0, szKey, COUNTOF(szKey));
-        if (dwError)
-        {
-            break;
-        }
-   
-        dwError = RegNodeDelete(hkNode, szKey);
-        if (dwError)
-        {
-            break;
-        }
-    }
-   
-    RegCloseKey(hkNode);
-   
-    if (ERROR_NO_MORE_ITEMS != dwError)
-    {
-        return (dwError);
-    }
-   
-    return ( RegDeleteKey(hk, lpszKey) );
-}
 
+        return (dwError);
+    }
+
+    // RegEnum key and recurse...
+
+    while (TRUE) {
+        dwError = RegEnumKey(hkNode, 0, szKey, COUNTOF(szKey));
+        if (dwError) {
+            break;
+        }
+
+        dwError = RegNodeDelete(hkNode, szKey);
+        if (dwError) {
+            break;
+        }
+    }
+
+    RegCloseKey(hkNode);
+
+    if (ERROR_NO_MORE_ITEMS != dwError) {
+        return (dwError);
+    }
+
+    return (RegDeleteKey(hk, lpszKey));
+}
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3569,30 +3220,23 @@ RegNodeDelete(HKEY hk, LPTSTR lpszKey)
 //
 /////////////////////////////////////////////////////////////////////
 
-PEXT
-BaseExtFind(LPTSTR lpszExt)
-{
+PEXT BaseExtFind(LPTSTR lpszExt) {
     PEXT pExt;
     PEXT pExtNext;
-
 
     // Clean up lpszExt
     ExtClean(lpszExt);
 
-    for (pExt = pExtBase; pExt; pExt = pExtNext)
-    {
+    for (pExt = pExtBase; pExt; pExt = pExtNext) {
         pExtNext = pExt->next;
 
-        if (!lstrcmpi(pExt->szExt, lpszExt))
-        {
+        if (!lstrcmpi(pExt->szExt, lpszExt)) {
             return (pExt);
         }
     }
 
     return (NULL);
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3617,36 +3261,26 @@ BaseExtFind(LPTSTR lpszExt)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-FileAssociateErrorCheck(HWND hwnd,
-   UINT idsTitle,
-   UINT idsText,
-   DWORD dwError)
-{
+VOID FileAssociateErrorCheck(HWND hwnd, UINT idsTitle, UINT idsText, DWORD dwError) {
     WCHAR szTitle[MAXTITLELEN];
     WCHAR szText[MAXMESSAGELEN];
     BOOL bNullString = TRUE;
-   
 
-    if (ERROR_SUCCESS == dwError)
-    {
-       return;
+    if (ERROR_SUCCESS == dwError) {
+        return;
     }
-   
+
     LoadString(hAppInstance, idsTitle, szTitle, COUNTOF(szTitle));
-   
-    if (idsText)
-    {
-        if (LoadString(hAppInstance, idsText, szText, COUNTOF(szText)))
-        {
+
+    if (idsText) {
+        if (LoadString(hAppInstance, idsText, szText, COUNTOF(szText))) {
             bNullString = FALSE;
         }
     }
-   
+
     FormatError(bNullString, szText, COUNTOF(szText), dwError);
     MessageBox(hwnd, szText, szTitle, MB_OK | MB_ICONSTOP);
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3674,85 +3308,75 @@ FileAssociateErrorCheck(HWND hwnd,
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-AssociateDlgInit(HWND hDlg, LPTSTR lpszExt, INT iSel)
-{
-   INT iItem;
-   PEXT pExtBuf;
-   PEXT pExtNext;
-   PFILETYPE pFileType;
-   INT iNum;
+BOOL AssociateDlgInit(HWND hDlg, LPTSTR lpszExt, INT iSel) {
+    INT iItem;
+    PEXT pExtBuf;
+    PEXT pExtNext;
+    PFILETYPE pFileType;
+    INT iNum;
 
-   LoadString(hAppInstance, IDS_ASSOCNONE, szNone, COUNTOF(szNone));
+    LoadString(hAppInstance, IDS_ASSOCNONE, szNone, COUNTOF(szNone));
 
-   // Read in the database
+    // Read in the database
 
-   if (!RegLoad()) {
-      FileAssociateErrorCheck(hwndFrame, IDS_EXTTITLE, 0L,GetLastError());
+    if (!RegLoad()) {
+        FileAssociateErrorCheck(hwndFrame, IDS_EXTTITLE, 0L, GetLastError());
 
-      RegUnload();
-      return FALSE;
-   }
+        RegUnload();
+        return FALSE;
+    }
 
-   //
-   // Eliminate messy flicker
-   //
-   SendDlgItemMessage(hDlg, IDD_CLASSLIST, WM_SETREDRAW, FALSE, 0L);
+    //
+    // Eliminate messy flicker
+    //
+    SendDlgItemMessage(hDlg, IDD_CLASSLIST, WM_SETREDRAW, FALSE, 0L);
 
-   // Clear the boxes
-   SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_RESETCONTENT, 0, 0L);
-   SendDlgItemMessage(hDlg, IDD_EXT, CB_RESETCONTENT, 0, 0L);
+    // Clear the boxes
+    SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_RESETCONTENT, 0, 0L);
+    SendDlgItemMessage(hDlg, IDD_EXT, CB_RESETCONTENT, 0, 0L);
 
-   if (lpszExt) {
-      ExtClean(lpszExt);
-      SetDlgItemText(hDlg, IDD_EXT, lpszExt+1);
-   }
+    if (lpszExt) {
+        ExtClean(lpszExt);
+        SetDlgItemText(hDlg, IDD_EXT, lpszExt + 1);
+    }
 
-   // Add all extensions into dropdown cb
-   for (pExtBuf = pExtBase; pExtBuf; pExtBuf = pExtNext)
-   {
-      pExtNext = pExtBuf->next;
+    // Add all extensions into dropdown cb
+    for (pExtBuf = pExtBase; pExtBuf; pExtBuf = pExtNext) {
+        pExtNext = pExtBuf->next;
 
-      // Only if not deleted
+        // Only if not deleted
 
-      if (!pExtBuf->bDelete)
-      {
-         CharLower(&pExtBuf->szExt[1]);
-         iItem = (INT) SendDlgItemMessage(hDlg,IDD_EXT,
-            CB_ADDSTRING,0,(LPARAM)&pExtBuf->szExt[1]);
-      }
-   }
+        if (!pExtBuf->bDelete) {
+            CharLower(&pExtBuf->szExt[1]);
+            iItem = (INT)SendDlgItemMessage(hDlg, IDD_EXT, CB_ADDSTRING, 0, (LPARAM)&pExtBuf->szExt[1]);
+        }
+    }
 
-   // Put in the entries in the listbox
+    // Put in the entries in the listbox
 
-   for (iNum = 0,pFileType=pFileTypeBase;
-        pFileType;
-        pFileType=pFileType->next, iNum++)
-   {
-      ClassListFileTypeAdd(hDlg, pFileType);
-   }
+    for (iNum = 0, pFileType = pFileTypeBase; pFileType; pFileType = pFileType->next, iNum++) {
+        ClassListFileTypeAdd(hDlg, pFileType);
+    }
 
-   // Add the (None) entry at the beginning.
-   SendDlgItemMessage(hDlg,IDD_CLASSLIST, LB_INSERTSTRING,0,(LPARAM)szNone);
+    // Add the (None) entry at the beginning.
+    SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_INSERTSTRING, 0, (LPARAM)szNone);
 
-   if (-1 == iSel) {
-      UpdateSelectionExt(hDlg, FALSE);
-   } else {
-      SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL,
-         (iSel <= iNum) ? iSel: 0, 0L);
-   }
+    if (-1 == iSel) {
+        UpdateSelectionExt(hDlg, FALSE);
+    } else {
+        SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETCURSEL, (iSel <= iNum) ? iSel : 0, 0L);
+    }
 
-   //
-   // Eliminate messy flicker; now redraw
-   //
-   SendDlgItemMessage(hDlg, IDD_CLASSLIST, WM_SETREDRAW, TRUE, 0L);
-   InvalidateRect(GetDlgItem(hDlg, IDD_CLASSLIST), NULL, TRUE);
+    //
+    // Eliminate messy flicker; now redraw
+    //
+    SendDlgItemMessage(hDlg, IDD_CLASSLIST, WM_SETREDRAW, TRUE, 0L);
+    InvalidateRect(GetDlgItem(hDlg, IDD_CLASSLIST), NULL, TRUE);
 
-   UpdateWindow(GetDlgItem(hDlg, IDD_CLASSLIST));
+    UpdateWindow(GetDlgItem(hDlg, IDD_CLASSLIST));
 
-   return TRUE;
+    return TRUE;
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3778,15 +3402,12 @@ AssociateDlgInit(HWND hDlg, LPTSTR lpszExt, INT iSel)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-ExtClean(LPTSTR lpszExt)
-{
+VOID ExtClean(LPTSTR lpszExt) {
     LPTSTR p;
     TCHAR szExt[EXTSIZ + 1];
 
-
     // Kill off trailing spaces
-    for (p = &lpszExt[lstrlen(lpszExt)-1]; lpszExt<=p && CHAR_SPACE == *p; p--)
+    for (p = &lpszExt[lstrlen(lpszExt) - 1]; lpszExt <= p && CHAR_SPACE == *p; p--)
         ;
 
     *(++p) = CHAR_NULL;
@@ -3796,21 +3417,19 @@ ExtClean(LPTSTR lpszExt)
         ;
 
     // If NULL then zero and exit.
-    if (!*p)
-    {
+    if (!*p) {
         lpszExt[0] = CHAR_NULL;
         lpszExt[1] = CHAR_NULL;
         return;
     }
 
-    szExt[0]=CHAR_DOT;
+    szExt[0] = CHAR_DOT;
 
     lstrcpy(&szExt[1], p);
     lstrcpy(lpszExt, szExt);
 
     return;
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3842,52 +3461,35 @@ ExtClean(LPTSTR lpszExt)
 /////////////////////////////////////////////////////////////////////
 
 DWORD
-AssociateFileWrite(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
-{
+AssociateFileWrite(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo) {
     PEXT pExt;
     PEXT pExtNext;
     DWORD dwError;
     DWORD dwLastError;
 
-
-    dwError = FileTypeWrite( hDlg,
-                             pAssociateFileDlgInfo,
-                             HKEY_CLASSES_ROOT,
-                             szNULL );
-    if (DE_RETRY == dwError)
-    {
+    dwError = FileTypeWrite(hDlg, pAssociateFileDlgInfo, HKEY_CLASSES_ROOT, szNULL);
+    if (DE_RETRY == dwError) {
         return (DE_RETRY);
     }
 
-    FileAssociateErrorCheck( hDlg,
-                             IDS_EXTTITLE,
-                             IDS_FILETYPEADDERROR,
-                             dwError );
+    FileAssociateErrorCheck(hDlg, IDS_EXTTITLE, IDS_FILETYPEADDERROR, dwError);
     dwLastError = dwError;
 
     //
     // Traverse through pFileType and update everything
     //
-    for (pExt = pExtBase; pExt; pExt = pExtNext)
-    {
+    for (pExt = pExtBase; pExt; pExt = pExtNext) {
         pExtNext = pExt->next;
 
-        if (pExt->bAdd)
-        {
+        if (pExt->bAdd) {
             //
             // !! LATER !!
             // Handle dwError better... What is the status of the
             // pExt backbone and bAdd/bDelete?
             //
-            dwError = RegExtAdd( pAssociateFileDlgInfo->hDlg,
-                                 HKEY_CLASSES_ROOT,
-                                 pExt,
-                                 pExt->pFileType );
+            dwError = RegExtAdd(pAssociateFileDlgInfo->hDlg, HKEY_CLASSES_ROOT, pExt, pExt->pFileType);
 
-            FileAssociateErrorCheck( hDlg,
-                                     IDS_EXTTITLE,
-                                     IDS_EXTADDERROR,
-                                     dwError );
+            FileAssociateErrorCheck(hDlg, IDS_EXTTITLE, IDS_EXTADDERROR, dwError);
 
             if (dwError)
                 dwLastError = dwError;
@@ -3896,17 +3498,10 @@ AssociateFileWrite(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
             // Assume we hit something in the registry!
             //
             pAssociateFileDlgInfo->bRefresh = TRUE;
-        }
-        else if (pExt->bDelete)
-        {
-            dwError = RegExtDelete( pAssociateFileDlgInfo->hDlg,
-                                    HKEY_CLASSES_ROOT,
-                                    pExt );
+        } else if (pExt->bDelete) {
+            dwError = RegExtDelete(pAssociateFileDlgInfo->hDlg, HKEY_CLASSES_ROOT, pExt);
 
-            FileAssociateErrorCheck( hDlg,
-                                     IDS_EXTTITLE,
-                                     IDS_EXTDELERROR,
-                                     dwError );
+            FileAssociateErrorCheck(hDlg, IDS_EXTTITLE, IDS_EXTDELERROR, dwError);
 
             if (dwError)
                 dwLastError = dwError;
@@ -3922,7 +3517,6 @@ AssociateFileWrite(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
 
     return (dwLastError);
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3945,51 +3539,42 @@ AssociateFileWrite(HWND hDlg, PASSOCIATEFILEDLGINFO pAssociateFileDlgInfo)
 //
 /////////////////////////////////////////////////////////////////////
 
-INT
-ClassListFileTypeAdd(HWND hDlg, PFILETYPE pFileType)
-{
+INT ClassListFileTypeAdd(HWND hDlg, PFILETYPE pFileType) {
     PTCHAR p;
     INT iItem;
     TCHAR c, c2;
     BOOL bInQuotes;
-
 
     p = &pFileType->lpszBuf[pFileType->uExe];
 
     //
     // add closing paren
     //
-    for (iItem = 0, bInQuotes = FALSE; *p; p++, iItem++)
-    {
-        if (CHAR_SPACE == *p && !bInQuotes)
-        {
+    for (iItem = 0, bInQuotes = FALSE; *p; p++, iItem++) {
+        if (CHAR_SPACE == *p && !bInQuotes) {
             break;
         }
- 
-        if (CHAR_DQUOTE == *p)
-        {
+
+        if (CHAR_DQUOTE == *p) {
             bInQuotes = !bInQuotes;
         }
     }
 
     c = *p;
-    c2 = *(p+1);
+    c2 = *(p + 1);
 
     *p = CHAR_CLOSEPAREN;
-    *(p+1) = CHAR_NULL;
+    *(p + 1) = CHAR_NULL;
 
-    pFileType->uExeSpace = iItem+pFileType->uExe;
+    pFileType->uExeSpace = iItem + pFileType->uExe;
 
     //
     // Remove null and add space
     //
-    pFileType->lpszBuf[pFileType->uExe-2] = CHAR_SPACE;
+    pFileType->lpszBuf[pFileType->uExe - 2] = CHAR_SPACE;
 
-    iItem = (INT)SendDlgItemMessage( hDlg,
-                                     IDD_CLASSLIST,
-                                     LB_ADDSTRING,
-                                     0,
-                                     (LPARAM)&pFileType->lpszBuf[pFileType->uDesc] );
+    iItem =
+        (INT)SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_ADDSTRING, 0, (LPARAM)&pFileType->lpszBuf[pFileType->uDesc]);
 
     //
     // Restore paren to previous
@@ -3999,33 +3584,21 @@ ClassListFileTypeAdd(HWND hDlg, PFILETYPE pFileType)
 
     pFileType->lpszBuf[pFileType->uExe - 2] = CHAR_NULL;
 
-    SendDlgItemMessage( hDlg,
-                        IDD_CLASSLIST,
-                        LB_SETITEMDATA,
-                        iItem,
-                        (LPARAM) pFileType );
+    SendDlgItemMessage(hDlg, IDD_CLASSLIST, LB_SETITEMDATA, iItem, (LPARAM)pFileType);
 
     return (iItem);
 }
 
-
-VOID
-FileTypeFree(PFILETYPE pFileType)
-{
-    if (pFileType->lpszBuf)
-    {
+VOID FileTypeFree(PFILETYPE pFileType) {
+    if (pFileType->lpszBuf) {
         LocalFree(pFileType->lpszBuf);
     }
     LocalFree(pFileType);
 }
 
-
-VOID
-ExtFree(PEXT pExt)
-{
+VOID ExtFree(PEXT pExt) {
     LocalFree(pExt);
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -4053,33 +3626,27 @@ ExtFree(PEXT pExt)
 /////////////////////////////////////////////////////////////////////
 
 DWORD
-FileTypeAddString(PFILETYPE pFileType, LPTSTR lpstr, PUINT pcchOffset)
-{
+FileTypeAddString(PFILETYPE pFileType, LPTSTR lpstr, PUINT pcchOffset) {
     INT dwSize;
     INT dwLen;
-   
 
     dwLen = lstrlen(lpstr) + 1;
     dwSize = pFileType->cchBufSiz - *pcchOffset;
-   
-    if (dwSize <= dwLen)
-    {
-        if (!FileTypeGrow(pFileType, pFileType->cchBufSiz + dwLen))
-        {
-            return ( GetLastError() );
+
+    if (dwSize <= dwLen) {
+        if (!FileTypeGrow(pFileType, pFileType->cchBufSiz + dwLen)) {
+            return (GetLastError());
         }
-   
+
         dwSize = pFileType->cchBufSiz - *pcchOffset;
     }
-   
+
     lstrcpy(&pFileType->lpszBuf[*pcchOffset], lpstr);
-   
+
     *pcchOffset += dwLen;
-   
+
     return (ERROR_SUCCESS);
 }
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -4102,20 +3669,15 @@ FileTypeAddString(PFILETYPE pFileType, LPTSTR lpstr, PUINT pcchOffset)
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-ExtDupCheck(LPTSTR lpszExt, PEXT pExt)
-{
-    for (; pExt; pExt = pExt->next)
-    {
-        if (!lstrcmpi(lpszExt, pExt->szExt))
-        {
+BOOL ExtDupCheck(LPTSTR lpszExt, PEXT pExt) {
+    for (; pExt; pExt = pExt->next) {
+        if (!lstrcmpi(lpszExt, pExt->szExt)) {
             return TRUE;
         }
     }
 
     return (FALSE);
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -4143,75 +3705,65 @@ ExtDupCheck(LPTSTR lpszExt, PEXT pExt)
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-FileTypeDupIdentCheck(HWND hDlg, UINT uIDD_FOCUS, LPTSTR lpszIdent)
-{
-   PFILETYPE pft2;
-   PFILETYPE pft2Next;
-   BOOL bDup;
+BOOL FileTypeDupIdentCheck(HWND hDlg, UINT uIDD_FOCUS, LPTSTR lpszIdent) {
+    PFILETYPE pft2;
+    PFILETYPE pft2Next;
+    BOOL bDup;
 
-   INT iCount = 1;
-   PTCHAR p;
+    INT iCount = 1;
+    PTCHAR p;
 
-   //
-   // First remove all illegal backslashes
-   //
-   for (p=lpszIdent; *p; p++) {
-      if (CHAR_BACKSLASH == *p) {
-         *p = CHAR_COLON;
-      }
-   }
+    //
+    // First remove all illegal backslashes
+    //
+    for (p = lpszIdent; *p; p++) {
+        if (CHAR_BACKSLASH == *p) {
+            *p = CHAR_COLON;
+        }
+    }
 
-   do {
-      bDup = FALSE;
+    do {
+        bDup = FALSE;
 
-      for (pft2 = pFileTypeBase; pft2; pft2 = pft2Next)
-      {
-         pft2Next = pft2->next;
+        for (pft2 = pFileTypeBase; pft2; pft2 = pft2Next) {
+            pft2Next = pft2->next;
 
-         if (!lstrcmpi(pft2->lpszBuf,lpszIdent))
-         {
-            //
-            // Recreate new FileType
-            // But if > 0xfff, we're dead.
-            //
+            if (!lstrcmpi(pft2->lpszBuf, lpszIdent)) {
+                //
+                // Recreate new FileType
+                // But if > 0xfff, we're dead.
+                //
 
-            if ( iCount > MAX_PREFIX )
-            {
-               MyMessageBox(hDlg, IDS_EXTTITLE, IDS_FILETYPEDUPDESCERROR,
-                  MB_TASKMODAL|MB_OK|MB_ICONEXCLAMATION);
+                if (iCount > MAX_PREFIX) {
+                    MyMessageBox(
+                        hDlg, IDS_EXTTITLE, IDS_FILETYPEDUPDESCERROR, MB_TASKMODAL | MB_OK | MB_ICONEXCLAMATION);
 
-               // Set focus to IDD_DESC
-               SetFocus(GetDlgItem(hDlg, uIDD_FOCUS));
+                    // Set focus to IDD_DESC
+                    SetFocus(GetDlgItem(hDlg, uIDD_FOCUS));
 
-               return TRUE;
+                    return TRUE;
+                } else {
+                    wsprintf(szFileManPrefix, szFileManPrefixGen, iCount++);
+
+                    //
+                    // Copy the new number over;
+                    // Don't copy over the null terminator
+                    //
+                    StrNCpy(lpszIdent, szFileManPrefix, COUNTOF(szFileManPrefix) - 1);
+
+                    //
+                    // Set flag to recheck
+                    //
+                    bDup = TRUE;
+
+                    break;
+                }
             }
-            else
-            {
-               wsprintf(szFileManPrefix, szFileManPrefixGen, iCount++);
+        }
+    } while (bDup);
 
-               //
-               // Copy the new number over;
-               // Don't copy over the null terminator
-               //
-               StrNCpy(lpszIdent, szFileManPrefix, COUNTOF(szFileManPrefix) -1);
-
-               //
-               // Set flag to recheck
-               //
-               bDup = TRUE;
-
-               break;
-            }
-         }
-      }
-   } while (bDup);
-
-   return FALSE;
+    return FALSE;
 }
-
-
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -4238,126 +3790,106 @@ FileTypeDupIdentCheck(HWND hDlg, UINT uIDD_FOCUS, LPTSTR lpszIdent)
 /////////////////////////////////////////////////////////////////////
 
 DWORD
-CommandWrite(HWND hDlg, LPTSTR lpszExt, LPTSTR lpszCommand)
-{
-   TCHAR szIdentBuf[DESCSIZ+COUNTOF(szFileManPrefix)+COUNTOF(szShellOpenCommand)];
-   DWORD dwError;
-   UINT i;
-   DWORD cbData;
-   LPTSTR p, lpszIdent;
+CommandWrite(HWND hDlg, LPTSTR lpszExt, LPTSTR lpszCommand) {
+    TCHAR szIdentBuf[DESCSIZ + COUNTOF(szFileManPrefix) + COUNTOF(szShellOpenCommand)];
+    DWORD dwError;
+    UINT i;
+    DWORD cbData;
+    LPTSTR p, lpszIdent;
 
-   TCHAR szCommand[COMMANDSIZ];
+    TCHAR szCommand[COMMANDSIZ];
 
-   lstrcpy(szIdentBuf, szFileManPrefix);
+    lstrcpy(szIdentBuf, szFileManPrefix);
 
-   lstrcat(szIdentBuf, lpszCommand);
+    lstrcat(szIdentBuf, lpszCommand);
 
-   //
-   // Clean up ident
-   //
-   for(lpszIdent = szIdentBuf+lstrlen(szIdentBuf); lpszIdent != szIdentBuf;
-      lpszIdent--) {
+    //
+    // Clean up ident
+    //
+    for (lpszIdent = szIdentBuf + lstrlen(szIdentBuf); lpszIdent != szIdentBuf; lpszIdent--) {
+        if (CHAR_COLON == *lpszIdent || CHAR_BACKSLASH == *lpszIdent) {
+            lpszIdent++;
+            break;
+        }
+    }
 
-      if (CHAR_COLON == *lpszIdent || CHAR_BACKSLASH == *lpszIdent) {
-         lpszIdent++;
-         break;
-      }
-   }
+    p = StrChrQuote(lpszIdent, CHAR_SPACE);
+    if (p) {
+        *p = CHAR_NULL;
+    }
 
-   p = StrChrQuote(lpszIdent, CHAR_SPACE);
-   if (p) {
-      *p = CHAR_NULL;
-   }
+    //
+    // Write out \x\shell\open\command
+    //
+    if (FileTypeDupIdentCheck(hDlg, IDD_COMMAND, lpszIdent)) {
+        dwError = DE_RETRY;
+        goto Error;
+    }
 
-   //
-   // Write out \x\shell\open\command
-   //
-   if (FileTypeDupIdentCheck(hDlg, IDD_COMMAND, lpszIdent)) {
-      dwError = DE_RETRY;
-      goto Error;
-   }
+    i = lstrlen(lpszIdent);
+    lstrcat(lpszIdent, szShellOpenCommand);
 
-   i = lstrlen(lpszIdent);
-   lstrcat(lpszIdent, szShellOpenCommand);
+    //
+    // Beautify lpszCommand:  Add %1 if there isn't one,
+    // add .exe if that's missing too.
+    // Assumes space at end!
+    //
 
-   //
-   // Beautify lpszCommand:  Add %1 if there isn't one,
-   // add .exe if that's missing too.
-   // Assumes space at end!
-   //
+    if (!*GetExtension(lpszCommand)) {
+        //
+        // Be careful adding .exe to {c:\<directory>\<file> -p}
+        //
 
-   if (!*GetExtension(lpszCommand)) {
+        p = StrChrQuote(lpszCommand, CHAR_SPACE);
 
-      //
-      // Be careful adding .exe to {c:\<directory>\<file> -p}
-      //
+        if (p) {
+            *p = CHAR_NULL;
 
-      p = StrChrQuote(lpszCommand, CHAR_SPACE);
+            lstrcpy(szCommand, lpszCommand);
+            lstrcat(szCommand, szDotEXE);
 
-      if (p) {
+            *p = CHAR_SPACE;
+            lstrcat(szCommand, p);
 
-         *p = CHAR_NULL;
+            lpszCommand = szCommand;
 
-         lstrcpy(szCommand, lpszCommand);
-         lstrcat(szCommand, szDotEXE);
+        } else {
+            lstrcat(lpszCommand, szDotEXE);
+        }
+    }
 
-         *p = CHAR_SPACE;
-         lstrcat(szCommand, p);
+    lstrcat(lpszCommand, szSpacePercentOne);
 
-         lpszCommand = szCommand;
+    cbData = ByteCountOf(lstrlen(lpszCommand));
 
-      } else {
+    dwError = RegSetValue(HKEY_CLASSES_ROOT, lpszIdent, REG_SZ, lpszCommand, cbData);
 
-         lstrcat(lpszCommand, szDotEXE);
-      }
-   }
+    if (dwError)
+        goto Error;
 
-   lstrcat(lpszCommand, szSpacePercentOne);
+    p = GenerateFriendlyName(lpszCommand);
 
-   cbData = ByteCountOf(lstrlen(lpszCommand));
+    cbData = ByteCountOf(lstrlen(p));
 
-   dwError = RegSetValue(HKEY_CLASSES_ROOT,
-      lpszIdent,
-      REG_SZ,
-      lpszCommand,
-      cbData);
+    lpszIdent[i] = CHAR_NULL;
+    dwError = RegSetValue(HKEY_CLASSES_ROOT, lpszIdent, REG_SZ, p, cbData);
 
-   if (dwError)
-      goto Error;
+    if (dwError)
+        goto Error;
 
-   p = GenerateFriendlyName(lpszCommand);
+    //
+    // Now write extension
+    //
 
-   cbData = ByteCountOf(lstrlen(p));
-
-   lpszIdent[i] = CHAR_NULL;
-   dwError = RegSetValue(HKEY_CLASSES_ROOT,
-      lpszIdent,
-      REG_SZ,
-      p,
-      cbData);
-
-   if (dwError)
-      goto Error;
-
-   //
-   // Now write extension
-   //
-
-   dwError = RegSetValue(HKEY_CLASSES_ROOT,
-      lpszExt,
-      REG_SZ,
-      lpszIdent,
-      ByteCountOf(lstrlen(lpszIdent)));
+    dwError = RegSetValue(HKEY_CLASSES_ROOT, lpszExt, REG_SZ, lpszIdent, ByteCountOf(lstrlen(lpszIdent)));
 
 Error:
 
-   if (dwError && DE_RETRY != dwError) {
-
-      FileAssociateErrorCheck(hDlg, IDS_EXTTITLE, 0L, dwError);
-   }
-   return dwError;
+    if (dwError && DE_RETRY != dwError) {
+        FileAssociateErrorCheck(hDlg, IDS_EXTTITLE, 0L, dwError);
+    }
+    return dwError;
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -4379,36 +3911,28 @@ Error:
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-ExtDelink(PEXT pExt)
-{
+VOID ExtDelink(PEXT pExt) {
     PEXT pExt2;
-
 
     /*
      *  Update old pFileType->pExt if the one we are deleting
      *  happens to be the first one.
      */
-    if (pExt->pFileType->pExt == pExt) 
-    {
+    if (pExt->pFileType->pExt == pExt) {
         pExt->pFileType->pExt = pExt->pftNext;
-    }
-    else
-    {
+    } else {
         /*
          *  Not first pftExt so relink the previous one to
          *  the one following the current one.
          */
         pExt2 = pExt->pFileType->pExt;
-        while (pExt2->pftNext != pExt)
-        {
-             pExt2 = pExt2->pftNext;
+        while (pExt2->pftNext != pExt) {
+            pExt2 = pExt2->pftNext;
         }
 
         pExt2->pftNext = pExt->pftNext;
     }
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -4433,15 +3957,12 @@ ExtDelink(PEXT pExt)
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID
-ExtLink(PEXT pExt, PFILETYPE pFileType)
-{
+VOID ExtLink(PEXT pExt, PFILETYPE pFileType) {
     pExt->pFileType = pFileType;
 
     pExt->pftNext = pFileType->pExt;
     pFileType->pExt = pExt;
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -4458,27 +3979,22 @@ ExtLink(PEXT pExt, PFILETYPE pFileType)
 //
 // Assumes:
 //
-// Effects:  
+// Effects:
 //
 // Notes:
 //
 /////////////////////////////////////////////////////////////////////
 
 LPTSTR
-StrChrQuote(LPTSTR lpszString, TCHAR c)
-{
+StrChrQuote(LPTSTR lpszString, TCHAR c) {
     BOOL bInQuotes = FALSE;
 
-
-    while (*lpszString)
-    {
-        if (*lpszString == c && !bInQuotes)
-        {
+    while (*lpszString) {
+        if (*lpszString == c && !bInQuotes) {
             return (lpszString);
         }
 
-        if (CHAR_DQUOTE == *lpszString)
-        {
+        if (CHAR_DQUOTE == *lpszString) {
             bInQuotes = !bInQuotes;
         }
 
@@ -4487,7 +4003,6 @@ StrChrQuote(LPTSTR lpszString, TCHAR c)
 
     return (NULL);
 }
-
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -4513,30 +4028,22 @@ StrChrQuote(LPTSTR lpszString, TCHAR c)
 /////////////////////////////////////////////////////////////////////
 
 LPTSTR
-GenerateFriendlyName(LPTSTR lpszCommand)
-{
+GenerateFriendlyName(LPTSTR lpszCommand) {
     LPTSTR p, p2;
-
 
     /*
      *  Tighten up the friendly name by stripping down lpszCommand.
      *  Take last file spec and eliminate ext.
      */
-    for (p = lpszCommand + lstrlen(lpszCommand); p != lpszCommand; p--)
-    {
-        if (CHAR_COLON == *p || CHAR_BACKSLASH == *p)
-        {
+    for (p = lpszCommand + lstrlen(lpszCommand); p != lpszCommand; p--) {
+        if (CHAR_COLON == *p || CHAR_BACKSLASH == *p) {
             p++;
             break;
         }
     }
 
     p2 = p;
-    while ( (*p2) &&
-            (CHAR_DOT != *p2) &&
-            (CHAR_SPACE != *p2) &&
-            (CHAR_DQUOTE != *p2) )
-    {
+    while ((*p2) && (CHAR_DOT != *p2) && (CHAR_SPACE != *p2) && (CHAR_DQUOTE != *p2)) {
         p2++;
     }
 
@@ -4544,4 +4051,3 @@ GenerateFriendlyName(LPTSTR lpszCommand)
 
     return (p);
 }
-

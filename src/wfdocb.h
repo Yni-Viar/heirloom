@@ -32,5 +32,4 @@ LPTSTR DocEnum(PDOCENUM pDocEnum, PDWORD pdwParm);
 VOID DocCloseEnum(PDOCENUM pDocEnum);
 #endif
 
-#endif // ndef _WFDOCB_H
-
+#endif  // ndef _WFDOCB_H

@@ -12,7 +12,6 @@
 #include "winfile.h"
 #include "wnetcaps.h"
 
-
 /////////////////////////////////////////////////////////////////////
 //
 // Name:     WNetStat
@@ -34,74 +33,61 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL
-WNetStat(INT nIndex)
-{
-   static DWORD fdwRet = (DWORD)-1;
-   DWORD dwError;
+BOOL WNetStat(INT nIndex) {
+    static DWORD fdwRet = (DWORD)-1;
+    DWORD dwError;
 
-   BOOL bNetwork = FALSE;
-   BOOL bConnect = FALSE;
+    BOOL bNetwork = FALSE;
+    BOOL bConnect = FALSE;
 
-   HKEY hKey;
+    HKEY hKey;
 
-   DWORD dwcbBuffer = 0;
+    DWORD dwcbBuffer = 0;
 
-   if (
+    if (
 //
 // Disable NS_REFRESH since we test for network installed on disk,
 // not network services started.
 //
 #if NSREFRESH
-      NS_REFRESH == nIndex ||
+        NS_REFRESH == nIndex ||
 #endif
-      (DWORD) -1 == fdwRet) {
+        (DWORD)-1 == fdwRet) {
 
-      fdwRet = 0;
+        fdwRet = 0;
 
-      //
-      // Check for connection dialog
-      //
+        //
+        // Check for connection dialog
+        //
 
-      dwError = RegOpenKey(HKEY_LOCAL_MACHINE,
-         TEXT("System\\CurrentControlSet\\Control\\NetworkProvider\\Order"),
-         &hKey);
+        dwError =
+            RegOpenKey(HKEY_LOCAL_MACHINE, TEXT("System\\CurrentControlSet\\Control\\NetworkProvider\\Order"), &hKey);
 
-      if (!dwError) {
+        if (!dwError) {
+            dwError = RegQueryValueEx(hKey, TEXT("ProviderOrder"), NULL, NULL, NULL, &dwcbBuffer);
 
-         dwError = RegQueryValueEx(hKey,
-            TEXT("ProviderOrder"),
-            NULL,
-            NULL,
-            NULL,
-            &dwcbBuffer);
+            if (ERROR_SUCCESS == dwError && dwcbBuffer > 1) {
+                bNetwork = TRUE;
+            }
 
-         if (ERROR_SUCCESS == dwError && dwcbBuffer > 1) {
+            RegCloseKey(hKey);
+        }
 
-            bNetwork = TRUE;
-         }
+        if (bNetwork) {
+            fdwRet |= NS_CONNECTDLG | NS_CONNECT;
+        }
 
-         RegCloseKey(hKey);
-      }
+        //
+        // Check for share-ability
+        //
 
-      if (bNetwork) {
-         fdwRet |= NS_CONNECTDLG|NS_CONNECT;
-      }
+        dwError = RegOpenKey(HKEY_LOCAL_MACHINE, TEXT("System\\CurrentControlSet\\Services\\LanmanServer"), &hKey);
 
-      //
-      // Check for share-ability
-      //
+        if (!dwError) {
+            fdwRet |= NS_SHAREDLG | NS_PROPERTYDLG;
+            RegCloseKey(hKey);
+        }
+    }
 
-      dwError = RegOpenKey(HKEY_LOCAL_MACHINE,
-         TEXT("System\\CurrentControlSet\\Services\\LanmanServer"),
-         &hKey);
-
-      if (!dwError) {
-
-         fdwRet |= NS_SHAREDLG|NS_PROPERTYDLG;
-         RegCloseKey(hKey);
-      }
-   }
-
-   return fdwRet & nIndex ? TRUE : FALSE;
+    return fdwRet & nIndex ? TRUE : FALSE;
 }

@@ -7,7 +7,7 @@
 
 ********************************************************************/
 
-#define INITGUID 
+#define INITGUID
 
 #include "winfile.h"
 #include "wfdrop.h"
@@ -17,390 +17,343 @@
 #include <shlobj.h>
 
 #ifndef GUID_DEFINED
-DEFINE_OLEGUID(IID_IUnknown,            0x00000000L, 0, 0);
-DEFINE_OLEGUID(IID_IDropSource,             0x00000121, 0, 0);
-DEFINE_OLEGUID(IID_IDropTarget,             0x00000122, 0, 0);
+DEFINE_OLEGUID(IID_IUnknown, 0x00000000L, 0, 0);
+DEFINE_OLEGUID(IID_IDropSource, 0x00000121, 0, 0);
+DEFINE_OLEGUID(IID_IDropTarget, 0x00000122, 0, 0);
 #endif
 
-HRESULT CreateDropTarget(HWND hwnd, WF_IDropTarget **ppDropTarget);
-void DropData(WF_IDropTarget *This, IDataObject *pDataObject, DWORD dwEffect);
+HRESULT CreateDropTarget(HWND hwnd, WF_IDropTarget** ppDropTarget);
+void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect);
 
-void PaintRectItem(WF_IDropTarget *This, POINTL *ppt)
-{
-	HWND hwndLB;
-	DWORD iItem;
-	POINT pt;
-	BOOL fTree;
-	
-	// could be either tree control or directory list box
-	hwndLB = GetDlgItem(This->m_hWnd, IDCW_LISTBOX);
-	fTree = FALSE;
-	if (hwndLB == NULL)
-	{
-		hwndLB = GetDlgItem(This->m_hWnd, IDCW_TREELISTBOX);
-		fTree = TRUE;
+void PaintRectItem(WF_IDropTarget* This, POINTL* ppt) {
+    HWND hwndLB;
+    DWORD iItem;
+    POINT pt;
+    BOOL fTree;
 
-		if (hwndLB == NULL)
-			return;
-	}
+    // could be either tree control or directory list box
+    hwndLB = GetDlgItem(This->m_hWnd, IDCW_LISTBOX);
+    fTree = FALSE;
+    if (hwndLB == NULL) {
+        hwndLB = GetDlgItem(This->m_hWnd, IDCW_TREELISTBOX);
+        fTree = TRUE;
 
-	if (ppt != NULL)
-	{
-		pt.x = ppt->x;
-		pt.y = ppt->y;
-		ScreenToClient(hwndLB, &pt);
-	
-		iItem = (DWORD)SendMessage(hwndLB, LB_ITEMFROMPOINT, 0, MAKELPARAM(pt.x, pt.y));
-		iItem &= 0xffff;
-		if (This->m_iItemSelected != -1 && This->m_iItemSelected == iItem)
-			return;
-	}
+        if (hwndLB == NULL)
+            return;
+    }
 
-	// unpaint old item
-	if (This->m_iItemSelected != -1)
-	{
-	    if (fTree)
-			RectTreeItem(hwndLB, This->m_iItemSelected, FALSE);
-		else
-			DSRectItem(hwndLB, This->m_iItemSelected, FALSE, FALSE);
+    if (ppt != NULL) {
+        pt.x = ppt->x;
+        pt.y = ppt->y;
+        ScreenToClient(hwndLB, &pt);
 
-		This->m_iItemSelected = (DWORD)-1;
-	}
+        iItem = (DWORD)SendMessage(hwndLB, LB_ITEMFROMPOINT, 0, MAKELPARAM(pt.x, pt.y));
+        iItem &= 0xffff;
+        if (This->m_iItemSelected != -1 && This->m_iItemSelected == iItem)
+            return;
+    }
 
-	// if new item, paint it.
-	if (ppt != NULL)
-	{
-	    if (fTree)
-		{
-			if (RectTreeItem(hwndLB, iItem, TRUE))
-				This->m_iItemSelected = iItem;
-		}
-		else
-		{
-			if (DSRectItem(hwndLB, iItem, TRUE, FALSE))
-				This->m_iItemSelected = iItem;
-		}
-	}
+    // unpaint old item
+    if (This->m_iItemSelected != -1) {
+        if (fTree)
+            RectTreeItem(hwndLB, This->m_iItemSelected, FALSE);
+        else
+            DSRectItem(hwndLB, This->m_iItemSelected, FALSE, FALSE);
+
+        This->m_iItemSelected = (DWORD)-1;
+    }
+
+    // if new item, paint it.
+    if (ppt != NULL) {
+        if (fTree) {
+            if (RectTreeItem(hwndLB, iItem, TRUE))
+                This->m_iItemSelected = iItem;
+        } else {
+            if (DSRectItem(hwndLB, iItem, TRUE, FALSE))
+                This->m_iItemSelected = iItem;
+        }
+    }
 }
 
+LPWSTR QuotedDropList(IDataObject* pDataObject) {
+    HDROP hdrop;
+    DWORD cFiles, iFile, cchFiles;
+    LPWSTR szFiles = NULL, pch;
+    FORMATETC fmtetc = { CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+    STGMEDIUM stgmed;
 
-LPWSTR QuotedDropList(IDataObject *pDataObject)
-{
-	HDROP hdrop;
-	DWORD cFiles, iFile, cchFiles;
-	LPWSTR szFiles = NULL, pch;
-	FORMATETC fmtetc = { CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-	STGMEDIUM stgmed;
+    if (pDataObject->GetData(&fmtetc, &stgmed) == S_OK) {
+        // Yippie! the data is there, so go get it!
+        hdrop = (HDROP)stgmed.hGlobal;
 
-	if (pDataObject->GetData(&fmtetc, &stgmed) == S_OK)
-	{
-		// Yippie! the data is there, so go get it!
-		hdrop = (HDROP)stgmed.hGlobal;
+        cFiles = DragQueryFile(hdrop, 0xffffffff, NULL, 0);
+        cchFiles = 0;
+        for (iFile = 0; iFile < cFiles; iFile++)
+            cchFiles += DragQueryFile(hdrop, iFile, NULL, 0) + 1 + 2;
 
-		cFiles = DragQueryFile(hdrop, 0xffffffff, NULL, 0);
-		cchFiles = 0;
-		for (iFile = 0; iFile < cFiles; iFile++)
-			cchFiles += DragQueryFile(hdrop, iFile, NULL, 0) + 1 + 2;
+        pch = szFiles = (LPWSTR)LocalAlloc(LMEM_FIXED, cchFiles * sizeof(WCHAR));
+        for (iFile = 0; iFile < cFiles; iFile++) {
+            DWORD cchFile;
 
-		pch = szFiles = (LPWSTR)LocalAlloc(LMEM_FIXED, cchFiles * sizeof(WCHAR));
-		for (iFile = 0; iFile < cFiles; iFile++)
-		{
-			DWORD cchFile;
+            *pch++ = CHAR_DQUOTE;
 
-			*pch++ = CHAR_DQUOTE;
-			
-			cchFile = DragQueryFile(hdrop, iFile, pch, cchFiles);
-			pch += cchFile;
-			*pch++ = CHAR_DQUOTE;
+            cchFile = DragQueryFile(hdrop, iFile, pch, cchFiles);
+            pch += cchFile;
+            *pch++ = CHAR_DQUOTE;
 
-			if (iFile+1 < cFiles)
-				*pch++ = CHAR_SPACE;
-			else
-				*pch = CHAR_NULL;
-				
-			cchFiles -= cchFile + 1 + 2;
-		}
+            if (iFile + 1 < cFiles)
+                *pch++ = CHAR_SPACE;
+            else
+                *pch = CHAR_NULL;
 
-		// release the data using the COM API
-		ReleaseStgMedium(&stgmed);
-	}
+            cchFiles -= cchFile + 1 + 2;
+        }
 
-	return szFiles;
+        // release the data using the COM API
+        ReleaseStgMedium(&stgmed);
+    }
+
+    return szFiles;
 }
 
-
-HDROP CreateDropFiles(POINT pt, BOOL fNC, LPTSTR pszFiles)
-{
+HDROP CreateDropFiles(POINT pt, BOOL fNC, LPTSTR pszFiles) {
     HANDLE hDrop;
     LPBYTE lpList;
     SIZE_T cbList;
-	LPTSTR szSrc;
+    LPTSTR szSrc;
 
     LPDROPFILES lpdfs;
     TCHAR szFile[MAXPATHLEN];
 
-	cbList = sizeof(DROPFILES) + sizeof(TCHAR);
+    cbList = sizeof(DROPFILES) + sizeof(TCHAR);
 
-	szSrc = pszFiles;
-    while (szSrc = GetNextFile(szSrc, szFile, COUNTOF(szFile))) 
-	{
+    szSrc = pszFiles;
+    while (szSrc = GetNextFile(szSrc, szFile, COUNTOF(szFile))) {
         QualifyPath(szFile);
 
-		cbList += (wcslen(szFile) + 1)*sizeof(TCHAR);
-	}
+        cbList += (wcslen(szFile) + 1) * sizeof(TCHAR);
+    }
 
-    hDrop = GlobalAlloc(GMEM_DDESHARE|GMEM_MOVEABLE|GMEM_ZEROINIT, cbList);
+    hDrop = GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE | GMEM_ZEROINIT, cbList);
     if (!hDrop)
         return NULL;
 
     lpdfs = (LPDROPFILES)GlobalLock(hDrop);
 
     lpdfs->pFiles = sizeof(DROPFILES);
-	lpdfs->pt = pt;
-	lpdfs->fNC = fNC;
+    lpdfs->pt = pt;
+    lpdfs->fNC = fNC;
     lpdfs->fWide = TRUE;
 
-	lpList = (LPBYTE)lpdfs + sizeof(DROPFILES);
-	szSrc = pszFiles;
+    lpList = (LPBYTE)lpdfs + sizeof(DROPFILES);
+    szSrc = pszFiles;
 
     while (szSrc = GetNextFile(szSrc, szFile, COUNTOF(szFile))) {
+        QualifyPath(szFile);
 
-       QualifyPath(szFile);
+        lstrcpy((LPTSTR)lpList, szFile);
 
-       lstrcpy((LPTSTR)lpList, szFile);
-
-       lpList += (wcslen(szFile) + 1)*sizeof(TCHAR);
+        lpList += (wcslen(szFile) + 1) * sizeof(TCHAR);
     }
 
-	GlobalUnlock(hDrop);
+    GlobalUnlock(hDrop);
 
-	return (HDROP)hDrop;
+    return (HDROP)hDrop;
 }
 
 #define BLOCK_SIZE 512
 
-static HRESULT StreamToFile(IStream *stream, TCHAR *szFile)
-{
+static HRESULT StreamToFile(IStream* stream, TCHAR* szFile) {
     byte buffer[BLOCK_SIZE];
     DWORD bytes_read;
     DWORD bytes_written;
     HRESULT hr;
-	HANDLE hFile;
+    HANDLE hFile;
 
-    hFile = CreateFile( szFile,
-          FILE_READ_DATA | FILE_WRITE_DATA,
-          FILE_SHARE_READ | FILE_SHARE_WRITE,
-          NULL,
-          CREATE_ALWAYS,
-          FILE_ATTRIBUTE_TEMPORARY,
-          NULL );
+    hFile = CreateFile(
+        szFile, FILE_READ_DATA | FILE_WRITE_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS,
+        FILE_ATTRIBUTE_TEMPORARY, NULL);
 
     if (hFile != INVALID_HANDLE_VALUE) {
         do {
             hr = stream->Read(buffer, BLOCK_SIZE, &bytes_read);
-			bytes_written = 0;
-            if (SUCCEEDED(hr) && bytes_read)
-			{
-				if (!WriteFile(hFile, buffer, bytes_read, &bytes_written, NULL))
-				{
-					hr = HRESULT_FROM_WIN32(GetLastError());
-					bytes_written = 0;
-				}
-			}
+            bytes_written = 0;
+            if (SUCCEEDED(hr) && bytes_read) {
+                if (!WriteFile(hFile, buffer, bytes_read, &bytes_written, NULL)) {
+                    hr = HRESULT_FROM_WIN32(GetLastError());
+                    bytes_written = 0;
+                }
+            }
         } while (S_OK == hr && bytes_written != 0);
         CloseHandle(hFile);
-		if (FAILED(hr))
-			DeleteFile(szFile);
-		else
-			hr = S_OK;
-    }
-    else
-	    hr = HRESULT_FROM_WIN32(GetLastError());
+        if (FAILED(hr))
+            DeleteFile(szFile);
+        else
+            hr = S_OK;
+    } else
+        hr = HRESULT_FROM_WIN32(GetLastError());
 
     return hr;
 }
 
-
-LPWSTR QuotedContentList(IDataObject *pDataObject)
-{
-    FILEGROUPDESCRIPTOR *file_group_descriptor;
+LPWSTR QuotedContentList(IDataObject* pDataObject) {
+    FILEGROUPDESCRIPTOR* file_group_descriptor;
     FILEDESCRIPTOR file_descriptor;
-	HRESULT hr;
-	LPWSTR szFiles = NULL;
+    HRESULT hr;
+    LPWSTR szFiles = NULL;
 
     unsigned short cp_format_descriptor = RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR);
     unsigned short cp_format_contents = RegisterClipboardFormat(CFSTR_FILECONTENTS);
 
-    //Set up format structure for the descriptor and contents
-    FORMATETC descriptor_format = {cp_format_descriptor, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-    FORMATETC contents_format = {cp_format_contents, NULL, DVASPECT_CONTENT, -1, TYMED_ISTREAM};
+    // Set up format structure for the descriptor and contents
+    FORMATETC descriptor_format = { cp_format_descriptor, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+    FORMATETC contents_format = { cp_format_contents, NULL, DVASPECT_CONTENT, -1, TYMED_ISTREAM };
 
     // Check for descriptor format type
     hr = pDataObject->QueryGetData(&descriptor_format);
-    if (hr == S_OK) 
-	{ 
-		// Check for contents format type
+    if (hr == S_OK) {
+        // Check for contents format type
         hr = pDataObject->QueryGetData(&contents_format);
-        if (hr == S_OK)
-		{ 
+        if (hr == S_OK) {
             // Get the descriptor information
-            STGMEDIUM sm_desc= {0,0,0};
-            STGMEDIUM sm_content = {0,0,0};
-			unsigned int file_index;
+            STGMEDIUM sm_desc = { 0, 0, 0 };
+            STGMEDIUM sm_content = { 0, 0, 0 };
+            unsigned int file_index;
             size_t cchTempPath, cchFiles;
-            WCHAR szTempPath[MAXPATHLEN +1];
+            WCHAR szTempPath[MAXPATHLEN + 1];
 
             hr = pDataObject->GetData(&descriptor_format, &sm_desc);
-			if (hr != S_OK)
-				return NULL;
+            if (hr != S_OK)
+                return NULL;
 
-            file_group_descriptor = (FILEGROUPDESCRIPTOR *) GlobalLock(sm_desc.hGlobal);
+            file_group_descriptor = (FILEGROUPDESCRIPTOR*)GlobalLock(sm_desc.hGlobal);
 
-			GetTempPath(MAXPATHLEN, szTempPath);
-			cchTempPath = wcslen(szTempPath);
+            GetTempPath(MAXPATHLEN, szTempPath);
+            cchTempPath = wcslen(szTempPath);
 
-			// calc total size of file names
-			cchFiles = 0;
-            for (file_index = 0; file_index < file_group_descriptor->cItems; file_index++) 
-			{
+            // calc total size of file names
+            cchFiles = 0;
+            for (file_index = 0; file_index < file_group_descriptor->cItems; file_index++) {
                 file_descriptor = file_group_descriptor->fgd[file_index];
-				cchFiles += 1 + cchTempPath + 1 + wcslen(file_descriptor.cFileName) + 2;
-			}
+                cchFiles += 1 + cchTempPath + 1 + wcslen(file_descriptor.cFileName) + 2;
+            }
 
-			szFiles = (LPWSTR)LocalAlloc(LMEM_FIXED, cchFiles * sizeof(WCHAR));
-			szFiles[0] = '\0';
+            szFiles = (LPWSTR)LocalAlloc(LMEM_FIXED, cchFiles * sizeof(WCHAR));
+            szFiles[0] = '\0';
 
             // For each file, get the name and copy the stream to a file
-            for (file_index = 0; file_index < file_group_descriptor->cItems; file_index++)
-			{
+            for (file_index = 0; file_index < file_group_descriptor->cItems; file_index++) {
                 file_descriptor = file_group_descriptor->fgd[file_index];
                 contents_format.lindex = file_index;
-				memset(&sm_content, 0, sizeof(sm_content));
+                memset(&sm_content, 0, sizeof(sm_content));
                 hr = pDataObject->GetData(&contents_format, &sm_content);
 
-                if (hr == S_OK) 
-				{
-					// Dump stream to a file
-					TCHAR szTempFile[MAXPATHLEN*2+1];
+                if (hr == S_OK) {
+                    // Dump stream to a file
+                    TCHAR szTempFile[MAXPATHLEN * 2 + 1];
 
-					lstrcpy(szTempFile, szTempPath);
-		            AddBackslash(szTempFile);
-				    lstrcat(szTempFile, file_descriptor.cFileName);
+                    lstrcpy(szTempFile, szTempPath);
+                    AddBackslash(szTempFile);
+                    lstrcat(szTempFile, file_descriptor.cFileName);
 
-					// TODO: make sure all directories between the temp directory and the file have been created
-					// paste from zip archives result in file_descriptor.cFileName with intermediate directories
+                    // TODO: make sure all directories between the temp directory and the file have been created
+                    // paste from zip archives result in file_descriptor.cFileName with intermediate directories
 
-					hr = StreamToFile(sm_content.pstm, szTempFile);
+                    hr = StreamToFile(sm_content.pstm, szTempFile);
 
-					if (hr == S_OK)
-					{
-						CheckEsc(szTempFile);
+                    if (hr == S_OK) {
+                        CheckEsc(szTempFile);
 
-						if (szFiles[0] != '\0')
-							lstrcat(szFiles, TEXT(" "));
-						lstrcat(szFiles, szTempFile);
-					}
+                        if (szFiles[0] != '\0')
+                            lstrcat(szFiles, TEXT(" "));
+                        lstrcat(szFiles, szTempFile);
+                    }
 
-					ReleaseStgMedium(&sm_content);
+                    ReleaseStgMedium(&sm_content);
                 }
             }
 
             GlobalUnlock(sm_desc.hGlobal);
             ReleaseStgMedium(&sm_desc);
 
-			if (szFiles[0] == '\0')
-			{
-				// nothing to copy
-				MessageBeep(0);
-				LocalFree((HLOCAL)szFiles);	
-				szFiles = NULL;
-			}
+            if (szFiles[0] == '\0') {
+                // nothing to copy
+                MessageBeep(0);
+                LocalFree((HLOCAL)szFiles);
+                szFiles = NULL;
+            }
         }
-	}
+    }
     return szFiles;
 }
 
 //
 //	QueryDataObject private helper routine
 //
-static BOOL QueryDataObject(WF_IDataObject *pDataObject)
-{
-	FORMATETC fmtetc = { CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+static BOOL QueryDataObject(WF_IDataObject* pDataObject) {
+    FORMATETC fmtetc = { CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
     unsigned short cp_format_descriptor = RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR);
-    FORMATETC descriptor_format = {0, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-	descriptor_format.cfFormat = cp_format_descriptor;
+    FORMATETC descriptor_format = { 0, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+    descriptor_format.cfFormat = cp_format_descriptor;
 
-	// does the data object support CF_HDROP using a HGLOBAL?
-	return pDataObject->QueryGetData(&fmtetc) == S_OK || 
-			pDataObject->QueryGetData(&descriptor_format) == S_OK;
+    // does the data object support CF_HDROP using a HGLOBAL?
+    return pDataObject->QueryGetData(&fmtetc) == S_OK || pDataObject->QueryGetData(&descriptor_format) == S_OK;
 }
 
 //
 //	DropEffect private helper routine
 //
-static DWORD DropEffect(DWORD grfKeyState, POINTL pt, DWORD dwAllowed)
-{
-	DWORD dwEffect = 0;
+static DWORD DropEffect(DWORD grfKeyState, POINTL pt, DWORD dwAllowed) {
+    DWORD dwEffect = 0;
 
-	// 1. check "pt" -> do we allow a drop at the specified coordinates?
-	
-	// 2. work out that the drop-effect should be based on grfKeyState
-	if(grfKeyState & MK_CONTROL)
-	{
-		dwEffect = dwAllowed & DROPEFFECT_COPY;
-	}
-	else if(grfKeyState & MK_SHIFT)
-	{
-		dwEffect = dwAllowed & DROPEFFECT_MOVE;
-	}
-	
-	// 3. no key-modifiers were specified (or drop effect not allowed), so
-	//    base the effect on those allowed by the dropsource
-	if(dwEffect == 0)
-	{
-		if(dwAllowed & DROPEFFECT_COPY) dwEffect = DROPEFFECT_COPY;
-		if(dwAllowed & DROPEFFECT_MOVE) dwEffect = DROPEFFECT_MOVE;
-	}
-	
-	return dwEffect;
+    // 1. check "pt" -> do we allow a drop at the specified coordinates?
+
+    // 2. work out that the drop-effect should be based on grfKeyState
+    if (grfKeyState & MK_CONTROL) {
+        dwEffect = dwAllowed & DROPEFFECT_COPY;
+    } else if (grfKeyState & MK_SHIFT) {
+        dwEffect = dwAllowed & DROPEFFECT_MOVE;
+    }
+
+    // 3. no key-modifiers were specified (or drop effect not allowed), so
+    //    base the effect on those allowed by the dropsource
+    if (dwEffect == 0) {
+        if (dwAllowed & DROPEFFECT_COPY)
+            dwEffect = DROPEFFECT_COPY;
+        if (dwAllowed & DROPEFFECT_MOVE)
+            dwEffect = DROPEFFECT_MOVE;
+    }
+
+    return dwEffect;
 }
 
 //
 // IUnknown methods
 //
 
-ULONG STDMETHODCALLTYPE WF_IDropTarget::AddRef()
-{
+ULONG STDMETHODCALLTYPE WF_IDropTarget::AddRef() {
     return InterlockedIncrement(&m_lRefCount);
 }
 
-HRESULT STDMETHODCALLTYPE WF_IDropTarget::QueryInterface(REFIID riid, LPVOID* ppvObject)
-{
+HRESULT STDMETHODCALLTYPE WF_IDropTarget::QueryInterface(REFIID riid, LPVOID* ppvObject) {
     *ppvObject = NULL;
 
-    if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDropTarget))
-    {
+    if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDropTarget)) {
         AddRef();
         *ppvObject = this;
         return S_OK;
-    }
-    else
-    {
+    } else {
         return E_NOINTERFACE;
     }
 }
 
-ULONG STDMETHODCALLTYPE WF_IDropTarget::Release()
-{
+ULONG STDMETHODCALLTYPE WF_IDropTarget::Release() {
     LONG count = InterlockedDecrement(&m_lRefCount);
 
-    if (count == 0)
-    {
+    if (count == 0) {
         delete this;
         return 0;
-    }
-    else
-    {
+    } else {
         return count;
     }
 }
@@ -409,59 +362,48 @@ ULONG STDMETHODCALLTYPE WF_IDropTarget::Release()
 // IDropTarget methods
 //
 
-HRESULT STDMETHODCALLTYPE WF_IDropTarget::DragEnter(IDataObject* pDataObject, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
-{
+HRESULT STDMETHODCALLTYPE
+WF_IDropTarget::DragEnter(IDataObject* pDataObject, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) {
     // does the dataobject contain data we want?
     m_fAllowDrop = QueryDataObject((WF_IDataObject*)pDataObject);
-    
-    if (m_fAllowDrop)
-    {
+
+    if (m_fAllowDrop) {
         // get the dropeffect based on keyboard state
         *pdwEffect = DropEffect(grfKeyState, pt, *pdwEffect);
 
         SetFocus(m_hWnd);
 
         PaintRectItem(this, &pt);
-    }
-    else
-    {
+    } else {
         *pdwEffect = DROPEFFECT_NONE;
     }
 
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE WF_IDropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
-{
-    if (m_fAllowDrop)
-    {
+HRESULT STDMETHODCALLTYPE WF_IDropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) {
+    if (m_fAllowDrop) {
         *pdwEffect = DropEffect(grfKeyState, pt, *pdwEffect);
         PaintRectItem(this, &pt);
-    }
-    else
-    {
+    } else {
         *pdwEffect = DROPEFFECT_NONE;
     }
 
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE WF_IDropTarget::DragLeave()
-{
+HRESULT STDMETHODCALLTYPE WF_IDropTarget::DragLeave() {
     PaintRectItem(this, NULL);
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE WF_IDropTarget::Drop(IDataObject* pDataObject, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
-{
-    if (m_fAllowDrop)
-    {
+HRESULT STDMETHODCALLTYPE
+WF_IDropTarget::Drop(IDataObject* pDataObject, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) {
+    if (m_fAllowDrop) {
         *pdwEffect = DropEffect(grfKeyState, pt, *pdwEffect);
 
         DropData(this, pDataObject, *pdwEffect);
-    }
-    else
-    {
+    } else {
         *pdwEffect = DROPEFFECT_NONE;
     }
 
@@ -469,8 +411,7 @@ HRESULT STDMETHODCALLTYPE WF_IDropTarget::Drop(IDataObject* pDataObject, DWORD g
 }
 
 // Constructor
-WF_IDropTarget::WF_IDropTarget(HWND hwnd)
-{
+WF_IDropTarget::WF_IDropTarget(HWND hwnd) {
     m_lRefCount = 1;
     m_hWnd = hwnd;
     m_fAllowDrop = FALSE;
@@ -478,112 +419,98 @@ WF_IDropTarget::WF_IDropTarget(HWND hwnd)
     m_pDataObject = NULL;
 }
 
-void DropData(WF_IDropTarget *This, IDataObject *pDataObject, DWORD dwEffect)
-{
-	// construct a FORMATETC object
-	HWND hwndLB;
-	BOOL fTree;
-	LPWSTR szFiles = NULL;
-	WCHAR     szDest[MAXPATHLEN];
+void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
+    // construct a FORMATETC object
+    HWND hwndLB;
+    BOOL fTree;
+    LPWSTR szFiles = NULL;
+    WCHAR szDest[MAXPATHLEN];
 
-	hwndLB = GetDlgItem(This->m_hWnd, IDCW_LISTBOX);
-	fTree = FALSE;
-	if (hwndLB == NULL)
-	{
-		hwndLB = GetDlgItem(This->m_hWnd, IDCW_TREELISTBOX);
-		fTree = TRUE;
+    hwndLB = GetDlgItem(This->m_hWnd, IDCW_LISTBOX);
+    fTree = FALSE;
+    if (hwndLB == NULL) {
+        hwndLB = GetDlgItem(This->m_hWnd, IDCW_TREELISTBOX);
+        fTree = TRUE;
 
-		if (hwndLB == NULL)
-			return;
-	}
+        if (hwndLB == NULL)
+            return;
+    }
 
-	// if item selected, add path
-	if (fTree)
-	{
-	    PDNODE pNode;
-		
-		// odd
-		if (This->m_iItemSelected == -1)
-			return;
+    // if item selected, add path
+    if (fTree) {
+        PDNODE pNode;
 
-		if (SendMessage(hwndLB, LB_GETTEXT, This->m_iItemSelected, (LPARAM)&pNode) == LB_ERR)
-			return;
+        // odd
+        if (This->m_iItemSelected == -1)
+            return;
 
-		GetTreePath(pNode, szDest);
-	}
-	else
-	{
-		LPXDTA    lpxdta;
+        if (SendMessage(hwndLB, LB_GETTEXT, This->m_iItemSelected, (LPARAM)&pNode) == LB_ERR)
+            return;
 
-		SendMessage(This->m_hWnd, FS_GETDIRECTORY, COUNTOF(szDest), (LPARAM)szDest);
+        GetTreePath(pNode, szDest);
+    } else {
+        LPXDTA lpxdta;
 
-		if (This->m_iItemSelected != -1)
-		{
-			SendMessage(hwndLB, LB_GETTEXT, This->m_iItemSelected,
-				(LPARAM)(LPTSTR)&lpxdta);
-		
-			AddBackslash(szDest);
-			lstrcat(szDest, MemGetFileName(lpxdta));
-		}
-	}
+        SendMessage(This->m_hWnd, FS_GETDIRECTORY, COUNTOF(szDest), (LPARAM)szDest);
+
+        if (This->m_iItemSelected != -1) {
+            SendMessage(hwndLB, LB_GETTEXT, This->m_iItemSelected, (LPARAM)(LPTSTR)&lpxdta);
+
+            AddBackslash(szDest);
+            lstrcat(szDest, MemGetFileName(lpxdta));
+        }
+    }
 
     AddBackslash(szDest);
-    lstrcat(szDest, szStarDotStar);   // put files in this dir
+    lstrcat(szDest, szStarDotStar);  // put files in this dir
 
     CheckEsc(szDest);
 
-	// See if the dataobject contains any TEXT stored as a HGLOBAL
-	if ((szFiles = QuotedDropList(pDataObject)) == NULL)
-	{
-		szFiles = QuotedContentList(pDataObject);
-		dwEffect = DROPEFFECT_MOVE; 
-	}
+    // See if the dataobject contains any TEXT stored as a HGLOBAL
+    if ((szFiles = QuotedDropList(pDataObject)) == NULL) {
+        szFiles = QuotedContentList(pDataObject);
+        dwEffect = DROPEFFECT_MOVE;
+    }
 
-	if (szFiles != NULL)
-	{
-		SetFocus(This->m_hWnd);
+    if (szFiles != NULL) {
+        SetFocus(This->m_hWnd);
 
-		DMMoveCopyHelper(szFiles, szDest, dwEffect == DROPEFFECT_COPY);
+        DMMoveCopyHelper(szFiles, szDest, dwEffect == DROPEFFECT_COPY);
 
-		LocalFree((HLOCAL)szFiles);
-	}
+        LocalFree((HLOCAL)szFiles);
+    }
 }
 
-void RegisterDropWindow(HWND hwnd, WF_IDropTarget **ppDropTarget)
-{
-	WF_IDropTarget *pDropTarget;
-	
-	CreateDropTarget(hwnd, &pDropTarget);
+void RegisterDropWindow(HWND hwnd, WF_IDropTarget** ppDropTarget) {
+    WF_IDropTarget* pDropTarget;
 
-	// acquire a strong lock
-	CoLockObjectExternal((struct IUnknown*)pDropTarget, TRUE, FALSE);
+    CreateDropTarget(hwnd, &pDropTarget);
 
-	// tell OLE that the window is a drop target
-	RegisterDragDrop(hwnd, (LPDROPTARGET)pDropTarget);
+    // acquire a strong lock
+    CoLockObjectExternal((struct IUnknown*)pDropTarget, TRUE, FALSE);
 
-	*ppDropTarget = pDropTarget;
+    // tell OLE that the window is a drop target
+    RegisterDragDrop(hwnd, (LPDROPTARGET)pDropTarget);
+
+    *ppDropTarget = pDropTarget;
 }
 
-void UnregisterDropWindow(HWND hwnd, IDropTarget *pDropTarget)
-{
-	// remove drag+drop
-	RevokeDragDrop(hwnd);
+void UnregisterDropWindow(HWND hwnd, IDropTarget* pDropTarget) {
+    // remove drag+drop
+    RevokeDragDrop(hwnd);
 
-	// remove the strong lock
-	CoLockObjectExternal((struct IUnknown*)pDropTarget, FALSE, TRUE);
+    // remove the strong lock
+    CoLockObjectExternal((struct IUnknown*)pDropTarget, FALSE, TRUE);
 
-	// release our own reference
-	pDropTarget->Release();
+    // release our own reference
+    pDropTarget->Release();
 }
 
-HRESULT CreateDropTarget(HWND hwnd, WF_IDropTarget **ppDropTarget) 
-{
-	if(ppDropTarget == 0)
-		return E_INVALIDARG;
+HRESULT CreateDropTarget(HWND hwnd, WF_IDropTarget** ppDropTarget) {
+    if (ppDropTarget == 0)
+        return E_INVALIDARG;
 
-	*ppDropTarget = new WF_IDropTarget(hwnd);
+    *ppDropTarget = new WF_IDropTarget(hwnd);
 
-	return (*ppDropTarget) ? S_OK : E_OUTOFMEMORY;
-
+    return (*ppDropTarget) ? S_OK : E_OUTOFMEMORY;
 }
-
