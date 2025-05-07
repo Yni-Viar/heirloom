@@ -850,9 +850,9 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
 
     PngStartup();
 
-    hicoTree = LoadIconForCurrentDPI(hAppInstance, (LPTSTR)MAKEINTRESOURCE(TREEICON));
-    hicoTreeDir = LoadIconForCurrentDPI(hAppInstance, (LPTSTR)MAKEINTRESOURCE(TREEDIRICON));
-    hicoDir = LoadIconForCurrentDPI(hAppInstance, (LPTSTR)MAKEINTRESOURCE(DIRICON));
+    hicoTree = LoadIcon(hAppInstance, (LPTSTR)MAKEINTRESOURCE(TREEICON));
+    hicoTreeDir = LoadIcon(hAppInstance, (LPTSTR)MAKEINTRESOURCE(TREEDIRICON));
+    hicoDir = LoadIcon(hAppInstance, (LPTSTR)MAKEINTRESOURCE(DIRICON));
 
     chFirstDrive = CHAR_a;
 
@@ -892,7 +892,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
     wndClass.cbClsExtra = 0;
     wndClass.cbWndExtra = 0;
     wndClass.hInstance = hInstance;
-    wndClass.hIcon = LoadIconForCurrentDPI(hInstance, (LPTSTR)MAKEINTRESOURCE(APPICON));
+    wndClass.hIcon = LoadIcon(hInstance, (LPTSTR)MAKEINTRESOURCE(APPICON));
     wndClass.hCursor = hcurArrow;
     wndClass.hbrBackground = (HBRUSH)(COLOR_APPWORKSPACE + 1);  // COLOR_WINDOW+1;
     wndClass.lpszMenuName = (LPTSTR)MAKEINTRESOURCE(FRAMEMENU);
@@ -975,7 +975,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
     wndClass.cbWndExtra = GWL_LASTFOCUS + sizeof(LONG_PTR);
 
     // wndClass.hInstance      = hInstance;
-    wndClass.hIcon = LoadIconForCurrentDPI(hInstance, (LPTSTR)MAKEINTRESOURCE(DIRICON));
+    wndClass.hIcon = LoadIcon(hInstance, (LPTSTR)MAKEINTRESOURCE(DIRICON));
     // wndClass.hCursor        = NULL;
     wndClass.hbrBackground = NULL;
     // wndClass.lpszMenuName   = NULL;

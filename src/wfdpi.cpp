@@ -94,39 +94,6 @@ INT ScaledSystemMetric(INT nIndex) {
     return ScaleByDpi(value);
 }
 
-// Load an icon resource with proper scaling for the current DPI
-HICON LoadIconForCurrentDPI(HINSTANCE hInstance, LPCWSTR lpIconName) {
-    // Calculate appropriate icon size based on current DPI
-    // Standard icon sizes are 16x16, 32x32, 48x48
-    int dpi = (int)g_dpi;
-    int iconSize;
-
-    // Choose appropriate icon size based on DPI
-    if (dpi <= 96) {
-        iconSize = 16;  // Standard size for 96 DPI
-    } else if (dpi <= 144) {
-        iconSize = 32;  // Medium size for 120-144 DPI
-    } else {
-        iconSize = 48;  // Large size for 192+ DPI
-    }
-
-    // Load the icon with proper DPI scaling
-    HICON hIcon =
-        (HICON)LoadImage(hInstance, lpIconName, IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR | LR_DEFAULTSIZE);
-
-    // If LoadImage fails, try without the size specification
-    if (!hIcon) {
-        hIcon = (HICON)LoadImage(hInstance, lpIconName, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR | LR_DEFAULTSIZE);
-    }
-
-    // If that still fails, fall back to LoadIcon
-    if (!hIcon) {
-        hIcon = LoadIcon(hInstance, lpIconName);
-    }
-
-    return hIcon;
-}
-
 void InitDpiScaling(HWND hwnd) {
     HDC hdc = GetDC(hwnd);
     if (hdc) {

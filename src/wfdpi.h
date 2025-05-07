@@ -34,7 +34,4 @@ VOID HandleDpiChange(HWND hwnd, WPARAM wParam, LPARAM lParam);
 // Scale system metric value by current DPI
 INT ScaledSystemMetric(INT nIndex);
 
-// Load an icon resource with proper scaling for the current DPI
-HICON LoadIconForCurrentDPI(HINSTANCE hInstance, LPCTSTR lpIconName);
-
 #endif  // _WFDPI_H
