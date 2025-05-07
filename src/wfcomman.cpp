@@ -1374,6 +1374,26 @@ BOOL AppCommandProc(DWORD id) {
                 //        InvalidateRect(hwndActive, NULL, TRUE);
             }
 
+            // Update menu checkmarks for View menu items
+            if (id == CD_SORT) {
+                HMENU hMenu = GetMenu(hwndFrame);
+                CheckMenuItem(hMenu, IDM_BYNAME, (dwFlags == IDD_NAME) ? MF_CHECKED : MF_UNCHECKED);
+                CheckMenuItem(hMenu, IDM_BYTYPE, (dwFlags == IDD_TYPE) ? MF_CHECKED : MF_UNCHECKED);
+                CheckMenuItem(hMenu, IDM_BYSIZE, (dwFlags == IDD_SIZE) ? MF_CHECKED : MF_UNCHECKED);
+                CheckMenuItem(hMenu, IDM_BYDATE, (dwFlags == IDD_DATE) ? MF_CHECKED : MF_UNCHECKED);
+                CheckMenuItem(hMenu, IDM_BYFDATE, (dwFlags == IDD_FDATE) ? MF_CHECKED : MF_UNCHECKED);
+                DrawMenuBar(hwndFrame);
+            } else if (id == CD_VIEW) {
+                HMENU hMenu = GetMenu(hwndFrame);
+                DWORD viewFlags = dwFlags & VIEW_EVERYTHING;
+                CheckMenuItem(hMenu, IDM_VNAME, (viewFlags == VIEW_NAMEONLY) ? MF_CHECKED : MF_UNCHECKED);
+                CheckMenuItem(hMenu, IDM_VDETAILS, (viewFlags == VIEW_EVERYTHING) ? MF_CHECKED : MF_UNCHECKED);
+                CheckMenuItem(
+                    hMenu, IDM_VOTHER,
+                    (viewFlags != VIEW_NAMEONLY && viewFlags != VIEW_EVERYTHING) ? MF_CHECKED : MF_UNCHECKED);
+                DrawMenuBar(hwndFrame);
+            }
+
             break;
 
         case IDM_VINCLUDE:
@@ -1462,8 +1482,9 @@ BOOL AppCommandProc(DWORD id) {
             //
             // Check/Uncheck the menu item.
             //
-            hMenu = GetSubMenu(GetMenu(hwndFrame), MapIDMToMenuPos(IDM_OPTIONS));
+            hMenu = GetMenu(hwndFrame);
             CheckMenuItem(hMenu, id, (bTemp ? MF_CHECKED : MF_UNCHECKED));
+            DrawMenuBar(hwndFrame);
             break;
 
         case IDM_NEWWINDOW:
