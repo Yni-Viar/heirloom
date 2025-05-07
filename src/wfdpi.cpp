@@ -13,35 +13,16 @@ FLOAT g_scale = 1.0f;
 #define WM_DPICHANGED 0x02E0
 #endif
 
-// GetDpiForMonitor function type definition for dynamically loading from Shcore.dll
-typedef HRESULT(WINAPI* GetDpiForMonitorFunc)(HMONITOR hmonitor, INT dpiType, UINT* dpiX, UINT* dpiY);
-typedef HRESULT(WINAPI* GetDpiForWindowFunc)(HWND hwnd);
-
 extern void ResizeControls(void);
 
 // Initialize DPI awareness
 VOID InitDPIAwareness(VOID) {
-    // Load Shcore.dll which contains the DPI functions on Windows 8.1+
-    HMODULE hShcore = LoadLibrary(TEXT("Shcore.dll"));
-
-    if (hShcore) {
-        // Initialize default DPI setting (96) in case we can't get the actual value
-        HDC hdc = GetDC(NULL);
-        if (hdc) {
-            g_dpi = GetDeviceCaps(hdc, LOGPIXELSX);
-            ReleaseDC(NULL, hdc);
-        }
-
-        FreeLibrary(hShcore);
-    } else {
-        // On pre-8.1 Windows versions, use the primary screen DC to get DPI
-        HDC hdc = GetDC(NULL);
-        if (hdc) {
-            g_dpi = GetDeviceCaps(hdc, LOGPIXELSX);
-            ReleaseDC(NULL, hdc);
-        }
+    // On Windows 10+, Shcore.dll and modern DPI APIs are always available
+    HDC hdc = GetDC(NULL);
+    if (hdc) {
+        g_dpi = GetDeviceCaps(hdc, LOGPIXELSX);
+        ReleaseDC(NULL, hdc);
     }
-
     g_scale = GetDpiScaleFactor(g_dpi);
 }
 
