@@ -8,6 +8,7 @@ It doesn't try to replace the modern File Explorer but offers a faster alternati
 This derivative of the [classic Windows File Manager (microsoft/winfile)](https://github.com/microsoft/winfile) adds the following features:
 
 - High-DPI screen support
+- Recycle Bin
 - Drag-and-drop from File Manager into external applications
 
 It also removes old features that are irrelevant today.
