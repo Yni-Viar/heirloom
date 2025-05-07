@@ -2986,10 +2986,8 @@ DMMoveCopyHelper(LPTSTR pFrom, LPTSTR pTo, INT iOperation) {
 
 DWORD
 FileRemove(LPTSTR pSpec) {
-    if (DeleteFile(pSpec))
-        return (DWORD)0;
-    else
-        return GetLastError();
+    // Use recycle bin instead of permanent deletion
+    return MoveFileToRecycleBin(pSpec);
 }
 
 DWORD

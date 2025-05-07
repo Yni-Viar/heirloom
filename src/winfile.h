@@ -232,6 +232,18 @@ typedef INT DRIVEIND;
 
 #include "wfinfo.h"
 
+// Recycle Bin API constants
+#define SHERB_NOCONFIRMATION 0x00000001
+#define SHERB_NOPROGRESSUI 0x00000002
+#define SHERB_NOSOUND 0x00000004
+
+// Recycle Bin functions
+BOOL IsRecycleBinEmpty(VOID);
+BOOL GetRecycleBinSize(PLARGE_INTEGER pliSize);
+BOOL EmptyRecycleBin(HWND hwnd);
+DWORD MoveFileToRecycleBin(LPTSTR pszFile);
+VOID FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPTSTR szBuffer);
+
 typedef struct _CANCEL_INFO {
     HWND hCancelDlg;
     BOOL bCancel;
@@ -1231,6 +1243,10 @@ Extern SEARCH_INFO SearchInfo;
 
 Extern BOOL bDeveloperModeAvailable EQ(FALSE);
 
+// Recycle Bin variables and structures
+Extern BOOL bRecycleBinEmpty EQ(TRUE);
+Extern LARGE_INTEGER qRecycleBinSize;
+
 // this value is an index into dwMenuIDs and used to workaround a bug
 #define MHPOP_CURRENT 2
 
@@ -1266,3 +1282,10 @@ typedef enum { PNG_TYPE_DRIVE, PNG_TYPE_ICON } PNG_TYPE;
 void PngStartup(void);
 void PngShutdown(void);
 void PngDraw(HDC hdc, UINT dpi, int x, int y, PNG_TYPE type, int index);
+
+// Recycle Bin functions
+BOOL IsRecycleBinEmpty(VOID);
+BOOL GetRecycleBinSize(PLARGE_INTEGER pliSize);
+BOOL EmptyRecycleBin(HWND hwnd);
+DWORD MoveFileToRecycleBin(LPTSTR pszFile);
+VOID FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPTSTR szBuffer);

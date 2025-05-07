@@ -790,6 +790,28 @@ BOOL AppCommandProc(DWORD id) {
             bCancelTree = TRUE;
             break;
 
+        case IDM_EMPTYRECYCLE:
+            // Prompt for confirmation if enabled in settings
+            if (bConfirmDelete) {
+                TCHAR szTitle[64];
+                TCHAR szMessage[128];
+
+                LoadString(hAppInstance, 431, szTitle, COUNTOF(szTitle));
+                LoadString(hAppInstance, 432, szMessage, COUNTOF(szMessage));
+
+                if (MessageBox(hwndFrame, szMessage, szTitle, MB_ICONQUESTION | MB_OKCANCEL) != IDOK)
+                    break;
+            }
+
+            // Empty the Recycle Bin
+            EmptyRecycleBin(hwndFrame);
+
+            // Update the status bar
+            if (hwndActive && HasDirWindow(hwndActive)) {
+                UpdateStatus(hwndActive);
+            }
+            break;
+
         case IDM_OPEN:
 
             if (GetFocus() == hwndDriveList)

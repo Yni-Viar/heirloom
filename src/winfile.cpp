@@ -231,6 +231,10 @@ BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
             uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
         EnableMenuItem(hMenu, IDM_ATTRIBS, uMenuFlags);
 
+        // Set the Empty Recycle Bin menu state based on whether it contains items
+        uMenuFlags = IsRecycleBinEmpty() ? MF_BYCOMMAND | MF_GRAYED : MF_BYCOMMAND;
+        EnableMenuItem(hMenu, IDM_EMPTYRECYCLE, uMenuFlags);
+
         uMenuFlags = MF_BYCOMMAND;
     }
 

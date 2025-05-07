@@ -2806,9 +2806,30 @@ VOID UpdateStatus(HWND hwnd) {
             qFreeSpace = aDriveInfo[drive].qFreeSpace;
             qTotalSpace = aDriveInfo[drive].qTotalSpace;
 
-            SetStatusText(
-                0, SST_RESOURCE | SST_FORMAT, (LPWSTR)MAKEINTRESOURCE(IDS_DRIVEFREE), L'A' + drive,
-                ShortSizeFormatInternal(szNumBuf1, qFreeSpace), ShortSizeFormatInternal(szNumBuf2, qTotalSpace));
+            // Check if the Recycle Bin has items
+            if (IsRecycleBinEmpty()) {
+                // Use the regular status format when Recycle Bin is empty
+                SetStatusText(
+                    0, SST_RESOURCE | SST_FORMAT, (LPWSTR)MAKEINTRESOURCE(IDS_DRIVEFREE), L'A' + drive,
+                    ShortSizeFormatInternal(szNumBuf1, qFreeSpace), ShortSizeFormatInternal(szNumBuf2, qTotalSpace));
+
+                // Update global flag
+                bRecycleBinEmpty = TRUE;
+            } else {
+                // Get the Recycle Bin size
+                GetRecycleBinSize(&qRecycleBinSize);
+                TCHAR szRecycleBinSize[64];
+
+                // Format the Recycle Bin size and display in status bar with free/total space
+                ShortSizeFormatInternal(szRecycleBinSize, qRecycleBinSize);
+                SetStatusText(
+                    0, SST_RESOURCE | SST_FORMAT, (LPWSTR)MAKEINTRESOURCE(430), L'A' + drive,
+                    ShortSizeFormatInternal(szNumBuf1, qFreeSpace), ShortSizeFormatInternal(szNumBuf2, qTotalSpace),
+                    szRecycleBinSize);
+
+                // Update global flag
+                bRecycleBinEmpty = FALSE;
+            }
         }
     } else
         SetStatusText(0, 0L, szNULL);

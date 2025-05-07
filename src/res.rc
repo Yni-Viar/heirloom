@@ -204,6 +204,8 @@ BEGIN
     END
     MENUITEM    "&Goto Directory...\tCtrl+G", IDM_GOTODIR
     MENUITEM    SEPARATOR
+    MENUITEM    "Empty &Recycle Bin", IDM_EMPTYRECYCLE
+    MENUITEM    SEPARATOR
     MENUITEM    "E&xit",            IDM_EXIT
     END
     POPUP       "&Tree"
@@ -292,6 +294,8 @@ BEGIN
     MENUITEM    "Open in Command Prompt", IDM_STARTCMDSHELL
     MENUITEM    "Open in Po&werShell", IDM_STARTPOWERSHELL
     MENUITEM    "Open in E&xplorer", IDM_STARTEXPLORER
+    MENUITEM    SEPARATOR
+    MENUITEM    "Empty &Recycle Bin", IDM_EMPTYRECYCLE
     MENUITEM    SEPARATOR
     MENUITEM    "Proper&ties\tAlt+Enter",IDM_ATTRIBS
     END
@@ -413,11 +417,14 @@ BEGIN
     IDS_STATUSMSG,          "Total %d file(s) (%s)"             /* 128 */
     IDS_STATUSMSG2,         "Selected %d file(s) (%s)"          /* 128 */
     IDS_DRIVEFREE,          "%c: %s free,  %s total"            /* 128 */
+    430,                    "%c: %s free,  %s total,  %s in Recycle Bin"            /* 128 */
     IDS_TREEABORT,          "Incomplete directory tree displayed"     /* 128 */
     IDS_DIRSREAD,           "Directories read: %d "                   /* 32 */
     IDS_SEARCHMSG,          "%d file(s) found"
     IDS_BYTES,              "%ld bytes"
     IDS_SBYTES,             "%s bytes"
+    431,                    "Empty Recycle Bin"
+    432,                    "Are you sure you want to empty the Recycle Bin?"
 
     IDS_SELECTEDFILES,      "the selected files"            /* 32 */
 

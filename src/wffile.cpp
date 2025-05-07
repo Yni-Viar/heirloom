@@ -12,8 +12,6 @@
 #include "wfcopy.h"
 #include "treectl.h"
 
-HANDLE hDlgProgress = NULL;
-
 /////////////////////////////////////////////////////////////////////////////
 //
 //  MKDir
@@ -168,3 +166,13 @@ BOOL GetRootPath(LPTSTR szPath, LPTSTR szReturn) {
 
     return (TRUE);
 }
+
+// this function is not used right now, but I think I'll need it
+// in the future for network connections.
+
+BOOL CD(LPTSTR pszDir) {
+    return SetCurrentDirectory(pszDir);
+}
+
+// this is used for saving/setting the current directory when using
+// applications that change the current directory.

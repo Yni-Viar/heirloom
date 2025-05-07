@@ -212,6 +212,7 @@
     <ClCompile Include="wfsearch.cpp" />
     <ClCompile Include="wftree.cpp" />
     <ClCompile Include="wfutil.cpp" />
+    <ClCompile Include="wfrecyclebin.cpp" />
     <ClCompile Include="winfile.cpp" />
     <ClCompile Include="wnetcaps.cpp" />
     <ClCompile Include="wfpng.cpp" />
