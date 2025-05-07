@@ -228,388 +228,37 @@ VOID SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel) {
 //
 // Name:     DSDragLoop
 //
-// Synopsis: Called by dir and search drag loops.  Must handle
-//           detecting all kinds of different destinations.
-//
-//      hwndLB  source listbox (either the dir or the sort)
-//      wParam  same as sent for WM_DRAGLOOP (TRUE if on a droppable sink)
-//      lpds    drop struct sent with the message
-//      bSearch TRUE if we are in the search listbox
-//
-// Return:
-//
-//
-// Assumes:
-//
-// Effects:
-//
-//
-// Notes:
+// Synopsis: Handler for WM_DRAGLOOP messages
+//           REMOVED - Legacy Windows 3.x drag and drop handler
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID DSDragLoop(HWND hwndLB, WPARAM wParam, LPDROPSTRUCT lpds) {
-    INT iShowBitmap;
-    LPXDTA lpxdta;
-    HWND hwndMDIChildSink, hwndDir;
-    BOOL bForceMoveCur = FALSE;
-
-    //
-    // bShowBitmap is used to turn the source bitmaps on or off to distinguish
-    // between a move and a copy or to indicate that a drop can
-    // occur (exec and app)
-    //
-    // hack: keep around for drop files!
-    //
-    hwndGlobalSink = lpds->hwndSink;
-
-    //
-    // default to move
-    //
-    iShowBitmap = DROP_MOVE;
-
-    //
-    // can't drop here
-    //
-    if (!wParam)
-        goto DragLoopCont;
-
-    //
-    // Is the user holding down the CTRL key (which forces a copy)?
-    //
-    if (GetKeyState(VK_CONTROL) < 0) {
-        iShowBitmap = DROP_COPY;
-        if (GetKeyState(VK_SHIFT) < 0) {
-            iShowBitmap = DROP_LINK;
-            if (GetKeyState(VK_MENU) < 0) {
-                iShowBitmap = DROP_HARD;
-            }
-        }
-        goto DragLoopCont;
-    }
-
-    //
-    // Is the user holding down the ALT or SHIFT key (which forces a move)?
-    //
-    if (GetKeyState(VK_MENU) < 0 || GetKeyState(VK_SHIFT) < 0) {
-        iShowBitmap = DROP_MOVE;
-        goto DragLoopCont;
-    }
-
-    hwndMDIChildSink = GetMDIChildFromDescendant(lpds->hwndSink);
-
-    //
-    // Are we over the source listbox? (sink and source the same)
-    //
-    if (lpds->hwndSink == hwndLB) {
-        //
-        // Are we over a valid listbox entry?
-        //
-        if (lpds->dwControlData == (DWORD)-1) {
-            //
-            // Now force move cursor
-            //
-            bForceMoveCur = TRUE;
-            goto DragLoopCont;
-
-        } else {
-            //
-            // are we over a directory entry?
-            //
-            SendMessage(hwndLB, LB_GETTEXT, (WPARAM)(lpds->dwControlData), (LPARAM)&lpxdta);
-
-            if (!(lpxdta && lpxdta->dwAttrs & ATTR_DIR)) {
-                //
-                // Now force move cursor
-                //
-                bForceMoveCur = TRUE;
-
-                goto DragLoopCont;
-            }
-        }
-    }
-
-    //
-    // Now we need to see if we are over an Executable file.  If so, we
-    // need to force the Bitmaps to draw.
-    //
-
-    //
-    // Are we over a directory window?
-    //
-    if (hwndMDIChildSink)
-        hwndDir = HasDirWindow(hwndMDIChildSink);
-    else
-        hwndDir = NULL;
-
-    if (hwndDir && (hwndDir == GetParent(lpds->hwndSink))) {
-        //
-        // Are we over an occupied part of the list box?
-        //
-        if (lpds->dwControlData != (DWORD)-1) {
-            //
-            // Are we over an Executable?
-            //
-            SendMessage(lpds->hwndSink, LB_GETTEXT, (WORD)(lpds->dwControlData), (LPARAM)(LPTSTR)&lpxdta);
-
-            if (lpxdta && IsProgramFile(MemGetFileName(lpxdta))) {
-                goto DragLoopCont;
-            }
-        }
-    }
-
-    //
-    // Are we dropping into the same drive (check the source and dest drives)
-    //
-    iShowBitmap = ((INT)SendMessage(GetParent(hwndLB), FS_GETDRIVE, 0, 0L) != GetDrive(lpds->hwndSink, lpds->ptDrop));
-
-DragLoopCont:
-
-    ShowItemBitmaps(hwndLB, iShowBitmap);
-
-    //
-    // hack, set the cursor to match the move/copy state
-    //
-    if (wParam) {
-        if (bForceMoveCur) {
-            SetCursor(LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE(iCurDrag & ~1)));
-        } else {
-            SetCursor(GetMoveCopyCursor());
-        }
-    }
-}
+// DSDragLoop function removed - Windows 3.x style drag and drop
+// This has been replaced with OLE-based drag and drop functionality
 
 /////////////////////////////////////////////////////////////////////
 //
 // Name:     DSRectItem()
 //
 // Synopsis: Rect the drop sink and update the status bar
-//
-// Return:     TRUE if the item was highlighted
-// Assumes:
-// Effects:
-// Notes:
+//           REMOVED - Legacy Windows 3.x drag and drop handler
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL DSRectItem(HWND hwndLB, INT iItem, BOOL bFocusOn, BOOL bSearch) {
-    RECT rc;
-    RECT rcT;
-    HDC hDC;
-    BOOL bSel;
-    INT nColor;
-    HBRUSH hBrush;
-    LPXDTA lpxdta;
-    WCHAR szTemp[MAXPATHLEN];
-    PDOCBUCKET pIsProgram = NULL;
-    LPWSTR pszFile;
-
-    //
-    // Are we over an unused part of the listbox?
-    //
-    if (iItem == -1) {
-        if (bSearch || hwndDragging == hwndLB) {
-            SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)szNULL);
-
-            UpdateWindow(hwndStatus);
-
-        } else {
-            SendMessage(GetParent(hwndLB), FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
-
-            StripBackslash(szTemp);
-
-            SetStatusText(
-                SBT_NOBORDERS | 255, SST_RESOURCE | SST_FORMAT,
-                (LPWSTR)(DWORD_PTR)(GetDragStatusText(iShowSourceBitmaps)), szTemp);
-
-            UpdateWindow(hwndStatus);
-        }
-        return FALSE;
-    }
-
-    //
-    // Are we over ourselves? (i.e. a selected item in the source listbox)
-    //
-    bSel = (BOOL)SendMessage(hwndLB, LB_GETSEL, iItem, 0L);
-
-    if (bSel && (hwndDragging == hwndLB)) {
-    ClearStatus:
-
-        SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)szNULL);
-
-        UpdateWindow(hwndStatus);
-        return FALSE;
-    }
-
-    //
-    // We only put rectangles around directories and program items.
-    //
-    if (SendMessage(hwndLB, LB_GETTEXT, iItem, (LPARAM)(LPTSTR)&lpxdta) == LB_ERR || !lpxdta) {
-        return FALSE;
-    }
-
-    if (!(lpxdta->dwAttrs & ATTR_DIR) && !(pIsProgram = IsProgramFile(MemGetFileName(lpxdta)))) {
-        //
-        // It's not a directory
-        //
-
-        //
-        // If it's the same dir window, or we are dropping to a search
-        // window, don't show any text!
-        //
-        if ((hwndDragging == hwndLB) || bSearch) {
-            goto ClearStatus;
-        }
-
-        //
-        // We are in a directory window (not search window)
-        // but we aren't over a folder, so just use the current directory.
-        //
-        SendMessage(GetParent(hwndLB), FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
-        StripBackslash(szTemp);
-
-        SetStatusText(
-            SBT_NOBORDERS | 255, SST_FORMAT | SST_RESOURCE, (LPWSTR)(DWORD_PTR)(GetDragStatusText(iShowSourceBitmaps)),
-            szTemp);
-
-        UpdateWindow(hwndStatus);
-        return FALSE;
-    }
-
-    //
-    // At this point, we are over a directory folder,
-    // be we could be in a search or directory window.
-    //
-
-    //
-    // Turn the item's rectangle on or off.
-    //
-    if (bSearch || !(lpxdta->dwAttrs & ATTR_PARENT)) {
-        pszFile = MemGetFileName(lpxdta);
-
-    } else {
-        SendMessage(GetParent(hwndLB), FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
-        StripBackslash(szTemp);  // trim it down
-        StripFilespec(szTemp);
-
-        pszFile = szTemp;
-    }
-
-    //
-    // Else bSearch and szTemp contains the file name
-    //
-    if (bFocusOn) {
-        SetStatusText(
-            SBT_NOBORDERS | 255, SST_FORMAT | SST_RESOURCE,
-            (LPWSTR)(DWORD_PTR)(pIsProgram ? IDS_DRAG_EXECUTING : (GetDragStatusText(iShowSourceBitmaps))), pszFile);
-
-        UpdateWindow(hwndStatus);
-    }
-
-    SendMessage(hwndLB, LB_GETITEMRECT, iItem, (LPARAM)(LPRECT)&rc);
-    GetClientRect(hwndLB, &rcT);
-    IntersectRect(&rc, &rc, &rcT);
-
-    if (bFocusOn) {
-        hDC = GetDC(hwndLB);
-        if (bSel) {
-            nColor = COLOR_WINDOW;
-            InflateRect(&rc, -1, -1);
-        } else
-            nColor = COLOR_WINDOWFRAME;
-
-        if (hBrush = CreateSolidBrush(GetSysColor(nColor))) {
-            FrameRect(hDC, &rc, hBrush);
-            DeleteObject(hBrush);
-        }
-        ReleaseDC(hwndLB, hDC);
-    } else {
-        InvalidateRect(hwndLB, &rc, FALSE);
-        UpdateWindow(hwndLB);
-    }
-
-    return TRUE;
-}
+// DSRectItem function removed - Windows 3.x style drag and drop
+// This has been replaced with OLE-based drag and drop functionality
 
 /////////////////////////////////////////////////////////////////////
 //
 // Name:     DSDragScrollSink
 //
-// Synopsis: Called by tree, dir and search drag loops.
-//           Scrolls the target if the point is above or below it
-//
-//      lpds    drop struct sent with the message
+// Synopsis: Handler for automatic scrolling during drag operations
+//           REMOVED - Legacy Windows 3.x drag and drop handler
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID DSDragScrollSink(LPDROPSTRUCT lpds) {
-    HWND hwndMDIChildSource;
-    HWND hwndMDIChildSink;
-
-    RECT rcSink;
-    RECT rcScroll;
-    POINT ptDropScr;
-    HWND hwndToScroll;
-
-    hwndMDIChildSource = GetMDIChildFromDescendant(lpds->hwndSource);
-    hwndMDIChildSink = GetMDIChildFromDescendant(lpds->hwndSink);
-
-    // calculate the screen x/y of the ptDrop
-    if (lpds->hwndSink == NULL) {
-        rcSink.left = rcSink.top = 0;
-    } else {
-        GetClientRect(lpds->hwndSink, &rcSink);
-        ClientToScreen(lpds->hwndSink, (LPPOINT)&rcSink.left);
-        ClientToScreen(lpds->hwndSink, (LPPOINT)&rcSink.right);
-    }
-
-    ptDropScr.x = rcSink.left + lpds->ptDrop.x;
-    ptDropScr.y = rcSink.top + lpds->ptDrop.y;
-
-    // determine which window we will be potentially scrolling; if the sink MDI is null,
-    // this means that the mouse is over the frame of this app or outside that;
-    // we scroll the source mdi child in that case
-    hwndToScroll = hwndMDIChildSink;
-    if (hwndToScroll == NULL) {
-        hwndToScroll = hwndMDIChildSource;
-    }
-
-    GetClientRect(hwndToScroll, &rcScroll);
-    ClientToScreen(hwndToScroll, (LPPOINT)&rcScroll.left);
-    ClientToScreen(hwndToScroll, (LPPOINT)&rcScroll.right);
-
-    // if the drop y is above the top of the window to scroll
-    if (ptDropScr.y < rcScroll.top || ptDropScr.y > rcScroll.bottom) {
-        // scroll up/down one line; figure out whether tree or dir list box
-        HWND hwndTree = HasTreeWindow(hwndToScroll);
-        HWND hwndDir = HasDirWindow(hwndToScroll);
-        HWND hwndLB = NULL;
-
-        if (hwndDir) {
-            hwndLB = GetDlgItem(hwndDir, IDCW_LISTBOX);
-            if (hwndLB) {
-                RECT rcLB;
-                GetClientRect(hwndLB, &rcLB);
-                ClientToScreen(hwndLB, (LPPOINT)&rcLB.left);
-                // no need: ClientToScreen(hwndLB, (LPPOINT)&rcLB.right);
-
-                if (ptDropScr.x < rcLB.left) {
-                    // to left of dir list box; switch to tree
-                    hwndLB = NULL;
-                }
-            }
-        }
-
-        if (hwndLB == NULL && hwndTree) {
-            // no dir or point outside of dir list box
-            hwndLB = GetDlgItem(hwndTree, IDCW_TREELISTBOX);
-        }
-
-        if (hwndLB) {
-            SendMessage(hwndLB, WM_VSCROLL, ptDropScr.y < rcScroll.top ? SB_LINEUP : SB_LINEDOWN, 0L);
-        }
-    }
-}
+// DSDragScrollSink function removed - Windows 3.x style drag and drop
+// This has been replaced with OLE-based drag and drop functionality
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -798,19 +447,25 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
             return 1;
         }
 
+        // Replacing old DOF_* constants with simple numeric values for drag types
         if (bDir) {
-            iSel = DOF_DIRECTORY;
+            // 1 = Directory
+            iSel = 1;  // Was DOF_DIRECTORY
         } else if (IsProgramFile(pszFile)) {
-            iSel = DOF_EXECUTABLE;
+            // 2 = Executable
+            iSel = 2;  // Was DOF_EXECUTABLE
         } else if (IsDocument(pszFile)) {
-            iSel = DOF_DOCUMENT;
+            // 3 = Document
+            iSel = 3;  // Was DOF_DOCUMENT
         } else
-            iSel = DOF_DOCUMENT;
+            // 3 = Document (default)
+            iSel = 3;  // Was DOF_DOCUMENT
 
         iCurDrag = SINGLECOPYCURSOR;
     } else {
         // Multiple files are selected - use multiple drag cursor
-        iSel = DOF_MULTIPLE;
+        // 4 = Multiple files
+        iSel = 4;  // Was DOF_MULTIPLE
         iCurDrag = MULTCOPYCURSOR;
     }
 
@@ -896,223 +551,17 @@ SkipPathHead(LPTSTR lpszPath) {
     return NULL;
 }
 
-BOOL DSDropObject(HWND hwndHolder, HWND hwndLB, LPDROPSTRUCT lpds, BOOL bSearch) {
-    DWORD ret;
-    LPWSTR pFrom;
-    DWORD dwAttrib = 0;  // init this to not a dir
-    DWORD dwSelSink;
-    LPWSTR pSel;
-    LPWSTR pSelNoQuote;
-    LPXDTA lpxdta;
-    LPXDTALINK lpStart;
+/////////////////////////////////////////////////////////////////////
+//
+// Name:     DSDropObject
+//
+// Synopsis: Handles the actual drop operation
+//           REMOVED - Legacy Windows 3.x drag and drop handler
+//
+/////////////////////////////////////////////////////////////////////
 
-    WCHAR szTemp[MAXPATHLEN * 2];
-    WCHAR szSourceFile[MAXPATHLEN + 2];
-    WCHAR szSourceFileQualified[MAXPATHLEN + 2];
-
-    //
-    // Turn off status bar
-    //
-    SendMessage(hwndStatus, SB_SIMPLE, 0, 0L);
-    UpdateWindow(hwndStatus);
-
-    //
-    // this is the listbox index of the destination
-    //
-    dwSelSink = lpds->dwControlData;
-
-    //
-    // Are we dropping onto ourselves? (i.e. moving a selected item in the
-    // source listbox OR an unused area of the source listbox).  If so,
-    // no-op the request.
-    //
-    if (hwndHolder == lpds->hwndSource && iShowSourceBitmaps == FALSE &&
-        ((dwSelSink == (DWORD)-1) || SendMessage(hwndLB, LB_GETSEL, dwSelSink, 0L))) {
-        return TRUE;
-    }
-
-    //
-    // set the destination, assume move/copy case below (c:\foo\)
-    //
-    SendMessage(hwndHolder, FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
-
-    //
-    // Are we dropping on a unused portion of some listbox?
-    //
-    if (dwSelSink == (DWORD)-1) {
-        goto NormalMoveCopy;
-    }
-
-    //
-    // check for drop on a directory
-    //
-    lpStart = (LPXDTALINK)GetWindowLongPtr(hwndHolder, GWL_HDTA);
-
-    //
-    // If dropping on "No files." or "Access denied." then do normal thing.
-    //
-    if (!lpStart)
-        goto NormalMoveCopy;
-
-    if (SendMessage(hwndLB, LB_GETTEXT, dwSelSink, (LPARAM)&lpxdta) == LB_ERR || !lpxdta) {
-        goto NormalMoveCopy;
-    }
-
-    lstrcpy(szSourceFile, MemGetFileName(lpxdta));
-    dwAttrib = lpxdta->dwAttrs;
-
-    if (dwAttrib & ATTR_DIR) {
-        if (bSearch) {
-            lstrcpy(szTemp, szSourceFile);
-
-        } else {
-            //
-            // special case the parent
-            //
-            if (dwAttrib & ATTR_PARENT) {
-                StripBackslash(szTemp);
-                StripFilespec(szTemp);
-            } else {
-                lstrcat(szTemp, szSourceFile);
-            }
-        }
-        goto DirMoveCopy;
-    }
-
-    //
-    // dropping on a program?
-    //
-    if (!IsProgramFile(szSourceFile))
-        goto NormalMoveCopy;
-
-    //
-    // directory drop on a file? this is a NOP
-    //
-    if (lpds->wFmt == DOF_DIRECTORY) {
-        DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
-        return FALSE;
-    }
-
-    //
-    // We're dropping a file onto a program.
-    // Exec the program using the source file as the parameter.
-    //
-    // set the directory to that of the program to exec
-    //
-    SendMessage(hwndHolder, FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
-    StripBackslash(szTemp);
-
-    SetCurrentDirectory(szTemp);
-
-    //
-    // We need a fully qualified version of the exe since SheConvertPath
-    // doesn't check the current directory if it finds the exe in the path.
-    //
-    lstrcpy(szSourceFileQualified, szTemp);
-    lstrcat(szSourceFileQualified, SZ_BACKSLASH);
-    lstrcat(szSourceFileQualified, szSourceFile);
-
-    //
-    // get the selected file
-    //
-    pSel = (LPWSTR)SendMessage(lpds->hwndSource, FS_GETSELECTION, 1, 0L);
-    pSelNoQuote = (LPWSTR)SendMessage(lpds->hwndSource, FS_GETSELECTION, 1 | 16, 0L);
-    if (!pSel || !pSelNoQuote) {
-        goto DODone;
-    }
-
-    if (lstrlen(pSel) > MAXPATHLEN)  // don't blow up below!
-        goto DODone;
-
-    //
-    // Checkesc on target exe
-    //
-    CheckEsc(szSourceFile);
-
-    if (bConfirmMouse) {
-        LoadString(hAppInstance, IDS_MOUSECONFIRM, szTitle, COUNTOF(szTitle));
-        LoadString(hAppInstance, IDS_EXECMOUSECONFIRM, szTemp, COUNTOF(szTemp));
-
-        wsprintf(szMessage, szTemp, szSourceFile, pSel);
-        if (MessageBox(hwndFrame, szMessage, szTitle, MB_YESNO | MB_ICONEXCLAMATION) != IDYES)
-            goto DODone;
-    }
-
-    //
-    // create an absolute path to the argument (search window already
-    // is absolute)
-    //
-    if (lpds->hwndSource == hwndSearch) {
-        szTemp[0] = CHAR_NULL;
-    } else {
-        SendMessage(lpds->hwndSource, FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
-    }
-
-    lstrcat(szTemp, pSelNoQuote);  // this is the parameter to the exec
-
-    //
-    // put a "." extension on if none found
-    //
-    if (*GetExtension(szTemp) == 0)
-        lstrcat(szTemp, SZ_DOT);
-
-    //
-    // Since it's only 1 filename, checkesc it
-    //
-    CheckEsc(szTemp);
-
-    ret = ExecProgram(szSourceFileQualified, szTemp, NULL, FALSE, FALSE);
-
-    if (ret)
-        MyMessageBox(hwndFrame, IDS_EXECERRTITLE, (WORD)ret, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
-
-DODone:
-    DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
-    if (pSel) {
-        LocalFree((HANDLE)pSel);
-    }
-    if (pSelNoQuote) {
-        LocalFree((HANDLE)pSelNoQuote);
-    }
-    return TRUE;
-
-    // szTemp must not be checkesc'd here.
-
-NormalMoveCopy:
-    //
-    // Make sure that we don't move into same dir.
-    //
-    if (iShowSourceBitmaps == FALSE &&
-        GetWindowLongPtr(hwndHolder, GWL_LISTPARMS) == SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L)) {
-        return TRUE;
-    }
-
-DirMoveCopy:
-
-    //
-    // the source filename is in the loword
-    //
-    pFrom = (LPWSTR)lpds->dwData;
-
-    AddBackslash(szTemp);
-    lstrcat(szTemp, szStarDotStar);  // put files in this dir
-
-    //
-    // again moved here: target is single!
-    //
-    CheckEsc(szTemp);
-
-    // iShowSourceBitmaps is either
-    // 1 == TRUE  == DROP_COPY
-    // 0 == FALSE == DROP_MOVE
-    // 2 ==       == DROP_LINK
-    // 3 ==       == DROP_HARD
-    ret = DMMoveCopyHelper(pFrom, szTemp, iShowSourceBitmaps);
-
-    DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
-
-    return TRUE;
-}
+// DSDropObject function removed - Windows 3.x style drag and drop
+// This has been replaced with OLE-based drag and drop functionality
 
 // Perform a drag operation using the OLE drag-drop system
 // This replaces the old Windows 3.x DragObject function

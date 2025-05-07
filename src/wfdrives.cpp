@@ -414,41 +414,7 @@ BOOL CheckDrive(HWND hwnd, DRIVE drive, DWORD dwFunc) {
     return IsTheDiskReallyThere(hwnd, szDrive, dwFunc, FALSE);
 }
 
-VOID DrivesDropObject(HWND hWnd, LPDROPSTRUCT lpds) {
-    DRIVEIND driveInd;
-    TCHAR szPath[MAXPATHLEN * 2];
-    LPTSTR pFrom;
-    BOOL bIconic;
-    HWND hwndChild;
-
-    hwndChild = hwndDropChild ? hwndDropChild : (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
-
-    bIconic = IsIconic(hwndChild);
-
-    if (bIconic) {
-    UseCurDir:
-        SendMessage(hwndChild, FS_GETDIRECTORY, COUNTOF(szPath), (LPARAM)szPath);
-    } else {
-        driveInd = DriveFromPoint(lpds->hwndSink, lpds->ptDrop);
-
-        if (driveInd < 0)
-            goto UseCurDir;
-        // this searches windows in the zorder then asks dos
-        // if nothing is found...
-
-        GetSelectedDirectory((WORD)(rgiDrive[driveInd] + 1), szPath);
-    }
-    AddBackslash(szPath);  // add spec part
-    lstrcat(szPath, szStarDotStar);
-
-    pFrom = (LPTSTR)lpds->dwData;
-
-    CheckEsc(szPath);
-    DMMoveCopyHelper(pFrom, szPath, iShowSourceBitmaps);
-
-    if (!bIconic)
-        RectDrive(driveInd, FALSE);
-}
+// Old Win3.x style DrivesDropObject function removed (DROPSTRUCT based implementation)
 
 VOID DrivesPaint(HWND hWnd, INT nDriveFocus, INT nDriveCurrent) {
     RECT rc;
@@ -628,8 +594,6 @@ DrivesWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     static INT nDriveDragging = -1;
     HWND hwndChild;
 
-    TCHAR szDir[MAXPATHLEN];
-
     hwndChild = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
     nDriveCurrent = (INT)GetWindowLongPtr(hWnd, GWL_CURDRIVEIND);
@@ -756,121 +720,6 @@ DrivesWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
             return rgiDrive[nDrive] + CHAR_A;
         }
-
-        case WM_DRAGMOVE: {
-            static INT iOldShowSourceBitmaps = 0;
-
-            LPDROPSTRUCT lpds = (LPDROPSTRUCT)lParam;
-
-            nDrive = DriveFromPoint(lpds->hwndSink, lpds->ptDrop);
-
-            // turn off?
-
-            // Handle if user hits control while dragging to drive
-
-            if (nDrive == nDriveDragging && iOldShowSourceBitmaps != iShowSourceBitmaps) {
-                iOldShowSourceBitmaps = iShowSourceBitmaps;
-                RectDrive(nDrive, TRUE);
-                nDriveDragging = -1;
-            }
-
-            if ((nDrive != nDriveDragging) && (nDriveDragging >= 0)) {
-                RectDrive(nDriveDragging, FALSE);
-
-                SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)szNULL);
-                UpdateWindow(hwndStatus);
-
-                nDriveDragging = -1;
-            }
-
-            // turn on?
-
-            if ((nDrive >= 0) && (nDrive != nDriveDragging)) {
-                RectDrive(nDrive, TRUE);
-                nDriveDragging = nDrive;
-
-                GetSelectedDirectory(rgiDrive[nDrive] + 1, szDir);
-            } else {
-                if (nDrive != -1) {
-                    break;
-                } else {
-                    // Blank space on end of drive bar is as if the user
-                    //  dropped onto the current drive.
-                    SendMessage(hwndChild, FS_GETDIRECTORY, COUNTOF(szDir), (LPARAM)szDir);
-                    StripBackslash(szDir);
-                }
-            }
-
-            SetStatusText(
-                SBT_NOBORDERS | 255, SST_FORMAT | SST_RESOURCE,
-                (LPTSTR)(DWORD_PTR)(GetDragStatusText(iShowSourceBitmaps)), szDir);
-            UpdateWindow(hwndStatus);
-
-            break;
-        }
-        case WM_DRAGSELECT:
-#define lpds ((LPDROPSTRUCT)lParam)
-
-            if (wParam) {
-                SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)szNULL);
-                SendMessage(hwndStatus, SB_SIMPLE, 1, 0L);
-
-                UpdateWindow(hwndStatus);
-
-                // entered, turn it on
-                nDriveDragging = DriveFromPoint(lpds->hwndSink, lpds->ptDrop);
-                if (nDriveDragging >= 0) {
-                    RectDrive(nDriveDragging, TRUE);
-                    GetSelectedDirectory(rgiDrive[nDriveDragging] + 1, szDir);
-                } else {
-                    SendMessage(hwndChild, FS_GETDIRECTORY, COUNTOF(szDir), (LPARAM)szDir);
-                    StripBackslash(szDir);
-                }
-
-                SetStatusText(
-                    SBT_NOBORDERS | 255, SST_RESOURCE | SST_FORMAT,
-                    (LPTSTR)(DWORD_PTR)(GetDragStatusText(iShowSourceBitmaps)), szDir);
-                UpdateWindow(hwndStatus);
-
-            } else {
-                // leaving, turn it off
-
-                SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)szNULL);
-                SendMessage(hwndStatus, SB_SIMPLE, 0, 0L);
-
-                UpdateWindow(hwndStatus);
-                if (nDriveDragging >= 0)
-                    RectDrive(nDriveDragging, FALSE);
-            }
-
-            break;
-
-        case WM_QUERYDROPOBJECT:
-/* Validate the format. */
-#define lpds ((LPDROPSTRUCT)lParam)
-
-            // if (DriveFromPoint(lpds->ptDrop) < 0)
-            //    return FALSE;
-
-            switch (lpds->wFmt) {
-                case DOF_EXECUTABLE:
-                case DOF_DIRECTORY:
-                case DOF_MULTIPLE:
-                case DOF_DOCUMENT:
-                    return (TRUE);
-                default:
-                    return FALSE;
-            }
-            break;
-
-        case WM_DROPOBJECT:
-            // Turn off the status bar
-            SendMessage(hwndStatus, SB_SIMPLE, 0, 0L);
-
-            UpdateWindow(hwndStatus);
-
-            DrivesDropObject(hWnd, (LPDROPSTRUCT)lParam);
-            return TRUE;
 
         case WM_SETFOCUS:
             SetWindowLongPtr(hwndChild, GWL_LASTFOCUS, (LPARAM)hWnd);

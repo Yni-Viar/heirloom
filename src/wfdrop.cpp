@@ -68,8 +68,12 @@ void PaintRectItem(WF_IDropTarget* This, POINTL* ppt) {
     if (This->m_iItemSelected != -1) {
         if (fTree)
             RectTreeItem(hwndLB, This->m_iItemSelected, FALSE);
-        else
-            DSRectItem(hwndLB, This->m_iItemSelected, FALSE, FALSE);
+        else {
+            // Modern drag-drop: Just invalidate the item instead of using DSRectItem
+            RECT rc;
+            SendMessage(hwndLB, LB_GETITEMRECT, This->m_iItemSelected, (LPARAM)&rc);
+            InvalidateRect(hwndLB, &rc, TRUE);
+        }
 
         This->m_iItemSelected = (DWORD)-1;
     }
@@ -80,8 +84,20 @@ void PaintRectItem(WF_IDropTarget* This, POINTL* ppt) {
             if (RectTreeItem(hwndLB, iItem, TRUE))
                 This->m_iItemSelected = iItem;
         } else {
-            if (DSRectItem(hwndLB, iItem, TRUE, FALSE))
-                This->m_iItemSelected = iItem;
+            // Modern drag-drop: Use a simple approach to highlight the item
+            RECT rc;
+            if (SendMessage(hwndLB, LB_GETITEMRECT, iItem, (LPARAM)&rc) != LB_ERR) {
+                HDC hdc = GetDC(hwndLB);
+                if (hdc) {
+                    HBRUSH hbr = CreateSolidBrush(GetSysColor(COLOR_HIGHLIGHT));
+                    if (hbr) {
+                        FrameRect(hdc, &rc, hbr);
+                        DeleteObject(hbr);
+                    }
+                    ReleaseDC(hwndLB, hdc);
+                    This->m_iItemSelected = iItem;
+                }
+            }
         }
     }
 }
@@ -726,4 +742,32 @@ HRESULT CreateDropTarget(HWND hwnd, WF_IDropTarget** ppDropTarget) {
     *ppDropTarget = new WF_IDropTarget(hwnd);
 
     return (*ppDropTarget) ? S_OK : E_OUTOFMEMORY;
+}
+
+// This function is a stub replacement for the old DSRectItem function
+// It just invalidates the item rectangle to force a redraw
+BOOL RectHighlightItem(HWND hwndLB, INT iItem, BOOL bFocusOn, BOOL bSearch) {
+    if (iItem == -1) {
+        return FALSE;
+    }
+
+    RECT rc;
+    if (SendMessage(hwndLB, LB_GETITEMRECT, iItem, (LPARAM)&rc) != LB_ERR) {
+        if (bFocusOn) {
+            HDC hDC = GetDC(hwndLB);
+            if (hDC) {
+                HBRUSH hBrush = CreateSolidBrush(GetSysColor(COLOR_WINDOWFRAME));
+                if (hBrush) {
+                    FrameRect(hDC, &rc, hBrush);
+                    DeleteObject(hBrush);
+                }
+                ReleaseDC(hwndLB, hDC);
+                return TRUE;
+            }
+        } else {
+            InvalidateRect(hwndLB, &rc, FALSE);
+            UpdateWindow(hwndLB);
+        }
+    }
+    return FALSE;
 }

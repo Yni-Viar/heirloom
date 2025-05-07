@@ -462,12 +462,8 @@ VOID BuildDocumentStringWorker(VOID);
 
 HCURSOR GetMoveCopyCursor(VOID);
 VOID DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasFocus);
-VOID DSDragLoop(HWND hwndLB, WPARAM wParam, LPDROPSTRUCT lpds);
-BOOL DSRectItem(HWND hwndLB, INT iSel, BOOL bFocusOn, BOOL bSearch);
-VOID DSDragScrollSink(LPDROPSTRUCT lpds);
-INT DSTrackPoint(HWND hWnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSearch);
+// Old Win3.x style drag and drop handlers removed
 VOID DSSetSelection(HWND hwndLB, BOOL bSelect, LPTSTR szSpec, BOOL bSearch);
-BOOL DSDropObject(HWND hwndHolder, HWND hwndLB, LPDROPSTRUCT lpds, BOOL bSearch);
 INT FixTabsAndThings(HWND hwndLB, WORD* pwTabs, INT iMaxWidthFileName, INT iMaxWidthNTFSFileName, DWORD dwViewOpts);
 LPWSTR SkipPathHead(LPWSTR lpszPath);
 
@@ -1289,3 +1285,6 @@ BOOL GetRecycleBinSize(PLARGE_INTEGER pliSize);
 BOOL EmptyRecycleBin(HWND hwnd);
 DWORD MoveFileToRecycleBin(LPTSTR pszFile);
 VOID FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPTSTR szBuffer);
+
+// Replacement for Windows 3.x style drag and drop highlighting
+BOOL RectHighlightItem(HWND hwndLB, INT iItem, BOOL bFocusOn, BOOL bSearch);

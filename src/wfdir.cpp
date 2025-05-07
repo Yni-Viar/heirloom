@@ -515,7 +515,7 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
 LRESULT
 CALLBACK
 DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    INT iSel, i;
+    INT i;
     HWND hwndLB;
     LPXDTA lpxdta;
     WCHAR szTemp[MAXPATHLEN * 2];
@@ -741,100 +741,12 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             DirReadDestroyWindow(hwnd);
             break;
 
-        case WM_DRAGLOOP:
-
-            // WM_DRAGLOOP is sent to the source window as the object is moved.
-            //
-            //    wParam: TRUE if the object is currently over a droppable sink
-            //    lParam: LPDROPSTRUCT
-
-            // based on current drop location scroll the sink up or down
-            DSDragScrollSink((LPDROPSTRUCT)lParam);
-
-            // DRAGLOOP is used to turn the source bitmaps on/off as we drag.
-            DSDragLoop(hwndLB, wParam, (LPDROPSTRUCT)lParam);
-            break;
-
-        case WM_DRAGSELECT:
-
-            // WM_DRAGSELECT is sent to a sink whenever an new object is dragged
-            // inside of it.
-            //
-            //    wParam: TRUE if the sink is being entered, FALSE if it's being
-            //            exited.
-            //    lParam: LPDROPSTRUCT
-            //
-
-            // DRAGSELECT is used to turn our selection rectangle on or off.
-            // Turn on/off status bar
-
-            SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)szNULL);
-
-            SendMessage(hwndStatus, SB_SIMPLE, (wParam ? 1 : 0), 0L);
-
-            UpdateWindow(hwndStatus);
-
-#define lpds ((LPDROPSTRUCT)lParam)
-
-            iSelHighlight = lpds->dwControlData;
-            DSRectItem(hwndLB, iSelHighlight, (BOOL)wParam, FALSE);
-            break;
-
-#undef lpds
-
-        case WM_DRAGMOVE:
-
-        {
-            static INT iOldShowSourceBitmaps = 0;
-
-            // WM_DRAGMOVE is sent to a sink as the object is being dragged
-            // within it.
-            //
-            //    wParam: Unused
-            //   lParam: LPDROPSTRUCT
-
-            // DRAGMOVE is used to move our selection rectangle among sub-items.
-
-            LPDROPSTRUCT lpds = (LPDROPSTRUCT)lParam;
-
-            // Get the subitem we are over.
-            iSel = lpds->dwControlData;
-
-            // Is it a new one?
-
-            if (iSel == iSelHighlight && iOldShowSourceBitmaps == iShowSourceBitmaps)
-                break;
-
-            iOldShowSourceBitmaps = iShowSourceBitmaps;
-
-            // Yup, un-select the old item.
-            DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
-
-            // Select the new one.
-            iSelHighlight = iSel;
-            DSRectItem(hwndLB, iSel, TRUE, FALSE);
-            break;
-        }
-
         case WM_DRAWITEM:
 
             DrawItem(
                 hwnd, (DWORD)GetWindowLongPtr(hwndParent, GWL_VIEW), (LPDRAWITEMSTRUCT)lParam,
                 ((LPDRAWITEMSTRUCT)lParam)->hwndItem == GetFocus());
             break;
-
-        case WM_DROPOBJECT:
-
-            //
-            // WM_DROPOBJECT is sent to a sink when the user releases an
-            // acceptable object over it
-            //
-            //    wParam: TRUE if over the non-client area, FALSE if over the
-            //            client area.
-            //    lParam: LPDROPSTRUCT
-            //
-            if (DSDropObject(hwnd, hwndLB, (LPDROPSTRUCT)lParam, FALSE))
-                return TRUE;
 
         case WM_LBTRACKPOINT:
             // Disable old style drag and drop
@@ -847,36 +759,6 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             pLBMItem->itemHeight = dyFileName;  // the same as in SetLBFont()
 #undef pLBMItem
             break;
-
-        case WM_QUERYDROPOBJECT: {
-            // lParam LPDROPSTRUCT
-            //
-            // return values:
-            //    0       don't accept (use ghost buster)
-            //    1       accept, use cursor from DragObject()
-            //    hCursor accept, change to this cursor
-            //
-
-            //
-            // Ensure that we are dropping on the client area of the listbox.
-            //
-            LPDROPSTRUCT lpds = (LPDROPSTRUCT)lParam;
-
-            //
-            // Ensure that we can accept the format.
-            //
-            switch (lpds->wFmt) {
-                case DOF_EXECUTABLE:
-                case DOF_DIRECTORY:
-                case DOF_DOCUMENT:
-                case DOF_MULTIPLE:
-                    if (lpds->hwndSink == hwnd)
-                        lpds->dwControlData = (DWORD)-1L;
-
-                    return TRUE;
-            }
-            return FALSE;
-        }
 
         case WM_SETFOCUS: {
             UpdateStatus(hwndParent);

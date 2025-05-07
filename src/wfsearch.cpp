@@ -846,96 +846,6 @@ SearchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             break;
         }
 
-        case WM_DRAGLOOP:
-
-            //
-            // WM_DRAGLOOP is sent to the source window as the object is moved.
-            //
-            //    wParam: TRUE if the object is currently over a droppable sink
-            //    lParam: LPDROPSTRUCT
-            //
-
-            // based on current drop location scroll the sink up or down
-            DSDragScrollSink((LPDROPSTRUCT)lParam);
-
-            //
-            // DRAGLOOP is used to turn the source bitmaps on/off as we drag.
-            //
-
-            DSDragLoop(hwndLB, wParam, (LPDROPSTRUCT)lParam);
-            break;
-
-        case WM_CONTEXTMENU:
-            ActivateCommonContextMenu(hwnd, hwndLB, lParam);
-            break;
-
-        case WM_DRAGSELECT:
-
-            //
-            // WM_DRAGSELECT is sent to a sink whenever an new object is dragged
-            // inside of it.
-            //
-            //    wParam: TRUE if the sink is being entered, FALSE if it's being
-            //            exited.
-            //    lParam: LPDROPSTRUCT
-            //
-
-            //
-            // DRAGSELECT is used to turn our selection rectangle on or off.
-            //
-#define lpds ((LPDROPSTRUCT)lParam)
-
-            //
-            // Turn on/off status bar
-            //
-
-            SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)szNULL);
-
-            SendMessage(hwndStatus, SB_SIMPLE, (wParam ? 1 : 0), 0L);
-            UpdateWindow(hwndStatus);
-
-            iSelHighlight = lpds->dwControlData;
-            DSRectItem(hwndLB, iSelHighlight, (BOOL)wParam, TRUE);
-            break;
-
-        case WM_DRAGMOVE:
-
-            //
-            // WM_DRAGMOVE is sent to a sink as the object is being dragged
-            // within it.
-            //
-            //   wParam: Unused
-            //   lParam: LPDROPSTRUCT
-            //
-
-            //
-            // DRAGMOVE is used to move our selection rectangle among sub-items.
-            //
-
-#define lpds ((LPDROPSTRUCT)lParam)
-
-            //
-            // Get the subitem we are over.
-            //
-            iSel = lpds->dwControlData;
-
-            //
-            // Is it a new one?
-            //
-            if (iSel == iSelHighlight)
-                break;
-
-            //
-            // Yup, un-select the old item.
-            //
-            DSRectItem(hwndLB, iSelHighlight, FALSE, TRUE);
-
-            //
-            // Select the new one.
-            iSelHighlight = iSel;
-            DSRectItem(hwndLB, iSel, TRUE, TRUE);
-            break;
-
         case WM_DRAWITEM: {
             LPDRAWITEMSTRUCT lpLBItem;
             PWORD pwTabs;
@@ -973,40 +883,19 @@ SearchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             break;
         }
 
-        case WM_DROPOBJECT:
-
-            return DSDropObject(hwnd, hwndLB, (LPDROPSTRUCT)lParam, TRUE);
-
-        case WM_LBTRACKPOINT:
-            return DSTrackPoint(hwnd, hwndLB, wParam, lParam, TRUE);
+        case WM_CONTEXTMENU:
+            ActivateCommonContextMenu(hwnd, hwndLB, lParam);
+            break;
 
         case WM_MEASUREITEM:
 #define pLBMItem ((LPMEASUREITEMSTRUCT)lParam)
-
             pLBMItem->itemHeight = dyFileName;
             break;
 #undef pLBItem
-        case WM_QUERYDROPOBJECT:
 
-            //
-            // Ensure that we are dropping on the client area of the listbox.
-            //
-#define lpds ((LPDROPSTRUCT)lParam)
-
-            //
-            // Ensure that we can accept the format.
-            //
-            switch (lpds->wFmt) {
-                case DOF_EXECUTABLE:
-                case DOF_DIRECTORY:
-                case DOF_DOCUMENT:
-                case DOF_MULTIPLE:
-                    if (lpds->hwndSink == hwnd)
-                        lpds->dwControlData = (DWORD)-1L;
-                    return TRUE;
-            }
+        case WM_LBTRACKPOINT:
+            // Disable old style drag and drop
             return FALSE;
-#undef lpds
 
         case WM_SIZE:
             if (wParam != SIZEICONIC) {

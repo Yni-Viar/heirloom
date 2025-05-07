@@ -422,40 +422,6 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             // result as dropping on the active drive.
             // this is especially useful when we are minimized
 
-        case WM_DRAGSELECT:
-        case WM_QUERYDROPOBJECT:
-        case WM_DROPOBJECT:
-
-            // This code is really messed up since there is only one drive bar.
-            // Fix the case for Iconic windows but the uniconic state is weird
-
-#define lpds ((LPDROPSTRUCT)lParam)
-
-            if (IsIconic(hwnd) || hwnd != (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L)) {
-                if (hwndDir = HasDirWindow(hwnd)) {
-                    lpds->dwControlData = (DWORD)-1;
-                    return SendMessage(hwndDir, uMsg, wParam, lParam);
-                } else {
-                    break;
-                }
-            }
-#undef lpds
-
-            if (hwndDriveBar) {
-                LRESULT lRet;
-
-                hwndDropChild = hwnd;
-                lRet = SendMessage(hwndDriveBar, uMsg, wParam, lParam);
-                hwndDropChild = NULL;
-                return lRet;
-            }
-
-            if (hwndDir = HasDirWindow(hwnd)) {
-                return SendMessage(hwndDir, uMsg, wParam, lParam);
-            }
-
-            break;
-
         case FS_GETDRIVE:
 
             GetTreeWindows(hwnd, &hwndTree, &hwndDir);
