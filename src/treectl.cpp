@@ -15,6 +15,7 @@
 #include "lfn.h"
 #include "wfcopy.h"
 #include "wfdrop.h"
+#include "wfdragsrc.h"
 #include <commctrl.h>
 #include <winnls.h>
 #include "dbg.h"
@@ -2468,7 +2469,11 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             //
             CheckEsc(szPath);
 
-            DragObject(hwndFrame, hwnd, (UINT)DOF_DIRECTORY, (ULONG_PTR)szPath, NULL);
+            // Use modern OLE drag and drop instead of old DragObject
+            POINT ptDrag;
+            GetCursorPos(&ptDrag);
+            DWORD dwEffect = DROPEFFECT_COPY | DROPEFFECT_MOVE;
+            HRESULT hr = WFDoDragDrop(hwnd, szPath, ptDrag, &dwEffect);
 
             hwndDragging = NULL;
             iShowSourceBitmaps = TRUE;

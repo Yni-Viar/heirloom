@@ -9,6 +9,7 @@
 
 #include "winfile.h"
 #include "wfdrop.h"
+#include "wfdragsrc.h"
 #include <commctrl.h>
 
 #define DO_DROPFILE 0x454C4946L
@@ -17,6 +18,8 @@
 
 HWND hwndGlobalSink = NULL;
 
+// Forward declare functions
+DWORD PerformDragOperation(HWND hwnd, LPTSTR pFiles, UINT iSel);
 VOID SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel);
 VOID ShowItemBitmaps(HWND hwndLB, INT iShow);
 int GetDragStatusText(int iOperation);
@@ -676,11 +679,13 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
     BOOL bUnselectIfNoDrag;
     LPWSTR pszFile;
     POINT pt;
+    INT iSelCount;
 
     bSelectOneItem = FALSE;
     bUnselectIfNoDrag = FALSE;
 
     bSelected = (BOOL)SendMessage(hwndLB, LB_GETSEL, wParam, 0L);
+    iSelCount = (INT)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
 
     if (GetKeyState(VK_SHIFT) < 0) {
         // What is the state of the Anchor point?
@@ -688,7 +693,6 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
         bSelected = (BOOL)SendMessage(hwndLB, LB_GETSEL, dwAnchor, 0L);
 
         // If Control is up, turn everything off.
-
         if (!(GetKeyState(VK_CONTROL) < 0))
             SendMessage(hwndLB, LB_SETSEL, FALSE, -1L);
 
@@ -705,9 +709,11 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
             SelectItem(hwndLB, wParam, TRUE);
 
     } else {
-        if (bSelected)
+        if (bSelected && iSelCount > 1) {
+            // If clicking on an already selected item in a multi-selection,
+            // preserve the selection for potential drag operation
             bSelectOneItem = TRUE;
-        else {
+        } else if (!bSelected) {
             // Deselect everything.
             SendMessage(hwndLB, LB_SETSEL, FALSE, -1L);
 
@@ -724,7 +730,6 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
     ScreenToClient(hwnd, (LPPOINT)&pt);
 
     // See if the user moves a certain number of pixels in any direction
-
     SetRect(&rc, pt.x - dxClickRect, pt.y - dyClickRect, pt.x + dxClickRect, pt.y + dyClickRect);
 
     SetCapture(hwnd);
@@ -738,16 +743,10 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             DispatchMessage(&msg);
 
-            //
             // WM_CANCELMODE messages will unset the capture, in that
             // case I want to exit this loop
-
-            //
-            // Must do explicit check.
-            //
             if (msg.message == WM_CANCELMODE || GetCapture() != hwnd) {
                 msg.message = WM_LBUTTONUP;  // don't proceed below
-
                 break;
             }
 
@@ -775,36 +774,26 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
             SelectItem(hwndLB, wParam, FALSE);
 
         // notify the appropriate people
-
         SendMessage(hwnd, WM_COMMAND, GET_WM_COMMAND_MPS(0, hwndLB, LBN_SELCHANGE));
 
         return 1;
     }
 
-    //
-    // Enter Danger Mouse's BatCave.
-    //
-    if (SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L) == 1) {
+    // User is starting a drag operation - prepare the cursor
+    iSelCount = (INT)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
+
+    if (iSelCount == 1) {
         LPXDTA lpxdta;
 
-        //
-        // There is only one thing selected.
-        //  Figure out which cursor to use.
-        //
-        // There is only one thing selected.
-        //  Figure out which cursor to use.
-
+        // Only one thing selected - get info about it
         if (SendMessage(hwndLB, LB_GETTEXT, wParam, (LPARAM)&lpxdta) == LB_ERR || !lpxdta) {
             return 1;
         }
 
         pszFile = MemGetFileName(lpxdta);
-
         bDir = lpxdta->dwAttrs & ATTR_DIR;
 
-        //
-        // avoid dragging the parent dir
-        //
+        // Avoid dragging the parent dir
         if (lpxdta->dwAttrs & ATTR_PARENT) {
             return 1;
         }
@@ -820,18 +809,19 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
 
         iCurDrag = SINGLECOPYCURSOR;
     } else {
-        // Multiple files are selected.
+        // Multiple files are selected - use multiple drag cursor
         iSel = DOF_MULTIPLE;
         iCurDrag = MULTCOPYCURSOR;
     }
 
-    // Get the list of selected things.
+    // Get the list of selected things
     pch = (LPTSTR)SendMessage(hwnd, FS_GETSELECTION, FALSE, 0L);
 
-    // Wiggle things around.
+    // Start drag operation
     hwndDragging = hwndLB;
 
-    dwTemp = DragObject(GetDesktopWindow(), hwnd, (UINT)iSel, (ULONG_PTR)pch, NULL);
+    // Use our new OLE-based drag and drop instead of the old DragObject
+    dwTemp = PerformDragOperation(hwnd, pch, iSel);
 
     SetWindowDirectory();
 
@@ -1122,4 +1112,28 @@ DirMoveCopy:
     DSRectItem(hwndLB, iSelHighlight, FALSE, FALSE);
 
     return TRUE;
+}
+
+// Perform a drag operation using the OLE drag-drop system
+// This replaces the old Windows 3.x DragObject function
+DWORD PerformDragOperation(HWND hwnd, LPTSTR pFiles, UINT iSel) {
+    DWORD dwReturn = 0;
+    POINT ptCursor;
+    DWORD dwEffect = DROPEFFECT_COPY | DROPEFFECT_MOVE;
+
+    // Get the current cursor position for the drag
+    GetCursorPos(&ptCursor);
+
+    // Use our OLE drag drop implementation
+    HRESULT hr = WFDoDragDrop(hwnd, pFiles, ptCursor, &dwEffect);
+
+    // Return appropriate values for the old system to maintain compatibility
+    if (SUCCEEDED(hr) && dwEffect != DROPEFFECT_NONE) {
+        if (dwEffect & DROPEFFECT_MOVE)
+            return 1;  // Equivalent to a move operation
+        else if (dwEffect & DROPEFFECT_COPY)
+            return 2;  // Equivalent to a copy operation
+    }
+
+    return 0;
 }

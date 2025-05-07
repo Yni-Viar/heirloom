@@ -729,8 +729,19 @@ VOID ActivateCommonContextMenu(HWND hwnd, HWND hwndLB, LPARAM lParam) {
                 SendMessage(hwndLB, LB_SETCURSEL, (WPARAM)item, 0L);
                 SendMessage(hwnd, WM_COMMAND, GET_WM_COMMAND_MPS(0, hwndLB, LBN_SELCHANGE));
             } else {
-                SendMessage(hwndLB, LB_SETSEL, (WPARAM)FALSE, (LPARAM)-1);
-                SendMessage(hwndLB, LB_SETSEL, (WPARAM)TRUE, (LPARAM)item);
+                // Check if the item under cursor is already selected
+                BOOL isAlreadySelected = (BOOL)SendMessage(hwndLB, LB_GETSEL, (WPARAM)item, 0);
+
+                // If item is not selected and no modifier keys are pressed, deselect all and select this item
+                if (!isAlreadySelected && !(GetKeyState(VK_CONTROL) < 0) && !(GetKeyState(VK_SHIFT) < 0)) {
+                    SendMessage(hwndLB, LB_SETSEL, (WPARAM)FALSE, (LPARAM)-1);
+                    SendMessage(hwndLB, LB_SETSEL, (WPARAM)TRUE, (LPARAM)item);
+                }
+                // If item is not selected but Ctrl is pressed, add it to selection
+                else if (!isAlreadySelected && (GetKeyState(VK_CONTROL) < 0)) {
+                    SendMessage(hwndLB, LB_SETSEL, (WPARAM)TRUE, (LPARAM)item);
+                }
+                // Otherwise, preserve the existing selection
 
                 BOOL bDir = FALSE;
                 SendMessage(hwnd, FS_GETSELECTION, 5, (LPARAM)&bDir);

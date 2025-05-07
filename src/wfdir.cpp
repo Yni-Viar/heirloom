@@ -337,16 +337,86 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
     static BOOL fDragging = FALSE;
     static POINT ptOrigin;
     static HWND hwndParent = NULL;
+    // Add variables to track whether a multi-selection click occurred
+    static BOOL fMultiSelectClick = FALSE;
+    static INT iClickedItem = -1;
 
     switch (wMsg) {
         case WM_LBUTTONDOWN: {
+            // Always set focus to the list box when clicked
+            SetFocus(hWnd);
+
             // Save the starting point for potential drag operation
             ptOrigin.x = GET_X_LPARAM(lParam);
             ptOrigin.y = GET_Y_LPARAM(lParam);
             hwndParent = GetParent(hWnd);
-            fDragging = TRUE;
+
+            // Reset multi-selection tracking variables
+            fMultiSelectClick = FALSE;
+            iClickedItem = -1;
+
+            // Check if we clicked on a selected item
+            POINT pt = { ptOrigin.x, ptOrigin.y };
+            DWORD itemIndex = (DWORD)SendMessage(hWnd, LB_ITEMFROMPOINT, 0, POINTTOPOINTS(pt));
+
+            // Only process if item is valid (not in client area outside items)
+            if (HIWORD(itemIndex) == 0) {
+                BOOL isSelected = (BOOL)SendMessage(hWnd, LB_GETSEL, LOWORD(itemIndex), 0);
+                INT selCount = (INT)SendMessage(hWnd, LB_GETSELCOUNT, 0, 0L);
+
+                // Handle selection logic ourselves to preserve multi-selection for drag
+                if (GetKeyState(VK_SHIFT) < 0) {
+                    // Shift-click: Select from anchor to here
+                    INT anchorIndex = (INT)SendMessage(hWnd, LB_GETANCHORINDEX, 0, 0L);
+                    INT startIdx = min(anchorIndex, (INT)LOWORD(itemIndex));
+                    INT endIdx = max(anchorIndex, (INT)LOWORD(itemIndex));
+
+                    if (!(GetKeyState(VK_CONTROL) < 0)) {
+                        // Clear existing selection first if Ctrl is not pressed
+                        SendMessage(hWnd, LB_SETSEL, FALSE, -1);
+                    }
+
+                    // Select the range
+                    for (INT i = startIdx; i <= endIdx; i++) {
+                        SendMessage(hWnd, LB_SETSEL, TRUE, i);
+                    }
+
+                    // Set caret to the current item
+                    SendMessage(hWnd, LB_SETCARETINDEX, LOWORD(itemIndex), 0);
+                } else if (GetKeyState(VK_CONTROL) < 0) {
+                    // Ctrl-click: Toggle selection state of this item
+                    SendMessage(hWnd, LB_SETSEL, !isSelected, LOWORD(itemIndex));
+                    SendMessage(hWnd, LB_SETCARETINDEX, LOWORD(itemIndex), 0);
+                    SendMessage(hWnd, LB_SETANCHORINDEX, LOWORD(itemIndex), 0);
+                } else {
+                    // Regular click
+                    if (isSelected && selCount > 1) {
+                        // If clicking on already selected item in multi-selection,
+                        // temporarily keep the selection intact for potential drag
+                        // but remember that we need to clear it on mouse up if no drag happens
+                        fMultiSelectClick = TRUE;
+                        iClickedItem = LOWORD(itemIndex);
+
+                        // Just update caret position without changing selection yet
+                        SendMessage(hWnd, LB_SETCARETINDEX, LOWORD(itemIndex), 0);
+                        SendMessage(hWnd, LB_SETANCHORINDEX, LOWORD(itemIndex), 0);
+                    } else {
+                        // If clicking on unselected item, clear selection and select just this one
+                        SendMessage(hWnd, LB_SETSEL, FALSE, -1);
+                        SendMessage(hWnd, LB_SETSEL, TRUE, LOWORD(itemIndex));
+                        SendMessage(hWnd, LB_SETCARETINDEX, LOWORD(itemIndex), 0);
+                        SendMessage(hWnd, LB_SETANCHORINDEX, LOWORD(itemIndex), 0);
+                    }
+                }
+
+                // Don't pass this message to original window proc, as we've handled selection
+                fDragging = TRUE;
+                SetCapture(hWnd);
+                return 0;
+            }
 
             // Set capture to ensure we get mouse movement even if outside the window
+            fDragging = TRUE;
             SetCapture(hWnd);
             break;
         }
@@ -371,7 +441,7 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
                     BOOL fIsDir = FALSE;
                     LPWSTR pszFiles;
 
-                    // Get the selected files
+                    // Get the selected files - make sure this includes all files currently selected
                     pszFiles = DirGetSelection(hwndParent, hwndParent, hWnd, iSelType, &fIsDir, NULL);
 
                     if (pszFiles && *pszFiles) {
@@ -398,15 +468,41 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
             break;
         }
 
+        case WM_LBUTTONUP: {
+            if (fDragging) {
+                // If this was a click on a selected item in a multi-selection without dragging,
+                // and without modifier keys, then deselect other items now
+                if (fMultiSelectClick && iClickedItem >= 0) {
+                    // Check if we moved far enough to start a drag
+                    POINT ptCurrent;
+                    GetCursorPos(&ptCurrent);
+                    POINT ptOriginScreen = ptOrigin;
+                    ClientToScreen(hWnd, &ptOriginScreen);
+
+                    INT dx = ptCurrent.x - ptOriginScreen.x;
+                    INT dy = ptCurrent.y - ptOriginScreen.y;
+
+                    // If we didn't move far enough to start a drag,
+                    // clear selection and select only this item
+                    if ((abs(dx) <= GetSystemMetrics(SM_CXDRAG)) && (abs(dy) <= GetSystemMetrics(SM_CYDRAG))) {
+                        SendMessage(hWnd, LB_SETSEL, FALSE, -1L);
+                        SendMessage(hWnd, LB_SETSEL, TRUE, iClickedItem);
+                    }
+                }
+
+                // Reset tracking variables
+                fMultiSelectClick = FALSE;
+                iClickedItem = -1;
+                fDragging = FALSE;
+                ReleaseCapture();
+            }
+            break;
+        }
+
         case WM_LBTRACKPOINT:
             // Don't pass this message to the old window proc
             // This prevents the old drag and drop system from activating
             return 0;
-
-        case WM_LBUTTONUP:
-            fDragging = FALSE;
-            ReleaseCapture();
-            break;
 
         case WM_RBUTTONDOWN:
             break;
