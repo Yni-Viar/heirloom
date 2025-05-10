@@ -81,10 +81,6 @@ BEGIN
     VK_F1,      IDM_HELPINDEX,  VIRTKEY
     "+",        IDM_EXPONE,     NOINVERT
     VK_ADD,     IDM_EXPONE,     NOINVERT, VIRTKEY
-    "*",        IDM_EXPSUB,     NOINVERT
-    VK_MULTIPLY,IDM_EXPSUB,     NOINVERT, VIRTKEY
-    "8",        IDM_EXPALL,     NOINVERT, VIRTKEY, CONTROL, SHIFT
-    VK_MULTIPLY,IDM_EXPALL,     NOINVERT, VIRTKEY, CONTROL
     "-",        IDM_COLLAPSE,   NOINVERT
     VK_SUBTRACT,IDM_COLLAPSE,   NOINVERT, VIRTKEY
 
@@ -211,8 +207,6 @@ BEGIN
     POPUP       "&Tree"
     BEGIN
     MENUITEM    "E&xpand One Level\t+", IDM_EXPONE
-    MENUITEM    "Expand &Branch\t*",    IDM_EXPSUB
-    MENUITEM    "Expand &All\tCtrl+*",  IDM_EXPALL
     MENUITEM    "&Collapse Branch\t-",  IDM_COLLAPSE
     MENUITEM    SEPARATOR
     MENUITEM    "&Indicate Expandable Branches",    IDM_ADDPLUSES
@@ -662,8 +656,6 @@ BEGIN
     MH_MYITEMS+IDM_EXIT,        "Quits File Manager"
 
     MH_MYITEMS+IDM_EXPONE,      "Displays another level of a directory"
-    MH_MYITEMS+IDM_EXPSUB,      "Displays all levels of a directory"
-    MH_MYITEMS+IDM_EXPALL,      "Displays all levels of all directories"
     MH_MYITEMS+IDM_COLLAPSE,    "Collapses all directories of a selected directory"
     MH_MYITEMS+IDM_ADDPLUSES,   "Indicates directories that have subdirectories"
 

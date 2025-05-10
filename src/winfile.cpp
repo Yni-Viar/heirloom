@@ -243,8 +243,6 @@ BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
             uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
 
         EnableMenuItem(hMenu, IDM_EXPONE, uMenuFlags);
-        EnableMenuItem(hMenu, IDM_EXPSUB, uMenuFlags);
-        EnableMenuItem(hMenu, IDM_EXPALL, uMenuFlags);
         EnableMenuItem(hMenu, IDM_COLLAPSE, uMenuFlags);
         EnableMenuItem(hMenu, IDM_ADDPLUSES, uMenuFlags);
 

@@ -85,8 +85,6 @@
 
 #define IDM_TREE 2
 #define IDM_EXPONE 301
-#define IDM_EXPSUB 302
-#define IDM_EXPALL 303
 #define IDM_COLLAPSE 304
 #define IDM_NEWTREE 305
 

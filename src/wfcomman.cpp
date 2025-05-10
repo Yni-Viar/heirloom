@@ -1347,16 +1347,6 @@ BOOL AppCommandProc(DWORD id) {
                 SendMessage(hwndT, TC_EXPANDLEVEL, FALSE, 0L);
             break;
 
-        case IDM_EXPSUB:
-            if (hwndT = HasTreeWindow(hwndActive))
-                SendMessage(hwndT, TC_EXPANDLEVEL, TRUE, 0L);
-            break;
-
-        case IDM_EXPALL:
-            if (hwndT = HasTreeWindow(hwndActive))
-                SendMessage(hwndT, TC_SETDRIVE, MAKEWORD(TRUE, 0), 0L);
-            break;
-
         case IDM_COLLAPSE:
             if (hwndT = HasTreeWindow(hwndActive))
                 SendMessage(hwndT, TC_COLLAPSELEVEL, 0, 0L);
