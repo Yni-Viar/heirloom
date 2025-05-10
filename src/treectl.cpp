@@ -169,8 +169,10 @@ VOID SetNodeAttribs(PDNODE pNode, LPTSTR szPath) {
 
 VOID ScanDirLevel(PDNODE pParentNode, LPTSTR szPath, DWORD view) {
     BOOL bFound;
-    LFNDTA lfndta;
     BOOL bExclude;
+
+    LFNDTA lfndta{};
+    lfndta.hFindFile = INVALID_HANDLE_VALUE;
 
     /* Add '*.*' to the current path. */
     lstrcpy(szMessage, szPath);
@@ -509,7 +511,6 @@ BOOL ReadDirLevel(
     LPTSTR szAutoExpand,
     BOOL bPartialSort) {
     HWND hwndParent;
-    LFNDTA lfndta;
     LPTSTR szEndPath;
     INT iNode;
     BOOL bFound;
@@ -524,6 +525,9 @@ BOOL ReadDirLevel(
     BOOL bResult = TRUE;
     LPXDTALINK lpStart = NULL;  // assume none to steal from
     HWND hwndDir;
+
+    LFNDTA lfndta{};
+    lfndta.hFindFile = INVALID_HANDLE_VALUE;
 
     if (bCancelTree)
         return FALSE;
