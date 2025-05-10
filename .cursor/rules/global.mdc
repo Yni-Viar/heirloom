@@ -3,6 +3,7 @@ description:
 globs: 
 alwaysApply: true
 ---
+# Heirloom File Manager
 - This is a modernized derivative of the classic Windows File Manager codebase.
 - When creating new source files, omit the file comment header seen in existing files.
 - We only support Windows 10 and above. Don't support older systems.

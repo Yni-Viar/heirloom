@@ -1,4 +1,4 @@
-name: File Manager
+name: Heirloom File Manager
 on: [push, workflow_dispatch]
 
 jobs:

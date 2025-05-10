@@ -104,11 +104,11 @@ BEGIN
 END
 
 // Define version information
-#define VER_FILEDESCRIPTION_STR     "File Manager"
+#define VER_FILEDESCRIPTION_STR     "Heirloom File Manager"
 #define VER_INTERNALNAME_STR        "fileman\0"
 #define VER_ORIGINALFILENAME_STR    "WINFILE.EXE"
 #define VER_COMPANYNAME_STR         "Microsoft Corporation"
-#define VER_PRODUCTNAME_STR         "File Manager"
+#define VER_PRODUCTNAME_STR         "Heirloom File Manager"
 #define VER_LEGALCOPYRIGHT_STR      "Copyright (c) Microsoft Corporation. All rights reserved."
 
 #define VER_FILEVERSION             11,3,0,0
@@ -251,7 +251,7 @@ BEGIN
     END
     POPUP       "&Help"
     BEGIN
-    MENUITEM    "&About File Manager",   IDM_ABOUT
+    MENUITEM    "&About Heirloom File Manager",   IDM_ABOUT
     END
 
 END
@@ -311,12 +311,12 @@ BEGIN
 
     IDS_NETERR              "Network Error"                 /* 32 */
     IDS_NETDISCONWINERR     "This drive contains the Windows system files and cannot be disconnected."                                                 /* 128 */
-    IDS_NETDISCONOPEN       "File Manager cannot disconnect network drive.\n\nFiles are open on this drive."
+    IDS_NETDISCONOPEN       "Heirloom File Manager cannot disconnect network drive.\n\nFiles are open on this drive."
 
-    IDS_ATTRIBERR           "File Manager cannot change attributes.  "
-    IDS_MAKEDIRERR          "File Manager cannot create directory.  "
+    IDS_ATTRIBERR           "Heirloom File Manager cannot change attributes.  "
+    IDS_MAKEDIRERR          "Heirloom File Manager cannot create directory.  "
 
-    IDS_LABELDISKERR        "File Manager cannot label disk.\n\nMake sure the disk is not write-protected, is not a network drive, and that the label is valid.\
+    IDS_LABELDISKERR        "Heirloom File Manager cannot label disk.\n\nMake sure the disk is not write-protected, is not a network drive, and that the label is valid.\
                              Labels cannot contain the following characters:\n[space] * ? / \\ | . , ; : + = [ ] ( ) & ^ < > "" "
 
     IDS_SEARCHNOMATCHES     "No matching files were found."
@@ -329,7 +329,7 @@ BEGIN
 
     IDS_UNKNOWNMSG,         "Unexpected error: %d."
     IDS_NOMEMORYMSG,        "Not enough memory to start the specified application.\n\nQuit one or more applications, and then try again."                   /* 128 */
-    IDS_FILENOTFOUNDMSG,    "File Manager cannot find file (or one of its components).\n\nMake sure the path and filename are correct and that all required libraries are available."
+    IDS_FILENOTFOUNDMSG,    "Heirloom File Manager cannot find file (or one of its components).\n\nMake sure the path and filename are correct and that all required libraries are available."
     IDS_BADPATHMSG,         "The specified path is invalid."                                                                                           /* 128 */
 //    IDS_MANYOPENFILESMSG,   "Too many files are currently in use.\n\nQuit one or more applications or increase the value of the FILES command in CONFIG.SYS, and then try again."                                    /* 128 */
     IDS_NOASSOCMSG,         "No application is associated with this file."       /* 128 */
@@ -341,7 +341,7 @@ BEGIN
     IDS_INVALIDDLL          "One of the library files needed to run this application is damaged. Please reinstall this application."
     IDS_SHAREERROR          "This file is in use by some other application."
 
-    IDS_CREATELONGDIR       "File Manager may not be able to access files created in the directory '%s.'\n\nDo you want to continue?"
+    IDS_CREATELONGDIR       "Heirloom File Manager may not be able to access files created in the directory '%s.'\n\nDo you want to continue?"
     IDS_CREATELONGDIRTITLE  "Create Directory"
 
     IDS_MOUSECONFIRM,       "Confirm Mouse Operation"       /* 32 */
@@ -350,13 +350,13 @@ BEGIN
     IDS_LINKMOUSECONFIRM,   "Are you sure you want to link the selected files or directories to %s?"
     IDS_EXECMOUSECONFIRM,   "Are you sure you want to start %s using %s as the initial file?"                                                          /* 128 */
 
-    IDS_WINFILE,            "File Manager"                  /* 32 */
+    IDS_WINFILE,            "Heirloom File Manager"                  /* 32 */
     IDS_TREETITLE,          "Directory Tree"                /* 32 */
     IDS_SEARCHTITLE,        "Search Results: "              /* 32 */
 
     IDS_READING             "Reading directory, please wait..."
     IDS_TOOMANYTITLE,       "Too Many Files"                /* 32 */
-    IDS_OOMTITLE,           "File Manager - Out of Memory"  /* 32 */
+    IDS_OOMTITLE,           "Heirloom File Manager - Out of Memory"  /* 32 */
     IDS_OOMREADINGDIRMSG,   "Unable to read entire directory.  Only a partial listing will be displayed."                                              /* 128 */
 
 //    IDS_PRINTFNF            "The file to be printed cannot be found. Make sure the correct path and filename are specified."                                                                                  /* 128 */
@@ -428,17 +428,17 @@ BEGIN
     /* The first %s is replaced by a file name. The second %s is replaced
      * by one of the "reasons" below. */
 
-    IDS_VERBS + FUNC_COPY       "File Manager cannot copy %s: %s"
-    IDS_VERBS + FUNC_MOVE       "File Manager cannot move %s: %s"
-    IDS_VERBS + FUNC_DELETE     "File Manager cannot delete %s: %s"
-    IDS_VERBS + FUNC_RENAME     "File Manager cannot rename %s: %s"
-    IDS_VERBS + FUNC_LINK       "File Manager cannot create symbolic link %s: %s"
-    IDS_VERBS + FUNC_HARD       "File Manager cannot create hardlink %s: %s"
-    IDS_VERBS + FUNC_JUNC       "File Manager cannot create junction %s: %s"
-    IDS_ACTIONS + 1             "File Manager cannot create directory %s: %s"
-    IDS_ACTIONS + 2             "File Manager cannot remove directory %s: %s"
-    IDS_REPLACING               "File Manager cannot create or replace %s: %s"
-    // IDS_CREATING             "File Manager cannot create %s: %s"
+    IDS_VERBS + FUNC_COPY       "Heirloom File Manager cannot copy %s: %s"
+    IDS_VERBS + FUNC_MOVE       "Heirloom File Manager cannot move %s: %s"
+    IDS_VERBS + FUNC_DELETE     "Heirloom File Manager cannot delete %s: %s"
+    IDS_VERBS + FUNC_RENAME     "Heirloom File Manager cannot rename %s: %s"
+    IDS_VERBS + FUNC_LINK       "Heirloom File Manager cannot create symbolic link %s: %s"
+    IDS_VERBS + FUNC_HARD       "Heirloom File Manager cannot create hardlink %s: %s"
+    IDS_VERBS + FUNC_JUNC       "Heirloom File Manager cannot create junction %s: %s"
+    IDS_ACTIONS + 1             "Heirloom File Manager cannot create directory %s: %s"
+    IDS_ACTIONS + 2             "Heirloom File Manager cannot remove directory %s: %s"
+    IDS_REPLACING               "Heirloom File Manager cannot create or replace %s: %s"
+    // IDS_CREATING             "Heirloom File Manager cannot create %s: %s"
 
 // include reason strings
 
@@ -451,8 +451,8 @@ BEGIN
 
     IDS_QUICKFORMATTINGTITLE    "Quick Formatting..."
 
-    IDS_BUSYFORMATQUITVERIFY    "File Manager is currently formatting a disk.  Exiting File Manager will abort this operation."
-    IDS_BUSYCOPYQUITVERIFY      "File Manager is currently copying a disk.  Exiting File Manager will abort this operation."
+    IDS_BUSYFORMATQUITVERIFY    "Heirloom File Manager is currently formatting a disk.  Exiting Heirloom File Manager will abort this operation."
+    IDS_BUSYCOPYQUITVERIFY      "Heirloom File Manager is currently copying a disk.  Exiting Heirloom File Manager will abort this operation."
     IDS_PERCENTCOMPLETE         "Percent Complete"
 
     IDS_12MB                    "1%s2 MB"
@@ -463,24 +463,24 @@ BEGIN
     IDS_2080MB                  "20%s8 MB"
 
     IDS_DEVICECAP               "Drive Capacity"
-    IDS_QSUPMEDIA               "File manager cannot obtain disk information.\n\nMake sure the disk is in the drive."
+    IDS_QSUPMEDIA               "Heirloom File Manager cannot obtain disk information.\n\nMake sure the disk is in the drive."
     IDS_REMOVEMED               "Unknown Disk Type"
 
     IDS_CANTFORMATTITLE         "Unknown Disk Type"
-    IDS_CANTFORMAT              "The type of disk in drive %s can not be formatted with the File Manager.  Please use the Disk Administrator to format this disk."
+    IDS_CANTFORMAT              "The type of disk in drive %s can not be formatted with the Heirloom File Manager.  Please use the Disk Administrator to format this disk."
 
     IDS_FFERR_INCFS             "Incompatible file system."
     IDS_FFERR_ACCESSDENIED      "Access denied."
     IDS_FFERR_DISKWP            "The disk is write-protected."
-    IDS_FFERR_CANTLOCK          "File Manager cannot lock volume."
-    IDS_FFERR_CANTQUICKF        "File Manager cannot quick format disk.\n\nMake sure the disk is the correct density rating."
+    IDS_FFERR_CANTLOCK          "Heirloom File Manager cannot lock volume."
+    IDS_FFERR_CANTQUICKF        "Heirloom File Manager cannot quick format disk.\n\nMake sure the disk is the correct density rating."
     IDS_FFERR_SRCIOERR          "IO error on the source disk."
     IDS_FFERR_DSTIOERR          "IO error on the destination disk."
     IDS_FFERR_SRCDSTIOERR       "IO error on both the source and destination disks."
     IDS_FFERR_GENIOERR          "An IO error has occurred."
 //    IDS_FFERR_MEDIASENSE      "This disk is capable of being formatted at a capacity of %s. Continue formatting at this capacity?"
-    IDS_FFERR                   "File Manager cannot format disk.\n\nMake sure the disk is in the drive and not write-protected, damaged, or of wrong density rating."
-    IDS_FFERR_BADLABEL          "File Manager cannot label the disk.\n\nThe specified label is invalid.  Make sure the label does not contain any of the following characters\n\
+    IDS_FFERR                   "Heirloom File Manager cannot format disk.\n\nMake sure the disk is in the drive and not write-protected, damaged, or of wrong density rating."
+    IDS_FFERR_BADLABEL          "Heirloom File Manager cannot label the disk.\n\nThe specified label is invalid.  Make sure the label does not contain any of the following characters\n\
                                 [space] * ? / \\ | . , ; : + = [ ] ( ) & ^ < > "" "
 
 
@@ -552,8 +552,8 @@ BEGIN
     IDS_NOACCESSDIR             "You do not have permission to access this directory."
     IDS_NOACCESSFILE            "You do not have permission to access this file."
 
-    IDS_DRIVEBUSY_COPY          "Drive %c: is busy and cannot be accessed.\nFile Manager is performing a disk copy."
-    IDS_DRIVEBUSY_FORMAT        "Drive %c: is busy and cannot be accessed.\nFile Manager is formatting this disk."
+    IDS_DRIVEBUSY_COPY          "Drive %c: is busy and cannot be accessed.\nHeirloom File Manager is performing a disk copy."
+    IDS_DRIVEBUSY_FORMAT        "Drive %c: is busy and cannot be accessed.\nHeirloom File Manager is formatting this disk."
 
     IDS_COPYMOVENOTCOMPLETED    "Operation not fully completed"
     IDS_DIRREMAINS              "Unable to finish operation on all files and directories."
@@ -584,8 +584,8 @@ BEGIN
     IDS_COPYINGDISKTITLE        "Copying Disk"
     IDS_SEARCHING               "Searching..."
 
-    IDS_INITUPDATEFAIL          "Unable to initialize background update support.  File Manager will exit.  "
-    IDS_INITUPDATEFAILTITLE     "File Manager Initialization"
+    IDS_INITUPDATEFAIL          "Unable to initialize background update support.  Heirloom File Manager will exit.  "
+    IDS_INITUPDATEFAILTITLE     "Heirloom File Manager Initialization"
 
     IDS_EDITFILTER              "Programs (*.exe)\0*.exe\0"
 
@@ -625,7 +625,7 @@ BEGIN
     MH_MYITEMS+IDM_MAKEDIR,     "Creates a directory"
     MH_MYITEMS+IDM_SEARCH,      "Searches for files and directories"
     MH_MYITEMS+IDM_SELECT,      "Selects files and directories"
-    MH_MYITEMS+IDM_EXIT,        "Quits File Manager"
+    MH_MYITEMS+IDM_EXIT,        "Quits Heirloom File Manager"
 
     MH_MYITEMS+IDM_EXPONE,      "Displays another level of a directory"
     MH_MYITEMS+IDM_COLLAPSE,    "Collapses all directories of a selected directory"
@@ -646,15 +646,15 @@ BEGIN
     MH_MYITEMS+IDM_VINCLUDE,    "Shows files of a specified type"
 
     MH_MYITEMS+IDM_CONFIRM,     "Controls confirmation messages"
-    MH_MYITEMS+IDM_FONT,        "Changes the File Manager font"
+    MH_MYITEMS+IDM_FONT,        "Changes the Heirloom File Manager font"
 
     MH_MYITEMS+IDM_DRIVEBAR,    "Displays or hides the drivebar"
     MH_MYITEMS+IDM_STATUSBAR,   "Displays or hides the status bar"
     MH_MYITEMS+IDM_NEWWINONCONNECT,     "Opens a new window when you connect"
 
-    MH_MYITEMS+IDM_MINONRUN,    "Reduces File Manager to an icon at startup"
-    MH_MYITEMS + IDM_INDEXONLAUNCH, "Creates an index for Goto Directory when File Manager launches"
-    MH_MYITEMS+IDM_SAVESETTINGS,        "Saves settings when you quit File Manager"
+    MH_MYITEMS+IDM_MINONRUN,    "Reduces Heirloom File Manager to an icon at startup"
+    MH_MYITEMS + IDM_INDEXONLAUNCH, "Creates an index for Goto Directory when Heirloom File Manager launches"
+    MH_MYITEMS+IDM_SAVESETTINGS,        "Saves settings when you quit Heirloom File Manager"
 
     MH_MYITEMS+IDM_NEWWINDOW,   "Opens a new window"
     MH_MYITEMS+IDM_CASCADE,     "Cascades windows"
@@ -663,7 +663,7 @@ BEGIN
     MH_MYITEMS+IDM_ARRANGE,     "Arranges icons"
     MH_MYITEMS+IDM_REFRESH,     "Updates the contents of a window"
 
-    MH_MYITEMS+IDM_ABOUT,       "Displays information about File Manager"
+    MH_MYITEMS+IDM_ABOUT,       "Displays information about Heirloom File Manager"
 END
 
 
@@ -1134,11 +1134,11 @@ END
 
 ABOUTDLG DIALOGEX 20, 20, 242, 106
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About File Manager"
+CAPTION "About Heirloom File Manager"
 FONT 9, "Segoe UI", 400, 0, 0x0
 BEGIN
     ICON            VK_GAMEPAD_LEFT_SHOULDER,-1,7,7,10,8
-    LTEXT           "File Manager",-1,42,7,44,8
+    LTEXT           "Heirloom File Manager",-1,42,7,100,8
     CONTROL         "<version>",IDD_VERTEXT,"Static",SS_LEFTNOWORDWRAP,42,21,178,8
     LTEXT           "Copyright (c) Microsoft Corporation. All rights reserved.",-1,42,35,182,8
     LTEXT           "Licensed under the MIT License.",-1,42,49,106,8
