@@ -215,11 +215,10 @@ BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
         pSel = (LPTSTR)SendMessage(hwndActive, FS_GETSELECTION, 5, (LPARAM)&bDir);
 
         //
-        // can't print or edit a dir
+        // can't edit a dir
         //
         uMenuFlags = bDir ? MF_BYCOMMAND | MF_DISABLED | MF_GRAYED : MF_BYCOMMAND | MF_ENABLED;
 
-        EnableMenuItem(hMenu, IDM_PRINT, uMenuFlags);
         EnableMenuItem(hMenu, IDM_EDIT, uMenuFlags);
 
         //

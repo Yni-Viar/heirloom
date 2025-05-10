@@ -182,7 +182,6 @@ BEGIN
     MENUITEM    "Proper&ties...\tAlt+Enter",IDM_ATTRIBS
     MENUITEM    SEPARATOR
     MENUITEM    "&Run...",          IDM_RUN
-    MENUITEM    "Pr&int...",        IDM_PRINT
     MENUITEM    SEPARATOR
     MENUITEM    "Cr&eate Directory...\tCtrl+Shift+N", IDM_MAKEDIR
     MENUITEM    "Searc&h...\tCtrl+F",       IDM_SEARCH
@@ -327,7 +326,6 @@ BEGIN
     IDS_DRIVETEMP           "Drive %c:%c"
 
     IDS_EXECERRTITLE,       "Cannot Run Program"
-    IDS_PRINTERRTITLE,      "Cannot Print File"
 
     IDS_UNKNOWNMSG,         "Unexpected error: %d."
     IDS_NOMEMORYMSG,        "Not enough memory to start the specified application.\n\nQuit one or more applications, and then try again."                   /* 128 */
@@ -362,10 +360,7 @@ BEGIN
     IDS_OOMREADINGDIRMSG,   "Unable to read entire directory.  Only a partial listing will be displayed."                                              /* 128 */
 
 //    IDS_PRINTFNF            "The file to be printed cannot be found. Make sure the correct path and filename are specified."                                                                                  /* 128 */
-    IDS_PRINTMEMORY         "Not enough memory to print.\n\nQuit one or more applications, and then try again."                                             /* 128 */
-    IDS_PRINTDISK           "Not enough disk space to print.\n\nDelete one or more files to increase disk space, and then try again."                        /* 128 */
-    IDS_PRINTERROR          "An error has occurred while printing.\n\nMake sure the printer is properly configured and selected."             /* 128 */
-    IDS_PRINTONLYONE        "File Manager cannot print multiple files.\n\nSelect only one file, and then try again."                                               /* 128 */
+
 
     IDS_CURDIRIS,           "Current directory: %s"                                                                                                    /* 128 */
     IDS_CURDIRSARE,         "Other current directories: "
@@ -396,7 +391,7 @@ BEGIN
     IDS_RENAMINGMSG,        "Renaming..."                   /* 32 */
     IDS_MOVINGMSG,          "Moving..."                     /* 32 */
     IDS_DELETINGMSG,        "Deleting..."                   /* 32 */
-    IDS_PRINTINGMSG,        "Printing: %s"                  /* 32 */
+
 
 //    IDS_NOSUCHDRIVE,        "Drive %c does not exist."                                                                                            /* 128 */
     IDS_DRIVENOTREADY,      "There is no disk in drive %c.\n\nInsert a disk, and then try again."
@@ -625,7 +620,7 @@ BEGIN
     MH_MYITEMS+IDM_RENAME,      "Renames a file or directory"
     MH_MYITEMS+IDM_ATTRIBS,     "Sets file attributes and displays properties"
     MH_MYITEMS+IDM_RUN,         "Starts or opens an application or document"
-    MH_MYITEMS+IDM_PRINT,       "Prints a document"
+    
     
     MH_MYITEMS+IDM_MAKEDIR,     "Creates a directory"
     MH_MYITEMS+IDM_SEARCH,      "Searches for files and directories"
@@ -877,25 +872,7 @@ CONTROL "Cancel", IDCANCEL, "button", BS_PUSHBUTTON | WS_TABSTOP | WS_CHILD, 171
 END
 
 
-MYPRINTDLG DIALOGEX 20, 20, 240, 63
-CAPTION "Print"
-FONT 8, "MS Shell Dlg"
-STYLE WS_BORDER | DS_MODALFRAME | WS_CAPTION | WS_THICKFRAME | WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN
-BEGIN
-DIALOGRESIZE{ 0, 125 }
-DIALOGRESIZECONTROL{ 0, 0, 100, 0 }
-CONTROL "", IDD_DIR, "static", SS_LEFTNOWORDWRAP | SS_NOPREFIX | WS_CHILD, 3, 6, 193, 10
-DIALOGRESIZECONTROL{ 0, 0, 0, 0 }
-CONTROL "&Print:", IDD_TEXT, "static", SS_LEFTNOWORDWRAP | WS_CHILD, 3, 20, 23, 10
-DIALOGRESIZECONTROL{ 0, 0, 100, 0 }
-CONTROL "", IDD_FROM, "edit", ES_LEFT | WS_BORDER | WS_TABSTOP | WS_CHILD | ES_AUTOHSCROLL, 27, 18, 160, 12
-DIALOGRESIZECONTROL{ 0, 0, 100, 0 }
-CONTROL "", IDD_STATUS, "static", WS_CHILD | SS_LEFTNOWORDWRAP | SS_NOPREFIX, 3, 36, 190, 10
-DIALOGRESIZECONTROL{ 100, 0, 0, 0 }
-CONTROL "OK", 1, "button", BS_DEFPUSHBUTTON | WS_TABSTOP | WS_CHILD, 197, 6, 40, 14
-DIALOGRESIZECONTROL{ 100, 10, 0, 0 }
-CONTROL "Cancel", 2, "button", BS_PUSHBUTTON | WS_TABSTOP | WS_CHILD, 197, 23, 40, 14
-END
+
 
 
 SEARCHDLG DIALOGEX 20, 20, 283, 63

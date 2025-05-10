@@ -28,7 +28,7 @@
     <ClCompile Include="wfinfo.cpp" />
     <ClCompile Include="wfinit.cpp" />
     <ClCompile Include="wfmem.cpp" />
-    <ClCompile Include="wfprint.cpp" />
+
     <ClCompile Include="wfsearch.cpp" />
     <ClCompile Include="wftree.cpp" />
     <ClCompile Include="wfutil.cpp" />

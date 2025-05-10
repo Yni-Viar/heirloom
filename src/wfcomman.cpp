@@ -1089,12 +1089,6 @@ BOOL AppCommandProc(DWORD id) {
                 pDataObj->Release();
         } break;
 
-        case IDM_PRINT:
-            dwSuperDlgMode = id;
-
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(MYPRINTDLG), hwndFrame, SuperDlgProc);
-            break;
-
         case IDM_DELETE:
             dwSuperDlgMode = id;
 

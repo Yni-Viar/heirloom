@@ -487,7 +487,7 @@ SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
             SetDlgItemText(hDlg, IDD_FROM, p);
 
-            if ((dwSuperDlgMode == IDM_PRINT) || (dwSuperDlgMode == IDM_DELETE))
+            if (dwSuperDlgMode == IDM_DELETE)
                 iCtrl = IDD_FROM;
             else {
                 TCHAR szDirs[MAXPATHLEN];
@@ -646,13 +646,7 @@ SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                     EnableCopy(hDlg, FALSE);
 
                     hdlgProgress = hDlg;
-                    if (dwSuperDlgMode == IDM_PRINT) {
-                        WFPrint(pszFrom);
-
-                        LocalFree(pszFrom);
-                        goto SuperDlgExit;
-
-                    } else {
+                    {
                         if (dwSuperDlgMode == IDM_RENAME && bTreeHasFocus) {
                             MessWithRenameDirPath(pszFrom);
                             MessWithRenameDirPath(szTo);

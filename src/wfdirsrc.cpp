@@ -13,7 +13,7 @@
 #include <commctrl.h>
 
 #define DO_DROPFILE 0x454C4946L
-#define DO_PRINTFILE 0x544E5250L
+
 #define DO_DROPONDESKTOP 0x504D42L
 
 HWND hwndGlobalSink = NULL;
@@ -480,11 +480,7 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
 
     SetWindowDirectory();
 
-    if (dwTemp == DO_PRINTFILE) {
-        // print these suckers
-        hdlgProgress = NULL;
-        WFPrint(pch);
-    } else if (dwTemp == DO_DROPFILE) {
+    if (dwTemp == DO_DROPFILE) {
         // try and drop them on an application
         DropFilesOnApplication(pch);
     }

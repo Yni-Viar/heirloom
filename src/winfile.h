@@ -467,10 +467,6 @@ VOID DSSetSelection(HWND hwndLB, BOOL bSelect, LPTSTR szSpec, BOOL bSearch);
 INT FixTabsAndThings(HWND hwndLB, WORD* pwTabs, INT iMaxWidthFileName, INT iMaxWidthNTFSFileName, DWORD dwViewOpts);
 LPWSTR SkipPathHead(LPWSTR lpszPath);
 
-// WFPRINT.C
-
-DWORD WFPrint(LPTSTR szFile);
-
 // WINFILE.C
 
 BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive);
