@@ -204,8 +204,6 @@ BEGIN
     MENUITEM    SEPARATOR
     MENUITEM    "E&xit",            IDM_EXIT
     END
-        POPUP       "&Tree"    BEGIN    MENUITEM    "E&xpand One Level\t+", IDM_EXPONE    MENUITEM    "&Collapse Branch\t-",  IDM_COLLAPSE
-    END
     POPUP       "&View"
     BEGIN
     MENUITEM    "T&ree and Directory",  IDM_BOTH
