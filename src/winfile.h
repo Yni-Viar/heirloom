@@ -564,7 +564,6 @@ Extern BOOLEAN (*lpfnQuerySupportedMedia)(PWSTR, PFMIFS_MEDIA_TYPE, DWORD, PDWOR
 
 INT_PTR CALLBACK CancelDlgProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK DrivesDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK AssociateDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK RunDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SelectDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);

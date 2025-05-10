@@ -183,7 +183,6 @@ BEGIN
     MENUITEM    SEPARATOR
     MENUITEM    "&Run...",          IDM_RUN
     MENUITEM    "Pr&int...",        IDM_PRINT
-    MENUITEM    "&Associate...",    IDM_ASSOCIATE
     MENUITEM    SEPARATOR
     MENUITEM    "Cr&eate Directory...\tCtrl+Shift+N", IDM_MAKEDIR
     MENUITEM    "Searc&h...\tCtrl+F",       IDM_SEARCH
@@ -335,8 +334,7 @@ BEGIN
     IDS_FILENOTFOUNDMSG,    "File Manager cannot find file (or one of its components).\n\nMake sure the path and filename are correct and that all required libraries are available."
     IDS_BADPATHMSG,         "The specified path is invalid."                                                                                           /* 128 */
 //    IDS_MANYOPENFILESMSG,   "Too many files are currently in use.\n\nQuit one or more applications or increase the value of the FILES command in CONFIG.SYS, and then try again."                                    /* 128 */
-    IDS_NOASSOCMSG,         "No application is associated with this file.\n\nChoose Associate from the File menu to create an association."       /* 128 */
-    IDS_ASSOCINCOMPLETE,    "File Manager cannot open or print file.\n\nStart the application used to create this file and open or print it from there."
+    IDS_NOASSOCMSG,         "No application is associated with this file."       /* 128 */
 //    IDS_MULTIPLEDSMSG,      "Cannot start more than one copy of the specified program."                                                                /* 128 */
 //    IDS_OS2APPMSG           "The specified application is not a Windows or MS-DOS program."                                                            /* 128 */
 //    IDS_NEWWINDOWSMSG       "This application requires a newer version of Microsoft Windows."                                                          /* 128 */
@@ -553,11 +551,8 @@ BEGIN
     IDS_VN_LANGUAGE             "Language"
     IDS_VN_LANGUAGES            "Languages"
 
-    IDS_ASSOCIATE               "Browse"
     IDS_RUN                     "Run"
-    IDS_NOEXEASSOC              "Files with the extension %s are programs and cannot be associated with another application."
-    IDS_ASSOCNOTEXE             "%s is not a program and cannot be associated with a file extension."
-    IDS_ASSOCNONE               "(None)"
+
     IDS_NOFILES                 "No files found."
     IDS_NOACCESSDIR             "You do not have permission to access this directory."
     IDS_NOACCESSFILE            "You do not have permission to access this file."
@@ -579,32 +574,18 @@ BEGIN
 
     IDS_ALLFILES                "'Yes to all' affects all files, including system, hidden, read-only."
 
-    IDS_ASSOC_OPEN              "Open"
-    IDS_ASSOC_PRINT             "Print"
 
-    IDS_ADDEXTTITLE             "Add Extension"
-    IDS_ADDEXTTEXT              "The extension '%s' is currently associated with '%s.'  Continue and overwrite this association?"
 
-    IDS_EXTTITLE                "File Association Editor"
 
-    IDS_EXTADDERROR             "Unable to associate extension.  "
-    IDS_EXTDELERROR             "Unable to delete extension.  "
-    IDS_FILETYPEADDERROR        "Unable to add File Type.  "
-    IDS_FILETYPEDELERROR        "Unable to delete File Type.  "
-    IDS_FILETYPEREADERROR       "Unable to read File Type.  "
 
-    IDS_FILETYPENULLDESCERROR   "The File Type description cannot be empty.  Please type in a new File Type."
-    IDS_FILETYPEDUPDESCERROR    "Unable to generate unique identifier based on your File Type.  Please type in a new File Type."
 
-    IDS_FILETYPEDELCONFIRMTITLE "Delete File Type"
-    IDS_FILETYPEDELCONFIRMTEXT  "This will delete the File Type and all associated extensions.  Are you sure you want to delete '%s'?"
-#ifdef ASSOC
-    IDS_FILETYPEDELCONFIRMUSERTEXT "You are deleting a Personal File Type.  It will revert to the Common File Type, and all of its extensions will remain intact.  Are you sure you want to revert '%s'?"
-    IDS_FILETYPEUSERIZETEXT     "You are customizing a Common File Type.  File Manager save your changes in a Personalized File Type.  Continue?"
-#endif
-    IDS_FILETYPECOMMANDNULLTEXT "The File Type must have a command for at least one of its Actions.  Please type in an application in the command field."
 
-    IDS_NEWFILETYPETITLE        "New File Type"
+
+
+
+
+
+
     IDS_COPYINGDISKTITLE        "Copying Disk"
     IDS_SEARCHING               "Searching..."
 
@@ -645,7 +626,7 @@ BEGIN
     MH_MYITEMS+IDM_ATTRIBS,     "Sets file attributes and displays properties"
     MH_MYITEMS+IDM_RUN,         "Starts or opens an application or document"
     MH_MYITEMS+IDM_PRINT,       "Prints a document"
-    MH_MYITEMS+IDM_ASSOCIATE,   "Associates a file with an application"
+    
     MH_MYITEMS+IDM_MAKEDIR,     "Creates a directory"
     MH_MYITEMS+IDM_SEARCH,      "Searches for files and directories"
     MH_MYITEMS+IDM_SELECT,      "Selects files and directories"
@@ -1136,85 +1117,7 @@ CONTROL "OK", IDOK, "button", BS_DEFPUSHBUTTON | WS_TABSTOP | WS_CHILD, 205, 4, 
 CONTROL "Cancel", IDCANCEL, "button", BS_PUSHBUTTON | WS_TABSTOP | WS_CHILD, 205, 20, 40, 14
 END
 
-#ifdef ASSOC
-ASSOCIATEDLG DIALOGEX 20, 20, 255, 129
-#else
-ASSOCIATEDLG DIALOGEX 20, 20, 255, 118
-#endif
 
-CAPTION "Associate"
-STYLE WS_BORDER | WS_THICKFRAME | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN
-FONT 8, "MS Shell Dlg"
-BEGIN
-DIALOGRESIZE{ 0, 0 }
-LTEXT           "&Files with Extension:", -1, 6, 7, 68, 8
-DIALOGRESIZECONTROL{ 0, 0, 100, 0 }
-COMBOBOX        IDD_EXT, 76, 5, 44, 55, CBS_DROPDOWN | CBS_SORT |
-CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
-
-LTEXT           "&Associate With:", -1, 6, 30, 92, 10
-
-DIALOGRESIZECONTROL{ 0, 0, 100, 0 }
-EDITTEXT        IDD_COMMAND, 6, 42, 172, 12, ES_AUTOHSCROLL
-DIALOGRESIZECONTROL{ 0, 0, 100, 100 }
-LISTBOX         IDD_CLASSLIST, 11, 54, 167, 62, LBS_SORT | WS_VSCROLL | WS_TABSTOP
-#ifdef ASSOC
-#ifdef ASSOCHEAD
-| LBS_OWNERDRAWFIXED | LBS_HASSTRINGS
-#endif
-#endif
-DIALOGRESIZECONTROL{ 100, 0, 0, 0 }
-PUSHBUTTON      "&Browse...", IDD_BROWSE, 130, 24, 47, 14
-DIALOGRESIZECONTROL{ 100, 0, 0, 0 }
-DEFPUSHBUTTON   "OK", IDOK, 187, 6, 62, 14, WS_GROUP
-DIALOGRESIZECONTROL{ 100, 10, 0, 0 }
-PUSHBUTTON      "Cancel", IDCANCEL, 187, 23, 62, 14
-DIALOGRESIZECONTROL{ 100, 30, 0, 0 }
-PUSHBUTTON      "&New Type...", IDD_NEW, 187, 42, 62, 14
-DIALOGRESIZECONTROL{ 100, 40, 0, 0 }
-PUSHBUTTON      "&Change Type...", IDD_CONFIG, 187, 59, 62, 14
-DIALOGRESIZECONTROL{ 100, 50, 0, 0 }
-PUSHBUTTON      "&Delete Type", IDD_DELETE, 187, 76, 62, 14
-
-#ifdef ASSOC
-AUTOCHECKBOX    "&View Common File Types and Extensions only", IDD_SYSTEM,
-6, 117, 160, 10, WS_GROUP
-#endif
-END
-
-ASSOCIATEFILEDLG DIALOG 20, 20, 290, 224
-CAPTION "Change File Type"
-STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Shell Dlg"
-BEGIN
-LTEXT           "&File Type:", IDD_DESCTEXT, 5, 6, 33, 8
-EDITTEXT        IDD_DESC, 42, 5, 95, 12, ES_AUTOHSCROLL
-GROUPBOX        "&Action: ", -1, 5, 22, 235, 126, WS_GROUP
-COMBOBOX        IDD_ACTION, 36, 22, 48, 33, CBS_DROPDOWNLIST |
-WS_VSCROLL | WS_TABSTOP
-LTEXT           "&Command:", IDD_COMMANDTEXT, 9, 42, 38, 8
-EDITTEXT        IDD_COMMAND, 47, 39, 111, 12, ES_AUTOHSCROLL
-PUSHBUTTON      "&Browse...", IDD_BROWSE, 164, 38, 40, 14
-AUTOCHECKBOX    "&Uses DDE", IDD_DDE, 10, 57, 50, 10, WS_GROUP
-LTEXT           "DDE &Message:", IDD_DDEMESGTEXT, 22, 72, 50, 8
-EDITTEXT        IDD_DDEMESG, 105, 70, 100, 12, ES_AUTOHSCROLL
-LTEXT           "DDE Message Application &Not Running:", IDD_DDENOTRUNTEXT, 22, 84, 82, 19
-LTEXT           "(optional)", IDD_DDEOPTIONALTEXT, 207, 90, 32, 8
-EDITTEXT        IDD_DDENOTRUN, 105, 88, 100, 12, ES_AUTOHSCROLL
-LTEXT           "A&pplication:", IDD_DDEAPPTEXT, 22, 109, 39, 8
-EDITTEXT        IDD_DDEAPP, 105, 107, 100, 12, ES_AUTOHSCROLL
-LTEXT           "&Topic:", IDD_DDETOPICTEXT, 23, 127, 21, 8
-EDITTEXT        IDD_DDETOPIC, 105, 125, 100, 12, ES_AUTOHSCROLL
-LTEXT           "Ne&w Extension:", -1, 11, 184, 52, 8
-EDITTEXT        IDD_EXT, 64, 183, 32, 12, ES_AUTOHSCROLL
-PUSHBUTTON      "A&dd ->", IDD_ADD, 102, 174, 44, 14
-PUSHBUTTON      "<- &Remove", IDD_DELETE, 102, 191, 44, 14
-LTEXT           "&Extensions:", -1, 157, 162, 41, 8
-LISTBOX         IDD_EXTLIST, 157, 172, 65, 40, LBS_SORT | WS_VSCROLL | WS_TABSTOP
-GROUPBOX        "Extensions Associated with this File Type:", IDD_EXTTEXT, 5, 154, 235, 66
-DEFPUSHBUTTON   "OK", IDOK, 244, 6, 40, 14
-PUSHBUTTON      "Cancel", IDCANCEL, 244, 23, 40, 14
-END
 
 GOTODIRDLG DIALOGEX 20, 20, 464, 125
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_CLIPCHILDREN | WS_MAXIMIZEBOX

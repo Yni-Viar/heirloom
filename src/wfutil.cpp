@@ -1293,7 +1293,7 @@ ExecProgram(LPTSTR lpPath, LPTSTR lpParms, LPTSTR lpDir, BOOL bLoadIt, BOOL bRun
             break;
 
         case SE_ERR_ASSOCINCOMPLETE:
-            ret = IDS_ASSOCINCOMPLETE;
+            ret = IDS_NOASSOCMSG;
             break;
 
         case SE_ERR_DDETIMEOUT:

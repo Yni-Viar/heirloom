@@ -9,7 +9,6 @@
 
 #define RUNDLG 10
 #define MYPRINTDLG 11
-#define ASSOCIATEDLG 12
 #define SEARCHDLG 13
 #define MOVECOPYDLG 14
 #define DELETEDLG 15
@@ -41,9 +40,6 @@
 #define SEARCHPROGDLG 53
 
 // #define COPYTOCLIPBOARDDLG   54
-
-#define ASSOCIATEFILEDLG 55
-#define ASSOCIATEFILEDLGCONFIG 56  // Same dialog
 
 #define GOTODIRDLG 60
 #define ABOUTDLG 61

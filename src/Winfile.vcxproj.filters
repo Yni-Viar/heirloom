@@ -10,7 +10,6 @@
     <ClCompile Include="numfmt.cpp" />
     <ClCompile Include="suggest.cpp" />
     <ClCompile Include="treectl.cpp" />
-    <ClCompile Include="wfassoc.cpp" />
     <ClCompile Include="wfchgnot.cpp" />
     <ClCompile Include="wfcomman.cpp" />
     <ClCompile Include="wfcopy.cpp" />

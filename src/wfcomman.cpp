@@ -832,11 +832,6 @@ BOOL AppCommandProc(DWORD id) {
             OpenOrEditSelection(hwndActive, TRUE);
             break;
 
-        case IDM_ASSOCIATE:
-
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(ASSOCIATEDLG), hwndFrame, AssociateDlgProc);
-            break;
-
         case IDM_GOTODIR:
             DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(GOTODIRDLG), hwndFrame, GotoDirDlgProc);
             break;

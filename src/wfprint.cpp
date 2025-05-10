@@ -65,7 +65,7 @@ PrintFile(HWND hwnd, LPTSTR szFile) {
             break;
 
         case SE_ERR_ASSOCINCOMPLETE:
-            ret = IDS_ASSOCINCOMPLETE;
+            ret = IDS_NOASSOCMSG;
             break;
 
         case SE_ERR_DDETIMEOUT:
