@@ -177,9 +177,6 @@ BEGIN
     MENUITEM    "&Copy...\tF8",     IDM_COPY
     MENUITEM    "S&ymlink...\tF11", IDM_SYMLINK
     MENUITEM    "Hardlin&k...\tShift+F11", IDM_HARDLINK
-    MENUITEM    "Copy to Clip&board\tCtrl+C", IDM_COPYTOCLIPBOARD
-    MENUITEM    "Cut to Clipboard\tCtrl+X", IDM_CUTTOCLIPBOARD
-    MENUITEM    "&Paste\tCtrl+V",   IDM_PASTE
     MENUITEM    "&Delete...\tDel",  IDM_DELETE
     MENUITEM    "Re&name...\tF2",   IDM_RENAME
     MENUITEM    "Proper&ties...\tAlt+Enter",IDM_ATTRIBS
@@ -203,6 +200,12 @@ BEGIN
     MENUITEM    "Empty &Recycle Bin", IDM_EMPTYRECYCLE
     MENUITEM    SEPARATOR
     MENUITEM    "E&xit",            IDM_EXIT
+    END
+    POPUP       "&Edit"
+    BEGIN
+    MENUITEM    "Cu&t\tCtrl+X", IDM_CUTTOCLIPBOARD
+    MENUITEM    "&Copy\tCtrl+C", IDM_COPYTOCLIPBOARD
+    MENUITEM    "&Paste\tCtrl+V",   IDM_PASTE
     END
     POPUP       "&View"
     BEGIN
