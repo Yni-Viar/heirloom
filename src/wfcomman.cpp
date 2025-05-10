@@ -23,7 +23,7 @@
 #define HELP_PARTIALKEY 0x0105L  // call the search engine in winhelp
 #endif
 
-#define VIEW_NOCHANGE VIEW_PLUSES
+#define VIEW_NOCHANGE 0x0020  // previously VIEW_PLUSES
 
 VOID MDIClientSizeChange(HWND hwndActive, INT iFlags);
 HWND LocateDirWindow(LPTSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow);
@@ -1447,33 +1447,6 @@ BOOL AppCommandProc(DWORD id) {
         case IDM_FONT:
             NewFont();
             break;
-
-        case IDM_ADDPLUSES:
-
-            if (!(hwndT = HasTreeWindow(hwndActive)))
-                break;
-
-            // toggle pluses view bit
-
-            dwFlags = (DWORD)(GetWindowLongPtr(hwndActive, GWL_VIEW) ^ VIEW_PLUSES);
-
-            SetWindowLongPtr(hwndActive, GWL_VIEW, dwFlags);
-
-            if (dwFlags & VIEW_PLUSES) {
-                // need to reread the tree to do this
-
-                SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szPath), (LPARAM)szPath);
-                SendMessage(hwndT, TC_SETDRIVE, MAKEWORD(FALSE, 0), (LPARAM)szPath);
-            } else {
-                //
-                // repaint only
-                //
-                hwndT = GetDlgItem(hwndT, IDCW_TREELISTBOX);
-                InvalidateRect(hwndT, NULL, FALSE);
-            }
-
-            bTemp = dwFlags & VIEW_PLUSES;
-            goto CHECK_OPTION;
 
         case IDM_SAVESETTINGS:
             bTemp = bSaveSettings = !bSaveSettings;

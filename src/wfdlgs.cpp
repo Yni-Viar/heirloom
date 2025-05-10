@@ -162,7 +162,7 @@ OtherDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                 case IDOK: {
                     HWND hwnd;
 
-                    dwView = GetWindowLongPtr(hwndActive, GWL_VIEW) & VIEW_PLUSES;
+                    dwView = 0;  // VIEW_PLUSES is no longer supported
 
                     if (IsDlgButtonChecked(hDlg, IDD_SIZE))
                         dwView |= VIEW_SIZE;

@@ -244,13 +244,6 @@ BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
 
         EnableMenuItem(hMenu, IDM_EXPONE, uMenuFlags);
         EnableMenuItem(hMenu, IDM_COLLAPSE, uMenuFlags);
-        EnableMenuItem(hMenu, IDM_ADDPLUSES, uMenuFlags);
-
-        if (hwndTree)
-            CheckMenuItem(
-                hMenu, IDM_ADDPLUSES,
-                GetWindowLongPtr(hwndActive, GWL_VIEW) & VIEW_PLUSES ? MF_CHECKED | MF_BYCOMMAND
-                                                                     : MF_UNCHECKED | MF_BYCOMMAND);
     }
 
     if (uMenus & (1 << IDM_VIEW)) {
@@ -321,7 +314,6 @@ BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
         if (iReadLevel)
             uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
 
-        EnableMenuItem(hMenu, IDM_ADDPLUSES, uMenuFlags);
         EnableMenuItem(hMenu, IDM_EXPANDTREE, uMenuFlags);
 
         uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
@@ -658,7 +650,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
                 for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = GetWindow(hwnd, GW_HWNDNEXT)) {
                     if (!GetWindow(hwnd, GW_OWNER)) {
-                        dwFlags = GetWindowLongPtr(hwnd, GWL_VIEW) & (VIEW_EVERYTHING | VIEW_PLUSES);
+                        dwFlags = GetWindowLongPtr(hwnd, GWL_VIEW) & VIEW_EVERYTHING;
 
                         if (hwndT = HasDirWindow(hwnd)) {
                             SendMessage(hwndT, FS_CHANGEDISPLAY, CD_VIEW, MAKELONG(dwFlags, TRUE));

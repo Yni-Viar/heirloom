@@ -508,72 +508,61 @@ BOOL ReadDirLevel(
     BOOL bFullyExpand,
     LPTSTR szAutoExpand,
     BOOL bPartialSort) {
-    LPWSTR szEndPath;
+    HWND hwndParent;
     LFNDTA lfndta;
+    LPTSTR szEndPath;
     INT iNode;
     BOOL bFound;
-    PDNODE pNode;
     BOOL bAutoExpand;
-    BOOL bResult = TRUE;
-    DWORD dwView;
-    HWND hwndParent;
-    HWND hwndDir;
-    LPXDTALINK lpStart;
-    LPXDTA* plpxdta;
-    LPXDTA lpxdta;
-    INT count;
-
+    PDNODE pNode;
+    LPXDTA* plpxdta = NULL;
+    LPXDTA lpxdta = NULL;
+    TCHAR szMessage[MAXPATHLEN];
     UINT uYieldCount = 0;
+    HWND hwndLB;
+    INT count = 0;
+    BOOL bResult = TRUE;
+    LPXDTALINK lpStart = NULL;  // assume none to steal from
+    HWND hwndDir;
+
+    if (bCancelTree)
+        return FALSE;
 
     hwndParent = GetParent(hwndTreeCtl);
+    hwndLB = GetDlgItem(hwndTreeCtl, IDCW_TREELISTBOX);
 
-    dwView = (DWORD)GetWindowLongPtr(hwndParent, GWL_VIEW);
+    // We always optimize the tree read by looking through the DTA structure
+    // in the dir window (instead of calling FindFirst/FindNext) if one is available.
+    // In this case we have to disable yielding since the user could
+    // potentially close the dir window that we are reading, or change directory.
+    if ((hwndDir = HasDirWindow(hwndParent)) && (GetWindowLongPtr(hwndParent, GWL_ATTRIBS) & ATTR_DIR)) {
+        SendMessage(hwndDir, FS_GETDIRECTORY, COUNTOF(szMessage), (LPARAM)szMessage);
+        StripBackslash(szMessage);
 
-    //
-    // we optimize the tree read if we are not adding pluses and
-    // we find a directory window that already has read all the
-    // directories for the path we are about to search.  in this
-    // case we look through the DTA structure in the dir window
-    // to get all the directories (instead of calling FindFirst/FindNext).
-    // in this case we have to disable yielding since the user could
-    // potentially close the dir window that we are reading, or change
-    // directory.
-    //
+        if (!lstrcmpi(szMessage, szPath)) {
+            SendMessage(hwndDir, FS_GETFILESPEC, COUNTOF(szMessage), (LPARAM)szMessage);
 
-    lpStart = NULL;
-    plpxdta = NULL;
-    lpxdta = NULL;
+            if (!lstrcmp(szMessage, szStarDotStar)) {
+                lpStart = (LPXDTALINK)GetWindowLongPtr(hwndDir, GWL_HDTA);
 
-    if (!(dwView & VIEW_PLUSES)) {
-        if ((hwndDir = HasDirWindow(hwndParent)) && (GetWindowLongPtr(hwndParent, GWL_ATTRIBS) & ATTR_DIR)) {
-            SendMessage(hwndDir, FS_GETDIRECTORY, COUNTOF(szMessage), (LPARAM)szMessage);
-            StripBackslash(szMessage);
+                if (lpStart) {
+                    //
+                    // holds number of entries, NOT size.
+                    //
+                    count = (INT)MemLinkToHead(lpStart)->dwEntries;
 
-            if (!lstrcmpi(szMessage, szPath)) {
-                SendMessage(hwndDir, FS_GETFILESPEC, COUNTOF(szMessage), (LPARAM)szMessage);
-
-                if (!lstrcmp(szMessage, szStarDotStar)) {
-                    lpStart = (LPXDTALINK)GetWindowLongPtr(hwndDir, GWL_HDTA);
-
-                    if (lpStart) {
-                        //
-                        // holds number of entries, NOT size.
-                        //
-                        count = (INT)MemLinkToHead(lpStart)->dwEntries;
-
-                        //
-                        // We are currently using it, so mark it as in use.
-                        // There's a sync problem around lpStart:
-                        // Since we do a wfYield, this could be free'd in
-                        // the same thread if the user changes directories.
-                        // So we must mark it appropriately.
-                        //
-                        // Don't worry about critical sections, since
-                        // we are cooperatively multitasking using the
-                        // wfYield.
-                        //
-                        MemLinkToHead(lpStart)->fdwStatus |= LPXDTA_STATUS_READING;
-                    }
+                    //
+                    // We are currently using it, so mark it as in use.
+                    // There's a sync problem around lpStart:
+                    // Since we do a wfYield, this could be free'd in
+                    // the same thread if the user changes directories.
+                    // So we must mark it appropriately.
+                    //
+                    // Don't worry about critical sections, since
+                    // we are cooperatively multitasking using the
+                    // wfYield.
+                    //
+                    MemLinkToHead(lpStart)->fdwStatus |= LPXDTA_STATUS_READING;
                 }
             }
         }
@@ -727,8 +716,7 @@ BOOL ReadDirLevel(
             AddBackslash(szPath);
             lstrcat(szPath, lfndta.fd.cFileName);  // cFileName is ANSI now
 
-            // either recurse or add pluses
-
+            // Now we just recurse if needed
             if (bFullyExpand || bAutoExpand) {
                 // If we are recursing due to bAutoExpand
                 // then pass it.  Else pass NULL instead.
@@ -739,8 +727,6 @@ BOOL ReadDirLevel(
                     bResult = FALSE;
                     goto DONE;
                 }
-            } else if (dwView & VIEW_PLUSES) {
-                ScanDirLevel(pNode, szPath, dwAttribs & (ATTR_HS | ATTR_JUNCTION));
             }
         }
 
@@ -791,40 +777,32 @@ BOOL ReadDirLevel(
         }
     }
 
-    *szEndPath = CHAR_NULL;  // clean off any stuff we left on the end of the path
+    WFFindClose(&lfndta);
 
 DONE:
 
-    if (lpStart) {
-        //
-        // No longer using it.
-        //
+    //
+    // Tell dir that we are now done reading.
+    //
+    if (lpStart)
         MemLinkToHead(lpStart)->fdwStatus &= ~LPXDTA_STATUS_READING;
 
-        //
-        // If we were stealing from a directory and then
-        // we tried to delete it (but couldn't since we're reading),
-        // we mark it as LPXDTA_STATUS_CLOSE.  If it's marked,
-        // free it.
-        //
-        if (MemLinkToHead(lpStart)->fdwStatus & LPXDTA_STATUS_CLOSE)
-            MemDelete(lpStart);
-    } else {
-        WFFindClose(&lfndta);
-    }
+    pParentNode->wFlags |= TF_HASCHILDREN;
 
     SetWindowLongPtr(hwndTreeCtl, GWL_READLEVEL, GetWindowLongPtr(hwndTreeCtl, GWL_READLEVEL) - 1);
 
-    iReadLevel--;
+    iReadLevel--;  // global for menu code
+
+    // Make the volume name real.
+    if (uLevel == 0)
+        InvalidateRect(hwndDriveBar, NULL, TRUE);
 
     //
-    //  Renable drive list combo box if the readlevel is at 0.
+    //  Re-enable the drive list combo box.
     //
-    if (iReadLevel == 0) {
-        EnableWindow(hwndDriveList, TRUE);
-    }
+    EnableWindow(hwndDriveList, TRUE);
 
-    return bResult;
+    return (bResult);
 }
 
 // this is used by StealTreeData() to avoid alias problems where
@@ -856,9 +834,10 @@ FindParent(INT iLevelParent, INT iStartInd, HWND hwndLB) {
 }
 
 BOOL StealTreeData(HWND hwndTC, HWND hwndLB, LPWSTR szDir) {
-    HWND hwndSrc, hwndT;
-    WCHAR szSrc[MAXPATHLEN];
-    DWORD dwView;
+    HWND hwndSrc;
+    HWND hwndT;
+    HWND hwndLBSrc;
+    TCHAR szSrc[MAXPATHLEN];
     DWORD dwAttribs;
 
     hwndT = NULL;
@@ -866,7 +845,6 @@ BOOL StealTreeData(HWND hwndTC, HWND hwndLB, LPWSTR szDir) {
     //
     // we need to match on these attributes as well as the name
     //
-    dwView = GetWindowLongPtr(GetParent(hwndTC), GWL_VIEW) & VIEW_PLUSES;
     dwAttribs = GetWindowLongPtr(GetParent(hwndTC), GWL_ATTRIBS) & (ATTR_HS | ATTR_JUNCTION);
 
     //
@@ -878,7 +856,6 @@ BOOL StealTreeData(HWND hwndTC, HWND hwndLB, LPWSTR szDir) {
         // and make sure the tree attributes match
         //
         if ((hwndT = HasTreeWindow(hwndSrc)) && (hwndT != hwndTC) && !GetWindowLongPtr(hwndT, GWL_READLEVEL) &&
-            (dwView == (DWORD)(GetWindowLongPtr(hwndSrc, GWL_VIEW) & VIEW_PLUSES)) &&
             (dwAttribs == (DWORD)(GetWindowLongPtr(hwndSrc, GWL_ATTRIBS) & (ATTR_HS | ATTR_JUNCTION)))) {
             SendMessage(hwndSrc, FS_GETDIRECTORY, COUNTOF(szSrc), (LPARAM)szSrc);
             StripBackslash(szSrc);
@@ -889,7 +866,6 @@ BOOL StealTreeData(HWND hwndTC, HWND hwndLB, LPWSTR szDir) {
     }
 
     if (hwndSrc) {
-        HWND hwndLBSrc;
         PDNODE pNode, pNewNode, pLastParent;
         INT i;
 
@@ -1479,8 +1455,7 @@ VOID TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
                     iBitmap = BM_IND_OPENDFS;
                 else
                     iBitmap = BM_IND_CLOSEDFS;
-
-            } else if (!(view & VIEW_PLUSES) || !(pNode->wFlags & TF_HASCHILDREN)) {
+            } else {
                 if (bDrawSelected) {
                     if (pNode->dwAttribs & (ATTR_SYMBOLIC | ATTR_JUNCTION))
                         iBitmap = BM_IND_OPENREPARSE;
@@ -1491,18 +1466,6 @@ VOID TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
                         iBitmap = BM_IND_CLOSEREPARSE;
                     else
                         iBitmap = BM_IND_CLOSE;
-                }
-            } else {
-                if (pNode->wFlags & TF_EXPANDED) {
-                    if (bDrawSelected)
-                        iBitmap = BM_IND_OPENMINUS;
-                    else
-                        iBitmap = BM_IND_CLOSEMINUS;
-                } else {
-                    if (bDrawSelected)
-                        iBitmap = BM_IND_OPENPLUS;
-                    else
-                        iBitmap = BM_IND_CLOSEPLUS;
                 }
             }
 
@@ -2162,22 +2125,13 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                             hwnd, pNode, (WORD)nIndex, szPath, &pNodeT, IsCasePreservedDrive(DRIVEID(((LPTSTR)lParam))),
                             FALSE, INVALID_FILE_ATTRIBUTES);
 
-                        //
-                        // Add a plus if necessary
-                        //
-                        if (GetWindowLongPtr(hwndParent, GWL_VIEW) & VIEW_PLUSES) {
-                            lstrcpy(szPath, (LPTSTR)lParam);
-                            ScanDirLevel(
-                                (PDNODE)pNodeT, szPath,
-                                (GetWindowLongPtr(hwndParent, GWL_ATTRIBS) & (ATTR_HS | ATTR_JUNCTION)));
-
-                            //
-                            // Invalidate the window so the plus gets drawn if needed
-                            //
-                            if (((PDNODE)pNodeT)->wFlags & TF_HASCHILDREN) {
-                                InvalidateRect(hwndLB, NULL, FALSE);
-                            }
-                        }
+                        //                        // Check for subdirectories                        // lstrcpy(szPath,
+                        //                        (LPTSTR)lParam);                        ScanDirLevel( (PDNODE)pNodeT,
+                        //                        szPath,                            (GetWindowLongPtr(hwndParent,
+                        //                        GWL_ATTRIBS) & (ATTR_HS | ATTR_JUNCTION)));                        //
+                        //                        // Invalidate the window                        // if
+                        //                        (((PDNODE)pNodeT)->wFlags & TF_HASCHILDREN) { InvalidateRect(hwndLB,
+                        //                        NULL, FALSE);                        }
                     }
 
                     break;
