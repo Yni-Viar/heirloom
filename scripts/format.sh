@@ -10,8 +10,8 @@ if ! command -v clang-format &> /dev/null; then
     exit 1
 fi
 
-# Change to the repository root.
+# Change to the src/ folder.
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-cd ..
+cd ../src
 
-find src/ -type f \( -iname \*.h -o -iname \*.cpp \) | xargs clang-format -i
+find . -type f \( -iname \*.h -o -iname \*.cpp \) | xargs clang-format -i
