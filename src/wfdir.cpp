@@ -70,8 +70,6 @@ VOID DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasF
 
     HDC hDC = lpLBItem->hDC;
 
-    PreserveBitmapInRTL(hDC);
-
     HWND hwndListParms = (HWND)GetWindowLongPtr(hwnd, GWL_LISTPARMS);
     BOOL bLower;
 

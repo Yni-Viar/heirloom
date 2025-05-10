@@ -10,8 +10,8 @@ Copy your dialog from `res.rc` into `res_dummy.rc`, edit it there, and copy it b
 After saving in Visual Studio, it will trash `resource.h`. Restore it using git.
 
 - Set the font to Segoe UI / Regular / 9pt.
-- Set the margins to 7 DLU, it comes up in tiny text when you resize the guidelines.
-- Set grid spacing to 7 DLU and resize the dialog in grid mode to be an exact multiple of the grid spacing. You will have to go back and forth between grid and ruler modes. Size controls in ruler mode, then lay out the dialog in grid mode. Don't resize controls in grid mode.
+- (Optional) Set the margins to 7 DLU, it comes up in tiny text when you resize the guidelines.
+- Set grid spacing to 7 DLU and resize the dialog in grid mode to be an exact multiple of the grid spacing. You will have to go back and forth between "None" and "Grid" guide modes. Size controls in "None" mode, then lay out the dialog in "Grid" mode. Don't resize controls in grid mode.
 - Control sizes
     - Button: 50x14 DLU
     - Textbox: 12 DLU tall

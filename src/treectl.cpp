@@ -1366,8 +1366,6 @@ VOID TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
     hdc = lpLBItem->hDC;
     pNode = (PDNODE)lpLBItem->itemData;
 
-    PreserveBitmapInRTL(hdc);
-
     /*
      *  Save the real extent.
      */

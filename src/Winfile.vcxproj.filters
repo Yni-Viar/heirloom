@@ -34,7 +34,6 @@
     <ClCompile Include="wfutil.cpp" />
     <ClCompile Include="winfile.cpp" />
     <ClCompile Include="wnetcaps.cpp" />
-    <ClCompile Include="wfloc.cpp" />
     <ClCompile Include="wfdpi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

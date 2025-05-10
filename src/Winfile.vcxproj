@@ -261,7 +261,6 @@
     <ClCompile Include="wfgoto.cpp" />
     <ClCompile Include="wfinfo.cpp" />
     <ClCompile Include="wfinit.cpp" />
-    <ClCompile Include="wfloc.cpp" />
     <ClCompile Include="wfmem.cpp" />
     <ClCompile Include="wfsearch.cpp" />
     <ClCompile Include="wftree.cpp" />

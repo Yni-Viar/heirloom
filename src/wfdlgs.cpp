@@ -599,19 +599,12 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
     ofn.lpstrInitialDir = NULL;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
-    /* Language prefrence variables */
-    HWND hLangComboBox = GetDlgItem(hDlg, IDC_LANGCB);
-
     switch (wMsg) {
         case WM_INITDIALOG:
-            InitLangList(hLangComboBox);
-
             GetPrivateProfileString(szSettings, szEditorPath, NULL, szTempEditPath, MAXPATHLEN, szTheINIFile);
             SetDlgItemText(hDlg, IDD_EDITOR, szTempEditPath);
 
-            CheckDlgButton(hDlg, IDC_VSTYLE, bDisableVisualStyles);
             CheckDlgButton(hDlg, IDC_GOTO, bIndexOnLaunch);
-            CheckDlgButton(hDlg, IDC_MIRROR, bMirrorContent);
             break;
 
         case WM_COMMAND:
@@ -627,18 +620,12 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case IDOK:
-                    SaveLang(hLangComboBox);
-
                     GetDlgItemText(hDlg, IDD_EDITOR, szTempEditPath, MAXPATHLEN);
                     WritePrivateProfileString(szSettings, szEditorPath, szTempEditPath, szTheINIFile);
 
-                    bDisableVisualStyles = IsDlgButtonChecked(hDlg, IDC_VSTYLE);
                     bIndexOnLaunch = IsDlgButtonChecked(hDlg, IDC_GOTO);
-                    bMirrorContent = IsDlgButtonChecked(hDlg, IDC_MIRROR);
 
-                    WritePrivateProfileBool(szDisableVisualStyles, bDisableVisualStyles);
                     WritePrivateProfileBool(szIndexOnLaunch, bIndexOnLaunch);
-                    WritePrivateProfileBool(szMirrorContent, bMirrorContent);
 
                     EndDialog(hDlg, TRUE);
                     break;

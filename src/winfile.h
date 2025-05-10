@@ -589,14 +589,6 @@ VOID SearchEnd(VOID);
 // WFFILE.C
 BOOL GetRootPath(LPTSTR szPath, LPTSTR szReturn);
 
-// WFLOC.C
-LCID WFLocaleNameToLCID(LPCWSTR lpName, DWORD dwFlags);
-VOID InitLangList(HWND hCBox);
-VOID SaveLang(HWND hCBox);
-BOOL DefaultLayoutRTL();
-DWORD MainWindowExStyle(VOID);
-VOID PreserveBitmapInRTL(HDC hdc);
-
 // LFN.C
 
 DWORD WFCopy(LPTSTR, LPTSTR);

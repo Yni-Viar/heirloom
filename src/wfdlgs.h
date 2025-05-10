@@ -142,7 +142,6 @@
 #define IDC_VSTYLE 276
 #define IDC_LANGCB 277
 #define IDC_GOTO 278
-#define IDC_MIRROR 280
 
 #define IDD_ENCRYPTED 279
 
