@@ -224,42 +224,6 @@ void SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel) {
     SendMessage(hwndLB, LB_SETANCHORINDEX, wParam, 0L);
 }
 
-/////////////////////////////////////////////////////////////////////
-//
-// Name:     DSDragLoop
-//
-// Synopsis: Handler for WM_DRAGLOOP messages
-//           REMOVED - Legacy Windows 3.x drag and drop handler
-//
-/////////////////////////////////////////////////////////////////////
-
-// DSDragLoop function removed - Windows 3.x style drag and drop
-// This has been replaced with OLE-based drag and drop functionality
-
-/////////////////////////////////////////////////////////////////////
-//
-// Name:     DSRectItem()
-//
-// Synopsis: Rect the drop sink and update the status bar
-//           REMOVED - Legacy Windows 3.x drag and drop handler
-//
-/////////////////////////////////////////////////////////////////////
-
-// DSRectItem function removed - Windows 3.x style drag and drop
-// This has been replaced with OLE-based drag and drop functionality
-
-/////////////////////////////////////////////////////////////////////
-//
-// Name:     DSDragScrollSink
-//
-// Synopsis: Handler for automatic scrolling during drag operations
-//           REMOVED - Legacy Windows 3.x drag and drop handler
-//
-/////////////////////////////////////////////////////////////////////
-
-// DSDragScrollSink function removed - Windows 3.x style drag and drop
-// This has been replaced with OLE-based drag and drop functionality
-
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
 /*  DropFilesOnApplication() -                                              */
@@ -546,18 +510,6 @@ SkipPathHead(LPWSTR lpszPath) {
 
     return NULL;
 }
-
-/////////////////////////////////////////////////////////////////////
-//
-// Name:     DSDropObject
-//
-// Synopsis: Handles the actual drop operation
-//           REMOVED - Legacy Windows 3.x drag and drop handler
-//
-/////////////////////////////////////////////////////////////////////
-
-// DSDropObject function removed - Windows 3.x style drag and drop
-// This has been replaced with OLE-based drag and drop functionality
 
 // Perform a drag operation using the OLE drag-drop system
 // This replaces the old Windows 3.x DragObject function
