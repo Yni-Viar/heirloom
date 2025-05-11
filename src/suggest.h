@@ -19,7 +19,7 @@
 
 extern HINSTANCE hAppInstance;
 
-DWORD FormatError(BOOL bNullString, LPTSTR lpBuf, INT iSize, DWORD dwError);
+DWORD FormatError(BOOL bNullString, LPWSTR lpBuf, INT iSize, DWORD dwError);
 PDWORD FormatSuggest(DWORD dwError);
 
 // Internal error numbers begin here

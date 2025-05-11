@@ -17,6 +17,6 @@
 
 #define SPC_REFRESH(q) (SPC_IS_INVALID(q) || SPC_IS_HITDISK(q))
 
-LPTSTR ShortSizeFormatInternal(LPTSTR szBuf, LARGE_INTEGER qw);
+LPWSTR ShortSizeFormatInternal(LPWSTR szBuf, LARGE_INTEGER qw);
 
 #define LARGE_INTEGER_NULL(q) ((q).LowPart = 0, (q).HighPart = 0)

@@ -16,7 +16,7 @@
 //
 VOID NotifyReset();
 VOID NotifyDeleteHandle(INT i);
-VOID NotifyAddHandle(INT i, HWND hwnd, LPTSTR lpPath, DWORD dwFilter);
+VOID NotifyAddHandle(INT i, HWND hwnd, LPWSTR lpPath, DWORD dwFilter);
 
 //
 // Maximum number of windows that are viewable
@@ -287,7 +287,7 @@ VOID NotifyResume(DRIVE drive, UINT uType) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID ModifyWatchList(HWND hwnd, LPTSTR lpPath, DWORD fdwFilter) {
+VOID ModifyWatchList(HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
     INT i;
 
     if (!bNOTIFYACTIVE)
@@ -423,7 +423,7 @@ VOID NotifyDeleteHandle(INT i) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID NotifyAddHandle(INT i, HWND hwnd, LPTSTR lpPath, DWORD fdwFilter) {
+VOID NotifyAddHandle(INT i, HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
     adrive[i] = DRIVEID(lpPath);
 
     ahwndWindows[i] = hwnd;

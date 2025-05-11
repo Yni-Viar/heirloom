@@ -212,7 +212,7 @@ BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
 
         EnableMenuItem(hMenu, IDM_SELECT, uMenuFlags);
 
-        pSel = (LPTSTR)SendMessage(hwndActive, FS_GETSELECTION, 5, (LPARAM)&bDir);
+        pSel = (LPWSTR)SendMessage(hwndActive, FS_GETSELECTION, 5, (LPARAM)&bDir);
 
         //
         // can't edit a dir
@@ -636,12 +636,12 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
         case WM_FSC:
 
-            ChangeFileSystem((WORD)wParam, (LPTSTR)lParam, NULL);
+            ChangeFileSystem((WORD)wParam, (LPWSTR)lParam, NULL);
             break;
 
         case WM_SYSCOLORCHANGE:
         case WM_WININICHANGE:
-            if (!lParam || !lstrcmpi((LPTSTR)lParam, szInternational)) {
+            if (!lParam || !lstrcmpi((LPWSTR)lParam, szInternational)) {
                 HWND hwnd, hwndT;
                 DWORD dwFlags;
 
@@ -662,7 +662,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             }
 
             // win.ini section [colors]
-            if (!lParam || !lstrcmpi((LPTSTR)lParam, TEXT("colors"))) {
+            if (!lParam || !lstrcmpi((LPWSTR)lParam, TEXT("colors"))) {
                 // we need to recreate the drives windows to change
                 // the bitmaps
 

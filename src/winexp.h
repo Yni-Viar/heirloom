@@ -26,11 +26,11 @@ typedef struct {
 ATOMTABLE* PASCAL pAtomTable;
 #endif
 
-LPTSTR FAR PASCAL lstrbscan(LPTSTR, LPTSTR);
-LPTSTR FAR PASCAL lstrbskip(LPTSTR, LPTSTR);
+LPWSTR FAR PASCAL lstrbscan(LPWSTR, LPWSTR);
+LPWSTR FAR PASCAL lstrbskip(LPWSTR, LPWSTR);
 
-int FAR PASCAL OpenPathName(LPTSTR, int);
-int FAR PASCAL DeletePathName(LPTSTR);
+int FAR PASCAL OpenPathName(LPWSTR, int);
+int FAR PASCAL DeletePathName(LPWSTR);
 WORD FAR PASCAL _ldup(int);
 
 /* scheduler things that the world knows not */

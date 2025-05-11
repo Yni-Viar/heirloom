@@ -37,22 +37,22 @@ typedef struct _copyroot {
 #endif
     BOOL bFastMove : 1;
     WORD cDepth;
-    LPTSTR pSource;
-    LPTSTR pRoot;
+    LPWSTR pSource;
+    LPWSTR pRoot;
     WCHAR cIsDiskThereCheck[26];
     WCHAR sz[MAXPATHLEN];
     WCHAR szDest[MAXPATHLEN];
     LFNDTA rgDTA[MAXDIRDEPTH];
 } COPYROOT, *PCOPYROOT;
 
-DWORD FileMove(LPTSTR, LPTSTR, PBOOL, BOOL);
-DWORD FileRemove(LPTSTR);
-DWORD MKDir(LPTSTR, LPTSTR);
-DWORD RMDir(LPTSTR);
-BOOL WFSetAttr(LPTSTR lpFile, DWORD dwAttr);
+DWORD FileMove(LPWSTR, LPWSTR, PBOOL, BOOL);
+DWORD FileRemove(LPWSTR);
+DWORD MKDir(LPWSTR, LPWSTR);
+DWORD RMDir(LPWSTR);
+BOOL WFSetAttr(LPWSTR lpFile, DWORD dwAttr);
 
-VOID AppendToPath(LPTSTR, LPCTSTR);
-UINT RemoveLast(LPTSTR pFile);
-VOID Notify(HWND, WORD, LPTSTR, LPTSTR);
+VOID AppendToPath(LPWSTR, LPCWSTR);
+UINT RemoveLast(LPWSTR pFile);
+VOID Notify(HWND, WORD, LPWSTR, LPWSTR);
 
-LPTSTR FindFileName(LPTSTR pPath);
+LPWSTR FindFileName(LPWSTR pPath);

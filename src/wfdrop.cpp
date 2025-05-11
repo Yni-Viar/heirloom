@@ -165,11 +165,11 @@ LPWSTR QuotedDropList(IDataObject* pDataObject) {
     return szFiles;
 }
 
-HDROP CreateDropFiles(POINT pt, BOOL fNC, LPTSTR pszFiles) {
+HDROP CreateDropFiles(POINT pt, BOOL fNC, LPWSTR pszFiles) {
     HANDLE hDrop;
     LPBYTE lpList;
     SIZE_T cbList;
-    LPTSTR szSrc;
+    LPWSTR szSrc;
 
     LPDROPFILES lpdfs;
     WCHAR szFile[MAXPATHLEN];
@@ -203,7 +203,7 @@ HDROP CreateDropFiles(POINT pt, BOOL fNC, LPTSTR pszFiles) {
     while (szSrc = GetNextFile(szSrc, szFile, COUNTOF(szFile))) {
         QualifyPath(szFile);
 
-        lstrcpy((LPTSTR)lpList, szFile);
+        lstrcpy((LPWSTR)lpList, szFile);
 
         lpList += (wcslen(szFile) + 1) * sizeof(WCHAR);
     }
@@ -219,7 +219,7 @@ HDROP CreateDropFiles(POINT pt, BOOL fNC, LPTSTR pszFiles) {
 #define BLOCK_SIZE 512
 
 // Create all intermediate directories in a path
-static BOOL CreateIntermediateDirectories(LPCTSTR szPath) {
+static BOOL CreateIntermediateDirectories(LPCWSTR szPath) {
     WCHAR szDirPath[MAXPATHLEN];
     WCHAR* p;
 
@@ -672,7 +672,7 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
         SendMessage(This->m_hWnd, FS_GETDIRECTORY, COUNTOF(szDest), (LPARAM)szDest);
 
         if (This->m_iItemSelected != -1) {
-            SendMessage(hwndLB, LB_GETTEXT, This->m_iItemSelected, (LPARAM)(LPTSTR)&lpxdta);
+            SendMessage(hwndLB, LB_GETTEXT, This->m_iItemSelected, (LPARAM)(LPWSTR)&lpxdta);
 
             AddBackslash(szDest);
             lstrcat(szDest, MemGetFileName(lpxdta));

@@ -19,10 +19,10 @@
 
 void BuildDirectoryBagOValues(
     BagOValues<PDNODE>* pbov,
-    LPTSTR szRoot,
+    LPWSTR szRoot,
     PDNODE pNode,
     DWORD scanEpoc,
-    LPTSTR szCachedRootLower);
+    LPWSTR szCachedRootLower);
 void FreeDirectoryBagOValues(BagOValues<PDNODE>* pbov);
 
 DWORD g_driveScanEpoc;  // incremented when a refresh is requested; old bags are discarded; scans are aborted if epoc
@@ -239,7 +239,7 @@ PDNODE CreateNode(PDNODE pParentNode, WCHAR* szName, DWORD dwAttribs) {
 
 #include <sstream>
 
-vector<wstring> SplitIntoWords(LPCTSTR szText) {
+vector<wstring> SplitIntoWords(LPCWSTR szText) {
     vector<wstring> words;
 
     wchar_t tempStr[MAXPATHLEN];
@@ -268,10 +268,10 @@ void FreeDirectoryBagOValues(BagOValues<PDNODE>* pbov, vector<PDNODE>* pNodes) {
 BOOL BuildDirectoryBagOValues(
     BagOValues<PDNODE>* pbov,
     vector<PDNODE>* pNodes,
-    LPCTSTR szRoot,
+    LPCWSTR szRoot,
     PDNODE pNodeParent,
     DWORD scanEpoc,
-    LPTSTR szCachedRootLower) {
+    LPWSTR szCachedRootLower) {
     LFNDTA lfndta;
     WCHAR szPath[MAXPATHLEN];
     LPWSTR szEndPath;
@@ -422,7 +422,7 @@ BOOL BuildDirectoryBagOValues(
     return TRUE;
 }
 
-vector<PDNODE> GetDirectoryOptionsFromText(LPCTSTR szText, BOOL* pbLimited) {
+vector<PDNODE> GetDirectoryOptionsFromText(LPCWSTR szText, BOOL* pbLimited) {
     if (g_pBagOCDrive == nullptr)
         return vector<PDNODE>{};
 
@@ -544,7 +544,7 @@ LRESULT APIENTRY GotoEditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 
 VOID SetCurrentPathOfWindow(LPWSTR szPath) {
     WCHAR szFullPath[MAXPATHLEN];
-    LPTSTR szFilePart;
+    LPWSTR szFilePart;
     DWORD result;
     HWND hwndActive;
     HWND hwndNew;

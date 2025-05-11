@@ -15,15 +15,15 @@ extern WCHAR szAsrtFmt[];
 extern unsigned long BreakFlags;
 extern unsigned long TraceFlags;
 
-DWORD DbgPrint(LPTSTR Format, ...);
+DWORD DbgPrint(LPWSTR Format, ...);
 VOID DbgAssert(LPCWSTR file, int line);
-VOID DbgTrace(DWORD tf, LPTSTR lpstr);
+VOID DbgTrace(DWORD tf, LPWSTR lpstr);
 VOID DbgBreak(DWORD bf, LPCWSTR file, int line);
-VOID DbgPrint1(DWORD tf, LPCWSTR fmt, LPTSTR p1);
+VOID DbgPrint1(DWORD tf, LPCWSTR fmt, LPWSTR p1);
 VOID DbgEnter(LPCWSTR funName);
 VOID DbgLeave(LPCWSTR funName);
-VOID DbgTraceMessage(LPTSTR funName, LPTSTR msgName);
-VOID DbgTraceDefMessage(LPTSTR funName, WORD msgId);
+VOID DbgTraceMessage(LPWSTR funName, LPWSTR msgName);
+VOID DbgTraceDefMessage(LPWSTR funName, WORD msgId);
 
 // BreakFlags flags
 
@@ -42,7 +42,7 @@ VOID DbgTraceDefMessage(LPTSTR funName, WORD msgId);
     DbgAssert(TEXT(__FILE__), __LINE__)
 #define FBREAK(bf) DbgBreak(bf, TEXT(__FILE__), __LINE__)
 #define TRACE(tf, lpstr) DbgTrace(tf, lpstr)
-#define PRINT(tf, fmt, p1) DbgPrint1(tf, fmt, (LPTSTR)(p1))
+#define PRINT(tf, fmt, p1) DbgPrint1(tf, fmt, (LPWSTR)(p1))
 #define MSG(funName, msgName) DbgTraceMessage(funName, msgName)
 #define DEFMSG(funName, wMsgId) DbgTraceDefMessage(funName, wMsgId)
 

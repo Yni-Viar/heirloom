@@ -17,12 +17,12 @@
 #include "resize.h"
 
 VOID CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn);
-BOOL NoQuotes(LPTSTR szT);
+BOOL NoQuotes(LPWSTR szT);
 
 // Return pointers to various bits of a path.
 // ie where the dir name starts, where the filename starts and where the
 // params are.
-VOID GetPathInfo(LPTSTR szTemp, LPTSTR* ppDir, LPTSTR* ppFile, LPTSTR* ppPar) {
+VOID GetPathInfo(LPWSTR szTemp, LPWSTR* ppDir, LPWSTR* ppFile, LPWSTR* ppPar) {
     // handle quoted things
     BOOL bInQuotes = FALSE;
 
@@ -51,8 +51,8 @@ VOID GetPathInfo(LPTSTR szTemp, LPTSTR* ppDir, LPTSTR* ppFile, LPTSTR* ppPar) {
 // filename with an asterisk.
 //
 
-VOID StarFilename(LPTSTR pszPath) {
-    LPTSTR p;
+VOID StarFilename(LPWSTR pszPath) {
+    LPWSTR p;
     WCHAR szTemp[MAXPATHLEN];
 
     // Remove any leading path information.
@@ -79,7 +79,7 @@ VOID StarFilename(LPTSTR pszPath) {
 INT_PTR
 CALLBACK
 SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
-    LPTSTR p;
+    LPWSTR p;
     WCHAR szStart[MAXFILENAMELEN];
 
     if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
@@ -215,9 +215,9 @@ SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 INT_PTR
 CALLBACK
 RunDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
-    LPTSTR p, pDir, pFile, pPar;
+    LPWSTR p, pDir, pFile, pPar;
     DWORD ret;
-    LPTSTR pDir2;
+    LPWSTR pDir2;
     WCHAR szTemp[MAXPATHLEN];
     WCHAR szTemp2[MAXPATHLEN];
     WCHAR sz3[MAXPATHLEN];
@@ -327,9 +327,9 @@ VOID EnableCopy(HWND hDlg, BOOL bCopy) {
     }
 }
 
-VOID MessWithRenameDirPath(LPTSTR pszPath) {
+VOID MessWithRenameDirPath(LPWSTR pszPath) {
     WCHAR szPath[MAXPATHLEN];
-    LPTSTR lpsz;
+    LPWSTR lpsz;
 
     // absolute path? don't tamper with it!
 
@@ -371,7 +371,7 @@ CALLBACK
 SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     UINT len;
     INT iCtrl;
-    LPTSTR pszFrom;
+    LPWSTR pszFrom;
     //
     // WFMoveCopyDrive tries to append \*.* to directories and
     // probably other nasty stuff.  2* for safety.
@@ -389,7 +389,7 @@ SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
     switch (wMsg) {
         case WM_INITDIALOG: {
-            LPTSTR p;
+            LPWSTR p;
             HWND hwndActive;
 
             pCopyInfo = NULL;
@@ -480,7 +480,7 @@ SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                 iCtrl = IDD_FROM;
             else {
                 WCHAR szDirs[MAXPATHLEN];
-                LPTSTR rgszDirs[MAX_DRIVES];
+                LPWSTR rgszDirs[MAX_DRIVES];
                 int drive, driveCur;
                 BOOL fFirst = TRUE;
 
@@ -597,7 +597,7 @@ SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                     //
                     len += 4;
 
-                    pszFrom = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(len));
+                    pszFrom = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(len));
                     if (!pszFrom)
                         goto SuperDlgExit;
 
@@ -662,7 +662,7 @@ SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                         }
 
                         pCopyInfo->pFrom = pszFrom;
-                        pCopyInfo->pTo = (LPTSTR)LocalAlloc(LMEM_FIXED, sizeof(szTo));
+                        pCopyInfo->pTo = (LPWSTR)LocalAlloc(LMEM_FIXED, sizeof(szTo));
 
                         if (!pCopyInfo->pTo) {
                             goto Error;
@@ -770,7 +770,7 @@ struct vertbl vernames[MAX_VERNAMES] = { { L"Comments", IDS_VN_COMMENTS },
 
 DWORD dwHandle;          // version subsystem handle
 HANDLE hmemVersion = 0;  // global handle for version data buffer
-LPTSTR lpVersionBuffer;  // pointer to version data
+LPWSTR lpVersionBuffer;  // pointer to version data
 DWORD dwVersionSize;     // size of the version data
 WCHAR szVersionKey[60];  // big enough for anything we need
 LPWORD lpXlate;          // ptr to translations data
@@ -811,10 +811,10 @@ VOID DisableVersionCtls(HWND hDlg) {
 // Version datum names are not localized, so it's OK to pass literals
 // such as "FileVersion" to this function.
 
-LPTSTR
-GetVersionDatum(LPTSTR pszName) {
+LPWSTR
+GetVersionDatum(LPWSTR pszName) {
     UINT cbValue = 0;
-    LPTSTR lpValue;
+    LPWSTR lpValue;
 
     if (!hmemVersion)
         return NULL;
@@ -839,7 +839,7 @@ GetVersionDatum(LPTSTR pszName) {
 // 4. First translation in resource
 //    "\VarFileInfo\Translations" section
 
-// GetVersionInfo returns LPTSTR if the version info was read OK,
+// GetVersionInfo returns LPWSTR if the version info was read OK,
 // otherwise NULL.  If the return is NULL, the buffer may still
 // have been allocated;  always call FreeVersionInfo to be safe.
 //
@@ -848,11 +848,11 @@ GetVersionDatum(LPTSTR pszName) {
 // Note, Codepage is bogus, since everything is really in unicode.
 // Note, Language is bogus, since FindResourceEx takes a language already...
 
-LPTSTR
+LPWSTR
 GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
     DWORD cbValue = 0;
     UINT cbValueTranslation = 0;
-    LPTSTR lpszValue = NULL;
+    LPWSTR lpszValue = NULL;
 
     //
     // Just in case, free old version buffer.
@@ -880,7 +880,7 @@ GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
         // can't get memory for version info, blow out
         return NULL;
 
-    lpVersionBuffer = (LPTSTR)GlobalLock(hmemVersion);
+    lpVersionBuffer = (LPWSTR)GlobalLock(hmemVersion);
 
     //
     // If we fail, just return NULL. hmemVersion will be freed the next
@@ -994,7 +994,7 @@ VOID FreeVersionInfo(VOID) {
 
 // Returns TRUE if the file has version stamp information.
 
-BOOL FillSimpleVersion(HWND hDlg, LPTSTR lpszValue) {
+BOOL FillSimpleVersion(HWND hDlg, LPWSTR lpszValue) {
     BOOL bRet = TRUE;
 
     if (lpszValue != NULL)
@@ -1035,14 +1035,14 @@ INT InitPropertiesDialog(HWND hDlg) {
     DWORD dwAttrib;
     FILETIME ftLastWrite;
     LFNDTA lfndta;
-    LPTSTR p;
+    LPWSTR p;
     HFONT hFont;
     INT nType = 0;
     DWORD dwFlags;
     BOOL bFileCompression = FALSE;
     BOOL bFileEncryption = FALSE;
 
-    LPTSTR lpszBuf;
+    LPWSTR lpszBuf;
     LARGE_INTEGER qSize, qCSize;
 
     LARGE_INTEGER_NULL(qSize);
@@ -1362,7 +1362,7 @@ INT InitPropertiesDialog(HWND hDlg) {
 INT_PTR
 CALLBACK
 AttribsDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
-    LPTSTR p, pSel;
+    LPWSTR p, pSel;
     BOOL bRet;
     HCURSOR hCursor;
     DWORD dwAttribsNew, dwAttribs, dwChangeMask;
@@ -1438,7 +1438,7 @@ AttribsDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                     if (GET_WM_COMMAND_CMD(wParam, lParam) != LBN_SELCHANGE)
                         break;
                     idx = (INT)SendDlgItemMessage(hDlg, IDD_VERSION_KEY, LB_GETCURSEL, 0, 0L);
-                    lpszValue = (LPTSTR)SendDlgItemMessage(hDlg, IDD_VERSION_KEY, LB_GETITEMDATA, idx, 0L);
+                    lpszValue = (LPWSTR)SendDlgItemMessage(hDlg, IDD_VERSION_KEY, LB_GETITEMDATA, idx, 0L);
 
                     SetDlgItemText(hDlg, IDD_VERSION_VALUE, lpszValue);
                     break;
@@ -1678,7 +1678,7 @@ MakeDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 // Check if szT has quote in it.
 // could use strchr...
 
-BOOL NoQuotes(LPTSTR szT) {
+BOOL NoQuotes(LPWSTR szT) {
     while (*szT) {
         if (CHAR_DQUOTE == *szT)
             return FALSE;

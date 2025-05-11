@@ -82,7 +82,7 @@ VOID BiasMenu(HMENU hMenu, UINT Bias) {
 VOID InitExtensions() {
     WCHAR szBuf[PROFILE_STRING_SIZ];
     WCHAR szPath[MAXPATHLEN];
-    LPTSTR p;
+    LPWSTR p;
     HMODULE hMod;
     FM_EXT_PROC fp;
     HMENU hMenu;
@@ -455,7 +455,7 @@ BOOL CheckDirExists(LPWSTR szDir) {
 BOOL CreateSavedWindows(LPCWSTR pszInitialDir) {
     WCHAR buf[2 * MAXPATHLEN + 7 * 7], key[10];
     WINDOW win;
-    LPTSTR FilePart;
+    LPWSTR FilePart;
     DWORD SizeAvailable;
     DWORD CharsCopied;
 
@@ -840,9 +840,9 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
 
     PngStartup();
 
-    hicoTree = LoadIcon(hAppInstance, (LPTSTR)MAKEINTRESOURCE(TREEICON));
-    hicoTreeDir = LoadIcon(hAppInstance, (LPTSTR)MAKEINTRESOURCE(TREEDIRICON));
-    hicoDir = LoadIcon(hAppInstance, (LPTSTR)MAKEINTRESOURCE(DIRICON));
+    hicoTree = LoadIcon(hAppInstance, (LPWSTR)MAKEINTRESOURCE(TREEICON));
+    hicoTreeDir = LoadIcon(hAppInstance, (LPWSTR)MAKEINTRESOURCE(TREEDIRICON));
+    hicoDir = LoadIcon(hAppInstance, (LPWSTR)MAKEINTRESOURCE(DIRICON));
 
     chFirstDrive = CHAR_a;
 
@@ -867,7 +867,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
     ReleaseDC(NULL, hdcScreen);
 
     /* Load the accelerator table. */
-    hAccel = LoadAccelerators(hInstance, (LPTSTR)MAKEINTRESOURCE(WFACCELTABLE));
+    hAccel = LoadAccelerators(hInstance, (LPWSTR)MAKEINTRESOURCE(WFACCELTABLE));
 
     wHelpMessage = RegisterWindowMessage(TEXT("ShellHelp"));
     wBrowseMessage = RegisterWindowMessage(TEXT("commdlg_help"));
@@ -882,10 +882,10 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
     wndClass.cbClsExtra = 0;
     wndClass.cbWndExtra = 0;
     wndClass.hInstance = hInstance;
-    wndClass.hIcon = LoadIcon(hInstance, (LPTSTR)MAKEINTRESOURCE(APPICON));
+    wndClass.hIcon = LoadIcon(hInstance, (LPWSTR)MAKEINTRESOURCE(APPICON));
     wndClass.hCursor = hcurArrow;
     wndClass.hbrBackground = (HBRUSH)(COLOR_APPWORKSPACE + 1);  // COLOR_WINDOW+1;
-    wndClass.lpszMenuName = (LPTSTR)MAKEINTRESOURCE(FRAMEMENU);
+    wndClass.lpszMenuName = (LPWSTR)MAKEINTRESOURCE(FRAMEMENU);
 
     if (!RegisterClass(&wndClass)) {
         return FALSE;
@@ -902,7 +902,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
 
     // wndClass.hInstance      = hInstance;
     wndClass.hIcon = NULL;
-    wndClass.hCursor = LoadCursor(hInstance, (LPTSTR)MAKEINTRESOURCE(SPLITCURSOR));
+    wndClass.hCursor = LoadCursor(hInstance, (LPWSTR)MAKEINTRESOURCE(SPLITCURSOR));
     wndClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wndClass.lpszMenuName = NULL;
 
@@ -965,7 +965,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
     wndClass.cbWndExtra = GWL_LASTFOCUS + sizeof(LONG_PTR);
 
     // wndClass.hInstance      = hInstance;
-    wndClass.hIcon = LoadIcon(hInstance, (LPTSTR)MAKEINTRESOURCE(DIRICON));
+    wndClass.hIcon = LoadIcon(hInstance, (LPWSTR)MAKEINTRESOURCE(DIRICON));
     // wndClass.hCursor        = NULL;
     wndClass.hbrBackground = NULL;
     // wndClass.lpszMenuName   = NULL;

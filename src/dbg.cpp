@@ -34,7 +34,7 @@ VOID DbgAssert(LPCWSTR file, int line) {
     DebugBreak();
 }
 
-VOID DbgTrace(DWORD tf, LPTSTR lpstr) {
+VOID DbgTrace(DWORD tf, LPWSTR lpstr) {
     if (tf & TraceFlags) {
         wsprintf(szFmt, TEXT("%s\n"), lpstr);
         OutputDebugString(szFmt);
@@ -54,7 +54,7 @@ VOID DbgBreak(DWORD bf, LPCWSTR file, int line) {
     }
 }
 
-VOID DbgPrint1(DWORD tf, LPCWSTR fmt, LPTSTR p1) {
+VOID DbgPrint1(DWORD tf, LPCWSTR fmt, LPWSTR p1) {
     if (tf & TraceFlags) {
         wsprintf(szFmt, fmt, p1);
         OutputDebugString(szFmt);
@@ -69,14 +69,14 @@ VOID DbgPrint1(DWORD tf, LPCWSTR fmt, LPTSTR p1) {
 }
 
 VOID DbgEnter(LPCWSTR funName) {
-    DbgPrint1(BF_PROCTRACE, TEXT("> %s "), (LPTSTR)funName);
+    DbgPrint1(BF_PROCTRACE, TEXT("> %s "), (LPWSTR)funName);
 }
 
 VOID DbgLeave(LPCWSTR funName) {
-    DbgPrint1(BF_PROCTRACE, TEXT(" <%s "), (LPTSTR)funName);
+    DbgPrint1(BF_PROCTRACE, TEXT(" <%s "), (LPWSTR)funName);
 }
 
-VOID DbgTraceMessage(LPTSTR funName, LPTSTR msgName) {
+VOID DbgTraceMessage(LPWSTR funName, LPWSTR msgName) {
     if (BF_MSGTRACE & TraceFlags) {
         wsprintf(szFmt, TEXT("MSG: %s - %s\n"), funName, msgName);
         OutputDebugString(szFmt);
@@ -87,7 +87,7 @@ VOID DbgTraceMessage(LPTSTR funName, LPTSTR msgName) {
     }
 }
 
-VOID DbgTraceDefMessage(LPTSTR funName, WORD msgId) {
+VOID DbgTraceDefMessage(LPWSTR funName, WORD msgId) {
     if (BF_DEFMSGTRACE & TraceFlags) {
         wsprintf(szFmt, TEXT("MSG: %s - default(0x%x)\n"), funName, msgId);
         OutputDebugString(szFmt);

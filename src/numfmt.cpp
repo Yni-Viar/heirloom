@@ -19,8 +19,8 @@ extern WCHAR szInternational[];
 //
 // atoi with decimal comma separators
 //
-LPTSTR
-ShortSizeFormatInternal(LPTSTR szBuf, LARGE_INTEGER qw) {
+LPWSTR
+ShortSizeFormatInternal(LPWSTR szBuf, LARGE_INTEGER qw) {
     INT i;
     UINT uInt, uLen, uDec;
     WCHAR szTemp[10], szOrder[20];

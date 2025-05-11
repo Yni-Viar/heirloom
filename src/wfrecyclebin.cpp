@@ -42,12 +42,12 @@ BOOL GetRecycleBinSize(PLARGE_INTEGER pliSize) {
 }
 
 // Format the Recycle Bin size for display
-VOID FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPTSTR szBuffer) {
+VOID FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPWSTR szBuffer) {
     PutSize(pliSize, szBuffer);
 }
 
 // Move a file to the Recycle Bin instead of permanently deleting it
-DWORD MoveFileToRecycleBin(LPTSTR pszFile) {
+DWORD MoveFileToRecycleBin(LPWSTR pszFile) {
     SHFILEOPSTRUCT shfos;
     WCHAR szFrom[MAXPATHLEN + 1];  // +1 for double null terminator
 

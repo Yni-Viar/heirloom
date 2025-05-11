@@ -28,7 +28,7 @@ DWORD adwSuggest[][3] = {
 // Synopsis: Takes an error code and adds explanation/suggestions
 //
 // IN        bNullString --     lpBuf is empty?
-// INOUT     lpBuf      LPTSTR  buffer with initial string
+// INOUT     lpBuf      LPWSTR  buffer with initial string
 //                              !! Should end in "  " or '\n' for formatting !!
 //                              lpBuf[0] must be 0 if no initial string
 //
@@ -49,7 +49,7 @@ DWORD adwSuggest[][3] = {
 /////////////////////////////////////////////////////////////////////
 
 DWORD
-FormatError(BOOL bNullString, LPTSTR lpBuf, INT iSize, DWORD dwError) {
+FormatError(BOOL bNullString, LPWSTR lpBuf, INT iSize, DWORD dwError) {
     INT iLen;
     DWORD dwNumChars = 0;
     PDWORD pdwSuggest;

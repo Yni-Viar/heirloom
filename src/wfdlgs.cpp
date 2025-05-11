@@ -319,7 +319,7 @@ SelectDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     HWND hwndActive, hwnd;
     WCHAR szList[128];
     WCHAR szSpec[MAXFILENAMELEN];
-    LPTSTR p;
+    LPWSTR p;
 
     if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
         return TRUE;
@@ -647,10 +647,10 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
     return TRUE;
 }
 
-VOID KillQuoteTrailSpace(LPTSTR szFile) {
-    LPTSTR pc;
-    LPTSTR pcNext;
-    LPTSTR pcLastSpace = NULL;
+VOID KillQuoteTrailSpace(LPWSTR szFile) {
+    LPWSTR pc;
+    LPWSTR pcNext;
+    LPWSTR pcLastSpace = NULL;
 
     // Could reuse szFile, but that's ok,
     // we use it as a register probably anyway.

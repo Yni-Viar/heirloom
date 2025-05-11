@@ -14,7 +14,7 @@
 #include <commctrl.h>
 #include <stdlib.h>
 
-LPTSTR CurDirCache[26];
+LPWSTR CurDirCache[26];
 
 #define MAXHISTORY 32
 DWORD historyCur = 0;
@@ -108,7 +108,7 @@ pszRemoveSurroundingQuotes(LPWSTR p) {
 
 // Set the status bar text for a given pane
 
-VOID CDECL SetStatusText(int nPane, UINT nFlags, LPCTSTR szFormat, ...) {
+VOID CDECL SetStatusText(int nPane, UINT nFlags, LPCWSTR szFormat, ...) {
     WCHAR szTemp[120 + MAXPATHLEN];
     WCHAR szTempFormat[120 + MAXPATHLEN];
 
@@ -141,7 +141,7 @@ VOID CDECL SetStatusText(int nPane, UINT nFlags, LPCTSTR szFormat, ...) {
 //  TRUE    we have it saved pszPath gets path
 //  FALSE   we don't have it saved
 
-BOOL GetSavedDirectory(DRIVE drive, LPTSTR pszPath) {
+BOOL GetSavedDirectory(DRIVE drive, LPWSTR pszPath) {
     if (CurDirCache[drive]) {
         lstrcpy(pszPath, CurDirCache[drive]);
         return TRUE;
@@ -149,7 +149,7 @@ BOOL GetSavedDirectory(DRIVE drive, LPTSTR pszPath) {
         return FALSE;
 }
 
-VOID SaveDirectory(LPTSTR pszPath) {
+VOID SaveDirectory(LPWSTR pszPath) {
     DRIVE drive;
 
     drive = DRIVEID(pszPath);
@@ -157,7 +157,7 @@ VOID SaveDirectory(LPTSTR pszPath) {
     if (CurDirCache[drive])
         LocalFree((HANDLE)CurDirCache[drive]);
 
-    CurDirCache[drive] = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(pszPath) + 1));
+    CurDirCache[drive] = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(pszPath) + 1));
 
     if (CurDirCache[drive])
         lstrcpy(CurDirCache[drive], pszPath);
@@ -195,7 +195,7 @@ INT GetSelectedDrive() {
  *  NOTE: when drive != 0, string will be empty for an invalid drive.
  */
 
-VOID GetSelectedDirectory(DRIVE drive, LPTSTR pszDir) {
+VOID GetSelectedDirectory(DRIVE drive, LPWSTR pszDir) {
     HWND hwnd;
     DRIVE driveT;
 
@@ -218,7 +218,7 @@ hwndfound:
     StripBackslash(pszDir);
 }
 
-BOOL GetDriveDirectory(INT iDrive, LPTSTR pszDir) {
+BOOL GetDriveDirectory(INT iDrive, LPWSTR pszDir) {
     WCHAR drvstr[4];
     DWORD ret;
 
@@ -247,7 +247,7 @@ BOOL GetDriveDirectory(INT iDrive, LPTSTR pszDir) {
 
 // similar to GetSelectedDirectory but for all already listed directories
 // doesn't change the current directory of the drives, but returns a list of them
-VOID GetAllDirectories(LPTSTR rgszDirs[]) {
+VOID GetAllDirectories(LPWSTR rgszDirs[]) {
     HWND mpdrivehwnd[MAX_DRIVES];
     HWND hwnd;
     DRIVE driveT;
@@ -274,7 +274,7 @@ VOID GetAllDirectories(LPTSTR rgszDirs[]) {
             szDir[0] = '\0';
 
         if (szDir[0] != '\0') {
-            rgszDirs[driveT] = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(szDir) + 1));
+            rgszDirs[driveT] = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(szDir) + 1));
             lstrcpy(rgszDirs[driveT], szDir);
         }
     }
@@ -349,7 +349,7 @@ VOID RefreshWindow(HWND hwndActive, BOOL bUpdateDriveList, BOOL bFlushCache) {
 // Assumes there are 2 extra spaces in the array.
 //
 
-VOID CheckEsc(LPTSTR szFile) {
+VOID CheckEsc(LPWSTR szFile) {
     // DrivesDropObject calls w/ 2*MAXPATHLEN
 
     WCHAR szT[2 * MAXPATHLEN];
@@ -398,12 +398,12 @@ HWND GetRealParent(HWND hwnd) {
 //
 
 // #ifdef INLIBRARY
-LPTSTR
-AddCommasInternal(LPTSTR szBuf, DWORD dw) {
+LPWSTR
+AddCommasInternal(LPWSTR szBuf, DWORD dw) {
     WCHAR szTemp[40];
-    LPTSTR pTemp;
+    LPWSTR pTemp;
     INT count, len;
-    LPTSTR p;
+    LPWSTR p;
     INT iCommaLen;
     INT i;
 
@@ -638,7 +638,7 @@ VOID SetMDIWindowText(HWND hwnd, LPWSTR szTitle) {
         // Must store realname in GWL_VOLNAME
         // But only for remote drives
 
-        lpszVolName = (LPTSTR)GetWindowLongPtr(hwnd, GWL_VOLNAME);
+        lpszVolName = (LPWSTR)GetWindowLongPtr(hwnd, GWL_VOLNAME);
 
         if (lpszVolName)
             LocalFree(lpszVolName);
@@ -650,7 +650,7 @@ VOID SetMDIWindowText(HWND hwnd, LPWSTR szTitle) {
             lpszVolName = NULL;
 
         } else {
-            lpszVolName = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(lpszVolShare) + 1));
+            lpszVolName = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(lpszVolShare) + 1));
 
             if (lpszVolName) {
                 lstrcpy(lpszVolName, lpszVolShare);
@@ -696,7 +696,7 @@ VOID SetMDIWindowText(HWND hwnd, LPWSTR szTitle) {
 
 #define ISDIGIT(c) ((c) >= TEXT('0') && (c) <= TEXT('9'))
 
-INT atoiW(LPTSTR sz) {
+INT atoiW(LPWSTR sz) {
     INT n = 0;
     BOOL bNeg = FALSE;
 
@@ -789,7 +789,7 @@ BOOL IsValidDisk(DRIVE drive) {
 }
 
 DWORD
-GetVolShare(DRIVE drive, LPTSTR* ppszVolShare, DWORD dwType) {
+GetVolShare(DRIVE drive, LPWSTR* ppszVolShare, DWORD dwType) {
     if (IsRemoteDrive(drive)) {
         return WFGetConnection(drive, ppszVolShare, FALSE, dwType);
     } else {
@@ -806,11 +806,11 @@ GetVolShare(DRIVE drive, LPTSTR* ppszVolShare, DWORD dwType) {
 BOOL IsLFNSelected() {
     HWND hwndActive;
     BOOL fDir;
-    LPTSTR p;
+    LPWSTR p;
 
     hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
-    p = (LPTSTR)SendMessage(hwndActive, FS_GETSELECTION, 2, (LPARAM)&fDir);
+    p = (LPWSTR)SendMessage(hwndActive, FS_GETSELECTION, 2, (LPARAM)&fDir);
     if (p) {
         LocalFree((HANDLE)p);
     }
@@ -821,19 +821,19 @@ BOOL IsLFNSelected() {
 //--------------------------------------------------------------------------
 //
 //  GetSelection() -
-//  caller must free LPTSTR returned.
+//  caller must free LPWSTR returned.
 //
-//  LPTSTR must have 2 chars for checkesc safety at end
+//  LPWSTR must have 2 chars for checkesc safety at end
 //
 //--------------------------------------------------------------------------
 
-LPTSTR
+LPWSTR
 GetSelection(INT iSelType, PBOOL pbDir) {
     HWND hwndActive;
 
     hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
-    return (LPTSTR)SendMessage(hwndActive, FS_GETSELECTION, (WPARAM)iSelType, (LPARAM)pbDir);
+    return (LPWSTR)SendMessage(hwndActive, FS_GETSELECTION, (WPARAM)iSelType, (LPARAM)pbDir);
 }
 
 //
@@ -852,8 +852,8 @@ GetSelection(INT iSelType, PBOOL pbDir) {
 //      to enumerate thorough the file list
 //
 
-LPTSTR
-GetNextFile(LPTSTR pFrom, LPTSTR pTo, INT cchMax) {
+LPWSTR
+GetNextFile(LPWSTR pFrom, LPWSTR pTo, INT cchMax) {
     INT i;
 
     // Originally, this code tested if the first char was a double quote,
@@ -944,7 +944,7 @@ VOID SetWindowDirectory() {
  * this does not really change the DOS current directory
  */
 
-VOID SetDlgDirectory(HWND hDlg, LPTSTR pszPath) {
+VOID SetDlgDirectory(HWND hDlg, LPWSTR pszPath) {
     HDC hDC;
     SIZE size;
     RECT rc;
@@ -997,7 +997,7 @@ VOID SetDlgDirectory(HWND hDlg, LPTSTR pszPath) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID WritePrivateProfileBool(LPTSTR szKey, BOOL bParam) {
+VOID WritePrivateProfileBool(LPWSTR szKey, BOOL bParam) {
     WCHAR szBool[6];
 
     wsprintf(szBool, SZ_PERCENTD, bParam);
@@ -1041,7 +1041,7 @@ VOID CleanupMessages() {
 
 /* Returns TRUE iff the path contains * or ? */
 
-BOOL IsWild(LPTSTR lpszPath) {
+BOOL IsWild(LPWSTR lpszPath) {
     while (*lpszPath) {
         if (*lpszPath == CHAR_QUESTION || *lpszPath == CHAR_STAR)
             return (TRUE);
@@ -1059,7 +1059,7 @@ BOOL IsWild(LPTSTR lpszPath) {
 
 /* Replaces frontslashes (evil) with backslashes (good). */
 
-VOID CheckSlashes(LPTSTR lpT) {
+VOID CheckSlashes(LPWSTR lpT) {
     while (*lpT) {
         if (*lpT == CHAR_SLASH)
             *lpT = CHAR_BACKSLASH;
@@ -1075,7 +1075,7 @@ VOID CheckSlashes(LPTSTR lpT) {
 
 /* Ensures that a path ends with a backslash. */
 
-UINT AddBackslash(LPTSTR lpszPath) {
+UINT AddBackslash(LPWSTR lpszPath) {
     UINT uLen = lstrlen(lpszPath);
 
     if (*(lpszPath + uLen - 1) != CHAR_BACKSLASH) {
@@ -1096,7 +1096,7 @@ UINT AddBackslash(LPTSTR lpszPath) {
  * the root directory.  Assumes a fully qualified directory path.
  */
 
-VOID StripBackslash(LPTSTR lpszPath) {
+VOID StripBackslash(LPWSTR lpszPath) {
     UINT len;
 
     len = (lstrlen(lpszPath) - 1);
@@ -1114,8 +1114,8 @@ VOID StripBackslash(LPTSTR lpszPath) {
 
 /* Remove the filespec portion from a path (including the backslash). */
 
-VOID StripFilespec(LPTSTR lpszPath) {
-    LPTSTR p;
+VOID StripFilespec(LPWSTR lpszPath) {
+    LPWSTR p;
 
     p = lpszPath + lstrlen(lpszPath);
     while ((*p != CHAR_BACKSLASH) && (*p != CHAR_COLON) && (p != lpszPath))
@@ -1141,8 +1141,8 @@ VOID StripFilespec(LPTSTR lpszPath) {
 
 /* Extract only the filespec portion from a path. */
 
-VOID StripPath(LPTSTR lpszPath) {
-    LPTSTR p;
+VOID StripPath(LPWSTR lpszPath) {
+    LPWSTR p;
 
     p = lpszPath + lstrlen(lpszPath);
     while ((*p != CHAR_BACKSLASH) && (*p != CHAR_COLON) && (p != lpszPath))
@@ -1163,9 +1163,9 @@ VOID StripPath(LPTSTR lpszPath) {
 
 /* Returns the extension part of a filename. */
 
-LPTSTR
-GetExtension(LPTSTR pszFile) {
-    LPTSTR p, pSave = NULL;
+LPWSTR
+GetExtension(LPWSTR pszFile) {
+    LPWSTR p, pSave = NULL;
 
     p = pszFile;
     while (*p) {
@@ -1230,12 +1230,12 @@ INT MyMessageBox(HWND hwnd, DWORD idTitle, DWORD idMessage, DWORD wStyle) {
 //  there is no extension.  even if it's already quoted!)
 
 DWORD
-ExecProgram(LPTSTR lpPath, LPTSTR lpParms, LPTSTR lpDir, BOOL bLoadIt, BOOL bRunAs) {
+ExecProgram(LPWSTR lpPath, LPWSTR lpParms, LPWSTR lpDir, BOOL bLoadIt, BOOL bRunAs) {
     DWORD_PTR ret;
     INT iCurCount;
     INT i;
     HCURSOR hCursor;
-    LPTSTR lpszTitle;
+    LPWSTR lpszTitle;
 
     ret = 0;
 
@@ -1346,8 +1346,8 @@ EPExit:
 /////////////////////////////////////////////////////////////////////
 
 PDOCBUCKET
-IsBucketFile(LPTSTR lpszPath, PPDOCBUCKET ppBucket) {
-    LPTSTR szExt;
+IsBucketFile(LPWSTR lpszPath, PPDOCBUCKET ppBucket) {
+    LPWSTR szExt;
 
     //
     // Get the file's extension.
@@ -1418,11 +1418,11 @@ BOOL TypeAheadString(WCHAR ch, LPWSTR szT) {
     return ich != 0;
 }
 
-LPTSTR GetFullPathInSystemDirectory(LPCTSTR FileName) {
+LPWSTR GetFullPathInSystemDirectory(LPCWSTR FileName) {
     UINT LengthRequired;
     UINT LengthReturned;
     UINT FileNameLength;
-    LPTSTR FullPath;
+    LPWSTR FullPath;
 
     LengthRequired = GetSystemDirectory(NULL, 0);
     if (LengthRequired == 0) {
@@ -1430,7 +1430,7 @@ LPTSTR GetFullPathInSystemDirectory(LPCTSTR FileName) {
     }
 
     FileNameLength = lstrlen(FileName);
-    FullPath = (LPTSTR)LocalAlloc(LMEM_FIXED, (LengthRequired + 1 + FileNameLength + 1) * sizeof(WCHAR));
+    FullPath = (LPWSTR)LocalAlloc(LMEM_FIXED, (LengthRequired + 1 + FileNameLength + 1) * sizeof(WCHAR));
     if (FullPath == NULL) {
         return NULL;
     }
@@ -1446,8 +1446,8 @@ LPTSTR GetFullPathInSystemDirectory(LPCTSTR FileName) {
     return FullPath;
 }
 
-HMODULE LoadSystemLibrary(LPCTSTR FileName) {
-    LPTSTR FullPath;
+HMODULE LoadSystemLibrary(LPCWSTR FileName) {
+    LPWSTR FullPath;
     HMODULE Module;
 
     FullPath = GetFullPathInSystemDirectory(FileName);

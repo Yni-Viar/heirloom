@@ -38,7 +38,7 @@ typedef struct {
 
 typedef struct {
     HWND hwnd;
-    LPTSTR lpstrVolume;
+    LPWSTR lpstrVolume;
     INT iCurDriveInd;
     INT iCurDriveFocus;
     LPTREEDATA lptreed;

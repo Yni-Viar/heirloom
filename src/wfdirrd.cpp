@@ -358,11 +358,11 @@ VOID BuildDocumentString() {
 /////////////////////////////////////////////////////////////////////
 
 VOID BuildDocumentStringWorker() {
-    LPTSTR p;
+    LPWSTR p;
     INT uLen;
     WCHAR szT[EXTSIZ + 1];
     INT i, j;
-    LPTSTR pszDocuments = NULL;
+    LPWSTR pszDocuments = NULL;
     HKEY hk;
     BOOL bCloseKey;
 
@@ -387,7 +387,7 @@ VOID BuildDocumentStringWorker() {
         if (pszDocuments)
             LocalFree((HLOCAL)pszDocuments);
 
-        pszDocuments = (LPTSTR)LocalAlloc(LMEM_FIXED, uLen * sizeof(*pszDocuments));
+        pszDocuments = (LPWSTR)LocalAlloc(LMEM_FIXED, uLen * sizeof(*pszDocuments));
 
         if (!pszDocuments) {
             goto Return;

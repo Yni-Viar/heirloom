@@ -315,7 +315,7 @@ HRESULT WF_IDataObject::AddFormatEtc(FORMATETC* pFormatEtc, STGMEDIUM* pMedium, 
 }
 
 // Create a data object with CF_HDROP format for the selected files
-HRESULT CreateDataObject(LPTSTR pszFiles, POINT pt, WF_IDataObject** ppDataObject) {
+HRESULT CreateDataObject(LPWSTR pszFiles, POINT pt, WF_IDataObject** ppDataObject) {
     if (ppDataObject == NULL || pszFiles == NULL)
         return E_INVALIDARG;
 
@@ -463,7 +463,7 @@ HRESULT CreateDataObject(LPTSTR pszFiles, POINT pt, WF_IDataObject** ppDataObjec
     }
 
     // Add CF_TEXT format with file names
-    LPTSTR pszText = NULL;
+    LPWSTR pszText = NULL;
     size_t cchText = 0;
     pszNext = pszFiles;
 
@@ -500,7 +500,7 @@ HRESULT CreateDataObject(LPTSTR pszFiles, POINT pt, WF_IDataObject** ppDataObjec
         // Allocate memory for the text
         HGLOBAL hText = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, (cchText + 1) * sizeof(WCHAR));
         if (hText) {
-            LPTSTR pszDest = (LPTSTR)GlobalLock(hText);
+            LPWSTR pszDest = (LPWSTR)GlobalLock(hText);
             if (pszDest) {
                 pszNext = pszFiles;
                 while (pszNext && *pszNext) {
@@ -556,7 +556,7 @@ HRESULT CreateDataObject(LPTSTR pszFiles, POINT pt, WF_IDataObject** ppDataObjec
 }
 
 // Perform a drag and drop operation with the selected files
-HRESULT WFDoDragDrop(HWND hwnd, LPTSTR pszFiles, POINT pt, DWORD* pdwEffect) {
+HRESULT WFDoDragDrop(HWND hwnd, LPWSTR pszFiles, POINT pt, DWORD* pdwEffect) {
     if (!pszFiles || !*pszFiles || !pdwEffect)
         return E_INVALIDARG;
 

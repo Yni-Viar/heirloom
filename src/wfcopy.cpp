@@ -20,35 +20,35 @@ INT ManySource;
 
 VOID wfYield(VOID);
 
-INT CopyMoveRetry(LPTSTR, INT, PBOOL);
-DWORD CopyError(LPTSTR, LPTSTR, DWORD, DWORD, INT, BOOL, BOOL);
-BOOL IsRootDirectory(LPTSTR pPath);
+INT CopyMoveRetry(LPWSTR, INT, PBOOL);
+DWORD CopyError(LPWSTR, LPWSTR, DWORD, DWORD, INT, BOOL, BOOL);
+BOOL IsRootDirectory(LPWSTR pPath);
 
 DWORD ConfirmDialog(
     HWND hDlg,
     DWORD dlg,
-    LPTSTR pFileDest,
+    LPWSTR pFileDest,
     PLFNDTA pDTADest,
-    LPTSTR pFileSource,
+    LPWSTR pFileSource,
     PLFNDTA pDTASource,
     BOOL bConfirmByDefault,
     BOOL* pbAll,
     BOOL bConfirmReadOnlyByDefault,
     BOOL* pbReadOnlyAll);
 
-DWORD IsInvalidPath(LPTSTR pPath);
+DWORD IsInvalidPath(LPWSTR pPath);
 DWORD GetNextPair(
     PCOPYROOT pcr,
-    LPTSTR pFrom,
-    LPTSTR pToPath,
-    LPTSTR pToSpec,
+    LPWSTR pFrom,
+    LPWSTR pToPath,
+    LPWSTR pToSpec,
     DWORD dwFunc,
     PDWORD pdwError,
     BOOL bIsLFNDriveDest);
-INT CheckMultiple(LPTSTR pInput);
+INT CheckMultiple(LPWSTR pInput);
 VOID DialogEnterFileStuff(HWND hwnd);
-DWORD SafeFileRemove(LPTSTR szFileOEM);
-BOOL IsWindowsFile(LPTSTR szFileOEM);
+DWORD SafeFileRemove(LPWSTR szFileOEM);
+BOOL IsWindowsFile(LPWSTR szFileOEM);
 
 INT_PTR CALLBACK ReplaceDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
@@ -89,8 +89,8 @@ BOOL IsValidChar(TUCHAR ch, BOOL fPath, BOOL bLFN) {
 //
 //--------------------------------------------------------------------------
 
-LPTSTR
-StripColon(LPTSTR pPath) {
+LPWSTR
+StripColon(LPWSTR pPath) {
     INT cb = lstrlen(pPath);
 
     if (cb > 2 && pPath[cb - 1] == CHAR_COLON)
@@ -107,9 +107,9 @@ StripColon(LPTSTR pPath) {
 
 /* Returns a pointer to the last component of a path string. */
 
-LPTSTR
-FindFileName(LPTSTR pPath) {
-    LPTSTR pT;
+LPWSTR
+FindFileName(LPWSTR pPath) {
+    LPWSTR pT;
 
     for (pT = pPath; *pPath; pPath++) {
         if ((pPath[0] == CHAR_BACKSLASH || pPath[0] == CHAR_COLON) && pPath[1])
@@ -134,7 +134,7 @@ FindFileName(LPTSTR pPath) {
  * replaced with AddBackslash(); lstrcat()
  */
 
-VOID AppendToPath(LPTSTR pPath, LPCTSTR pMore) {
+VOID AppendToPath(LPWSTR pPath, LPCWSTR pMore) {
     /* Don't append a \ to empty paths. */
     if (*pPath) {
         while (*pPath)
@@ -162,8 +162,8 @@ VOID AppendToPath(LPTSTR pPath, LPCTSTR pMore) {
 
 // Warning: assumes BACKSLASH or : exists in string
 
-UINT RemoveLast(LPTSTR pFile) {
-    LPTSTR pT;
+UINT RemoveLast(LPWSTR pFile) {
+    LPWSTR pT;
     UINT uChars = 0;
 
     for (pT = pFile; *pFile; pFile++) {
@@ -215,17 +215,17 @@ UINT RemoveLast(LPTSTR pFile) {
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL QualifyPath(LPTSTR lpszPath) {
+BOOL QualifyPath(LPWSTR lpszPath) {
     INT cb, nSpaceLeft, i, j;
     WCHAR szTemp[MAXPATHLEN];
     DRIVE drive = 0;
-    LPTSTR pOrig, pT;
+    LPWSTR pOrig, pT;
     BOOL flfn = FALSE;
     BOOL fQuote = FALSE;
 
     WCHAR szDrive[] = SZ_ACOLONSLASH;
 
-    LPTSTR lpszDot;
+    LPWSTR lpszDot;
     UINT uLen;
 
     //
@@ -390,7 +390,7 @@ GetComps:
 
         } else {
         AddComponent:
-            LPTSTR pT = NULL;
+            LPWSTR pT = NULL;
             uLen = AddBackslash(lpszPath);
             nSpaceLeft = MAXPATHLEN - 1 - uLen;
 
@@ -512,7 +512,7 @@ GetComps:
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-BOOL IsRootDirectory(LPTSTR pPath) {
+BOOL IsRootDirectory(LPWSTR pPath) {
     if (!lstrcmpi(pPath + 1, TEXT(":\\")))
         return (TRUE);
     if (!lstrcmpi(pPath, SZ_BACKSLASH))
@@ -523,7 +523,7 @@ BOOL IsRootDirectory(LPTSTR pPath) {
     // checking unc!
 
     if (*pPath == CHAR_BACKSLASH && *(pPath + 1) == CHAR_BACKSLASH) { /* some sort of UNC name */
-        LPTSTR p;
+        LPWSTR p;
         int cBackslashes = 0;
 
         for (p = pPath + 2; *p;) {
@@ -544,8 +544,8 @@ BOOL IsRootDirectory(LPTSTR pPath) {
 //      relative paths "." and ".."
 //  FALSE   not a dir
 
-BOOL IsDirectory(LPTSTR pPath) {
-    LPTSTR pT;
+BOOL IsDirectory(LPWSTR pPath) {
+    LPWSTR pT;
     WCHAR szTemp[MAXPATHLEN];
 
     if (IsRootDirectory(pPath))
@@ -576,7 +576,7 @@ BOOL IsDirectory(LPTSTR pPath) {
 //  0 = fail (general)
 //  1 = succeed
 
-BOOL IsTheDiskReallyThere(HWND hwnd, LPTSTR pPath, DWORD dwFunc, BOOL bModal) {
+BOOL IsTheDiskReallyThere(HWND hwnd, LPWSTR pPath, DWORD dwFunc, BOOL bModal) {
     DRIVE drive;
     WCHAR szTemp[MAXMESSAGELEN];
     WCHAR szMessage[MAXMESSAGELEN];
@@ -709,7 +709,7 @@ DiskNotThere:
     return 0;
 }
 
-VOID BuildDateLine(LPTSTR szTemp, PLFNDTA plfndta) {
+VOID BuildDateLine(LPWSTR szTemp, PLFNDTA plfndta) {
     wsprintf(szTemp, szBytes, plfndta->fd.nFileSizeLow);
     lstrcat(szTemp, szSpace);
     PutDate(&plfndta->fd.ftLastWriteTime, szTemp + lstrlen(szTemp));
@@ -718,15 +718,15 @@ VOID BuildDateLine(LPTSTR szTemp, PLFNDTA plfndta) {
 }
 
 typedef struct {
-    LPTSTR pFileDest;
-    LPTSTR pFileSource;
+    LPWSTR pFileDest;
+    LPWSTR pFileSource;
     PLFNDTA plfndtaDest;
     PLFNDTA plfndtaSrc;
     INT bWriteProtect;
     BOOL bNoAccess;
 } PARAM_REPLACEDLG, FAR* LPPARAM_REPLACEDLG;
 
-VOID SetDlgItemPath(HWND hDlg, INT id, LPTSTR pszPath) {
+VOID SetDlgItemPath(HWND hDlg, INT id, LPWSTR pszPath) {
     RECT rc;
     HDC hdc;
     HFONT hFont;
@@ -826,9 +826,9 @@ DWORD
 ConfirmDialog(
     HWND hDlg,
     DWORD dlg,
-    LPTSTR pFileDest,
+    LPWSTR pFileDest,
     PLFNDTA plfndtaDest,
-    LPTSTR pFileSource,
+    LPWSTR pFileSource,
     PLFNDTA plfndtaSrc,
     BOOL bConfirmByDefault,
     BOOL* pbAll,
@@ -854,7 +854,7 @@ ConfirmDialog(
         } else {
             params.bWriteProtect = TRUE;
             nRetVal = (INT)DialogBoxParam(
-                hAppInstance, (LPTSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
+                hAppInstance, (LPWSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
         }
 
         if (nRetVal == IDYES) {
@@ -869,7 +869,7 @@ ConfirmDialog(
         nRetVal = IDYES;
     } else {
         nRetVal = (INT)DialogBoxParam(
-            hAppInstance, (LPTSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
+            hAppInstance, (LPWSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
     }
 
     if (nRetVal == -1)
@@ -887,7 +887,7 @@ ConfirmDialog(
 /*--------------------------------------------------------------------------*/
 
 DWORD
-NetCheck(LPTSTR pPath, DWORD dwType) {
+NetCheck(LPWSTR pPath, DWORD dwType) {
     DWORD err;
     WCHAR szT[MAXSUGGESTLEN];
     WCHAR szProvider[128];
@@ -933,7 +933,7 @@ NetCheck(LPTSTR pPath, DWORD dwType) {
  */
 
 DWORD
-IsInvalidPath(LPTSTR pPath) {
+IsInvalidPath(LPWSTR pPath) {
     WCHAR sz[9];
     INT n = 0;
 
@@ -1030,13 +1030,13 @@ VOID GetNextCleanup(PCOPYROOT pcr) {
 DWORD
 GetNextPair(
     PCOPYROOT pcr,
-    LPTSTR pFrom,
-    LPTSTR pToPath,
-    LPTSTR pToSpec,
+    LPWSTR pFrom,
+    LPWSTR pToPath,
+    LPWSTR pToSpec,
     DWORD dwFunc,
     PDWORD pdwError,
     BOOL bIsLFNDriveDest) {
-    LPTSTR pT;     // Temporary pointer
+    LPWSTR pT;     // Temporary pointer
     DWORD dwOp;    // Return value (operation to perform
     PLFNDTA pDTA;  // Pointer to file DTA data
 
@@ -1428,7 +1428,7 @@ ReturnPair:
             //
             pT = pToPath;
 
-            while (*pFrom && CharUpper((LPTSTR)(TUCHAR)*pFrom) == CharUpper((LPTSTR)(TUCHAR)*pT)) {
+            while (*pFrom && CharUpper((LPWSTR)(TUCHAR)*pFrom) == CharUpper((LPWSTR)(TUCHAR)*pT)) {
                 pFrom++;
                 pT++;
             }
@@ -1446,7 +1446,7 @@ ReturnPair:
     return dwOp;
 }
 
-VOID CdDotDot(LPTSTR szOrig) {
+VOID CdDotDot(LPWSTR szOrig) {
     WCHAR szTemp[MAXPATHLEN];
 
     lstrcpy(szTemp, szOrig);
@@ -1455,7 +1455,7 @@ VOID CdDotDot(LPTSTR szOrig) {
 }
 
 /* p is a fully qualified ANSI string. */
-BOOL IsCurrentDirectory(LPTSTR p) {
+BOOL IsCurrentDirectory(LPWSTR p) {
     WCHAR szTemp[MAXPATHLEN];
 
     GetDriveDirectory(DRIVEID(p) + 1, szTemp);
@@ -1475,8 +1475,8 @@ BOOL IsCurrentDirectory(LPTSTR p) {
 // note: this may hit the disk in the directory check
 //
 
-INT CheckMultiple(LPTSTR pInput) {
-    LPTSTR pT;
+INT CheckMultiple(LPWSTR pInput) {
+    LPWSTR pT;
     WCHAR szTemp[MAXPATHLEN];
 
     /* Wildcards imply multiple files. */
@@ -1541,7 +1541,7 @@ VOID DialogEnterFileStuff(HWND hwnd) {
 // used for both the drag drop status dialogs and the manual user
 // entry dialogs so be careful what you change
 
-VOID Notify(HWND hDlg, WORD idMessage, LPTSTR szFrom, LPTSTR szTo) {
+VOID Notify(HWND hDlg, WORD idMessage, LPWSTR szFrom, LPWSTR szTo) {
     WCHAR szTemp[40];
 
     if (idMessage) {
@@ -1559,7 +1559,7 @@ VOID Notify(HWND hDlg, WORD idMessage, LPTSTR szFrom, LPTSTR szTo) {
 }
 
 //
-// BOOL IsWindowsFile(LPTSTR szFileOEM)
+// BOOL IsWindowsFile(LPWSTR szFileOEM)
 //
 // this is a bit strange.  kernel strips off the path info so he
 // will match only on the base name of the file.  so if the base
@@ -1569,7 +1569,7 @@ VOID Notify(HWND hDlg, WORD idMessage, LPTSTR szFrom, LPTSTR szTo) {
 //
 // LFN: detect long names and ignore them?
 
-BOOL IsWindowsFile(LPTSTR szFileOEM) {
+BOOL IsWindowsFile(LPWSTR szFileOEM) {
     HMODULE hMod;
     WCHAR szModule[MAXPATHLEN];
 
@@ -1600,7 +1600,7 @@ BOOL IsWindowsFile(LPTSTR szFileOEM) {
 }
 
 DWORD
-SafeFileRemove(LPTSTR szFileOEM) {
+SafeFileRemove(LPWSTR szFileOEM) {
     if (IsWindowsFile(szFileOEM))
         return DE_WINDOWSFILE;
     else
@@ -1615,10 +1615,10 @@ SafeFileRemove(LPTSTR szFileOEM) {
 #endif
 
 DWORD
-WF_CreateDirectory(HWND hwndParent, LPTSTR szDest, LPTSTR szSrc) {
+WF_CreateDirectory(HWND hwndParent, LPWSTR szDest, LPWSTR szSrc) {
     DWORD ret = 0;
     WCHAR szTemp[MAXPATHLEN + 1];  // +1 for AddBackslash()
-    LPTSTR p, pLastSpecEnd;
+    LPWSTR p, pLastSpecEnd;
 
     LFNDTA DTAHack;
     BOOL bLastExists;
@@ -1768,7 +1768,7 @@ WFMoveCopyDriver(PCOPYINFO pCopyInfo) {
 //
 //
 // Notes:  Needs to check for pathnames that are too large!
-//         HWND hDlg, LPTSTR pFrom, LPTSTR pTo, DWORD dwFunc)
+//         HWND hDlg, LPWSTR pFrom, LPWSTR pTo, DWORD dwFunc)
 //
 /////////////////////////////////////////////////////////////////////
 
@@ -1997,7 +1997,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                 // Source and destination are exactly the same
                 WCHAR szDestAlt[MAXPATHLEN + 2] = { 0 };
                 WCHAR szExtension[MAXPATHLEN + 2] = { 0 };
-                LPTSTR pExt;
+                LPWSTR pExt;
 
                 lstrcpy(szDestAlt, szDest);
 
@@ -2503,7 +2503,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
 
             case OPER_DOFILE | FUNC_RENAME: {
                 WCHAR save1, save2;
-                LPTSTR p;
+                LPWSTR p;
 
                 if (CurIDS != IDS_RENAMINGMSG) {
                     CurIDS = IDS_RENAMINGMSG;
@@ -2838,7 +2838,7 @@ ExitLoop:
 // Used by Danger Mouse to do moves and copies.
 
 DWORD
-DMMoveCopyHelper(LPTSTR pFrom, LPTSTR pTo, INT iOperation) {
+DMMoveCopyHelper(LPWSTR pFrom, LPWSTR pTo, INT iOperation) {
     DWORD dwStatus;
     LPWSTR pTemp;
     PCOPYINFO pCopyInfo;
@@ -2916,9 +2916,9 @@ DMMoveCopyHelper(LPTSTR pFrom, LPTSTR pTo, INT iOperation) {
         return ERROR_OUTOFMEMORY;
     }
 
-    pCopyInfo->pFrom = (LPTSTR)LocalAlloc(LMEM_FIXED, ByteCountOf(lstrlen(pFrom) + 1));
+    pCopyInfo->pFrom = (LPWSTR)LocalAlloc(LMEM_FIXED, ByteCountOf(lstrlen(pFrom) + 1));
 
-    pCopyInfo->pTo = (LPTSTR)LocalAlloc(LMEM_FIXED, ByteCountOf(lstrlen(pTo) + 1));
+    pCopyInfo->pTo = (LPWSTR)LocalAlloc(LMEM_FIXED, ByteCountOf(lstrlen(pTo) + 1));
 
     if (!pCopyInfo->pFrom || !pCopyInfo->pTo) {
         if (pCopyInfo->pFrom)
@@ -2952,27 +2952,27 @@ DMMoveCopyHelper(LPTSTR pFrom, LPTSTR pTo, INT iOperation) {
     lstrcpy(pCopyInfo->pTo, pTo);
 
     dwStatus = (DWORD)DialogBoxParam(
-        hAppInstance, (LPTSTR)MAKEINTRESOURCE(DMSTATUSDLG), hwndFrame, ProgressDlgProc, (LPARAM)pCopyInfo);
+        hAppInstance, (LPWSTR)MAKEINTRESOURCE(DMSTATUSDLG), hwndFrame, ProgressDlgProc, (LPARAM)pCopyInfo);
 
     return dwStatus;
 }
 
 DWORD
-FileRemove(LPTSTR pSpec) {
+FileRemove(LPWSTR pSpec) {
     // Use recycle bin instead of permanent deletion
     return MoveFileToRecycleBin(pSpec);
 }
 
 DWORD
-FileMove(LPTSTR pFrom, LPTSTR pTo, PBOOL pbErrorOnDest, BOOL bSilent) {
+FileMove(LPWSTR pFrom, LPWSTR pTo, PBOOL pbErrorOnDest, BOOL bSilent) {
     DWORD result;
     BOOL bTried = FALSE;
-    LPTSTR pTemp;
+    LPWSTR pTemp;
 
     *pbErrorOnDest = FALSE;
 
 TryAgain:
-    if (MoveFile((LPTSTR)pFrom, (LPTSTR)pTo))
+    if (MoveFile((LPWSTR)pFrom, (LPWSTR)pTo))
         result = 0;
     else
         result = GetLastError();
@@ -3043,8 +3043,8 @@ TryAgain:
 
 DWORD
 CopyError(
-    LPTSTR pszSource,
-    LPTSTR pszDest,
+    LPWSTR pszSource,
+    LPWSTR pszDest,
     DWORD dwError,
     DWORD dwFunc,
     INT nOper,
@@ -3129,9 +3129,9 @@ CopyError(
 ;
 ============================================================================*/
 
-INT CopyMoveRetry(LPTSTR pszDest, INT nError, PBOOL pbErrorOnDest) {
+INT CopyMoveRetry(LPWSTR pszDest, INT nError, PBOOL pbErrorOnDest) {
     WCHAR szReason[128]; /* Error message string */
-    LPTSTR pTemp;        /* Pointer into filename */
+    LPWSTR pTemp;        /* Pointer into filename */
     WORD wFlags;         /* Message box flags */
     INT result;          /* Return from MessageBox call */
     WCHAR szMessage[MAXMESSAGELEN];

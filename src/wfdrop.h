@@ -105,6 +105,6 @@ void UnregisterDropWindow(HWND hwnd, IDropTarget* pDropTarget);
 
 LPWSTR QuotedDropList(IDataObject* pDataObj);
 LPWSTR QuotedContentList(IDataObject* pDataObj);
-HDROP CreateDropFiles(POINT pt, BOOL fNC, LPTSTR pszFiles);
+HDROP CreateDropFiles(POINT pt, BOOL fNC, LPWSTR pszFiles);
 
 #endif

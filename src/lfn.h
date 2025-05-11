@@ -33,19 +33,19 @@ typedef struct {
 VOID LFNInit(VOID);
 VOID InvalidateVolTypes(VOID);
 
-DWORD GetNameType(LPTSTR);
-BOOL IsLFN(LPTSTR pName);
-// BOOL  IsLFNDrive(LPTSTR);
+DWORD GetNameType(LPWSTR);
+BOOL IsLFN(LPWSTR pName);
+// BOOL  IsLFNDrive(LPWSTR);
 
-BOOL WFFindFirst(LPLFNDTA lpFind, LPTSTR lpName, DWORD dwAttrFilter);
+BOOL WFFindFirst(LPLFNDTA lpFind, LPWSTR lpName, DWORD dwAttrFilter);
 BOOL WFFindNext(LPLFNDTA);
 BOOL WFFindClose(LPLFNDTA);
 
-DWORD I_LFNCanon(USHORT CanonType, LPTSTR InFile, LPTSTR OutFile);
-DWORD LFNParse(LPTSTR, LPTSTR, LPTSTR);
-WORD I_LFNEditName(LPTSTR lpSrc, LPTSTR lpEd, LPTSTR lpRes, INT iResBufSize);
+DWORD I_LFNCanon(USHORT CanonType, LPWSTR InFile, LPWSTR OutFile);
+DWORD LFNParse(LPWSTR, LPWSTR, LPWSTR);
+WORD I_LFNEditName(LPWSTR lpSrc, LPWSTR lpEd, LPWSTR lpRes, INT iResBufSize);
 
-BOOL WFIsDir(LPTSTR);
-BOOL LFNMergePath(LPTSTR, LPTSTR);
+BOOL WFIsDir(LPWSTR);
+BOOL LFNMergePath(LPWSTR, LPWSTR);
 
 BOOL IsLFNSelected(VOID);

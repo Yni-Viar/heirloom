@@ -115,7 +115,7 @@ DWORD APIENTRY WNetPasswordChangeNotify(
 //
 
 DWORD
-WNetDirectoryNotifyW(HWND hwnd, LPTSTR lpDir, DWORD dwOper);
+WNetDirectoryNotifyW(HWND hwnd, LPWSTR lpDir, DWORD dwOper);
 
 #define WNetDirectoryNotify WNetDirectoryNotifyW
 
@@ -198,7 +198,7 @@ DWORD WNetBrowsePrinterDialog(
 //
 // stuff in user, not driver, for shell apps ;Internal
 //
-DWORD APIENTRY WNetErrorText(DWORD, LPTSTR, DWORD);  // ;Internal
+DWORD APIENTRY WNetErrorText(DWORD, LPWSTR, DWORD);  // ;Internal
 
 //
 // used by MPRUI.DLL to determine if a provider supports

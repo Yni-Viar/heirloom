@@ -59,7 +59,7 @@ Message Conventions -
             ex.:    "E:\PRE\", "C:\"
 
         wParam  -   Maximum length of string
-        lParam  -   LPTSTR to buffer will contain the directory path
+        lParam  -   LPWSTR to buffer will contain the directory path
 
 
     FS_GETDRIVE:

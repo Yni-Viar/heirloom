@@ -17,7 +17,7 @@
 #define FIL_STANDARD 1
 
 // Local Function prototypes
-DWORD I_Is83File(LPTSTR lpFile);
+DWORD I_Is83File(LPWSTR lpFile);
 
 /****************************************************************************
  *
@@ -38,9 +38,9 @@ DWORD I_Is83File(LPTSTR lpFile);
  *
  ****************************************************************************/
 DWORD
-I_LFNCanon(WORD CanonType, LPTSTR InFile, LPTSTR OutFile) {
-    LPTSTR ins = InFile;
-    LPTSTR outs = OutFile;
+I_LFNCanon(WORD CanonType, LPWSTR InFile, LPWSTR OutFile) {
+    LPWSTR ins = InFile;
+    LPWSTR outs = OutFile;
     unsigned size;
     unsigned trails;
     WCHAR c;
@@ -186,14 +186,14 @@ static WCHAR ach83InvalidChars[] = TEXT(
  *
  *****************************************************************************/
 
-WORD I_LFNEditName(LPTSTR lpSrc, LPTSTR lpEd, LPTSTR lpRes, INT iResBufSize) {
+WORD I_LFNEditName(LPWSTR lpSrc, LPWSTR lpEd, LPWSTR lpRes, INT iResBufSize) {
     INT ResLen = 0;  // Length of result
 
     // This is turned off until we agree
     // that cmd operates in the same way
 
 #ifdef USELASTDOT
-    LPTSTR lpChar;
+    LPWSTR lpChar;
 
     //
     // We have a special case hack for the dot, since when we do a

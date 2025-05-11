@@ -24,7 +24,7 @@ VOID GetDiskSpace(DRIVE drive, PULARGE_INTEGER pqFreeSpace, PULARGE_INTEGER pqTo
     }
 }
 
-INT ChangeVolumeLabel(DRIVE drive, LPTSTR lpNewVolName) {
+INT ChangeVolumeLabel(DRIVE drive, LPWSTR lpNewVolName) {
     WCHAR szDrive[] = SZ_ACOLON;
 
     DRIVESET(szDrive, drive);
@@ -38,7 +38,7 @@ INT ChangeVolumeLabel(DRIVE drive, LPTSTR lpNewVolName) {
 //
 
 DWORD
-GetVolumeLabel(DRIVE drive, LPTSTR* ppszVol, BOOL bBrackets) {
+GetVolumeLabel(DRIVE drive, LPWSTR* ppszVol, BOOL bBrackets) {
     U_VolInfo(drive);
 
     *ppszVol = aDriveInfo[drive].szVolNameMinusFour + 4;
@@ -61,11 +61,11 @@ GetVolumeLabel(DRIVE drive, LPTSTR* ppszVol, BOOL bBrackets) {
 DWORD
 FillVolumeInfo(
     DRIVE drive,
-    LPTSTR lpszVolName,
+    LPWSTR lpszVolName,
     PDWORD pdwVolumeSerialNumber,
     PDWORD pdwMaximumComponentLength,
     PDWORD pdwFileSystemFlags,
-    LPTSTR lpszFileSysName) {
+    LPWSTR lpszFileSysName) {
     WCHAR szDrive[] = SZ_ACOLONSLASH;
     PDRIVEINFO pDriveInfo = &aDriveInfo[drive];
 

@@ -33,15 +33,15 @@
 
 DWORD cNodes;
 
-VOID GetTreePathIndirect(PDNODE pNode, LPTSTR szDest);
+VOID GetTreePathIndirect(PDNODE pNode, LPWSTR szDest);
 
-VOID ScanDirLevel(PDNODE pParentNode, LPTSTR szPath, DWORD view);
+VOID ScanDirLevel(PDNODE pParentNode, LPWSTR szPath, DWORD view);
 
 INT InsertDirectory(
     HWND hwndTreeCtl,
     PDNODE pParentNode,
     INT iParentNode,
-    LPTSTR szName,
+    LPWSTR szName,
     PDNODE* ppNode,
     BOOL bCasePreserved,
     BOOL bPartialSort,
@@ -50,21 +50,21 @@ INT InsertDirectory(
 BOOL ReadDirLevel(
     HWND hwndTreeCtl,
     PDNODE pParentNode,
-    LPTSTR szPath,
+    LPWSTR szPath,
     UINT uLevel,
     INT iParentNode,
     DWORD dwAttribs,
     BOOL bFullyExpand,
-    LPTSTR szAutoExpand,
+    LPWSTR szAutoExpand,
     BOOL bPartialSort);
 
-VOID FillTreeListbox(HWND hwndTreeCtl, LPTSTR szDefaultDir, BOOL bFullyExpand, BOOL bDontSteal);
+VOID FillTreeListbox(HWND hwndTreeCtl, LPWSTR szDefaultDir, BOOL bFullyExpand, BOOL bDontSteal);
 
-BOOL FindItemFromPath(HWND hwndLB, LPTSTR lpszPath, BOOL bReturnParent, DWORD* pIndex, PDNODE* ppNode);
+BOOL FindItemFromPath(HWND hwndLB, LPWSTR lpszPath, BOOL bReturnParent, DWORD* pIndex, PDNODE* ppNode);
 
-INT BuildTreeName(LPTSTR lpszPath, INT iLen, INT iSize);
+INT BuildTreeName(LPWSTR lpszPath, INT iLen, INT iSize);
 
-UINT GetRealExtent(PDNODE pNode, HWND hwndLB, LPTSTR szPath, int* pLen);
+UINT GetRealExtent(PDNODE pNode, HWND hwndLB, LPWSTR szPath, int* pLen);
 
 void ResetTreeMax(HWND hwndLB, BOOL fReCalcExtent);
 
@@ -100,7 +100,7 @@ int GetDragStatusText(int iOperation) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID GetTreePathIndirect(PDNODE pNode, LPTSTR szDest) {
+VOID GetTreePathIndirect(PDNODE pNode, LPWSTR szDest) {
     PDNODE pParent;
 
     pParent = pNode->pParent;
@@ -122,7 +122,7 @@ VOID GetTreePathIndirect(PDNODE pNode, LPTSTR szDest) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID GetTreePath(PDNODE pNode, LPTSTR szDest) {
+VOID GetTreePath(PDNODE pNode, LPWSTR szDest) {
     szDest[0] = CHAR_NULL;
     GetTreePathIndirect(pNode, szDest);
 
@@ -137,7 +137,7 @@ VOID GetTreePath(PDNODE pNode, LPTSTR szDest) {
 //
 //  Set node attributes for directory/junction/symlink
 //
-VOID SetNodeAttribs(PDNODE pNode, LPTSTR szPath) {
+VOID SetNodeAttribs(PDNODE pNode, LPWSTR szPath) {
     pNode->dwAttribs = GetFileAttributes(szPath);
     if (INVALID_FILE_ATTRIBUTES == pNode->dwAttribs) {
         pNode->dwAttribs = 0;
@@ -167,7 +167,7 @@ VOID SetNodeAttribs(PDNODE pNode, LPTSTR szPath) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID ScanDirLevel(PDNODE pParentNode, LPTSTR szPath, DWORD view) {
+VOID ScanDirLevel(PDNODE pParentNode, LPWSTR szPath, DWORD view) {
     BOOL bFound;
     BOOL bExclude;
 
@@ -273,7 +273,7 @@ INT InsertDirectory(
     HWND hwndTreeCtl,
     PDNODE pParentNode,
     INT iParentNode,
-    LPTSTR szName,
+    LPWSTR szName,
     PDNODE* ppNode,
     BOOL bCasePreserved,
     BOOL bPartialSort,
@@ -503,15 +503,15 @@ BOOL WFFindNextNonJunction(LPLFNDTA lpFind) {
 BOOL ReadDirLevel(
     HWND hwndTreeCtl,
     PDNODE pParentNode,
-    LPTSTR szPath,
+    LPWSTR szPath,
     UINT uLevel,
     INT iParentNode,
     DWORD dwAttribs,
     BOOL bFullyExpand,
-    LPTSTR szAutoExpand,
+    LPWSTR szAutoExpand,
     BOOL bPartialSort) {
     HWND hwndParent;
-    LPTSTR szEndPath;
+    LPWSTR szEndPath;
     INT iNode;
     BOOL bFound;
     BOOL bAutoExpand;
@@ -643,7 +643,7 @@ BOOL ReadDirLevel(
 
     // Must now check if szAutoExpand == NULL
     if (!bFound && szAutoExpand && *szAutoExpand) {
-        LPTSTR p;
+        LPWSTR p;
 
         p = szAutoExpand;
         szAutoExpand += lstrlen(szAutoExpand) + 1;
@@ -938,13 +938,13 @@ VOID FreeAllTreeData(HWND hwndLB) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID FillTreeListbox(HWND hwndTC, LPTSTR szDefaultDir, BOOL bFullyExpand, BOOL bDontSteal) {
+VOID FillTreeListbox(HWND hwndTC, LPWSTR szDefaultDir, BOOL bFullyExpand, BOOL bDontSteal) {
     PDNODE pNode;
     INT iNode;
     DWORD dwAttribs;
     WCHAR szTemp[MAXPATHLEN + 1] = SZ_ACOLONSLASH;
     WCHAR szExpand[MAXPATHLEN + 1];
-    LPTSTR p;
+    LPWSTR p;
     HWND hwndLB;
     BOOL bPartialSort;
     DRIVE drive;
@@ -1025,10 +1025,10 @@ VOID FillTreeListbox(HWND hwndTC, LPTSTR szDefaultDir, BOOL bFullyExpand, BOOL b
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID FillOutTreeList(HWND hwndTC, LPTSTR szDir, DWORD nIndex, PDNODE pNode) {
+VOID FillOutTreeList(HWND hwndTC, LPWSTR szDir, DWORD nIndex, PDNODE pNode) {
     HWND hwndLB;
     DWORD dwAttribs;
-    LPTSTR p;
+    LPWSTR p;
     WCHAR szExists[MAXPATHLEN + 1];  // path that exists in tree
     WCHAR szExpand[MAXPATHLEN + 1];  // sequence of null terminated strings to expand
 
@@ -1098,9 +1098,9 @@ VOID FillOutTreeList(HWND hwndTC, LPTSTR szDir, DWORD nIndex, PDNODE pNode) {
 //      *ppNode is filled with pNode of node, or pNode of parent if bReturnParent is TRUE; NULL if not found
 //
 
-BOOL FindItemFromPath(HWND hwndLB, LPTSTR lpszPath, BOOL bReturnParent, DWORD* pIndex, PDNODE* ppNode) {
+BOOL FindItemFromPath(HWND hwndLB, LPWSTR lpszPath, BOOL bReturnParent, DWORD* pIndex, PDNODE* ppNode) {
     DWORD i;
-    LPTSTR p;
+    LPWSTR p;
     PDNODE pNode;
     DWORD iPreviousNode;
     PDNODE pPreviousNode;
@@ -1260,7 +1260,7 @@ BOOL RectTreeItem(HWND hwndLB, INT iItem, BOOL bFocusOn) {
         StripBackslash(szPath);
 
         SetStatusText(
-            SBT_NOBORDERS | 255, SST_FORMAT | SST_RESOURCE, (LPCTSTR)(DWORD_PTR)GetDragStatusText(iShowSourceBitmaps),
+            SBT_NOBORDERS | 255, SST_FORMAT | SST_RESOURCE, (LPCWSTR)(DWORD_PTR)GetDragStatusText(iShowSourceBitmaps),
             szPath);
         UpdateWindow(hwndStatus);
 
@@ -1500,9 +1500,9 @@ VOID TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
 }
 
 #ifdef TBCUSTSHOWSHARE
-VOID GetTreeUNCName(HWND hwndTree, LPTSTR szBuf, INT nBuf) {
+VOID GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, INT nBuf) {
     PDNODE pNode;
-    LPTSTR lpszPath;
+    LPWSTR lpszPath;
     DWORD dwSize;
     INT i;
     HWND hwndLB;
@@ -1527,7 +1527,7 @@ VOID GetTreeUNCName(HWND hwndTree, LPTSTR szBuf, INT nBuf) {
         dwSize = MAXPATHLEN;
 
     Retry:
-        lpszPath = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(dwSize));
+        lpszPath = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(dwSize));
 
         if (!lpszPath)
             goto notshared;
@@ -1658,7 +1658,7 @@ VOID CollapseLevel(HWND hwndLB, PDNODE pNode, INT nIndex) {
     InvalidateRect(hwndLB, NULL, TRUE);
 }
 
-VOID ExpandLevel(HWND hWnd, WPARAM wParam, INT nIndex, LPTSTR szPath) {
+VOID ExpandLevel(HWND hWnd, WPARAM wParam, INT nIndex, LPWSTR szPath) {
     HWND hwndLB;
     PDNODE pNode;
     INT iNumExpanded;
@@ -1851,7 +1851,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             //
             // get a full path for a particular dir
             // wParam is the listbox index of path to get
-            // lParam LOWORD is LPTSTR to buffer to fill in
+            // lParam LOWORD is LPWSTR to buffer to fill in
             //
             // handle INVALID_HANDLE_VALUE case = cursel
             //
@@ -1872,7 +1872,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             }
 
             SendMessage(hwndLB, LB_GETTEXT, wParam, (LPARAM)&pNode);
-            GetTreePath(pNode, (LPTSTR)lParam);
+            GetTreePath(pNode, (LPWSTR)lParam);
 
             return (wParam);
 
@@ -1882,7 +1882,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             //
             DWORD i;
 
-            if (FindItemFromPath(hwndLB, (LPTSTR)lParam, wParam != 0, &i, NULL)) {
+            if (FindItemFromPath(hwndLB, (LPWSTR)lParam, wParam != 0, &i, NULL)) {
                 SendMessage(hwndLB, LB_SETCURSEL, i, 0L);
 
                 // update dir window if it exists (which also updates MDI text)
@@ -1895,7 +1895,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 #define fFullyExpand LOBYTE(wParam)
 #define fDontSteal HIBYTE(wParam)
 #define fDontSelChange HIWORD(wParam)
-#define szDir (LPTSTR) lParam  // NULL -> default == window text.
+#define szDir (LPWSTR) lParam  // NULL -> default == window text.
 
             //
             // Don't do anything while the tree is being built.
@@ -1908,7 +1908,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             PDNODE pNode;
 
             // do the same as TC_SETDIRECTORY above for the simple case
-            if (FindItemFromPath(hwndLB, (LPTSTR)lParam, 0, &i, &pNode)) {
+            if (FindItemFromPath(hwndLB, (LPWSTR)lParam, 0, &i, &pNode)) {
                 // found exact node already displayed; select it and continue
                 SendMessage(hwndLB, LB_SETCURSEL, i, 0L);
 
@@ -2079,11 +2079,11 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             // removed), or to the item's parent (if it is being added.)  If an
             // item is not found, there is no further processing to perform.
             //
-            if (!FindItemFromPath(hwndLB, (LPTSTR)lParam, bCreationOperation, (DWORD*)&nIndex, &pNode)) {
+            if (!FindItemFromPath(hwndLB, (LPWSTR)lParam, bCreationOperation, (DWORD*)&nIndex, &pNode)) {
                 break;
             }
 
-            lstrcpy(szPath, (LPTSTR)lParam);
+            lstrcpy(szPath, (LPWSTR)lParam);
             StripPath(szPath);
 
             switch (dwFSCOperation) {
@@ -2103,7 +2103,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     //
                     // make sure this node isn't already here
                     //
-                    if (FindItemFromPath(hwndLB, (LPTSTR)lParam, FALSE, NULL, NULL)) {
+                    if (FindItemFromPath(hwndLB, (LPWSTR)lParam, FALSE, NULL, NULL)) {
                         break;
                     }
 
@@ -2124,11 +2124,11 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                         // Insert it into the tree listbox
                         //
                         InsertDirectory(
-                            hwnd, pNode, (WORD)nIndex, szPath, &pNodeT, IsCasePreservedDrive(DRIVEID(((LPTSTR)lParam))),
+                            hwnd, pNode, (WORD)nIndex, szPath, &pNodeT, IsCasePreservedDrive(DRIVEID(((LPWSTR)lParam))),
                             FALSE, INVALID_FILE_ATTRIBUTES);
 
                         //                        // Check for subdirectories                        // lstrcpy(szPath,
-                        //                        (LPTSTR)lParam);                        ScanDirLevel( (PDNODE)pNodeT,
+                        //                        (LPWSTR)lParam);                        ScanDirLevel( (PDNODE)pNodeT,
                         //                        szPath,                            (GetWindowLongPtr(hwndParent,
                         //                        GWL_ATTRIBS) & (ATTR_HS | ATTR_JUNCTION)));                        //
                         //                        // Invalidate the window                        // if
@@ -2622,7 +2622,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     return 0L;
 }
 
-INT BuildTreeName(LPTSTR lpszPath, INT iLen, INT iSize) {
+INT BuildTreeName(LPWSTR lpszPath, INT iLen, INT iSize) {
     DRIVE drive = DRIVEID(lpszPath);
 
     if (3 != iLen || CHAR_BACKSLASH != lpszPath[2])
@@ -2646,7 +2646,7 @@ INT BuildTreeName(LPTSTR lpszPath, INT iLen, INT iSize) {
  *  Get the real text extent for the current directory and save it
  *  in the pNode.
  */
-UINT GetRealExtent(PDNODE pNode, HWND hwndLB, LPTSTR szPath, int* pLen)
+UINT GetRealExtent(PDNODE pNode, HWND hwndLB, LPWSTR szPath, int* pLen)
 
 {
     HDC hdc;

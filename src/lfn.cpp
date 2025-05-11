@@ -16,7 +16,7 @@
 #include "lfn.h"  // lfn includes
 #include "wfcopy.h"
 
-BOOL IsFATName(LPTSTR pName);
+BOOL IsFATName(LPWSTR pName);
 
 /* WFFindFirst -
  *
@@ -27,9 +27,9 @@ BOOL IsFATName(LPTSTR pName);
  *  Performs the FindFirst operation and the first WFFindNext.
  */
 
-BOOL WFFindFirst(LPLFNDTA lpFind, LPTSTR lpName, DWORD dwAttrFilter) {
+BOOL WFFindFirst(LPLFNDTA lpFind, LPWSTR lpName, DWORD dwAttrFilter) {
     INT nLen;
-    LPTSTR pEnd;
+    LPWSTR pEnd;
 
     //
     // We OR these additional bits because of the way DosFindFirst works
@@ -196,7 +196,7 @@ BOOL WFFindClose(LPLFNDTA lpFind) {
  *
  *  Determines if the specified path is a directory
  */
-BOOL WFIsDir(LPTSTR lpDir) {
+BOOL WFIsDir(LPWSTR lpDir) {
     DWORD attr = GetFileAttributes(lpDir);
 
     if (attr == INVALID_FILE_ATTRIBUTES)
@@ -216,7 +216,7 @@ BOOL WFIsDir(LPTSTR lpDir) {
  *        very useful.
  */
 DWORD
-GetNameType(LPTSTR lpName) {
+GetNameType(LPWSTR lpName) {
     if (CHAR_COLON == *(lpName + 1)) {
         if (!IsLFNDrive(lpName))
             return FILE_83_CI;
@@ -226,7 +226,7 @@ GetNameType(LPTSTR lpName) {
     return (FILE_LONG);
 }
 
-BOOL IsFATName(IN LPTSTR FileName)
+BOOL IsFATName(IN LPWSTR FileName)
 /*++
 
 Routine Description:
@@ -313,7 +313,7 @@ Return Value:
     return TRUE;
 }
 
-BOOL IsLFN(LPTSTR pName) {
+BOOL IsLFN(LPWSTR pName) {
     return !IsFATName(pName);
 }
 
@@ -332,7 +332,7 @@ BOOL IsLFN(LPTSTR pName) {
 //       just happens to be a filespec rather than a fully qualified path.
 //       LFNParse will die lpFile is fully qualified.
 
-BOOL LFNMergePath(LPTSTR lpMask, LPTSTR lpFile) {
+BOOL LFNMergePath(LPWSTR lpMask, LPWSTR lpFile) {
     WCHAR szT[MAXPATHLEN * 2];
     INT iResStrlen;
 
@@ -379,7 +379,7 @@ BOOL LFNMergePath(LPTSTR lpMask, LPTSTR lpFile) {
  *  Copies symbolic links
  */
 DWORD
-WFCopyIfSymlink(LPTSTR pszFrom, LPTSTR pszTo, DWORD dwFlags, DWORD dwNotification) {
+WFCopyIfSymlink(LPWSTR pszFrom, LPWSTR pszTo, DWORD dwFlags, DWORD dwNotification) {
     DWORD dwRet;
     WCHAR szReparseDest[2 * MAXPATHLEN];
 
@@ -409,7 +409,7 @@ WFCopyIfSymlink(LPTSTR pszFrom, LPTSTR pszTo, DWORD dwFlags, DWORD dwNotificatio
  *  Copies files
  */
 DWORD
-WFCopy(LPTSTR pszFrom, LPTSTR pszTo) {
+WFCopy(LPWSTR pszFrom, LPWSTR pszTo) {
     DWORD dwRet;
     WCHAR szTemp[MAXPATHLEN];
     BOOL bCancel = FALSE;
@@ -454,7 +454,7 @@ WFCopy(LPTSTR pszFrom, LPTSTR pszTo) {
  *  Creates a Hardlink
  */
 DWORD
-WFHardLink(LPTSTR pszFrom, LPTSTR pszTo) {
+WFHardLink(LPWSTR pszFrom, LPWSTR pszTo) {
     DWORD dwRet;
 
     Notify(hdlgProgress, IDS_COPYINGMSG, pszFrom, pszTo);
@@ -474,7 +474,7 @@ WFHardLink(LPTSTR pszFrom, LPTSTR pszTo) {
  *  Creates a Symbolic Link
  */
 DWORD
-WFSymbolicLink(LPTSTR pszFrom, LPTSTR pszTo, DWORD dwFlags) {
+WFSymbolicLink(LPWSTR pszFrom, LPWSTR pszTo, DWORD dwFlags) {
     DWORD dwRet;
 
     Notify(hdlgProgress, IDS_COPYINGMSG, pszFrom, pszTo);
@@ -701,7 +701,7 @@ DWORD DecodeReparsePoint(LPCWSTR szFullPath, LPWSTR szDest, DWORD cwcDest) {
  *  Deletes files
  */
 DWORD
-WFRemove(LPTSTR pszFile) {
+WFRemove(LPWSTR pszFile) {
     DWORD dwRet;
 
     dwRet = FileRemove(pszFile);
@@ -716,7 +716,7 @@ WFRemove(LPTSTR pszFile) {
  *  Moves files on a volume
  */
 DWORD
-WFMove(LPTSTR pszFrom, LPTSTR pszTo, PBOOL pbErrorOnDest, BOOL bSilent) {
+WFMove(LPWSTR pszFrom, LPWSTR pszTo, PBOOL pbErrorOnDest, BOOL bSilent) {
     DWORD dwRet;
 
     *pbErrorOnDest = FALSE;

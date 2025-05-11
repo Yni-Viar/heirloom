@@ -67,11 +67,11 @@ HWND GetTreeFocus(HWND hwndTree) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-BOOL CompactPath(HDC hDC, LPTSTR lpszPath, DWORD dx) {
+BOOL CompactPath(HDC hDC, LPWSTR lpszPath, DWORD dx) {
     INT len;
     SIZE sizeF, sizeT;
-    LPTSTR lpEnd;   /* end of the unfixed string */
-    LPTSTR lpFixed; /* start of text that we always display */
+    LPWSTR lpEnd;   /* end of the unfixed string */
+    LPWSTR lpFixed; /* start of text that we always display */
     BOOL bEllipsesIn;
     WCHAR szTemp[MAXPATHLEN];
     DWORD dxEllipses;
@@ -200,7 +200,7 @@ BOOL ResizeSplit(HWND hwnd, INT dxSplit) {
                 hwndLB = GetDlgItem(hwndDir, IDCW_LISTBOX);
                 if (hwndLB) {
                     PVOID pv;
-                    SendMessage(hwndLB, LB_GETTEXT, 0, (LPARAM)(LPTSTR)&pv);
+                    SendMessage(hwndLB, LB_GETTEXT, 0, (LPARAM)(LPWSTR)&pv);
                     if (!pv)
                         SetFocus(hwndDriveBar);
                 }
@@ -359,7 +359,7 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
         case FS_GETSELECTION: {
 #define pfDir (BOOL*)lParam
-            LPTSTR p;
+            LPWSTR p;
 
             GetTreeWindows(hwnd, &hwndTree, &hwndDir);
             hwndFocus = GetTreeFocus(hwnd);
@@ -370,9 +370,9 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 //
                 // +2 for checkesc safety
                 //
-                p = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(MAXPATHLEN + 2));
+                p = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(MAXPATHLEN + 2));
                 if (p) {
-                    SendMessage(hwnd, FS_GETDIRECTORY, MAXPATHLEN, (LPARAM)(LPTSTR)p);
+                    SendMessage(hwnd, FS_GETDIRECTORY, MAXPATHLEN, (LPARAM)(LPWSTR)p);
                     StripBackslash(p);
 
                     if (!(wParam & 16))
@@ -401,21 +401,21 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             // a trailing backslash.  if you want to do a SetCurrentDirector()
             // you must first StripBackslash() the thing!
 
-            GetMDIWindowText(hwnd, (LPTSTR)lParam, (INT)wParam);  // get the string
-            StripFilespec((LPTSTR)lParam);                        // Remove the trailing extension
-            AddBackslash((LPTSTR)lParam);                         // terminate with a backslash
+            GetMDIWindowText(hwnd, (LPWSTR)lParam, (INT)wParam);  // get the string
+            StripFilespec((LPWSTR)lParam);                        // Remove the trailing extension
+            AddBackslash((LPWSTR)lParam);                         // terminate with a backslash
             break;
 
         case FS_GETFILESPEC:
 
-            // WARNING: Requires ((LPTSTR)lparam)[MAXPATHLEN] space!
+            // WARNING: Requires ((LPWSTR)lparam)[MAXPATHLEN] space!
             // (TreeControlWndProc WM_COMMAND LBN_SELCHANGE broke this!)
 
             // returns the current filespec (from View.Include...).  this is
             // an uppercase ANSI string
 
-            GetMDIWindowText(hwnd, (LPTSTR)lParam, (INT)wParam);
-            StripPath((LPTSTR)lParam);
+            GetMDIWindowText(hwnd, (LPWSTR)lParam, (INT)wParam);
+            StripPath((LPWSTR)lParam);
             break;
 
             // redirect these messages to the drive icons to get the same
@@ -534,7 +534,7 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             //
             // Free GWL_VOLNAME
             //
-            lpszVolName = (LPTSTR)GetWindowLongPtr(hwnd, GWL_VOLNAME);
+            lpszVolName = (LPWSTR)GetWindowLongPtr(hwnd, GWL_VOLNAME);
 
             if (lpszVolName)
                 LocalFree(lpszVolName);

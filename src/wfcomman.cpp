@@ -27,8 +27,8 @@
 #define VIEW_NOCHANGE 0x0020  // previously VIEW_PLUSES
 
 VOID MDIClientSizeChange(HWND hwndActive, INT iFlags);
-HWND LocateDirWindow(LPTSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow);
-VOID UpdateAllDirWindows(LPTSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec);
+HWND LocateDirWindow(LPWSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow);
+VOID UpdateAllDirWindows(LPWSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec);
 VOID AddNetMenuItems(VOID);
 VOID InitNetMenuItems(VOID);
 
@@ -69,10 +69,10 @@ VOID RedoDriveWindows(HWND hwndActive) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-HWND LocateDirWindow(LPTSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow) {
+HWND LocateDirWindow(LPWSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow) {
     HWND hwndT;
     HWND hwndDir;
-    LPTSTR pT2;
+    LPWSTR pT2;
     WCHAR szTemp[MAXPATHLEN];
     WCHAR szPath[MAXPATHLEN];
 
@@ -123,10 +123,10 @@ HWND LocateDirWindow(LPTSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID UpdateAllDirWindows(LPTSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec) {
+VOID UpdateAllDirWindows(LPWSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec) {
     HWND hwndT;
     HWND hwndDir;
-    LPTSTR pT2;
+    LPWSTR pT2;
     WCHAR szTemp[MAXPATHLEN];
     WCHAR szPath[MAXPATHLEN];
 
@@ -189,7 +189,7 @@ VOID UpdateAllDirWindows(LPTSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec) {
  * QualifyPath() calls should work.
  */
 
-VOID ChangeFileSystem(DWORD dwFunction, LPCTSTR lpszFile, LPCTSTR lpszTo) {
+VOID ChangeFileSystem(DWORD dwFunction, LPCWSTR lpszFile, LPCWSTR lpszTo) {
     HWND hwnd, hwndTree, hwndOld;
     WCHAR szFrom[MAXPATHLEN];
     WCHAR szTo[MAXPATHLEN];
@@ -506,7 +506,7 @@ HWND CreateDirWindow(LPWSTR szPath, BOOL bReplaceOpen, HWND hwndActive) {
 }
 
 VOID OpenOrEditSelection(HWND hwndActive, BOOL fEdit) {
-    LPTSTR p;
+    LPWSTR p;
     BOOL bDir;
     DWORD ret;
     HCURSOR hCursor;
@@ -655,7 +655,7 @@ BOOL FmifsLoaded() {
     return TRUE;
 }
 
-BOOL GetPowershellExePath(LPTSTR szPSPath) {
+BOOL GetPowershellExePath(LPWSTR szPSPath) {
     HKEY hkey;
     if (ERROR_SUCCESS != RegOpenKey(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\PowerShell"), &hkey)) {
         return FALSE;
@@ -809,7 +809,7 @@ BOOL AppCommandProc(DWORD id) {
             break;
 
         case IDM_GOTODIR:
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(GOTODIRDLG), hwndFrame, GotoDirDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(GOTODIRDLG), hwndFrame, GotoDirDlgProc);
             break;
 
         case IDM_HISTORYBACK:
@@ -837,18 +837,18 @@ BOOL AppCommandProc(DWORD id) {
                 // Just create old dialog
                 //
 
-                CreateDialog(hAppInstance, (LPTSTR)MAKEINTRESOURCE(SEARCHPROGDLG), hwndFrame, SearchProgDlgProc);
+                CreateDialog(hAppInstance, (LPWSTR)MAKEINTRESOURCE(SEARCHPROGDLG), hwndFrame, SearchProgDlgProc);
                 break;
             }
 
             dwSuperDlgMode = IDM_SEARCH;
 
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(SEARCHDLG), hwndFrame, SearchDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(SEARCHDLG), hwndFrame, SearchDlgProc);
             break;
 
         case IDM_RUN:
 
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(RUNDLG), hwndFrame, RunDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(RUNDLG), hwndFrame, RunDlgProc);
             break;
 
         case IDM_STARTCMDSHELL: {
@@ -857,7 +857,7 @@ BOOL AppCommandProc(DWORD id) {
             BOOL bDir;
             DWORD cchEnv;
             WCHAR szToRun[MAXPATHLEN];
-            LPTSTR szDir;
+            LPWSTR szDir;
 
 #define ConEmuParamFormat TEXT(" -Single -Dir \"%s\"")
 #define CmdParamFormat TEXT("/k cd /d ")
@@ -907,7 +907,7 @@ BOOL AppCommandProc(DWORD id) {
 
         case IDM_STARTEXPLORER: {
             BOOL bDir;
-            LPTSTR szDir;
+            LPWSTR szDir;
             WCHAR szToRun[MAXPATHLEN];
 
             szDir = GetSelection(1 | 4 | 16, &bDir);
@@ -929,7 +929,7 @@ BOOL AppCommandProc(DWORD id) {
             BOOL bRunAs;
             BOOL bDir;
             WCHAR szToRun[MAXPATHLEN];
-            LPTSTR szDir;
+            LPWSTR szDir;
 #define PowerShellParamFormat TEXT(" -noexit -command \"cd \\\"%s\\\"\"")
             WCHAR szParams[MAXPATHLEN + COUNTOF(PowerShellParamFormat)];
 
@@ -952,7 +952,7 @@ BOOL AppCommandProc(DWORD id) {
             BOOL bRunAs;
             BOOL bDir;
             WCHAR szToRun[MAXPATHLEN];
-            LPTSTR szDir;
+            LPWSTR szDir;
 
             szDir = GetSelection(1 | 4 | 16, &bDir);
             if (!bDir && szDir)
@@ -983,7 +983,7 @@ BOOL AppCommandProc(DWORD id) {
             if (hwndT = HasDirWindow(hwndActive))
                 SetFocus(hwndT);
 
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(SELECTDLG), hwndFrame, SelectDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(SELECTDLG), hwndFrame, SelectDlgProc);
             break;
 
         case IDM_MOVE:
@@ -993,7 +993,7 @@ BOOL AppCommandProc(DWORD id) {
         case IDM_HARDLINK:
             dwSuperDlgMode = id;
 
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(MOVECOPYDLG), hwndFrame, SuperDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(MOVECOPYDLG), hwndFrame, SuperDlgProc);
             break;
 
         case IDM_PASTE: {
@@ -1068,12 +1068,12 @@ BOOL AppCommandProc(DWORD id) {
         case IDM_DELETE:
             dwSuperDlgMode = id;
 
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(DELETEDLG), hwndFrame, SuperDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(DELETEDLG), hwndFrame, SuperDlgProc);
             break;
 
         case IDM_COPYTOCLIPBOARD:
         case IDM_CUTTOCLIPBOARD: {
-            LPTSTR pszFiles;
+            LPWSTR pszFiles;
             HANDLE hMemLongW, hMemTextW, hDrop;
             LONG cbMemLong;
             HANDLE hMemDropEffect;
@@ -1146,7 +1146,7 @@ BOOL AppCommandProc(DWORD id) {
         } break;
 
         case IDM_ATTRIBS: {
-            LPTSTR pSel, p;
+            LPWSTR pSel, p;
             INT count;
             WCHAR szTemp[MAXPATHLEN];
 
@@ -1187,12 +1187,12 @@ BOOL AppCommandProc(DWORD id) {
 
                 ShellExecuteEx(&sei);
             } else if (count > 1)
-                DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(MULTIPLEATTRIBSDLG), hwndFrame, AttribsDlgProc);
+                DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(MULTIPLEATTRIBSDLG), hwndFrame, AttribsDlgProc);
             break;
         }
 
         case IDM_MAKEDIR:
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(MAKEDIRDLG), hwndFrame, MakeDirDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(MAKEDIRDLG), hwndFrame, MakeDirDlgProc);
             break;
 
         case IDM_SELALL:
@@ -1328,7 +1328,7 @@ BOOL AppCommandProc(DWORD id) {
             goto ChangeDisplay;
 
         case IDM_VOTHER:
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(OTHERDLG), hwndFrame, OtherDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(OTHERDLG), hwndFrame, OtherDlgProc);
 
             dwFlags = GetWindowLongPtr(hwndActive, GWL_VIEW) & VIEW_EVERYTHING;
             break;
@@ -1374,15 +1374,15 @@ BOOL AppCommandProc(DWORD id) {
             break;
 
         case IDM_VINCLUDE:
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(INCLUDEDLG), hwndFrame, IncludeDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(INCLUDEDLG), hwndFrame, IncludeDlgProc);
             break;
 
         case IDM_CONFIRM:
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(CONFIRMDLG), hwndFrame, ConfirmDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(CONFIRMDLG), hwndFrame, ConfirmDlgProc);
             break;
 
         case IDM_PREF:
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(PREFDLG), hwndFrame, PrefDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(PREFDLG), hwndFrame, PrefDlgProc);
             break;
 
         case IDM_STATUSBAR:
@@ -1508,7 +1508,7 @@ BOOL AppCommandProc(DWORD id) {
         }
 
         case IDM_ABOUT:
-            DialogBox(hAppInstance, (LPTSTR)MAKEINTRESOURCE(ABOUTDLG), hwndFrame, AboutDlgProc);
+            DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(ABOUTDLG), hwndFrame, AboutDlgProc);
             break;
 
         default: {

@@ -523,8 +523,8 @@ VOID UpdateConnections(BOOL bUpdateDriveList) {
     INT i;
     DRIVE drive;
     HCURSOR hCursor;
-    LPTSTR lpszVol;
-    LPTSTR lpszOldVol;
+    LPWSTR lpszVol;
+    LPWSTR lpszOldVol;
 
     hCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
     ShowCursor(TRUE);
@@ -568,7 +568,7 @@ VOID UpdateConnections(BOOL bUpdateDriveList) {
                 R_NetCon(drive);
 
                 if (!WFGetConnection(drive, &lpszVol, FALSE, ALTNAME_REG)) {
-                    lpszOldVol = (LPTSTR)GetWindowLongPtr(hwnd, GWL_VOLNAME);
+                    lpszOldVol = (LPWSTR)GetWindowLongPtr(hwnd, GWL_VOLNAME);
 
                     if (lpszOldVol && lpszVol) {
                         if (lstrcmpi(lpszVol, lpszOldVol)) {

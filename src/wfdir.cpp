@@ -46,7 +46,7 @@ INT CompareDTA(LPXDTA lpItem1, LPXDTA lpItem2, DWORD dwSort);
 BOOL SetDirFocus(HWND hwndDir);
 VOID DirGetAnchorFocus(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo);
 BOOL SetSelection(HWND hwndLB, LPXDTALINK lpStart, LPWSTR pszSel);
-INT DirFindIndex(HWND hwndLB, LPXDTALINK lpStart, LPTSTR lpszFile);
+INT DirFindIndex(HWND hwndLB, LPXDTALINK lpStart, LPWSTR lpszFile);
 VOID SortDirList(HWND hwndDir, LPXDTALINK lpStart, DWORD count, LPXDTA* lplpxdta);
 VOID GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2);
 VOID FreeSelInfo(PSELINFO pSelInfo);
@@ -1123,24 +1123,24 @@ ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                         // DBCS dirname should not be compared ..
                         if ((wParam != CD_PATH_FORCE) && lpStart) {
                             INT aLen = lstrlen(szPath);
-                            INT bLen = lstrlen((LPTSTR)lParam);
+                            INT bLen = lstrlen((LPWSTR)lParam);
 
                             if ((WideCharToMultiByte(CP_ACP, 0L, szPath, aLen, NULL, 0L, NULL, NULL) == aLen) &&
-                                (WideCharToMultiByte(CP_ACP, 0L, (LPTSTR)lParam, bLen, NULL, 0L, NULL, NULL) == bLen)) {
-                                if (!lstrcmpi(szPath, (LPTSTR)lParam))
+                                (WideCharToMultiByte(CP_ACP, 0L, (LPWSTR)lParam, bLen, NULL, 0L, NULL, NULL) == bLen)) {
+                                if (!lstrcmpi(szPath, (LPWSTR)lParam))
                                     break;
                             } else {
-                                if (!lstrcmp(szPath, (LPTSTR)lParam))
+                                if (!lstrcmp(szPath, (LPWSTR)lParam))
                                     break;
                             }
                         }
 #else
-                        if ((wParam != CD_PATH_FORCE) && lpStart && !lstrcmpi(szPath, (LPTSTR)lParam)) {
+                        if ((wParam != CD_PATH_FORCE) && lpStart && !lstrcmpi(szPath, (LPWSTR)lParam)) {
                             break;
                         }
 #endif
 
-                        lstrcpy(szPath, (LPTSTR)lParam);
+                        lstrcpy(szPath, (LPWSTR)lParam);
 
                         pSelInfo->iLastSel = -1;  // invalidate the last selection
 
@@ -2404,7 +2404,7 @@ DirGetSelection(HWND hwndDir, HWND hwndView, HWND hwndLB, INT iSelType, BOOL* pf
         //
         // +2 for checkesc safety
         //
-        p = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(cch + 2));
+        p = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(cch + 2));
         if (!p)
             return (NULL);
         *p = CHAR_NULL;
@@ -2878,7 +2878,7 @@ HWND GetDirSelData(
     iMac = (INT)SendMessage(hwndLB, LB_GETSELITEMS, (WPARAM)iMac, (LPARAM)lpSelItems);
 
     for (i = 0; i < iMac; i++) {
-        SendMessage(hwndLB, LB_GETTEXT, lpSelItems[i], (LPARAM)(LPTSTR)&lpxdta);
+        SendMessage(hwndLB, LB_GETTEXT, lpSelItems[i], (LPARAM)(LPWSTR)&lpxdta);
 
         if (!lpxdta)
             break;
@@ -2936,7 +2936,7 @@ VOID GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2) {
                     GetDirUNCName(szName, COUNTOF(szName), hwnd, szName);
                     SetStatusText(2, NULL, szName);
                 } else
-                    SetStatusText(2, SST_RESOURCE, (LPTSTR)MAKEINTRESOURCE(IDS_NOTSHARED));
+                    SetStatusText(2, SST_RESOURCE, (LPWSTR)MAKEINTRESOURCE(IDS_NOTSHARED));
 #endif
             } else if (LoadString(hAppInstance, IDS_STATUSMSGSINGLE, szMessage, COUNTOF(szMessage))) {
                 ShortSizeFormatInternal(szNumBuf, qSelSize);
@@ -2953,10 +2953,10 @@ VOID GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2) {
             }
         } else {
 #ifdef TBCUSTSHOWSHARE
-            SetStatusText(2, SST_RESOURCE, (LPTSTR)MAKEINTRESOURCE(IDS_NOTSHARED));
+            SetStatusText(2, SST_RESOURCE, (LPWSTR)MAKEINTRESOURCE(IDS_NOTSHARED));
 #endif
             SetStatusText(
-                0, SST_RESOURCE | SST_FORMAT, (LPTSTR)MAKEINTRESOURCE(IDS_STATUSMSG2), iSelCount,
+                0, SST_RESOURCE | SST_FORMAT, (LPWSTR)MAKEINTRESOURCE(IDS_STATUSMSG2), iSelCount,
                 ShortSizeFormatInternal(szNumBuf, qSelSize));
         }
     }

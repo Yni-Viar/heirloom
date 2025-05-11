@@ -20,15 +20,15 @@ typedef struct _DOC_BUCKET* PDOCBUCKET;
 
 PPDOCBUCKET DocConstruct(VOID);
 VOID DocDestruct(PPDOCBUCKET ppDocBucket);
-INT DocInsert(PPDOCBUCKET ppDocBucket, LPTSTR lpszExt, LPTSTR lpszFileIcon);
-PDOCBUCKET DocFind(PPDOCBUCKET ppDocBucket, LPTSTR lpszExt);
+INT DocInsert(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt, LPWSTR lpszFileIcon);
+PDOCBUCKET DocFind(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt);
 HICON DocGetIcon(PDOCBUCKET pDocBucket);
 
 #ifdef DOCENUM
 typedef struct _DOC_ENUM DOCENUM, *PDOCENUM;
 
 PDOCENUM DocOpenEnum(PPDOCBUCKET ppDocBucket);
-LPTSTR DocEnum(PDOCENUM pDocEnum, PDWORD pdwParm);
+LPWSTR DocEnum(PDOCENUM pDocEnum, PDWORD pdwParm);
 VOID DocCloseEnum(PDOCENUM pDocEnum);
 #endif
 

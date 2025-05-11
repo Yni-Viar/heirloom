@@ -292,7 +292,7 @@ Done :
 
 INT NetCon_UpdateAltName(DRIVE drive, DWORD dwRetVal) {
     PDRIVEINFO pDriveInfo = &aDriveInfo[drive];
-    LPTSTR lpszBuf;
+    LPWSTR lpszBuf;
     DWORD dwSize;
     WNET_CONNECTIONINFO* lpConnectInfo = pDriveInfo->lpConnectInfo;
     DWORD i;
@@ -313,7 +313,7 @@ INT NetCon_UpdateAltName(DRIVE drive, DWORD dwRetVal) {
 
         if (!lpszBuf) {
         Retry:
-            lpszBuf = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(dwSize + DRIVE_INFO_NAME_HEADER));
+            lpszBuf = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(dwSize + DRIVE_INFO_NAME_HEADER));
         }
 
         pDriveInfo->lpszRemoteNameMinusFour[i] = lpszBuf;
@@ -359,7 +359,7 @@ Done:
 }
 
 VOID NetCon_UpdateLines(DRIVE drive, DWORD dwType) {
-    LPTSTR lpNext;
+    LPWSTR lpNext;
     DWORD dwLines = 0;
 
     //
@@ -401,7 +401,7 @@ struct _DOC_BUCKET {
     PDOCBUCKET next;
     WCHAR szExt[EXTSIZ];
     HICON hIcon;
-    LPTSTR lpszFI;
+    LPWSTR lpszFI;
 } DOCBUCKET;
 
 /////////////////////////////////////////////////////////////////////
@@ -485,8 +485,8 @@ VOID DocDestruct(PPDOCBUCKET ppDocBucket) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID RemoveEndQuote(LPTSTR lpszExt) {
-    LPTSTR ptr;
+VOID RemoveEndQuote(LPWSTR lpszExt) {
+    LPWSTR ptr;
 
     if (lpszExt) {
         ptr = lpszExt + (lstrlen(lpszExt) - 1);
@@ -520,7 +520,7 @@ VOID RemoveEndQuote(LPTSTR lpszExt) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT DocInsert(PPDOCBUCKET ppDocBucket, LPTSTR lpszExt, LPTSTR lpszFileIcon) {
+INT DocInsert(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt, LPWSTR lpszFileIcon) {
     PDOCBUCKET pDocBucket;
     INT iBucket;
     WCHAR szExt[EXTSIZ];
@@ -560,7 +560,7 @@ INT DocInsert(PPDOCBUCKET ppDocBucket, LPTSTR lpszExt, LPTSTR lpszFileIcon) {
     pDocBucket->lpszFI = NULL;
 
     if (lpszFileIcon != NULL)
-        pDocBucket->lpszFI = (LPTSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(lpszFileIcon) + 1));
+        pDocBucket->lpszFI = (LPWSTR)LocalAlloc(LPTR, ByteCountOf(lstrlen(lpszFileIcon) + 1));
     if (pDocBucket->lpszFI != NULL)
         lstrcpy(pDocBucket->lpszFI, lpszFileIcon);
 
@@ -591,7 +591,7 @@ INT DocInsert(PPDOCBUCKET ppDocBucket, LPTSTR lpszExt, LPTSTR lpszFileIcon) {
 /////////////////////////////////////////////////////////////////////
 
 PDOCBUCKET
-DocFind(PPDOCBUCKET ppDocBucket, LPTSTR lpszExt) {
+DocFind(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt) {
     PDOCBUCKET pDocBucket;
     WCHAR szExt[EXTSIZ];
 
@@ -704,9 +704,9 @@ DocOpenEnum(PPDOCBUCKET ppDocBucket) {
 //
 /////////////////////////////////////////////////////////////////////
 
-LPTSTR
+LPWSTR
 DocEnum(PDOCENUM pDocEnum, PHICON phIcon) {
-    LPTSTR pszExt;
+    LPWSTR pszExt;
 
     while (!pDocEnum->pDocBucketCur) {
         pDocEnum->iCurChain++;
@@ -1072,7 +1072,7 @@ INT UpdateDriveListWorker(VOID) {
                                 //
 
                                 pDriveInfo->lpConnectInfo->lpRemoteName =
-                                    (LPTSTR)(((LPBYTE)pDriveInfo->lpConnectInfo) + sizeof(WNET_CONNECTIONINFO));
+                                    (LPWSTR)(((LPBYTE)pDriveInfo->lpConnectInfo) + sizeof(WNET_CONNECTIONINFO));
 
                                 lstrcpy(
                                     pDriveInfo->lpConnectInfo->lpRemoteName, ((LPNETRESOURCE)pcBuf)[i].lpRemoteName);
@@ -1231,7 +1231,7 @@ INT UpdateDriveListWorker(VOID) {
 //
 // INC   drive           Drive # to look up
 // INC   bConvertClosed  BOOL   FALSE => convert closed/err drives ret SUCCESS
-// OUTC  ppPath          LPTSTR* Net name; user must NOT free!
+// OUTC  ppPath          LPWSTR* Net name; user must NOT free!
 //                       ppPath[-4] .. ppPath[-1] ARE valid!
 //                       ppPath may be NULL!
 // INC   dwType          Format of Net Con string (valid for net con only)
@@ -1259,7 +1259,7 @@ INT UpdateDriveListWorker(VOID) {
 /////////////////////////////////////////////////////////////////////
 
 DWORD
-WFGetConnection(DRIVE drive, LPTSTR* ppPath, BOOL bConvertClosed, DWORD dwType) {
+WFGetConnection(DRIVE drive, LPWSTR* ppPath, BOOL bConvertClosed, DWORD dwType) {
     DWORD dwRetVal;
     BOOL bConverted = FALSE;
 
@@ -1382,7 +1382,7 @@ VOID UpdateDriveListComplete(VOID) {
     DRIVEIND driveInd;
     INT CurSel;
     WCHAR szPath[2 * MAXPATHLEN];
-    LPTSTR lpszVol, lpszOldVol;
+    LPWSTR lpszVol, lpszOldVol;
 
     for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = hwndNext) {
         hwndNext = GetWindow(hwnd, GW_HWNDNEXT);
@@ -1408,7 +1408,7 @@ VOID UpdateDriveListComplete(VOID) {
 
         if (IsRemoteDrive(drive)) {
             if (!WFGetConnection(drive, &lpszVol, FALSE, ALTNAME_REG)) {
-                lpszOldVol = (LPTSTR)GetWindowLongPtr(hwnd, GWL_VOLNAME);
+                lpszOldVol = (LPWSTR)GetWindowLongPtr(hwnd, GWL_VOLNAME);
 
                 if (lpszOldVol && lpszVol) {
                     if (lstrcmpi(lpszVol, lpszOldVol)) {

@@ -20,7 +20,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-DWORD MKDir(LPTSTR pName, LPTSTR pSrc) {
+DWORD MKDir(LPWSTR pName, LPWSTR pSrc) {
     DWORD dwErr = ERROR_SUCCESS;
 
     if ((pSrc && *pSrc) ? CreateDirectoryEx(pSrc, pName, NULL) : CreateDirectory(pName, NULL)) {
@@ -45,7 +45,7 @@ DWORD MKDir(LPTSTR pName, LPTSTR pSrc) {
 //
 /////////////////////////////////////////////////////////////////////////////
 
-DWORD RMDir(LPTSTR pName) {
+DWORD RMDir(LPWSTR pName) {
     DWORD dwErr = 0;
 
     if (RemoveDirectory(pName)) {
@@ -65,7 +65,7 @@ DWORD RMDir(LPTSTR pName) {
 //
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL WFSetAttr(LPTSTR lpFile, DWORD dwAttr) {
+BOOL WFSetAttr(LPWSTR lpFile, DWORD dwAttr) {
     BOOL bRet;
 
     //
@@ -147,7 +147,7 @@ VOID CentreWindow(HWND hwnd) {
 //
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL GetRootPath(LPTSTR szPath, LPTSTR szReturn) {
+BOOL GetRootPath(LPWSTR szPath, LPWSTR szReturn) {
     if (!QualifyPath(szPath)) {
         return (FALSE);
     } else {
@@ -170,7 +170,7 @@ BOOL GetRootPath(LPTSTR szPath, LPTSTR szReturn) {
 // this function is not used right now, but I think I'll need it
 // in the future for network connections.
 
-BOOL CD(LPTSTR pszDir) {
+BOOL CD(LPWSTR pszDir) {
     return SetCurrentDirectory(pszDir);
 }
 

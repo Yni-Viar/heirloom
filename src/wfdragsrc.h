@@ -38,7 +38,7 @@ class WF_IDropSource : public IDropSource {
 
 // Helper functions for drag operations
 HRESULT CreateDropSource(WF_IDropSource** ppDropSource);
-HRESULT CreateDataObject(LPTSTR pszFiles, POINT pt, WF_IDataObject** ppDataObject);
-HRESULT WFDoDragDrop(HWND hwnd, LPTSTR pszFiles, POINT pt, DWORD* pdwEffect);
+HRESULT CreateDataObject(LPWSTR pszFiles, POINT pt, WF_IDataObject** ppDataObject);
+HRESULT WFDoDragDrop(HWND hwnd, LPWSTR pszFiles, POINT pt, DWORD* pdwEffect);
 
 #endif  // WFDRAGSRC_INC

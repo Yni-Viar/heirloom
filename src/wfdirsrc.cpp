@@ -19,7 +19,7 @@
 HWND hwndGlobalSink = NULL;
 
 // Forward declare functions
-DWORD PerformDragOperation(HWND hwnd, LPTSTR pFiles, UINT iSel);
+DWORD PerformDragOperation(HWND hwnd, LPWSTR pFiles, UINT iSel);
 VOID SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel);
 VOID ShowItemBitmaps(HWND hwndLB, INT iShow);
 int GetDragStatusText(int iOperation);
@@ -28,17 +28,17 @@ HCURSOR
 GetMoveCopyCursor() {
     switch (iShowSourceBitmaps) {
         case DROP_COPY:
-            return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE(iCurDrag | 0b0001));
+            return LoadCursor(hAppInstance, (LPWSTR)MAKEINTRESOURCE(iCurDrag | 0b0001));
 
         case DROP_LINK:
-            return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE((iCurDrag | 0b0100) & ~0b0001));
+            return LoadCursor(hAppInstance, (LPWSTR)MAKEINTRESOURCE((iCurDrag | 0b0100) & ~0b0001));
 
         case DROP_HARD:
-            return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE((iCurDrag | 0b1000) & ~0b0101));
+            return LoadCursor(hAppInstance, (LPWSTR)MAKEINTRESOURCE((iCurDrag | 0b1000) & ~0b0101));
 
         case DROP_MOVE:
         default:
-            return LoadCursor(hAppInstance, (LPTSTR)MAKEINTRESOURCE(iCurDrag & ~0b0001));
+            return LoadCursor(hAppInstance, (LPWSTR)MAKEINTRESOURCE(iCurDrag & ~0b0001));
     }
 }
 
@@ -270,7 +270,7 @@ VOID SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel) {
  * over is a valid drop point and drop the files
  */
 
-WORD DropFilesOnApplication(LPTSTR pszFiles) {
+WORD DropFilesOnApplication(LPWSTR pszFiles) {
     POINT pt;
     HWND hwnd;
     RECT rc;
@@ -470,7 +470,7 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
     }
 
     // Get the list of selected things
-    pch = (LPTSTR)SendMessage(hwnd, FS_GETSELECTION, FALSE, 0L);
+    pch = (LPWSTR)SendMessage(hwnd, FS_GETSELECTION, FALSE, 0L);
 
     // Start drag operation
     hwndDragging = hwndLB;
@@ -506,7 +506,7 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
 //
 // INC       lpszPath -- path to check
 //
-// Return:   LPTSTR   pointer to first filespec
+// Return:   LPWSTR   pointer to first filespec
 //
 // Assumes:
 //
@@ -517,9 +517,9 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
 //
 /////////////////////////////////////////////////////////////////////
 
-LPTSTR
-SkipPathHead(LPTSTR lpszPath) {
-    LPTSTR p = lpszPath;
+LPWSTR
+SkipPathHead(LPWSTR lpszPath) {
+    LPWSTR p = lpszPath;
     INT i;
 
     if (ISUNCPATH(p)) {
@@ -561,7 +561,7 @@ SkipPathHead(LPTSTR lpszPath) {
 
 // Perform a drag operation using the OLE drag-drop system
 // This replaces the old Windows 3.x DragObject function
-DWORD PerformDragOperation(HWND hwnd, LPTSTR pFiles, UINT iSel) {
+DWORD PerformDragOperation(HWND hwnd, LPWSTR pFiles, UINT iSel) {
     DWORD dwReturn = 0;
     POINT ptCursor;
     DWORD dwEffect = DROPEFFECT_COPY | DROPEFFECT_MOVE;
