@@ -216,7 +216,6 @@
     <ClInclude Include="wfdragsrc.h" />
     <ClInclude Include="wfext.h" />
     <ClInclude Include="wfexti.h" />
-    <ClInclude Include="wfgwl.h" />
     <ClInclude Include="wfinfo.h" />
     <ClInclude Include="wfmem.h" />
     <ClInclude Include="winexp.h" />
