@@ -24,12 +24,4 @@ int DocInsert(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt, LPWSTR lpszFileIcon);
 PDOCBUCKET DocFind(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt);
 HICON DocGetIcon(PDOCBUCKET pDocBucket);
 
-#ifdef DOCENUM
-typedef struct _DOC_ENUM DOCENUM, *PDOCENUM;
-
-PDOCENUM DocOpenEnum(PPDOCBUCKET ppDocBucket);
-LPWSTR DocEnum(PDOCENUM pDocEnum, PDWORD pdwParm);
-void DocCloseEnum(PDOCENUM pDocEnum);
-#endif
-
 #endif  // ndef _WFDOCB_H
