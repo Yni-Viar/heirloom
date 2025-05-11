@@ -15,6 +15,7 @@
 #include "wnetcaps.h"  // WNetGetCaps()
 #include "commdlg.h"
 #include "resize.h"
+#include "wfdos.h"
 
 void CheckAttribsDlgButton(HWND hDlg, int id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn);
 BOOL NoQuotes(LPWSTR szT);

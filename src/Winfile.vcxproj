@@ -212,6 +212,7 @@
     <ClInclude Include="wfcopy.h" />
     <ClInclude Include="wfdlgs.h" />
     <ClInclude Include="wfdocb.h" />
+    <ClInclude Include="wfdos.h" />
     <ClInclude Include="wfdpi.h" />
     <ClInclude Include="wfdrop.h" />
     <ClInclude Include="wfdragsrc.h" />
