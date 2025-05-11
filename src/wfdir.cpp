@@ -2913,13 +2913,6 @@ void GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2) {
             LPWSTR pch;
 
             if (isDir) {
-#ifdef TBCUSTSHOWSHARE
-                if (isNet) {
-                    GetDirUNCName(szName, COUNTOF(szName), hwnd, szName);
-                    SetStatusText(2, NULL, szName);
-                } else
-                    SetStatusText(2, SST_RESOURCE, (LPWSTR)MAKEINTRESOURCE(IDS_NOTSHARED));
-#endif
             } else if (LoadString(hAppInstance, IDS_STATUSMSGSINGLE, szMessage, COUNTOF(szMessage))) {
                 ShortSizeFormatInternal(szNumBuf, qSelSize);
                 wsprintf(szName, szMessage, szNumBuf);
@@ -2934,9 +2927,6 @@ void GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2) {
                 SetStatusText(0, 0L, szName);
             }
         } else {
-#ifdef TBCUSTSHOWSHARE
-            SetStatusText(2, SST_RESOURCE, (LPWSTR)MAKEINTRESOURCE(IDS_NOTSHARED));
-#endif
             SetStatusText(
                 0, SST_RESOURCE | SST_FORMAT, (LPWSTR)MAKEINTRESOURCE(IDS_STATUSMSG2), iSelCount,
                 ShortSizeFormatInternal(szNumBuf, qSelSize));
