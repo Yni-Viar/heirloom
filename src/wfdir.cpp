@@ -1902,7 +1902,7 @@ INT FixTabsAndThings(HWND hwndLB, WORD* pwTabs, INT iMaxWidthFileName, INT iMaxW
     INT i;
     HDC hdc;
     HFONT hOld;
-    TCHAR szBuf[30];
+    WCHAR szBuf[30];
     SIZE size;
 
     //
@@ -2797,7 +2797,7 @@ VOID UpdateStatus(HWND hwnd) {
             } else {
                 // Get the Recycle Bin size
                 GetRecycleBinSize(&qRecycleBinSize);
-                TCHAR szRecycleBinSize[64];
+                WCHAR szRecycleBinSize[64];
 
                 // Format the Recycle Bin size and display in status bar with free/total space
                 ShortSizeFormatInternal(szRecycleBinSize, qRecycleBinSize);

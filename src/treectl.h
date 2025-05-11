@@ -28,7 +28,7 @@ typedef struct tagDNODE {
     DWORD dwNetType;
     DWORD dwExtent;
     DWORD dwAttribs;
-    TCHAR szName[1];  // variable length field
+    WCHAR szName[1];  // variable length field
 } DNODE;
 typedef DNODE* PDNODE;
 

@@ -49,7 +49,7 @@ VOID FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPTSTR szBuffer) {
 // Move a file to the Recycle Bin instead of permanently deleting it
 DWORD MoveFileToRecycleBin(LPTSTR pszFile) {
     SHFILEOPSTRUCT shfos;
-    TCHAR szFrom[MAXPATHLEN + 1];  // +1 for double null terminator
+    WCHAR szFrom[MAXPATHLEN + 1];  // +1 for double null terminator
 
     // Copy the file path and ensure it's double null-terminated
     lstrcpy(szFrom, pszFile);

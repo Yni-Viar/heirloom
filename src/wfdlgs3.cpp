@@ -44,7 +44,7 @@ FillDriveCapacity(HWND hDlg, INT nDrive, FMIFS_MEDIA_TYPE fmSelect, BOOL fDoPopu
     DWORD MediaCount;
     INT index;
     UINT uiCount;
-    TCHAR szTemp[32];
+    WCHAR szTemp[32];
 
     INT iCurSel = 0;
 
@@ -62,7 +62,7 @@ FillDriveCapacity(HWND hDlg, INT nDrive, FMIFS_MEDIA_TYPE fmSelect, BOOL fDoPopu
     }
 
     if (MediaCount == 1 && fmMedia[0] == FmMediaRemovable) {
-        TCHAR szTmpStr[256];
+        WCHAR szTmpStr[256];
 
         /*
          * We can't format this type of drive, tell the user to run WinDisk.Exe
@@ -159,7 +159,7 @@ AboutDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     WORD wMinorVersion = 0;
     WORD wBuildNumber = 0;
     WORD wRevisionNumber = 0;
-    TCHAR szVersion[CCH_VERSION] = { 0 };
+    WCHAR szVersion[CCH_VERSION] = { 0 };
 
     switch (wMsg) {
         case WM_INITDIALOG:
@@ -255,7 +255,7 @@ CALLBACK
 CancelDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
     static RECT rectGG;  // GasGauge rectangle
     DWORD Ignore;
-    TCHAR szTemp[128];
+    WCHAR szTemp[128];
     static BOOL bLastQuick;
 
     switch (message) {
@@ -340,7 +340,7 @@ CancelDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
         case WM_PAINT: {
             HDC hDC;
             PAINTSTRUCT ps;
-            TCHAR buffer[32];
+            WCHAR buffer[32];
             SIZE size;
             INT xText, yText;
             INT nDivideRects;
@@ -443,7 +443,7 @@ INT_PTR
 CALLBACK
 ProgressDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     static PCOPYINFO pCopyInfo;
-    TCHAR szTitle[MAXTITLELEN];
+    WCHAR szTitle[MAXTITLELEN];
 
     switch (wMsg) {
         case WM_INITDIALOG:
@@ -698,7 +698,7 @@ VOID DestroyCancelWindow() {
 //
 BOOL GetProductVersion(WORD* pwMajor, WORD* pwMinor, WORD* pwBuild, WORD* pwRevision) {
     BOOL success = FALSE;
-    TCHAR szCurrentModulePath[MAXPATHLEN];
+    WCHAR szCurrentModulePath[MAXPATHLEN];
     DWORD cchPath;
     DWORD cbVerInfo;
     LPVOID pFileVerInfo;

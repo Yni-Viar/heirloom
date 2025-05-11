@@ -23,10 +23,10 @@ extern INT maxExt;
 
 VOID SaveWindows(HWND hwndMain) {
     // 2* added to both lines
-    TCHAR szPath[2 * MAXPATHLEN];
-    TCHAR buf2[2 * MAXPATHLEN + 6 * 12];
+    WCHAR szPath[2 * MAXPATHLEN];
+    WCHAR buf2[2 * MAXPATHLEN + 6 * 12];
 
-    TCHAR key[10];
+    WCHAR key[10];
     INT dir_num;
     HWND hwnd;
     BOOL bCounting;
@@ -219,8 +219,8 @@ IncludeDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     HWND hwndActive;
 
     // To handle LONG paths with LONG filters (illegal)
-    TCHAR szTemp[2 * MAXPATHLEN];
-    TCHAR szInclude[MAXFILENAMELEN];
+    WCHAR szTemp[2 * MAXPATHLEN];
+    WCHAR szInclude[MAXFILENAMELEN];
     HWND hwndDir;
     HWND hwndTree;
 
@@ -317,8 +317,8 @@ INT_PTR
 CALLBACK
 SelectDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     HWND hwndActive, hwnd;
-    TCHAR szList[128];
-    TCHAR szSpec[MAXFILENAMELEN];
+    WCHAR szList[128];
+    WCHAR szSpec[MAXFILENAMELEN];
     LPTSTR p;
 
     if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
@@ -403,7 +403,7 @@ VOID NewFont() {
     HDC hdc;
     LOGFONT lf;
     CHOOSEFONT cf;
-    TCHAR szBuf[10];
+    WCHAR szBuf[10];
     INT res;
     UINT uOld, uNew;
 
@@ -579,9 +579,9 @@ ConfirmDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
 INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     /* Editor prefrence variables*/
-    TCHAR szTempEditPath[MAXPATHLEN];
-    TCHAR szPath[MAXPATHLEN];
-    TCHAR szFilter[MAXPATHLEN] = { 0 };
+    WCHAR szTempEditPath[MAXPATHLEN];
+    WCHAR szPath[MAXPATHLEN];
+    WCHAR szFilter[MAXPATHLEN] = { 0 };
 
     LoadString(hAppInstance, IDS_EDITFILTER, szFilter, MAXPATHLEN);
 

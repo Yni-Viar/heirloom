@@ -283,7 +283,7 @@ INT InsertDirectory(
     PDNODE pNode, pMid;
     HWND hwndLB;
     INT iMin, iMax, iMid;
-    TCHAR szPathName[MAXPATHLEN * 2];
+    WCHAR szPathName[MAXPATHLEN * 2];
 
     len = lstrlen(szName);
 
@@ -518,7 +518,7 @@ BOOL ReadDirLevel(
     PDNODE pNode;
     LPXDTA* plpxdta = NULL;
     LPXDTA lpxdta = NULL;
-    TCHAR szMessage[MAXPATHLEN];
+    WCHAR szMessage[MAXPATHLEN];
     UINT uYieldCount = 0;
     HWND hwndLB;
     INT count = 0;
@@ -841,7 +841,7 @@ BOOL StealTreeData(HWND hwndTC, HWND hwndLB, LPWSTR szDir) {
     HWND hwndSrc;
     HWND hwndT;
     HWND hwndLBSrc;
-    TCHAR szSrc[MAXPATHLEN];
+    WCHAR szSrc[MAXPATHLEN];
     DWORD dwAttribs;
 
     hwndT = NULL;
@@ -942,8 +942,8 @@ VOID FillTreeListbox(HWND hwndTC, LPTSTR szDefaultDir, BOOL bFullyExpand, BOOL b
     PDNODE pNode;
     INT iNode;
     DWORD dwAttribs;
-    TCHAR szTemp[MAXPATHLEN + 1] = SZ_ACOLONSLASH;
-    TCHAR szExpand[MAXPATHLEN + 1];
+    WCHAR szTemp[MAXPATHLEN + 1] = SZ_ACOLONSLASH;
+    WCHAR szExpand[MAXPATHLEN + 1];
     LPTSTR p;
     HWND hwndLB;
     BOOL bPartialSort;
@@ -1029,8 +1029,8 @@ VOID FillOutTreeList(HWND hwndTC, LPTSTR szDir, DWORD nIndex, PDNODE pNode) {
     HWND hwndLB;
     DWORD dwAttribs;
     LPTSTR p;
-    TCHAR szExists[MAXPATHLEN + 1];  // path that exists in tree
-    TCHAR szExpand[MAXPATHLEN + 1];  // sequence of null terminated strings to expand
+    WCHAR szExists[MAXPATHLEN + 1];  // path that exists in tree
+    WCHAR szExpand[MAXPATHLEN + 1];  // sequence of null terminated strings to expand
 
     hwndLB = GetDlgItem(hwndTC, IDCW_TREELISTBOX);
 
@@ -1104,7 +1104,7 @@ BOOL FindItemFromPath(HWND hwndLB, LPTSTR lpszPath, BOOL bReturnParent, DWORD* p
     PDNODE pNode;
     DWORD iPreviousNode;
     PDNODE pPreviousNode;
-    TCHAR szElement[1 + MAXFILENAMELEN + 1];
+    WCHAR szElement[1 + MAXFILENAMELEN + 1];
 
     if (pIndex) {
         *pIndex = (DWORD)-1;
@@ -1207,7 +1207,7 @@ BOOL RectTreeItem(HWND hwndLB, INT iItem, BOOL bFocusOn) {
     WORD wColor;
     PDNODE pNode;
     HBRUSH hBrush;
-    TCHAR szPath[MAXPATHLEN];
+    WCHAR szPath[MAXPATHLEN];
     SIZE size;
 
     if (iItem == -1) {
@@ -1297,7 +1297,7 @@ INT GetDrive(HWND hwnd, POINT pt) {
 
     chDrive = CHAR_NULL;
     while (hwnd && (hwnd != hwndMDIClient)) {
-        chDrive = (TCHAR)SendMessage(hwnd, FS_GETDRIVE, 0, MAKELONG((WORD)pt.x, (WORD)pt.y));
+        chDrive = (WCHAR)SendMessage(hwnd, FS_GETDRIVE, 0, MAKELONG((WORD)pt.x, (WORD)pt.y));
 
         if (chDrive)
             return chDrive;
@@ -1310,7 +1310,7 @@ INT GetDrive(HWND hwnd, POINT pt) {
 
 BOOL IsNetPath(PDNODE pNode) {
     // 2* buffer for single file overflow
-    TCHAR szPath[MAXPATHLEN * 2];
+    WCHAR szPath[MAXPATHLEN * 2];
     DWORD dwType;
     DRIVE drive;
 
@@ -1355,7 +1355,7 @@ VOID TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
 
     // +1 added since IsNetPath->GetTreePath->GetTreePathIndirect
     // is recursive and adds extra '\' at end then strips it off
-    TCHAR szPath[MAXPATHLEN + 1];
+    WCHAR szPath[MAXPATHLEN + 1];
 
     SIZE size;
 
@@ -2652,7 +2652,7 @@ UINT GetRealExtent(PDNODE pNode, HWND hwndLB, LPTSTR szPath, int* pLen)
     HDC hdc;
     HFONT hOld;
     SIZE size;
-    TCHAR szTemp[MAXPATHLEN];
+    WCHAR szTemp[MAXPATHLEN];
 
     if (szPath == NULL) {
         szPath = szTemp;

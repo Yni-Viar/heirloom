@@ -23,8 +23,8 @@
 
 #include "dbg.h"
 
-TCHAR szNTlanman[] = TEXT("ntlanman.dll");
-TCHAR szHelv[] = TEXT("Segoe UI");
+WCHAR szNTlanman[] = TEXT("ntlanman.dll");
+WCHAR szHelv[] = TEXT("Segoe UI");
 
 HBITMAP hbmSave;
 
@@ -51,7 +51,7 @@ INT GetHeightFromPointsString(LPCWSTR szPoints) {
 VOID BiasMenu(HMENU hMenu, UINT Bias) {
     UINT pos, id, count;
     HMENU hSubMenu;
-    TCHAR szMenuString[MENU_STRING_SIZ];
+    WCHAR szMenuString[MENU_STRING_SIZ];
 
     count = GetMenuItemCount(hMenu);
 
@@ -80,8 +80,8 @@ VOID BiasMenu(HMENU hMenu, UINT Bias) {
 }
 
 VOID InitExtensions() {
-    TCHAR szBuf[PROFILE_STRING_SIZ];
-    TCHAR szPath[MAXPATHLEN];
+    WCHAR szBuf[PROFILE_STRING_SIZ];
+    WCHAR szPath[MAXPATHLEN];
     LPTSTR p;
     HMODULE hMod;
     FM_EXT_PROC fp;
@@ -168,7 +168,7 @@ VOID InitExtensions() {
 /*--------------------------------------------------------------------------*/
 
 VOID GetSettings() {
-    TCHAR szTemp[128];
+    WCHAR szTemp[128];
     INT size;
     INT weight;
 
@@ -343,8 +343,8 @@ UINT MapMenuPosToIDM(UINT pos) {
  * it may contain.
  */
 
-VOID BoilThatDustSpec(TCHAR* pStart, BOOL bLoadIt) {
-    TCHAR* pEnd;
+VOID BoilThatDustSpec(WCHAR* pStart, BOOL bLoadIt) {
+    WCHAR* pEnd;
     DWORD ret;
     BOOL bFinished;
 

@@ -73,7 +73,7 @@ BOOL CompactPath(HDC hDC, LPTSTR lpszPath, DWORD dx) {
     LPTSTR lpEnd;   /* end of the unfixed string */
     LPTSTR lpFixed; /* start of text that we always display */
     BOOL bEllipsesIn;
-    TCHAR szTemp[MAXPATHLEN];
+    WCHAR szTemp[MAXPATHLEN];
     DWORD dxEllipses;
 
     //
@@ -304,7 +304,7 @@ LRESULT
 CALLBACK
 TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     HWND hwndTree, hwndDir, hwndFocus;
-    TCHAR szDir[2 * MAXPATHLEN];
+    WCHAR szDir[2 * MAXPATHLEN];
 
     RECT rc;
     HDC hdc;

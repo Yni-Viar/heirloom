@@ -417,7 +417,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
         case FS_CANCELCOPYFORMATDEST:
 
             if (CancelInfo.hCancelDlg) {
-                TCHAR szTemp[128];
+                WCHAR szTemp[128];
 
                 if (CancelInfo.Info.Copy.bFormatDest) {
                     LoadString(hAppInstance, IDS_FORMATTINGDEST, szTemp, COUNTOF(szTemp));
@@ -430,8 +430,8 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             break;
 
         case FS_CANCELMESSAGEBOX: {
-            TCHAR szMessage[MAXMESSAGELEN];
-            TCHAR szTitle[MAXTITLELEN];
+            WCHAR szMessage[MAXMESSAGELEN];
+            WCHAR szTitle[MAXTITLELEN];
             HWND hwndT;
 
             LoadString(hAppInstance, (UINT)wParam, szTitle, COUNTOF(szTitle));
@@ -459,7 +459,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             // lParam = iFileCount
 
             if (SearchInfo.hSearchDlg) {
-                TCHAR szTemp[20];
+                WCHAR szTemp[20];
 
                 wsprintf(szTemp, SZ_PERCENTD, wParam);
 

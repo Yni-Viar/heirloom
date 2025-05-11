@@ -275,7 +275,7 @@ VOID RectDrive(DRIVEIND driveInd, BOOL bDraw) {
 
 VOID DrawDrive(HDC hdc, UINT dpi, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus) {
     RECT rc;
-    TCHAR szTemp[2];
+    WCHAR szTemp[2];
     DWORD rgb;
     DRIVE drive;
 
@@ -306,7 +306,7 @@ VOID DrawDrive(HDC hdc, UINT dpi, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent
     if (bFocus)
         DrawFocusRect(hdc, &rc);
 
-    szTemp[0] = (TCHAR)(chFirstDrive + rgiDrive[driveInd]);
+    szTemp[0] = (WCHAR)(chFirstDrive + rgiDrive[driveInd]);
     SetBkMode(hdc, TRANSPARENT);
 
     rgb = SetTextColor(hdc, rgb);

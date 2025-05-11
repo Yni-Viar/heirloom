@@ -20,7 +20,7 @@ LPTSTR CurDirCache[26];
 DWORD historyCur = 0;
 typedef struct HistoryDir {
     HWND hwnd;
-    TCHAR szDir[MAXPATHLEN];
+    WCHAR szDir[MAXPATHLEN];
 } HistoryDir;
 HistoryDir rghistoryDir[MAXHISTORY];
 
@@ -109,8 +109,8 @@ pszRemoveSurroundingQuotes(LPWSTR p) {
 // Set the status bar text for a given pane
 
 VOID CDECL SetStatusText(int nPane, UINT nFlags, LPCTSTR szFormat, ...) {
-    TCHAR szTemp[120 + MAXPATHLEN];
-    TCHAR szTempFormat[120 + MAXPATHLEN];
+    WCHAR szTemp[120 + MAXPATHLEN];
+    WCHAR szTempFormat[120 + MAXPATHLEN];
 
     va_list vaArgs;
 
@@ -219,7 +219,7 @@ hwndfound:
 }
 
 BOOL GetDriveDirectory(INT iDrive, LPTSTR pszDir) {
-    TCHAR drvstr[4];
+    WCHAR drvstr[4];
     DWORD ret;
 
     pszDir[0] = '\0';
@@ -264,7 +264,7 @@ VOID GetAllDirectories(LPTSTR rgszDirs[]) {
     }
 
     for (driveT = 0; driveT < MAX_DRIVES; driveT++) {
-        TCHAR szDir[MAXPATHLEN];
+        WCHAR szDir[MAXPATHLEN];
 
         if (mpdrivehwnd[driveT] != NULL) {
             SendMessage(mpdrivehwnd[driveT], FS_GETDIRECTORY, MAXPATHLEN, (LPARAM)szDir);
@@ -352,9 +352,9 @@ VOID RefreshWindow(HWND hwndActive, BOOL bUpdateDriveList, BOOL bFlushCache) {
 VOID CheckEsc(LPTSTR szFile) {
     // DrivesDropObject calls w/ 2*MAXPATHLEN
 
-    TCHAR szT[2 * MAXPATHLEN];
+    WCHAR szT[2 * MAXPATHLEN];
 
-    TCHAR *p, *pT;
+    WCHAR *p, *pT;
 
     for (p = szFile; *p; p++) {
         switch (*p) {
@@ -400,7 +400,7 @@ HWND GetRealParent(HWND hwnd) {
 // #ifdef INLIBRARY
 LPTSTR
 AddCommasInternal(LPTSTR szBuf, DWORD dw) {
-    TCHAR szTemp[40];
+    WCHAR szTemp[40];
     LPTSTR pTemp;
     INT count, len;
     LPTSTR p;
@@ -926,7 +926,7 @@ VOID SetWindowDirectory() {
     // Actually, only needs to be MAX MDI Title = (MAXPATHLEN + few + MAX diskname)
     // like "d:\aaa .. aaa\filter.here - [albertt]"
     // which _could_ be > 2*MAXPATHLEN
-    TCHAR szTemp[MAXPATHLEN * 2];
+    WCHAR szTemp[MAXPATHLEN * 2];
 
     GetSelectedDirectory(0, szTemp);
     SetCurrentDirectory(szTemp);
@@ -951,9 +951,9 @@ VOID SetDlgDirectory(HWND hDlg, LPTSTR pszPath) {
     HWND hDlgItem;
     HANDLE hFont;
     HANDLE hFontBak;
-    TCHAR szPath[MAXPATHLEN + 5];
-    TCHAR szTemp[MAXPATHLEN + 20];
-    TCHAR szMessage[MAXMESSAGELEN];
+    WCHAR szPath[MAXPATHLEN + 5];
+    WCHAR szTemp[MAXPATHLEN + 20];
+    WCHAR szMessage[MAXMESSAGELEN];
 
     hFontBak = NULL;
 
@@ -998,7 +998,7 @@ VOID SetDlgDirectory(HWND hDlg, LPTSTR pszPath) {
 /*--------------------------------------------------------------------------*/
 
 VOID WritePrivateProfileBool(LPTSTR szKey, BOOL bParam) {
-    TCHAR szBool[6];
+    WCHAR szBool[6];
 
     wsprintf(szBool, SZ_PERCENTD, bParam);
     WritePrivateProfileString(szSettings, szKey, szBool, szTheINIFile);
@@ -1187,9 +1187,9 @@ GetExtension(LPTSTR pszFile) {
 /*--------------------------------------------------------------------------*/
 
 INT MyMessageBox(HWND hwnd, DWORD idTitle, DWORD idMessage, DWORD wStyle) {
-    TCHAR szTitle[MAXTITLELEN];
-    TCHAR szMessage[MAXMESSAGELEN];
-    TCHAR szTemp[MAXMESSAGELEN];
+    WCHAR szTitle[MAXTITLELEN];
+    WCHAR szMessage[MAXMESSAGELEN];
+    WCHAR szTemp[MAXMESSAGELEN];
 
     HWND hwndT;
 
@@ -1430,7 +1430,7 @@ LPTSTR GetFullPathInSystemDirectory(LPCTSTR FileName) {
     }
 
     FileNameLength = lstrlen(FileName);
-    FullPath = (LPTSTR)LocalAlloc(LMEM_FIXED, (LengthRequired + 1 + FileNameLength + 1) * sizeof(TCHAR));
+    FullPath = (LPTSTR)LocalAlloc(LMEM_FIXED, (LengthRequired + 1 + FileNameLength + 1) * sizeof(WCHAR));
     if (FullPath == NULL) {
         return NULL;
     }

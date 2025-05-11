@@ -11,7 +11,7 @@
 
 #if DBG
 
-extern TCHAR szAsrtFmt[];
+extern WCHAR szAsrtFmt[];
 extern unsigned long BreakFlags;
 extern unsigned long TraceFlags;
 

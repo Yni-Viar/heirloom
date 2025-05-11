@@ -90,7 +90,7 @@ FormatError(BOOL bNullString, LPTSTR lpBuf, INT iSize, DWORD dwError) {
         // if extended error, use WNetErrorText!
         if (ERROR_EXTENDED_ERROR == dwError) {
             DWORD dwErrorCode;
-            TCHAR szProvider[128];
+            WCHAR szProvider[128];
 
             if (WAITNET_LOADED) {
                 // !! BUG: szProvider size hard coded, doesn't print provider !!

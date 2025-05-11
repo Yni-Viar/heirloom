@@ -333,7 +333,7 @@ BOOL IsLFN(LPTSTR pName) {
 //       LFNParse will die lpFile is fully qualified.
 
 BOOL LFNMergePath(LPTSTR lpMask, LPTSTR lpFile) {
-    TCHAR szT[MAXPATHLEN * 2];
+    WCHAR szT[MAXPATHLEN * 2];
     INT iResStrlen;
 
     //
@@ -411,7 +411,7 @@ WFCopyIfSymlink(LPTSTR pszFrom, LPTSTR pszTo, DWORD dwFlags, DWORD dwNotificatio
 DWORD
 WFCopy(LPTSTR pszFrom, LPTSTR pszTo) {
     DWORD dwRet;
-    TCHAR szTemp[MAXPATHLEN];
+    WCHAR szTemp[MAXPATHLEN];
     BOOL bCancel = FALSE;
 
     Notify(hdlgProgress, IDS_COPYINGMSG, pszFrom, pszTo);

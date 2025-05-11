@@ -472,7 +472,7 @@ vector<PDNODE> GetDirectoryOptionsFromText(LPCTSTR szText, BOOL* pbLimited) {
 
 VOID UpdateGotoList(HWND hDlg) {
     BOOL bLimited = FALSE;
-    TCHAR szText[MAXPATHLEN];
+    WCHAR szText[MAXPATHLEN];
 
     DWORD dw = GetDlgItemText(hDlg, IDD_GOTODIR, szText, COUNTOF(szText));
 
@@ -543,7 +543,7 @@ LRESULT APIENTRY GotoEditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 }
 
 VOID SetCurrentPathOfWindow(LPWSTR szPath) {
-    TCHAR szFullPath[MAXPATHLEN];
+    WCHAR szFullPath[MAXPATHLEN];
     LPTSTR szFilePart;
     DWORD result;
     HWND hwndActive;
@@ -606,7 +606,7 @@ GotoDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                     break;
 
                 case IDOK: {
-                    TCHAR szPath[MAXPATHLEN];
+                    WCHAR szPath[MAXPATHLEN];
                     DWORD iSel;
 
                     EndDialog(hDlg, TRUE);
@@ -666,7 +666,7 @@ DWORD WINAPI BuildDirectoryTreeBagOValues(PVOID pv) {
     GetPrivateProfileString(szSettings, szCachedPath, TEXT("c:\\"), szCachedPathIni, MAXPATHLEN, szTheINIFile);
 
     // Create a local copy, because once we save it to winfile.ini on exit we need the original value
-    TCHAR szCached[MAXPATHLEN];
+    WCHAR szCached[MAXPATHLEN];
     lstrcpy(szCached, szCachedPathIni);
 
     // Iterate through ; seperated list of to be cached pathes
@@ -674,7 +674,7 @@ DWORD WINAPI BuildDirectoryTreeBagOValues(PVOID pv) {
     WCHAR seps[]{ L";" };
     PWCHAR token{ nullptr };
     PWCHAR szCachedRoot = wcstok_s(szCached, seps, &token);
-    TCHAR szCachedRootLower[MAXPATHLEN];
+    WCHAR szCachedRootLower[MAXPATHLEN];
 
     while (szCachedRoot) {
         lstrcpy(szCachedRootLower, szCachedRoot);

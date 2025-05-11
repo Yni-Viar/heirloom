@@ -73,8 +73,8 @@ HWND LocateDirWindow(LPTSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow) {
     HWND hwndT;
     HWND hwndDir;
     LPTSTR pT2;
-    TCHAR szTemp[MAXPATHLEN];
-    TCHAR szPath[MAXPATHLEN];
+    WCHAR szTemp[MAXPATHLEN];
+    WCHAR szPath[MAXPATHLEN];
 
     pT2 = pszPath;
 
@@ -127,8 +127,8 @@ VOID UpdateAllDirWindows(LPTSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec) {
     HWND hwndT;
     HWND hwndDir;
     LPTSTR pT2;
-    TCHAR szTemp[MAXPATHLEN];
-    TCHAR szPath[MAXPATHLEN];
+    WCHAR szTemp[MAXPATHLEN];
+    WCHAR szPath[MAXPATHLEN];
 
     pT2 = pszPath;
 
@@ -191,10 +191,10 @@ VOID UpdateAllDirWindows(LPTSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec) {
 
 VOID ChangeFileSystem(DWORD dwFunction, LPCTSTR lpszFile, LPCTSTR lpszTo) {
     HWND hwnd, hwndTree, hwndOld;
-    TCHAR szFrom[MAXPATHLEN];
-    TCHAR szTo[MAXPATHLEN];
-    TCHAR szTemp[MAXPATHLEN];
-    TCHAR szPath[MAXPATHLEN + MAXPATHLEN];
+    WCHAR szFrom[MAXPATHLEN];
+    WCHAR szTo[MAXPATHLEN];
+    WCHAR szTemp[MAXPATHLEN];
+    WCHAR szPath[MAXPATHLEN + MAXPATHLEN];
     DWORD dwFSCOperation;
 
     // As FSC messages come in from outside winfile
@@ -595,8 +595,8 @@ VOID OpenOrEditSelection(HWND hwndActive, BOOL fEdit) {
         // Attempt to spawn the selected file.
         //
         if (fEdit) {
-            TCHAR szEditPath[MAXPATHLEN];
-            TCHAR szNotepad[MAXPATHLEN];
+            WCHAR szEditPath[MAXPATHLEN];
+            WCHAR szNotepad[MAXPATHLEN];
 
             // NOTE: assume system directory and "\\notepad.exe" never exceed MAXPATHLEN
             if (GetSystemDirectory(szNotepad, MAXPATHLEN) != 0)
@@ -664,7 +664,7 @@ BOOL GetPowershellExePath(LPTSTR szPSPath) {
     szPSPath[0] = TEXT('\0');
 
     for (int ikey = 0; ikey < 5; ikey++) {
-        TCHAR szSub[10];  // just the "1" or "3"
+        WCHAR szSub[10];  // just the "1" or "3"
 
         DWORD dwError = RegEnumKey(hkey, ikey, szSub, COUNTOF(szSub));
 
@@ -684,7 +684,7 @@ BOOL GetPowershellExePath(LPTSTR szPSPath) {
                 if (dwError == ERROR_SUCCESS) {
                     LPCWSTR szPSExe = L"\\Powershell.exe";
 
-                    cbValue = (MAXPATHLEN - lstrlen(szPSExe)) * sizeof(TCHAR);
+                    cbValue = (MAXPATHLEN - lstrlen(szPSExe)) * sizeof(WCHAR);
                     dwError = RegGetValue(
                         hkeySub, TEXT("PowerShellEngine"), TEXT("ApplicationBase"),
                         RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ, &dwType, (PVOID)szPSPath, &cbValue);
@@ -729,7 +729,7 @@ BOOL AppCommandProc(DWORD id) {
     HWND hwndActive;
     BOOL bTemp;
     HWND hwndT;
-    TCHAR szPath[MAXPATHLEN];
+    WCHAR szPath[MAXPATHLEN];
     INT ret;
 
     hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
@@ -769,8 +769,8 @@ BOOL AppCommandProc(DWORD id) {
         case IDM_EMPTYRECYCLE:
             // Prompt for confirmation if enabled in settings
             if (bConfirmDelete) {
-                TCHAR szTitle[64];
-                TCHAR szMessage[128];
+                WCHAR szTitle[64];
+                WCHAR szMessage[128];
 
                 LoadString(hAppInstance, 431, szTitle, COUNTOF(szTitle));
                 LoadString(hAppInstance, 432, szMessage, COUNTOF(szMessage));
@@ -856,12 +856,12 @@ BOOL AppCommandProc(DWORD id) {
             BOOL bUseCmd;
             BOOL bDir;
             DWORD cchEnv;
-            TCHAR szToRun[MAXPATHLEN];
+            WCHAR szToRun[MAXPATHLEN];
             LPTSTR szDir;
 
 #define ConEmuParamFormat TEXT(" -Single -Dir \"%s\"")
 #define CmdParamFormat TEXT("/k cd /d ")
-            TCHAR szParams[MAXPATHLEN + max(COUNTOF(CmdParamFormat), COUNTOF(ConEmuParamFormat))];
+            WCHAR szParams[MAXPATHLEN + max(COUNTOF(CmdParamFormat), COUNTOF(ConEmuParamFormat))];
 
             szDir = GetSelection(1 | 4 | 16, &bDir);
             if (!bDir && szDir)
@@ -908,7 +908,7 @@ BOOL AppCommandProc(DWORD id) {
         case IDM_STARTEXPLORER: {
             BOOL bDir;
             LPTSTR szDir;
-            TCHAR szToRun[MAXPATHLEN];
+            WCHAR szToRun[MAXPATHLEN];
 
             szDir = GetSelection(1 | 4 | 16, &bDir);
             if (!bDir && szDir)
@@ -919,7 +919,7 @@ BOOL AppCommandProc(DWORD id) {
             else
                 lstrcpy(szToRun, TEXT("explorer.exe"));
 
-            TCHAR szParams[MAXPATHLEN] = { TEXT('\0') };
+            WCHAR szParams[MAXPATHLEN] = { TEXT('\0') };
 
             ret = ExecProgram(szToRun, szDir, szDir, FALSE, FALSE);
             LocalFree(szDir);
@@ -928,10 +928,10 @@ BOOL AppCommandProc(DWORD id) {
         case IDM_STARTPOWERSHELL: {
             BOOL bRunAs;
             BOOL bDir;
-            TCHAR szToRun[MAXPATHLEN];
+            WCHAR szToRun[MAXPATHLEN];
             LPTSTR szDir;
 #define PowerShellParamFormat TEXT(" -noexit -command \"cd \\\"%s\\\"\"")
-            TCHAR szParams[MAXPATHLEN + COUNTOF(PowerShellParamFormat)];
+            WCHAR szParams[MAXPATHLEN + COUNTOF(PowerShellParamFormat)];
 
             szDir = GetSelection(1 | 4 | 16, &bDir);
             if (!bDir && szDir)
@@ -951,7 +951,7 @@ BOOL AppCommandProc(DWORD id) {
         case IDM_STARTBASHSHELL: {
             BOOL bRunAs;
             BOOL bDir;
-            TCHAR szToRun[MAXPATHLEN];
+            WCHAR szToRun[MAXPATHLEN];
             LPTSTR szDir;
 
             szDir = GetSelection(1 | 4 | 16, &bDir);
@@ -1077,7 +1077,7 @@ BOOL AppCommandProc(DWORD id) {
             HANDLE hMemLongW, hMemTextW, hDrop;
             LONG cbMemLong;
             HANDLE hMemDropEffect;
-            TCHAR szPathLong[MAXPATHLEN];
+            WCHAR szPathLong[MAXPATHLEN];
             POINT pt;
             INT iMultipleResult;
 
@@ -1148,7 +1148,7 @@ BOOL AppCommandProc(DWORD id) {
         case IDM_ATTRIBS: {
             LPTSTR pSel, p;
             INT count;
-            TCHAR szTemp[MAXPATHLEN];
+            WCHAR szTemp[MAXPATHLEN];
 
             BOOL bDir = FALSE;
 

@@ -33,9 +33,9 @@ typedef struct _PARAMETERS {
     HANDLE hDlgCreated;               // Initialized in WNetRestoreConnection
     HANDLE hDlgFailed;                // Initialized in WNetRestoreConnection
     HANDLE hDonePassword;             // Initialized in WNetRestoreConnection
-    TCHAR* pchResource;               // ShowReconnectDialog, DoRestoreConnection
-    TCHAR* pchUserName;               // For DoPasswordDialog
-    TCHAR passwordBuffer[UNLEN + 1];  // Used by WNetRestoreThisConnection
+    WCHAR* pchResource;               // ShowReconnectDialog, DoRestoreConnection
+    WCHAR* pchUserName;               // For DoPasswordDialog
+    WCHAR passwordBuffer[UNLEN + 1];  // Used by WNetRestoreThisConnection
     BOOL fSuccess;                    // For the DoPasswordDialog
     BOOL fDidCancel;                  // For the DoPasswordDialog
     BOOL fDownLevel;                  // FALSE if error==ERROR_LOGON_FAILURE
@@ -52,18 +52,18 @@ extern "C" {
 
 DWORD DoPasswordDialog(
     HWND hwndOwner,
-    TCHAR* pchResource,
-    TCHAR* pchUserName,
-    TCHAR* pchPasswordReturnBuffer,
+    WCHAR* pchResource,
+    WCHAR* pchUserName,
+    WCHAR* pchPasswordReturnBuffer,
     DWORD cbPasswordReturnBuffer,  // bytes!
     BOOL* pfDidCancel,
     BOOL fDownLevel);
 
 DWORD DoProfileErrorDialog(
     HWND hwndOwner,
-    const TCHAR* pchDevice,
-    const TCHAR* pchResource,
-    const TCHAR* pchProvider,
+    const WCHAR* pchDevice,
+    const WCHAR* pchResource,
+    const WCHAR* pchProvider,
     DWORD dwError,
     BOOL fAllowCancel,   // ask whether to stop reconnecting devices
                          //  this time?

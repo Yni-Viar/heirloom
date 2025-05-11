@@ -72,7 +72,7 @@ VOID D_Info(VOID) {
 
 U_HEAD(Type)
 
-TCHAR szDrive[] = SZ_ACOLONSLASH;
+WCHAR szDrive[] = SZ_ACOLONSLASH;
 UINT uType;
 
 DRIVESET(szDrive, drive);
@@ -113,12 +113,12 @@ U_CLOSE(Space)
 
 U_HEAD(VolInfo)
 
-TCHAR szVolName[COUNTOF(pDriveInfo->szVolNameMinusFour) - 4];
+WCHAR szVolName[COUNTOF(pDriveInfo->szVolNameMinusFour) - 4];
 DWORD dwVolumeSerialNumber;
 DWORD dwMaximumComponentLength;
 DWORD dwFileSystemFlags;
-TCHAR szFileSysName[COUNTOF(pDriveInfo->szFileSysName)];
-TCHAR szTemp[MAX_FILESYSNAME];
+WCHAR szFileSysName[COUNTOF(pDriveInfo->szFileSysName)];
+WCHAR szTemp[MAX_FILESYSNAME];
 
 DWORD dwRetVal;
 
@@ -198,7 +198,7 @@ U_HEAD(NetCon)
 DWORD dwSize;
 WNET_CONNECTIONINFO* lpConnectInfo = pDriveInfo->lpConnectInfo;
 
-TCHAR szDrive[] = SZ_ACOLON;
+WCHAR szDrive[] = SZ_ACOLON;
 DWORD dwRetVal;
 
 //
@@ -399,7 +399,7 @@ VOID NetCon_UpdateLines(DRIVE drive, DWORD dwType) {
 
 struct _DOC_BUCKET {
     PDOCBUCKET next;
-    TCHAR szExt[EXTSIZ];
+    WCHAR szExt[EXTSIZ];
     HICON hIcon;
     LPTSTR lpszFI;
 } DOCBUCKET;
@@ -523,7 +523,7 @@ VOID RemoveEndQuote(LPTSTR lpszExt) {
 INT DocInsert(PPDOCBUCKET ppDocBucket, LPTSTR lpszExt, LPTSTR lpszFileIcon) {
     PDOCBUCKET pDocBucket;
     INT iBucket;
-    TCHAR szExt[EXTSIZ];
+    WCHAR szExt[EXTSIZ];
 
     //
     // Only allow certain lengths; if invalid ppDocBucket, fail
@@ -593,7 +593,7 @@ INT DocInsert(PPDOCBUCKET ppDocBucket, LPTSTR lpszExt, LPTSTR lpszFileIcon) {
 PDOCBUCKET
 DocFind(PPDOCBUCKET ppDocBucket, LPTSTR lpszExt) {
     PDOCBUCKET pDocBucket;
-    TCHAR szExt[EXTSIZ];
+    WCHAR szExt[EXTSIZ];
 
     //
     // Disallow long exts; if invalid ppDocBucket, fail
@@ -620,7 +620,7 @@ HICON DocGetIcon(PDOCBUCKET pDocBucket) {
         return NULL;
 
     if (pDocBucket->hIcon == NULL && pDocBucket->lpszFI != NULL) {
-        TCHAR* pchT = wcsrchr(pDocBucket->lpszFI, ',');
+        WCHAR* pchT = wcsrchr(pDocBucket->lpszFI, ',');
 
         if (pchT != NULL) {
             INT index = atoi(pchT + 1);
@@ -1381,7 +1381,7 @@ VOID UpdateDriveListComplete(VOID) {
     DRIVE drive;
     DRIVEIND driveInd;
     INT CurSel;
-    TCHAR szPath[2 * MAXPATHLEN];
+    WCHAR szPath[2 * MAXPATHLEN];
     LPTSTR lpszVol, lpszOldVol;
 
     for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = hwndNext) {
@@ -1518,7 +1518,7 @@ BOOL NetLoad(VOID) {
     DWORD dwType;
     DRIVE drive;
 
-    TCHAR szPath[] = SZ_ACOLONSLASH;
+    WCHAR szPath[] = SZ_ACOLONSLASH;
 
     if (WNetStat(NS_CONNECT)) {
         hMPR = LoadSystemLibrary(MPR_DLL);

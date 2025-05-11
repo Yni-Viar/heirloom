@@ -172,19 +172,19 @@ HDROP CreateDropFiles(POINT pt, BOOL fNC, LPTSTR pszFiles) {
     LPTSTR szSrc;
 
     LPDROPFILES lpdfs;
-    TCHAR szFile[MAXPATHLEN];
+    WCHAR szFile[MAXPATHLEN];
 
-    cbList = sizeof(DROPFILES) + sizeof(TCHAR);
+    cbList = sizeof(DROPFILES) + sizeof(WCHAR);
 
     szSrc = pszFiles;
     while (szSrc = GetNextFile(szSrc, szFile, COUNTOF(szFile))) {
         QualifyPath(szFile);
 
-        cbList += (wcslen(szFile) + 1) * sizeof(TCHAR);
+        cbList += (wcslen(szFile) + 1) * sizeof(WCHAR);
     }
 
     // Add extra space for a double null terminator
-    cbList += sizeof(TCHAR);
+    cbList += sizeof(WCHAR);
 
     hDrop = GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE | GMEM_ZEROINIT, cbList);
     if (!hDrop)
@@ -205,7 +205,7 @@ HDROP CreateDropFiles(POINT pt, BOOL fNC, LPTSTR pszFiles) {
 
         lstrcpy((LPTSTR)lpList, szFile);
 
-        lpList += (wcslen(szFile) + 1) * sizeof(TCHAR);
+        lpList += (wcslen(szFile) + 1) * sizeof(WCHAR);
     }
 
     // Add a final NULL to create a double-NULL terminator
@@ -220,8 +220,8 @@ HDROP CreateDropFiles(POINT pt, BOOL fNC, LPTSTR pszFiles) {
 
 // Create all intermediate directories in a path
 static BOOL CreateIntermediateDirectories(LPCTSTR szPath) {
-    TCHAR szDirPath[MAXPATHLEN];
-    TCHAR* p;
+    WCHAR szDirPath[MAXPATHLEN];
+    WCHAR* p;
 
     // Make a copy we can modify
     lstrcpy(szDirPath, szPath);
@@ -245,7 +245,7 @@ static BOOL CreateIntermediateDirectories(LPCTSTR szPath) {
     return CreateDirectory(szDirPath, NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
 }
 
-static HRESULT StreamToFile(IStream* stream, TCHAR* szFile) {
+static HRESULT StreamToFile(IStream* stream, WCHAR* szFile) {
     byte buffer[BLOCK_SIZE];
     DWORD bytes_read;
     DWORD bytes_written;
@@ -341,7 +341,7 @@ LPWSTR QuotedContentList(IDataObject* pDataObject) {
 
                 if (hr == S_OK) {
                     // Dump stream to a file
-                    TCHAR szTempFile[MAXPATHLEN * 2 + 1];
+                    WCHAR szTempFile[MAXPATHLEN * 2 + 1];
 
                     lstrcpy(szTempFile, szTempPath);
                     AddBackslash(szTempFile);
@@ -430,7 +430,7 @@ try_ansi_format:
 
                 if (hr == S_OK) {
                     // Dump stream to a file
-                    TCHAR szTempFile[MAXPATHLEN * 2 + 1];
+                    WCHAR szTempFile[MAXPATHLEN * 2 + 1];
 
                     lstrcpy(szTempFile, szTempPath);
                     AddBackslash(szTempFile);

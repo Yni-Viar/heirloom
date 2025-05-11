@@ -14,8 +14,8 @@
 
 #if DBG
 
-TCHAR szAsrtFmt[] = TEXT("Assertion Failure in %s at %d\n");
-TCHAR szFmt[300];
+WCHAR szAsrtFmt[] = TEXT("Assertion Failure in %s at %d\n");
+WCHAR szFmt[300];
 unsigned long TraceFlags = BF_START
     //     | BF_PROCTRACE
     //     | BF_PARMTRACE
