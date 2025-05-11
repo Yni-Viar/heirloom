@@ -15,10 +15,10 @@
 #include "numfmt.h"
 #include "wfpng.h"
 #include "wfrecyclebin.h"
-#include <commctrl.h>
-
 #include "wfdrop.h"
 #include "wfdragsrc.h"
+#include "wfchgnot.h"
+#include <commctrl.h>
 
 // Constants for selection types passed to DirGetSelection
 #define SELECTION_ANY 0  // Return all selected files

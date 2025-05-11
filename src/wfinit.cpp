@@ -17,6 +17,7 @@
 #include "wfdpi.h"     // Add DPI awareness header
 #include "gitbash.h"   // For GetGitBashPath()
 #include "wfpng.h"
+#include "wfchgnot.h"
 
 #include <ole2.h>
 #include <shlobj.h>

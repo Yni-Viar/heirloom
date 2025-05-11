@@ -248,15 +248,6 @@ typedef struct _SELINFO* PSELINFO;
 //
 //--------------------------------------------------------------------------
 
-// WFCHGNOT.C
-
-void InitializeWatchList();
-void ModifyWatchList(HWND hwndWatch, LPWSTR lpPath, DWORD fdwFilter);
-void DestroyWatchList();
-void NotifyPause(DRIVE drive, UINT uType);
-void NotifyResume(DRIVE drive, UINT uType);
-void vWaitMessage();
-
 // WFCOMMAN.C
 
 void RedoDriveWindows(HWND);

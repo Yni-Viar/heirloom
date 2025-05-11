@@ -12,6 +12,7 @@
 #include "winfile.h"
 #include "lfn.h"
 #include "wfcopy.h"
+#include "wfchgnot.h"
 
 typedef enum {
     EDIRABORT_NULL = 0,

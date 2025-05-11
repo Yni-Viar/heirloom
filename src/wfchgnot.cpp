@@ -10,6 +10,7 @@
 ********************************************************************/
 
 #include "winfile.h"
+#include "wfchgnot.h"
 
 //
 // Forward Declarations

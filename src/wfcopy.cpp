@@ -13,6 +13,7 @@
 #include "lfn.h"
 #include "wfcopy.h"
 #include "wfrecyclebin.h"
+#include "wfchgnot.h"
 
 BOOL* pbConfirmAll;
 BOOL* pbConfirmReadOnlyAll;

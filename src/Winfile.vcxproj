@@ -207,6 +207,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="suggest.h" />
     <ClInclude Include="treectl.h" />
+    <ClInclude Include="wfchgnot.h" />
     <ClInclude Include="wfcopy.h" />
     <ClInclude Include="wfdlgs.h" />
     <ClInclude Include="wfdocb.h" />
