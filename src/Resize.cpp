@@ -36,24 +36,6 @@
 #include "Resize.h"
 
 //
-//  For older 32-bit compilers, we won't have 64-bit support.  Use the 32-bit
-//  variants; lack of 64-bit support doesn't matter when we're targeting
-//  32-bit.
-//
-
-#ifndef SetWindowLongPtr
-#define LONG_PTR LONG
-#define DWLP_MSGRESULT DWL_MSGRESULT
-#define DWLP_USER DWL_USER
-#define SetWindowLongPtr(HWND, INDEX, DATA) SetWindowLong(HWND, INDEX, DATA)
-#define GetWindowLongPtr(HWND, INDEX) GetWindowLong(HWND, INDEX)
-#endif
-
-#ifndef WS_EX_LAYOUTRTL
-#define WS_EX_LAYOUTRTL 0x00400000L
-#endif
-
-//
 //  This is the only window message defined by our resize dialog control class,
 //  and it's fully internal.  We send this to each resize control to take care
 //  of its buddy.
