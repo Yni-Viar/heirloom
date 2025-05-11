@@ -10,6 +10,7 @@
 #include "winfile.h"
 #include "wfdos.h"
 #include "wfutil.h"
+#include "wfdir.h"
 
 //----------------------------
 //

@@ -10,6 +10,7 @@
 ********************************************************************/
 
 #include "winfile.h"
+#include "wfdir.h"
 #include <shellapi.h>
 
 // Include the SHQueryRecycleBin API declaration

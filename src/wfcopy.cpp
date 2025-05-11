@@ -16,6 +16,7 @@
 #include "wfchgnot.h"
 #include "wfcomman.h"
 #include "wfutil.h"
+#include "wfdir.h"
 
 BOOL* pbConfirmAll;
 BOOL* pbConfirmReadOnlyAll;

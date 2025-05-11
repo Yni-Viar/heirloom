@@ -18,6 +18,7 @@
 #include "wfdragsrc.h"
 #include "wfpng.h"
 #include "wfutil.h"
+#include "wfdir.h"
 #include <commctrl.h>
 #include <winnls.h>
 

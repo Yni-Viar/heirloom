@@ -248,22 +248,6 @@ typedef struct _SELINFO* PSELINFO;
 //
 //--------------------------------------------------------------------------
 
-// WFDIR.C
-
-void UpdateStatus(HWND hWnd);
-LPWSTR DirGetSelection(HWND hwndDir, HWND hwndView, HWND hwndLB, int iSelType, BOOL* pfDir, PINT piLastSel);
-void FillDirList(HWND hwndDir, LPXDTALINK lpStart);
-void CreateLBLine(DWORD dwLineFormat, LPXDTA lpxdta, LPWSTR szBuffer);
-int GetMaxExtent(HWND hwndLB, LPXDTALINK lpXDTA, BOOL bNTFS);
-void UpdateSelection(HWND hwndLB);
-
-int PutDate(LPFILETIME lpftDate, LPWSTR szStr);
-int PutTime(LPFILETIME lpftTime, LPWSTR szStr);
-int PutSize(PLARGE_INTEGER pqSize, LPWSTR szOutStr);
-int PutAttributes(DWORD dwAttribute, LPWSTR szStr);
-HWND GetMDIChildFromDescendant(HWND hwnd);
-void SetLBFont(HWND hwnd, HWND hwndLB, HANDLE hNewFont, DWORD dwViewFlags, LPXDTALINK lpStart);
-
 // WFDIRRD.C
 
 BOOL InitDirRead();

@@ -18,6 +18,7 @@
 #include "wfrecyclebin.h"
 #include "wfcomman.h"
 #include "wfutil.h"
+#include "wfdir.h"
 
 #include <shlobj.h>
 #include <commctrl.h>
