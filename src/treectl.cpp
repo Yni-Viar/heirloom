@@ -18,7 +18,6 @@
 #include "wfdragsrc.h"
 #include <commctrl.h>
 #include <winnls.h>
-#include "dbg.h"
 
 #define WS_TREESTYLE                                                                                            \
     (WS_CHILD | WS_VISIBLE | LBS_NOTIFY | WS_VSCROLL | WS_HSCROLL | LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT | \
@@ -230,8 +229,6 @@ int CompareNodes(PDNODE p1, PDNODE p2) {
     PDNODE p1save, p2save;
     int ret;
 
-    ASSERT(p1 && p2);
-
     p1save = p1;
     p2save = p2;
 
@@ -244,8 +241,6 @@ int CompareNodes(PDNODE p1, PDNODE p2) {
         p2 = p2->pParent;
 
     // compare those paths
-
-    ASSERT(p1 && p2);
 
     ret = ComparePath(p1, p2);
 
@@ -900,7 +895,6 @@ BOOL StealTreeData(HWND hwndTC, HWND hwndLB, LPWSTR szDir) {
                 }
 
                 SendMessage(hwndLB, LB_INSERTSTRING, i, (LPARAM)pNewNode);
-                ASSERT((PDNODE)SendMessage(hwndLB, LB_GETITEMDATA, i, 0L) == pNewNode);
             }
         }
 

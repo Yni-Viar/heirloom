@@ -21,8 +21,6 @@
 #include <shlobj.h>
 #include "resize.h"
 
-#include "dbg.h"
-
 WCHAR szNTlanman[] = L"ntlanman.dll";
 WCHAR szHelv[] = L"Segoe UI";
 
@@ -92,7 +90,6 @@ void InitExtensions() {
 
     hMenuFrame = GetMenu(hwndFrame);
 
-    ASSERT(!bSecMenuDeleted);
     iMenuBase = MapIDMToMenuPos(IDM_EXTENSIONS);
 
     GetPrivateProfileString(szAddons, NULL, szNULL, szBuf, COUNTOF(szBuf), szTheINIFile);

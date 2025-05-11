@@ -197,7 +197,6 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   </PropertyGroup>
   <ItemGroup>
-    <ClInclude Include="dbg.h" />
     <ClInclude Include="fmifs.h" />
     <ClInclude Include="gitbash.h" />
     <ClInclude Include="lfn.h" />
@@ -242,7 +241,6 @@
     <None Include="suggest.db" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dbg.cpp" />
     <ClCompile Include="gitbash.cpp" />
     <ClCompile Include="lfn.cpp" />
     <ClCompile Include="lfnmisc.cpp" />

@@ -168,8 +168,6 @@ BOOL WFFindNext(LPLFNDTA lpFind) {
 BOOL WFFindClose(LPLFNDTA lpFind) {
     BOOL bRet;
 
-    //    ASSERT(lpFind->hFindFile != INVALID_HANDLE_VALUE);
-
     // This section WAS #defined DBG, but removed
     // Basically, when copying a directory into ITS subdirectory, we detect
     // an error.  Since the error is detected late (after the file handle

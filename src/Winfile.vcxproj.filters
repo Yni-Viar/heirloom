@@ -4,7 +4,6 @@
     <Manifest Include="winfile.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dbg.cpp" />
     <ClCompile Include="lfn.cpp" />
     <ClCompile Include="lfnmisc.cpp" />
     <ClCompile Include="numfmt.cpp" />
@@ -43,7 +42,6 @@
     <ClCompile Include="gitbash.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="dbg.h" />
     <ClInclude Include="fmifs.h" />
     <ClInclude Include="lfn.h" />
     <ClInclude Include="BagOValues.h" />
