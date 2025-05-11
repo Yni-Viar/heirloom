@@ -16,13 +16,9 @@ typedef struct _XDTALINK* LPXDTALINK;
 
 typedef struct _XDTALINK {
     LPXDTALINK next;
-#ifdef MEMDOUBLE
     DWORD dwSize;
-#endif
     DWORD dwNextFree;
-#ifdef MEMDOUBLE
     DWORD dwPad; /* quad word align for Alpha */
-#endif
 } XDTALINK;
 
 #define LPXDTA_STATUS_READING 0x1  // Reading by ReadDirLevel

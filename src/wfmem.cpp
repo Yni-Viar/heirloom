@@ -28,9 +28,7 @@ MemNew() {
     // Initialize the link structure
     //
     lpStart->next = NULL;
-#ifdef MEMDOUBLE
     lpStart->dwSize = BLOCK_SIZE_GRANULARITY;
-#endif
     lpStart->dwNextFree = LINKHEADSIZE;
 
     //
@@ -132,13 +130,10 @@ MemAdd(LPXDTALINK* plpLast, UINT cchFileName, UINT cchAlternateFileName) {
     LPXDTA lpxdta;
     UINT cbSpace;
     LPXDTALINK lpLast = *plpLast;
-#ifdef MEMDOUBLE
     DWORD dwNewSize;
-#endif
 
     cbSpace = ALIGNBLOCK((cchFileName + cchAlternateFileName + 2) * sizeof(WCHAR) + sizeof(XDTA));
 
-#ifdef MEMDOUBLE
     if (cbSpace + lpLast->dwNextFree > lpLast->dwSize) {
         //
         // Must allocate a new block
@@ -156,18 +151,6 @@ MemAdd(LPXDTALINK* plpLast, UINT cchFileName, UINT cchAlternateFileName) {
         lpLast = *plpLast = lpLast->next;
 
         lpLast->dwSize = dwNewSize;
-#else
-    if (cbSpace + lpLast->dwNextFree > BLOCK_SIZE_GRANULARITY) {
-        //
-        // Must allocate a new block
-        //
-        lpLast->next = LocalAlloc(LMEM_FIXED, BLOCK_SIZE_GRANULARITY);
-
-        if (!lpLast->next)
-            return NULL;
-
-        lpLast = *plpLast = lpLast->next;
-#endif
 
         lpLast->next = NULL;
         lpLast->dwNextFree = ALIGNBLOCK(sizeof(XDTALINK));
