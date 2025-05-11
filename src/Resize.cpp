@@ -141,8 +141,6 @@ BOOL CALLBACK ProcessResizeOnChildren(HWND hChildWnd, LPARAM lParam);
 
 BOOL CALLBACK FindMetadataFromChildren(HWND hChildWnd, LPARAM lParam);
 
-#ifdef DFC_SCROLL
-
 //
 //  This will display a sizing grip at the appropriate location on the dialog.
 //
@@ -261,14 +259,6 @@ BOOL IsWithinSizingGrip(HWND hWnd, DWORD OriginalPoint) {
 
     return FALSE;
 }
-
-#else
-
-#define IsWithinSizingGrip(a, b) (FALSE)
-#define InvalidateSizingGrip(a, b) (FALSE)
-#define RenderSizingGrip(a) (TRUE)
-
-#endif
 
 //
 //  This code is called by the dialog when processing its messages.  It
