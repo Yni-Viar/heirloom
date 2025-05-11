@@ -689,7 +689,7 @@ void SetMDIWindowText(HWND hwnd, LPWSTR szTitle) {
 
 #define ISDIGIT(c) ((c) >= TEXT('0') && (c) <= TEXT('9'))
 
-int atoiW(LPWSTR sz) {
+int atoiW(LPCWSTR sz) {
     int n = 0;
     BOOL bNeg = FALSE;
 

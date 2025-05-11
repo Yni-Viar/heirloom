@@ -50,46 +50,8 @@
 
 typedef WCHAR TUCHAR, *PTUCHAR;
 
-//
-//  Define things that would be present on new SDKs but may not be present on
-//  older SDKs.  XP support uses a Windows 7.1 SDK, which is effectively the
-//  "oldest" that this code can use.
-//
-
-#ifndef SYMBOLIC_LINK_FLAG_DIRECTORY
-#define SYMBOLIC_LINK_FLAG_DIRECTORY (0x01)
-#endif
-
-#ifndef SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE
-#define SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE (0x02)
-#endif
-
-#ifndef COPY_FILE_COPY_SYMLINK
-#define COPY_FILE_COPY_SYMLINK (0x800)
-#endif
-
-#ifndef IO_REPARSE_TAG_CLOUD
-#define IO_REPARSE_TAG_CLOUD (0x9000001AL)
-#define IO_REPARSE_TAG_CLOUD_1 (0x9000101AL)
-#define IO_REPARSE_TAG_CLOUD_2 (0x9000201AL)
-#define IO_REPARSE_TAG_CLOUD_3 (0x9000301AL)
-#define IO_REPARSE_TAG_CLOUD_4 (0x9000401AL)
-#define IO_REPARSE_TAG_CLOUD_5 (0x9000501AL)
-#define IO_REPARSE_TAG_CLOUD_6 (0x9000601AL)
-#define IO_REPARSE_TAG_CLOUD_7 (0x9000701AL)
-#define IO_REPARSE_TAG_CLOUD_8 (0x9000801AL)
-#define IO_REPARSE_TAG_CLOUD_9 (0x9000901AL)
-#define IO_REPARSE_TAG_CLOUD_A (0x9000A01AL)
-#define IO_REPARSE_TAG_CLOUD_B (0x9000B01AL)
-#define IO_REPARSE_TAG_CLOUD_C (0x9000C01AL)
-#define IO_REPARSE_TAG_CLOUD_D (0x9000D01AL)
-#define IO_REPARSE_TAG_CLOUD_E (0x9000E01AL)
-#define IO_REPARSE_TAG_CLOUD_F (0x9000F01AL)
-#define IO_REPARSE_TAG_CLOUD_MASK (0x0000F000L)
-#endif
-
 #define atoi atoiW
-int atoiW(LPWSTR sz);
+int atoiW(LPCWSTR sz);
 
 #define SIZENOMDICRAP 944
 #define MAX_TAB_COLUMNS 10
@@ -222,18 +184,6 @@ typedef int DRIVEIND;
 
 #include "wfinfo.h"
 
-// Recycle Bin API constants
-#define SHERB_NOCONFIRMATION 0x00000001
-#define SHERB_NOPROGRESSUI 0x00000002
-#define SHERB_NOSOUND 0x00000004
-
-// Recycle Bin functions
-BOOL IsRecycleBinEmpty();
-BOOL GetRecycleBinSize(PLARGE_INTEGER pliSize);
-BOOL EmptyRecycleBin(HWND hwnd);
-DWORD MoveFileToRecycleBin(LPWSTR pszFile);
-void FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPWSTR szBuffer);
-
 typedef struct _SEARCH_INFO {
     HWND hSearchDlg;
     int iDirsRead;
@@ -316,8 +266,6 @@ void ModifyWatchList(HWND hwndWatch, LPWSTR lpPath, DWORD fdwFilter);
 void DestroyWatchList();
 void NotifyPause(DRIVE drive, UINT uType);
 void NotifyResume(DRIVE drive, UINT uType);
-void ChangeNotify(int iEvent);
-void ChangeNotifyRefresh(DWORD iEvent);
 void vWaitMessage();
 
 // WFCOMMAN.C
@@ -358,7 +306,6 @@ void RefreshWindow(HWND hwndActive, BOOL bUpdateDriveList, BOOL bFlushCache);
 BOOL IsLastWindow();
 LPWSTR AddCommasInternal(LPWSTR szBuf, DWORD dw);
 
-void InvalidateChildWindows(HWND hwnd);
 BOOL IsValidDisk(DRIVE drive);
 LPWSTR GetSelection(int iSelType, PBOOL pbDir);
 LPWSTR GetNextFile(LPWSTR pCurSel, LPWSTR szFile, int size);
@@ -366,14 +313,12 @@ LPWSTR GetNextFile(LPWSTR pCurSel, LPWSTR szFile, int size);
 void SetWindowDirectory();
 void SetDlgDirectory(HWND hDlg, LPWSTR pszPath);
 void WritePrivateProfileBool(LPWSTR szKey, BOOL bParam);
-void WritePrivateProfileInt(LPWSTR szKey, int wParam);
 BOOL IsWild(LPWSTR lpszPath);
 UINT AddBackslash(LPWSTR lpszPath);
 void StripBackslash(LPWSTR lpszPath);
 void StripFilespec(LPWSTR lpszPath);
 void StripPath(LPWSTR lpszPath);
 LPWSTR GetExtension(LPWSTR pszFile);
-BOOL FindExtensionInList(LPWSTR pszExt, LPWSTR pszList);
 int MyMessageBox(HWND hWnd, DWORD idTitle, DWORD idMessage, DWORD dwStyle);
 DWORD ExecProgram(LPWSTR, LPWSTR, LPWSTR, BOOL, BOOL);
 PDOCBUCKET IsBucketFile(LPWSTR lpszPath, PPDOCBUCKET ppDocBucket);
@@ -386,7 +331,6 @@ void SetMDIWindowText(HWND hwnd, LPWSTR szTitle);
 int GetMDIWindowText(HWND hwnd, LPWSTR szTitle, int size);
 BOOL ResizeSplit(HWND hWnd, int dxSplit);
 void CheckEsc(LPWSTR);
-void GetMDIWindowVolume(HWND hWnd, LPWSTR szTitle, int size);
 BOOL TypeAheadString(WCHAR ch, LPWSTR szT);
 
 void SaveHistoryDir(HWND hwnd, LPWSTR szDir);
@@ -423,7 +367,6 @@ void BuildDocumentStringWorker();
 
 HCURSOR GetMoveCopyCursor();
 void DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasFocus);
-// Old Win3.x style drag and drop handlers removed
 void DSSetSelection(HWND hwndLB, BOOL bSelect, LPWSTR szSpec, BOOL bSearch);
 int FixTabsAndThings(HWND hwndLB, WORD* pwTabs, int iMaxWidthFileName, int iMaxWidthNTFSFileName, DWORD dwViewOpts);
 LPWSTR SkipPathHead(LPWSTR lpszPath);
@@ -445,7 +388,6 @@ void SwitchDriveSelection(HWND hwndActive);
 
 void GetInternational();
 BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow);
-void InitDriveBitmaps();
 void InitExtensions();
 void FreeFileManager();
 BOOL CreateSavedWindows(LPCWSTR pszInitialDir);
@@ -478,14 +420,13 @@ void DialogEnterFileStuff(HWND hwnd);
 
 void GetAllDirectories(LPWSTR rgszDirs[]);
 BOOL GetDriveDirectory(int iDrive, LPWSTR pszDir);
-void GetSelectedDirectory(int iDrive, LPWSTR pszDir);
+void GetSelectedDirectory(DRIVE drive, LPWSTR pszDir);
 void SaveDirectory(LPWSTR pszDir);
 int GetSelectedDrive();
 void GetTextStuff(HDC hdc);
 int GetHeightFromPointsString(LPCWSTR szPoints);
 int GetDrive(HWND hwnd, POINT pt);
 void CheckSlashes(LPWSTR);
-// DWORD IsNetDrive(DRIVE drive);
 BOOL IsCDRomDrive(DRIVE drive);
 BOOL IsRamDrive(DRIVE drive);
 void CleanupMessages();
@@ -504,10 +445,7 @@ void GetDriveRect(DRIVEIND driveInd, PRECT prc);
 LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 BOOL AppCommandProc(DWORD id);
 LRESULT CALLBACK TreeWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK DriveWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK DrivesWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK VolumeWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK TreeChildWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK TreeControlWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK DirWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
@@ -515,18 +453,15 @@ LRESULT CALLBACK SearchWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPara
 LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
 INT_PTR CALLBACK CancelDlgProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK DrivesDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK RunDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SelectDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK AttribsDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK MakeDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK ExitDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK OtherDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
 INT_PTR CALLBACK ProgressDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK SortByDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK IncludeDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK ConfirmDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
