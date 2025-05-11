@@ -15,6 +15,7 @@
 #include "treectl.h"
 #include "lfn.h"
 #include "resize.h"
+#include "wfcomman.h"
 
 void BuildDirectoryBagOValues(
     BagOValues<PDNODE>* pbov,

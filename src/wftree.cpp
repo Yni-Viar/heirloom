@@ -13,6 +13,7 @@
 #include "lfn.h"
 #include "wfcopy.h"
 #include "wfchgnot.h"
+#include "wfcomman.h"
 
 #include <commctrl.h>
 

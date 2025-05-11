@@ -18,6 +18,7 @@
 #include "wfdrop.h"
 #include "wfdragsrc.h"
 #include "wfchgnot.h"
+#include "wfcomman.h"
 #include <commctrl.h>
 
 // Constants for selection types passed to DirGetSelection

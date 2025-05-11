@@ -13,6 +13,7 @@
 #include "wfdpi.h"  // Add DPI awareness header
 #include "wfrecyclebin.h"
 #include "wfchgnot.h"
+#include "wfcomman.h"
 #include <commctrl.h>
 #include <shlobj.h>
 

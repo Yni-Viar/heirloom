@@ -15,6 +15,7 @@
 #include "winfile.h"
 #include "lfn.h"  // lfn includes
 #include "wfcopy.h"
+#include "wfcomman.h"
 
 BOOL IsFATName(LPWSTR pName);
 

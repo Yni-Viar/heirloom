@@ -16,6 +16,7 @@
 #include "wfdrop.h"
 #include "gitbash.h"
 #include "wfrecyclebin.h"
+#include "wfcomman.h"
 
 #include <shlobj.h>
 #include <commctrl.h>
