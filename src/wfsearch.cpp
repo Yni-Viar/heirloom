@@ -897,6 +897,14 @@ SearchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             // Disable old style drag and drop
             return FALSE;
 
+        case WM_SYSCOMMAND:
+            // Prevent minimization of MDI child windows
+            // This is a workaround for the fact that we can't disable the minimize button
+            if (wParam == SC_MINIMIZE)
+                break;
+
+            return DefMDIChildProc(hwnd, uMsg, wParam, lParam);
+
         case WM_SIZE:
             if (wParam != SIZEICONIC) {
                 MoveWindow(GetDlgItem(hwnd, IDCW_LISTBOX), -1, -1, LOWORD(lParam) + 2, HIWORD(lParam) + 2, TRUE);
