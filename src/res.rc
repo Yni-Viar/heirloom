@@ -1137,6 +1137,6 @@ BEGIN
     CONTROL         "<version>",IDD_VERTEXT,"Static",SS_LEFTNOWORDWRAP,42,21,178,8
     LTEXT           "Copyright (c) Microsoft Corporation. All rights reserved.",-1,42,35,182,8
     LTEXT           "Licensed under the MIT License.",-1,42,49,106,8
-    LTEXT           "https://github.com/brianluft/winfile",-1,42,63,117,8
+    LTEXT           "www.heirloomfilemanager.com",-1,42,63,117,8
     DEFPUSHBUTTON   "OK",IDOK,182,84,50,14
 END
