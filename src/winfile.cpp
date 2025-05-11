@@ -41,9 +41,6 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pszCmdLineA, in
     MSG msg;
     LPWSTR pszCmdLine;
 
-#ifdef HEAPCHECK
-    HeapCheckInit();
-#endif
     pszCmdLine = GetCommandLine();
 
     if (!InitFileManager(hInst, pszNextComponent(pszCmdLine), nCmdShow)) {
@@ -57,11 +54,6 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pszCmdLineA, in
         while (PeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT) {
                 FreeFileManager();
-
-#ifdef HEAPCHECK
-                HeapCheckDump(0);
-                HeapCheckDestroy();
-#endif
 
                 return (int)msg.wParam;
             }

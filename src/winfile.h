@@ -43,10 +43,6 @@
 #include "wfmem.h"
 #include "res.h"
 
-#ifdef HEAPCHECK
-#include "heap.h"
-#endif
-
 #define STKCHK()
 
 #ifdef atoi

@@ -3,10 +3,6 @@
 #include <assert.h>
 #include <wincodec.h>
 
-#ifndef IStream_Release
-#define IStream_Release(This) ((This)->lpVtbl->Release(This))
-#endif
-
 typedef struct {
     HBITMAP hbmOrig;
     UINT origCX, origCY;  // physical pixels of hbmOrig
