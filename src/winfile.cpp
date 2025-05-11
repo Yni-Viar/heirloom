@@ -10,9 +10,10 @@
 #define _GLOBALS
 #include "winfile.h"
 #include "lfn.h"
+#include "wfdpi.h"  // Add DPI awareness header
+#include "wfrecyclebin.h"
 #include <commctrl.h>
 #include <shlobj.h>
-#include "wfdpi.h"  // Add DPI awareness header
 
 //
 // Overall Window structure

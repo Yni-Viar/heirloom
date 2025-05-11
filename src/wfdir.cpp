@@ -14,6 +14,7 @@
 #include "wfcopy.h"
 #include "numfmt.h"
 #include "wfpng.h"
+#include "wfrecyclebin.h"
 #include <commctrl.h>
 
 #include "wfdrop.h"

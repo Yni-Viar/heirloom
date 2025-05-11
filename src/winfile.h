@@ -1109,10 +1109,6 @@ Extern SEARCH_INFO SearchInfo;
 
 Extern BOOL bDeveloperModeAvailable EQ(FALSE);
 
-// Recycle Bin variables and structures
-Extern BOOL bRecycleBinEmpty EQ(TRUE);
-Extern LARGE_INTEGER qRecycleBinSize;
-
 // this value is an index into dwMenuIDs and used to workaround a bug
 #define MHPOP_CURRENT 2
 
@@ -1140,13 +1136,6 @@ Extern UINT dwMenuIDs[];
 
 #undef Extern
 #undef EQ
-
-// Recycle Bin functions
-BOOL IsRecycleBinEmpty();
-BOOL GetRecycleBinSize(PLARGE_INTEGER pliSize);
-BOOL EmptyRecycleBin(HWND hwnd);
-DWORD MoveFileToRecycleBin(LPWSTR pszFile);
-void FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPWSTR szBuffer);
 
 // Replacement for Windows 3.x style drag and drop highlighting
 BOOL RectHighlightItem(HWND hwndLB, int iItem, BOOL bFocusOn, BOOL bSearch);

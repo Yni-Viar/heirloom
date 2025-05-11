@@ -15,6 +15,9 @@
 // Include the SHQueryRecycleBin API declaration
 #include <shlobj.h>
 
+BOOL bRecycleBinEmpty{ TRUE };
+LARGE_INTEGER qRecycleBinSize{};
+
 // Check if the Recycle Bin is empty
 BOOL IsRecycleBinEmpty() {
     SHQUERYRBINFO rbInfo;

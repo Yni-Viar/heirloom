@@ -15,6 +15,7 @@
 #include "wnetcaps.h"  // WNetGetCaps()
 #include "wfdrop.h"
 #include "gitbash.h"
+#include "wfrecyclebin.h"
 
 #include <shlobj.h>
 #include <commctrl.h>
