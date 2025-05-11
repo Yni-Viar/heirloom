@@ -248,17 +248,6 @@ typedef struct _SELINFO* PSELINFO;
 //
 //--------------------------------------------------------------------------
 
-// WFDLGS3.C
-
-void UpdateConnections(BOOL bUpdateDriveList);
-
-// WFDLGS.C
-
-void ActivateCommonContextMenu(HWND hwnd, HWND hwndLB, LPARAM lParam);
-void KillQuoteTrailSpace(LPWSTR szFile);
-void SaveWindows(HWND hwndMain);
-void NewFont();
-
 // WFCHGNOT.C
 
 void InitializeWatchList();

@@ -192,3 +192,14 @@
 #define IDD_KK_TEXTFROM 2002
 
 #define IDD_DIRS 2003
+
+// WFDLGS3.C
+
+void UpdateConnections(BOOL bUpdateDriveList);
+
+// WFDLGS.C
+
+void ActivateCommonContextMenu(HWND hwnd, HWND hwndLB, LPARAM lParam);
+void KillQuoteTrailSpace(LPWSTR szFile);
+void SaveWindows(HWND hwndMain);
+void NewFont();
