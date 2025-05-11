@@ -24,11 +24,7 @@ typedef struct _EXT_LOCATION {
     LPCWSTR lpszNode;
 } EXTLOCATION, *PEXTLOCATION;
 
-EXTLOCATION aExtLocation[] = { { HKEY_CLASSES_ROOT, L"" },
-#ifdef ASSOC
-                               { HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows NT\\CurrentVersion\\Extensions" },
-#endif
-                               { (HKEY)0, NULL } };
+EXTLOCATION aExtLocation[] = { { HKEY_CLASSES_ROOT, L"" }, { (HKEY)0, NULL } };
 
 HANDLE hEventDirRead;
 HANDLE hThreadDirRead;

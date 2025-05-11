@@ -70,10 +70,6 @@ SUGGEST(17, DE_MAKEDIREXISTS, 0L, \
   "The directory already exists." )
 SUGGEST(18, DE_DIREXISTSASFILE, 0L, \
   "The specified name is already used by a file." )
-#ifdef ASSOC
-SUGGEST(19, DE_DELEXTWRONGMODE, 0L, \
-  "This can only be deleted when viewing Common File Types and extensions." )
-#endif
 
 // Block out errors that require arguments
 SUGGEST(50, ERROR_WRONG_DISK, SUG_IGN_FORMATMESSAGE, \
