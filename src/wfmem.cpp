@@ -50,14 +50,6 @@ MemNew() {
     // lpHead->dwAlternateFileNameExtent = 0;
     // lpHead->iError = 0;
     //
-#ifdef TESTING
-    // TESTING
-    {
-        WCHAR szT[100];
-        wsprintf(szT, L"MemNew %x\n", lpStart);
-        OutputDebugString(szT);
-    }
-#endif
 
     return lpStart;
 }
@@ -66,15 +58,6 @@ void MemDelete(LPXDTALINK lpStart) {
     LPXDTALINK lpLink;
     LPXDTAHEAD lpHead;
     LPXDTA* plpxdta;
-
-#ifdef TESTING
-    // TESTING
-    {
-        WCHAR szT[100];
-        wsprintf(szT, L"MemDelete %x\n", lpStart);
-        OutputDebugString(szT);
-    }
-#endif
 
     if (!lpStart)
         return;
@@ -195,15 +178,6 @@ MemClone(LPXDTALINK lpStart) {
     LPXDTALINK lpNext;
     SIZE_T dwSize;
 
-#ifdef TESTING
-    // TESTING
-    {
-        WCHAR szT[100];
-        wsprintf(szT, L"MemClone %x ", lpStart);
-        OutputDebugString(szT);
-    }
-#endif
-
     for (lpPrev = NULL, lpStartCopy = NULL; lpStart; lpStart = lpNext) {
         lpNext = lpStart->next;
 
@@ -238,15 +212,6 @@ MemClone(LPXDTALINK lpStart) {
         }
         lpPrev = lpLink;
     }
-
-#ifdef TESTING
-    // TESTING
-    {
-        WCHAR szT[100];
-        wsprintf(szT, L"rets %x\n", lpStartCopy);
-        OutputDebugString(szT);
-    }
-#endif
 
     return lpStartCopy;
 }
