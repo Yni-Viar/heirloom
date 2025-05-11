@@ -30,8 +30,8 @@ typedef struct {
     INT nSpaceLeft;      // Space left for deeper paths
 } LFNDTA, *LPLFNDTA, *PLFNDTA;
 
-VOID LFNInit(VOID);
-VOID InvalidateVolTypes(VOID);
+void LFNInit(void);
+void InvalidateVolTypes(void);
 
 DWORD GetNameType(LPWSTR);
 BOOL IsLFN(LPWSTR pName);
@@ -48,4 +48,4 @@ WORD I_LFNEditName(LPWSTR lpSrc, LPWSTR lpEd, LPWSTR lpRes, INT iResBufSize);
 BOOL WFIsDir(LPWSTR);
 BOOL LFNMergePath(LPWSTR, LPWSTR);
 
-BOOL IsLFNSelected(VOID);
+BOOL IsLFNSelected(void);

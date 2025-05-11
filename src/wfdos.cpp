@@ -11,7 +11,7 @@
 
 #include "winfile.h"
 
-VOID GetDiskSpace(DRIVE drive, PULARGE_INTEGER pqFreeSpace, PULARGE_INTEGER pqTotalSpace) {
+void GetDiskSpace(DRIVE drive, PULARGE_INTEGER pqFreeSpace, PULARGE_INTEGER pqTotalSpace) {
     ULARGE_INTEGER qBytesAvailableToCaller;
 
     WCHAR szDriveRoot[] = SZ_ACOLONSLASH;

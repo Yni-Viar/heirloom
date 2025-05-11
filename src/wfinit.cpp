@@ -29,10 +29,10 @@ WCHAR szHelv[] = L"Segoe UI";
 HBITMAP hbmSave;
 
 DWORD RGBToBGR(DWORD rgb);
-VOID BoilThatDustSpec(PINT pnCmdShow);
-VOID DoRunEquals(PINT pnCmdShow);
-VOID GetSavedWindow(LPWSTR szBuf, PWINDOW pwin);
-VOID GetSettings(VOID);
+void BoilThatDustSpec(PINT pnCmdShow);
+void DoRunEquals(PINT pnCmdShow);
+void GetSavedWindow(LPWSTR szBuf, PWINDOW pwin);
+void GetSettings(void);
 
 #define MENU_STRING_SIZ 80
 #define PROFILE_STRING_SIZ 300
@@ -48,7 +48,7 @@ INT GetHeightFromPointsString(LPCWSTR szPoints) {
     return height;
 }
 
-VOID BiasMenu(HMENU hMenu, UINT Bias) {
+void BiasMenu(HMENU hMenu, UINT Bias) {
     UINT pos, id, count;
     HMENU hSubMenu;
     WCHAR szMenuString[MENU_STRING_SIZ];
@@ -79,7 +79,7 @@ VOID BiasMenu(HMENU hMenu, UINT Bias) {
     }
 }
 
-VOID InitExtensions() {
+void InitExtensions() {
     WCHAR szBuf[PROFILE_STRING_SIZ];
     WCHAR szPath[MAXPATHLEN];
     LPWSTR p;
@@ -167,7 +167,7 @@ VOID InitExtensions() {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID GetSettings() {
+void GetSettings() {
     WCHAR szTemp[128];
     INT size;
     INT weight;
@@ -215,7 +215,7 @@ VOID GetSettings() {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID GetInternational() {
+void GetInternational() {
     GetLocaleInfoW(lcid, LOCALE_STHOUSAND, (LPWSTR)szComma, COUNTOF(szComma));
     GetLocaleInfoW(lcid, LOCALE_SDECIMAL, (LPWSTR)szDecimal, COUNTOF(szDecimal));
 }
@@ -246,7 +246,7 @@ INT GetDriveOffset(DRIVE drive) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID InitMenus() {
+void InitMenus() {
     HMENU hMenu;
 
     hMenu = GetMenu(hwndFrame);
@@ -343,7 +343,7 @@ UINT MapMenuPosToIDM(UINT pos) {
  * it may contain.
  */
 
-VOID BoilThatDustSpec(WCHAR* pStart, BOOL bLoadIt) {
+void BoilThatDustSpec(WCHAR* pStart, BOOL bLoadIt) {
     WCHAR* pEnd;
     DWORD ret;
     BOOL bFinished;
@@ -391,7 +391,7 @@ VOID BoilThatDustSpec(WCHAR* pStart, BOOL bLoadIt) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID GetSavedWindow(LPWSTR szBuf, PWINDOW pwin) {
+void GetSavedWindow(LPWSTR szBuf, PWINDOW pwin) {
     PINT pint;
     INT count;
 
@@ -614,7 +614,7 @@ BOOL CreateSavedWindows(LPCWSTR pszInitialDir) {
 //      hdc     DC with font selected into it
 //
 
-VOID GetTextStuff(HDC hdc) {
+void GetTextStuff(HDC hdc) {
     SIZE size;
     TEXTMETRIC tm;
 
@@ -1235,7 +1235,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
 //
 //--------------------------------------------------------------------------
 
-VOID FreeFileManager() {
+void FreeFileManager() {
     if (hThreadUpdate && bUpdateRun) {
         UpdateWaitQuit();
         CloseHandle(hThreadUpdate);
@@ -1293,9 +1293,9 @@ VOID FreeFileManager() {
 //
 // Synopsis: Puts up message on load failure.
 //
-// IN        VOID
+// IN        void
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:
@@ -1307,7 +1307,7 @@ VOID FreeFileManager() {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID LoadFailMessage(VOID) {
+void LoadFailMessage(void) {
     WCHAR szMessage[MAXMESSAGELEN];
 
     szMessage[0] = 0;

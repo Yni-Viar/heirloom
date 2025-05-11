@@ -59,7 +59,7 @@ typedef struct _XDTA {
 #define LINKHEADSIZE (sizeof(XDTALINK) + sizeof(XDTAHEAD))
 
 LPXDTALINK MemNew();
-VOID MemDelete(LPXDTALINK lpStart);
+void MemDelete(LPXDTALINK lpStart);
 
 LPXDTALINK MemClone(LPXDTALINK lpStart);
 LPXDTA MemAdd(LPXDTALINK* plpLast, UINT cchFileName, UINT cchAlternateFileName);

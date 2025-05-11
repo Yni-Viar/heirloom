@@ -20,7 +20,7 @@ UINT uExtSelItems = (UINT)-1;
 WCHAR szExtSelDir[MAXPATHLEN];
 WCHAR szExtSelDirShort[MAXPATHLEN];
 
-VOID ExtSelItemsInvalidate() {
+void ExtSelItemsInvalidate() {
     if (uExtSelItems != (UINT)-1) {
         if (lplpxdtaExtSelItems) {
             LocalFree(lplpxdtaExtSelItems);
@@ -251,7 +251,7 @@ LONG GetDriveInfo(HWND hwnd, UINT uMsg, LPARAM lParam) {
 #undef lpSelW
 #undef lpSelA
 
-VOID FreeExtensions() {
+void FreeExtensions() {
     INT i;
     HMENU hMenuFrame;
 

@@ -33,7 +33,7 @@ GetTreeIcon(HWND hWnd) {
         return hicoDir;
 }
 
-VOID GetTreeWindows(HWND hwnd, PHWND phwndTree, PHWND phwndDir) {
+void GetTreeWindows(HWND hwnd, PHWND phwndTree, PHWND phwndDir) {
     if (phwndTree) {
         *phwndTree = GetDlgItem(hwnd, IDCW_TREECONTROL);
     }
@@ -243,7 +243,7 @@ BOOL ResizeSplit(HWND hwnd, INT dxSplit) {
     return TRUE;
 }
 
-VOID SwitchDriveSelection(HWND hwndChild) {
+void SwitchDriveSelection(HWND hwndChild) {
     DRIVE drive;
     DRIVEIND i, driveIndOld, driveIndOldFocus;
     RECT rc;
@@ -782,7 +782,7 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     return 0L;
 }
 
-VOID ResizeWindows(HWND hwndParent, INT dxWindow, INT dyWindow) {
+void ResizeWindows(HWND hwndParent, INT dxWindow, INT dyWindow) {
     INT y, dy, split;
 
     HWND hwndTree, hwndDir;

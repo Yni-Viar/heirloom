@@ -91,7 +91,7 @@ BOOL WFSetAttr(LPWSTR lpFile, DWORD dwAttr) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-VOID CentreWindow(HWND hwnd) {
+void CentreWindow(HWND hwnd) {
     RECT rect;
     RECT rectParent;
     HWND hwndParent;

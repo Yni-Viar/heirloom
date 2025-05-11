@@ -46,9 +46,9 @@ DWORD WINAPI DirReadServer(LPVOID lpvParm);
 LPXDTALINK CreateDTABlockWorker(HWND hwnd, HWND hwndDir);
 LPXDTALINK StealDTABlock(HWND hwndCur, LPWSTR pPath, DWORD dwAttribs);
 BOOL IsNetDir(LPWSTR pPath, LPWSTR pName);
-VOID DirReadAbort(HWND hwnd, LPXDTALINK lpStart, EDIRABORT eDirAbort);
+void DirReadAbort(HWND hwnd, LPXDTALINK lpStart, EDIRABORT eDirAbort);
 
-BOOL InitDirRead(VOID) {
+BOOL InitDirRead(void) {
     DWORD dwIgnore;
 
     bDirReadRun = TRUE;
@@ -75,7 +75,7 @@ BOOL InitDirRead(VOID) {
     return TRUE;
 }
 
-VOID DestroyDirRead(VOID) {
+void DestroyDirRead(void) {
     if (bDirReadRun) {
         bDirReadRun = FALSE;
 
@@ -152,7 +152,7 @@ Abort:
     return NULL;
 }
 
-VOID DirReadAbort(HWND hwnd, LPXDTALINK lpStart, EDIRABORT eDirAbort) {
+void DirReadAbort(HWND hwnd, LPXDTALINK lpStart, EDIRABORT eDirAbort) {
     //
     // This is the only code that issues the abort!
     //
@@ -228,7 +228,7 @@ StealDTABlock(HWND hwndCur, LPWSTR pPath, DWORD dwAttribs) {
 //
 // hwnd      Window to free (either hwndDir or hwndSearch)
 //
-// Return:   VOID
+// Return:   void
 //
 // Assumes:
 //
@@ -241,7 +241,7 @@ StealDTABlock(HWND hwndCur, LPWSTR pPath, DWORD dwAttribs) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID FreeDTA(HWND hwnd) {
+void FreeDTA(HWND hwnd) {
     LPXDTALINK lpxdtaLink;
 
     lpxdtaLink = (LPXDTALINK)GetWindowLongPtr(hwnd, GWL_HDTA);
@@ -261,7 +261,7 @@ VOID FreeDTA(HWND hwnd) {
     }
 }
 
-VOID DirReadDestroyWindow(HWND hwndDir) {
+void DirReadDestroyWindow(HWND hwndDir) {
     DirReadAbort(hwndDir, NULL, EDIRABORT_WINDOWCLOSE);
 }
 
@@ -334,7 +334,7 @@ DirReadDone(HWND hwndDir, LPXDTALINK lpStart, INT iError) {
     return lpStart;
 }
 
-VOID BuildDocumentString() {
+void BuildDocumentString() {
     bDirReadRebuildDocString = TRUE;
     SetEvent(hEventDirRead);
 }
@@ -357,7 +357,7 @@ VOID BuildDocumentString() {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID BuildDocumentStringWorker() {
+void BuildDocumentStringWorker() {
     LPWSTR p;
     INT uLen;
     WCHAR szT[EXTSIZ + 1];

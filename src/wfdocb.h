@@ -18,8 +18,8 @@
 typedef struct _DOC_BUCKET** PPDOCBUCKET;
 typedef struct _DOC_BUCKET* PDOCBUCKET;
 
-PPDOCBUCKET DocConstruct(VOID);
-VOID DocDestruct(PPDOCBUCKET ppDocBucket);
+PPDOCBUCKET DocConstruct(void);
+void DocDestruct(PPDOCBUCKET ppDocBucket);
 INT DocInsert(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt, LPWSTR lpszFileIcon);
 PDOCBUCKET DocFind(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt);
 HICON DocGetIcon(PDOCBUCKET pDocBucket);
@@ -29,7 +29,7 @@ typedef struct _DOC_ENUM DOCENUM, *PDOCENUM;
 
 PDOCENUM DocOpenEnum(PPDOCBUCKET ppDocBucket);
 LPWSTR DocEnum(PDOCENUM pDocEnum, PDWORD pdwParm);
-VOID DocCloseEnum(PDOCENUM pDocEnum);
+void DocCloseEnum(PDOCENUM pDocEnum);
 #endif
 
 #endif  // ndef _WFDOCB_H

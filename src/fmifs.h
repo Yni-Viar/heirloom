@@ -168,7 +168,7 @@ typedef struct {
 
 typedef BOOLEAN (*FMIFS_CALLBACK)(IN FMIFS_PACKET_TYPE PacketType, IN ULONG PacketLength, IN PVOID PacketData);
 
-typedef VOID (*PFMIFS_FORMAT_ROUTINE)(
+typedef void (*PFMIFS_FORMAT_ROUTINE)(
     IN PWSTR DriveName,
     IN FMIFS_MEDIA_TYPE MediaType,
     IN PWSTR FileSystemName,
@@ -176,7 +176,7 @@ typedef VOID (*PFMIFS_FORMAT_ROUTINE)(
     IN BOOLEAN Quick,
     IN FMIFS_CALLBACK Callback);
 
-typedef VOID (*PFMIFS_FORMATEX_ROUTINE)(
+typedef void (*PFMIFS_FORMATEX_ROUTINE)(
     IN PWSTR DriveName,
     IN FMIFS_MEDIA_TYPE MediaType,
     IN PWSTR FileSystemName,
@@ -187,7 +187,7 @@ typedef VOID (*PFMIFS_FORMATEX_ROUTINE)(
 
 typedef BOOLEAN (*PFMIFS_ENABLECOMP_ROUTINE)(IN PWSTR DriveName, IN USHORT CompressionFormat);
 
-typedef VOID (*PFMIFS_CHKDSK_ROUTINE)(
+typedef void (*PFMIFS_CHKDSK_ROUTINE)(
     IN PWSTR DriveName,
     IN PWSTR FileSystemName,
     IN BOOLEAN Fix,
@@ -198,16 +198,16 @@ typedef VOID (*PFMIFS_CHKDSK_ROUTINE)(
     IN BOOLEAN Extend,
     IN FMIFS_CALLBACK Callback);
 
-typedef VOID (*PFMIFS_CHKDSKEX_ROUTINE)(
+typedef void (*PFMIFS_CHKDSKEX_ROUTINE)(
     IN PWSTR DriveName,
     IN PWSTR FileSystemName,
     IN BOOLEAN Fix,
     IN PFMIFS_CHKDSKEX_PARAM Param,
     IN FMIFS_CALLBACK Callback);
 
-typedef VOID (*PFMIFS_EXTEND_ROUTINE)(IN PWSTR DriveName, IN BOOLEAN Verify, IN FMIFS_CALLBACK Callback);
+typedef void (*PFMIFS_EXTEND_ROUTINE)(IN PWSTR DriveName, IN BOOLEAN Verify, IN FMIFS_CALLBACK Callback);
 
-typedef VOID (
+typedef void (
     *PFMIFS_DISKCOPY_ROUTINE)(IN PWSTR SourceDrive, IN PWSTR DestDrive, IN BOOLEAN Verify, IN FMIFS_CALLBACK Callback);
 
 typedef BOOLEAN (*PFMIFS_SETLABEL_ROUTINE)(IN PWSTR DriveName, IN PWSTR Label);
@@ -218,14 +218,14 @@ typedef BOOLEAN (*PFMIFS_QSUPMEDIA_ROUTINE)(
     IN ULONG NumberOfArrayEntries,
     OUT PULONG NumberOfMediaTypes);
 
-typedef VOID (*PFMIFS_DOUBLESPACE_CREATE_ROUTINE)(
+typedef void (*PFMIFS_DOUBLESPACE_CREATE_ROUTINE)(
     IN PWSTR HostDriveName,
     IN ULONG Size,
     IN PWSTR Label,
     IN PWSTR NewDriveName,
     IN FMIFS_CALLBACK Callback);
 
-VOID Format(
+void Format(
     IN PWSTR DriveName,
     IN FMIFS_MEDIA_TYPE MediaType,
     IN PWSTR FileSystemName,
@@ -233,7 +233,7 @@ VOID Format(
     IN BOOLEAN Quick,
     IN FMIFS_CALLBACK Callback);
 
-VOID FormatEx(
+void FormatEx(
     IN PWSTR DriveName,
     IN FMIFS_MEDIA_TYPE MediaType,
     IN PWSTR FileSystemName,
@@ -245,7 +245,7 @@ VOID FormatEx(
 BOOLEAN
 EnableVolumeCompression(IN PWSTR DriveName, IN USHORT CompressionFormat);
 
-VOID Chkdsk(
+void Chkdsk(
     IN PWSTR DriveName,
     IN PWSTR FileSystemName,
     IN BOOLEAN Fix,
@@ -256,16 +256,16 @@ VOID Chkdsk(
     IN BOOLEAN Extend,
     IN FMIFS_CALLBACK Callback);
 
-VOID ChkdskEx(
+void ChkdskEx(
     IN PWSTR DriveName,
     IN PWSTR FileSystemName,
     IN BOOLEAN Fix,
     IN PFMIFS_CHKDSKEX_PARAM Param,
     IN FMIFS_CALLBACK Callback);
 
-VOID Extend(IN PWSTR DriveName, IN BOOLEAN Verify, IN FMIFS_CALLBACK Callback);
+void Extend(IN PWSTR DriveName, IN BOOLEAN Verify, IN FMIFS_CALLBACK Callback);
 
-VOID DiskCopy(IN PWSTR SourceDrive, IN PWSTR DestDrive, IN BOOLEAN Verify, IN FMIFS_CALLBACK Callback);
+void DiskCopy(IN PWSTR SourceDrive, IN PWSTR DestDrive, IN BOOLEAN Verify, IN FMIFS_CALLBACK Callback);
 
 BOOLEAN
 SetLabel(IN PWSTR DriveName, IN PWSTR Label);
@@ -277,7 +277,7 @@ QuerySupportedMedia(
     IN ULONG NumberOfArrayEntries,
     OUT PULONG NumberOfMediaTypes);
 
-VOID DoubleSpaceCreate(
+void DoubleSpaceCreate(
     IN PWSTR HostDriveName,
     IN ULONG Size,
     IN PWSTR Label,

@@ -16,14 +16,14 @@ extern unsigned long BreakFlags;
 extern unsigned long TraceFlags;
 
 DWORD DbgPrint(LPWSTR Format, ...);
-VOID DbgAssert(LPCWSTR file, int line);
-VOID DbgTrace(DWORD tf, LPWSTR lpstr);
-VOID DbgBreak(DWORD bf, LPCWSTR file, int line);
-VOID DbgPrint1(DWORD tf, LPCWSTR fmt, LPWSTR p1);
-VOID DbgEnter(LPCWSTR funName);
-VOID DbgLeave(LPCWSTR funName);
-VOID DbgTraceMessage(LPWSTR funName, LPWSTR msgName);
-VOID DbgTraceDefMessage(LPWSTR funName, WORD msgId);
+void DbgAssert(LPCWSTR file, int line);
+void DbgTrace(DWORD tf, LPWSTR lpstr);
+void DbgBreak(DWORD bf, LPCWSTR file, int line);
+void DbgPrint1(DWORD tf, LPCWSTR fmt, LPWSTR p1);
+void DbgEnter(LPCWSTR funName);
+void DbgLeave(LPCWSTR funName);
+void DbgTraceMessage(LPWSTR funName, LPWSTR msgName);
+void DbgTraceDefMessage(LPWSTR funName, WORD msgId);
 
 // BreakFlags flags
 

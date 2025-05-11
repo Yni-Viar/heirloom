@@ -33,7 +33,7 @@ typedef struct _SELINFO {
     WCHAR szTopIndex[MAXFILENAMELEN];
 } SELINFO;
 
-VOID RightTabbedTextOut(
+void RightTabbedTextOut(
     HDC hdc,
     INT x,
     INT y,
@@ -44,15 +44,15 @@ VOID RightTabbedTextOut(
 LRESULT ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT CompareDTA(LPXDTA lpItem1, LPXDTA lpItem2, DWORD dwSort);
 BOOL SetDirFocus(HWND hwndDir);
-VOID DirGetAnchorFocus(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo);
+void DirGetAnchorFocus(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo);
 BOOL SetSelection(HWND hwndLB, LPXDTALINK lpStart, LPWSTR pszSel);
 INT DirFindIndex(HWND hwndLB, LPXDTALINK lpStart, LPWSTR lpszFile);
-VOID SortDirList(HWND hwndDir, LPXDTALINK lpStart, DWORD count, LPXDTA* lplpxdta);
-VOID GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2);
-VOID FreeSelInfo(PSELINFO pSelInfo);
+void SortDirList(HWND hwndDir, LPXDTALINK lpStart, DWORD count, LPXDTA* lplpxdta);
+void GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2);
+void FreeSelInfo(PSELINFO pSelInfo);
 BOOL SetSelInfo(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo);
 
-VOID DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasFocus) {
+void DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasFocus) {
     INT x, y, i;
     BOOL bDrawSelected;
     HWND hwndLB;
@@ -242,7 +242,7 @@ VOID DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasF
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID CreateLBLine(DWORD dwLineFormat, LPXDTA lpxdta, LPWSTR szBuffer) {
+void CreateLBLine(DWORD dwLineFormat, LPXDTA lpxdta, LPWSTR szBuffer) {
     LPWSTR pch;
     DWORD dwAttr;
 
@@ -1406,7 +1406,7 @@ Done:
     return lRetval;
 }
 
-VOID FreeSelInfo(PSELINFO pSelInfo) {
+void FreeSelInfo(PSELINFO pSelInfo) {
     if (pSelInfo) {
         if (pSelInfo->pSel)
             LocalFree((HLOCAL)pSelInfo->pSel);
@@ -2022,7 +2022,7 @@ INT FixTabsAndThings(HWND hwndLB, WORD* pwTabs, INT iMaxWidthFileName, INT iMaxW
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID SetLBFont(HWND hwnd, HWND hwndLB, HANDLE hNewFont, DWORD dwViewFlags, LPXDTALINK lpStart) {
+void SetLBFont(HWND hwnd, HWND hwndLB, HANDLE hNewFont, DWORD dwViewFlags, LPXDTALINK lpStart) {
     INT dxMaxExtent;
     LPXDTAHEAD lpHead;
 
@@ -2066,7 +2066,7 @@ INT CharCountToTab(LPWSTR pszStr) {
     return (INT)(pszStr - pszTmp);
 }
 
-VOID RightTabbedTextOut(
+void RightTabbedTextOut(
     HDC hdc,
     INT x,
     INT y,
@@ -2119,7 +2119,7 @@ VOID RightTabbedTextOut(
 // INOUT     lpStart handle to DTA block to get files from
 // IN        iError
 //
-// Return:   VOID
+// Return:   void
 //
 // Assumes:  hDTA->head.alpxdtaSorted is NULL _or_
 //           holds valid previously malloc'd array of pointers
@@ -2132,7 +2132,7 @@ VOID RightTabbedTextOut(
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID FillDirList(HWND hwndDir, LPXDTALINK lpStart) {
+void FillDirList(HWND hwndDir, LPXDTALINK lpStart) {
     DWORD count;
     UINT i;
     LPXDTAHEAD lpHead;
@@ -2647,7 +2647,7 @@ INT DirFindIndex(HWND hwndLB, LPXDTALINK lpStart, LPWSTR lpszFile) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID DirGetAnchorFocus(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo) {
+void DirGetAnchorFocus(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo) {
     INT iSel, iCount;
     LPXDTA lpxdta;
 
@@ -2751,7 +2751,7 @@ BOOL SetSelection(HWND hwndLB, LPXDTALINK lpStart, LPWSTR pszSel) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID UpdateStatus(HWND hwnd) {
+void UpdateStatus(HWND hwnd) {
     WCHAR szNumBuf1[40];
     WCHAR szNumBuf2[40];
     DRIVE drive;
@@ -2902,7 +2902,7 @@ HWND GetDirSelData(
     return hwndLB;
 }
 
-VOID GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2) {
+void GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2) {
     INT iSelCount, iCount;
     LARGE_INTEGER qSelSize, qSize;
     WCHAR szNumBuf[40];
@@ -2975,7 +2975,7 @@ HWND GetMDIChildFromDescendant(HWND hwnd) {
     return hwnd;
 }
 
-VOID UpdateSelection(HWND hwndLB) {
+void UpdateSelection(HWND hwndLB) {
     INT iMac, i;
     RECT rc;
     LPINT lpSelItems;
@@ -2996,7 +2996,7 @@ VOID UpdateSelection(HWND hwndLB) {
     LocalFree((HLOCAL)lpSelItems);
 }
 
-VOID SortDirList(HWND hwndDir, LPXDTALINK lpStart, DWORD count, LPXDTA* lplpxdta) {
+void SortDirList(HWND hwndDir, LPXDTALINK lpStart, DWORD count, LPXDTA* lplpxdta) {
     INT i, j;
     DWORD dwSort;
     INT iMax, iMin, iMid;

@@ -16,7 +16,7 @@ FLOAT g_scale = 1.0f;
 extern void ResizeControls(void);
 
 // Initialize DPI awareness
-VOID InitDPIAwareness(VOID) {
+void InitDPIAwareness(void) {
     // On Windows 10+, Shcore.dll and modern DPI APIs are always available
     HDC hdc = GetDC(NULL);
     if (hdc) {
@@ -43,7 +43,7 @@ INT ScaleValueForDpi(INT value, UINT dpi) {
 }
 
 // Handle WM_DPICHANGED message
-VOID HandleDpiChange(HWND hwnd, WPARAM wParam, LPARAM lParam) {
+void HandleDpiChange(HWND hwnd, WPARAM wParam, LPARAM lParam) {
     // Get the new DPI value
     UINT newDpi = HIWORD(wParam);
     FLOAT newScale = GetDpiScaleFactor(newDpi);

@@ -33,9 +33,9 @@
 
 DWORD cNodes;
 
-VOID GetTreePathIndirect(PDNODE pNode, LPWSTR szDest);
+void GetTreePathIndirect(PDNODE pNode, LPWSTR szDest);
 
-VOID ScanDirLevel(PDNODE pParentNode, LPWSTR szPath, DWORD view);
+void ScanDirLevel(PDNODE pParentNode, LPWSTR szPath, DWORD view);
 
 INT InsertDirectory(
     HWND hwndTreeCtl,
@@ -58,7 +58,7 @@ BOOL ReadDirLevel(
     LPWSTR szAutoExpand,
     BOOL bPartialSort);
 
-VOID FillTreeListbox(HWND hwndTreeCtl, LPWSTR szDefaultDir, BOOL bFullyExpand, BOOL bDontSteal);
+void FillTreeListbox(HWND hwndTreeCtl, LPWSTR szDefaultDir, BOOL bFullyExpand, BOOL bDontSteal);
 
 BOOL FindItemFromPath(HWND hwndLB, LPWSTR lpszPath, BOOL bReturnParent, DWORD* pIndex, PDNODE* ppNode);
 
@@ -100,7 +100,7 @@ int GetDragStatusText(int iOperation) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID GetTreePathIndirect(PDNODE pNode, LPWSTR szDest) {
+void GetTreePathIndirect(PDNODE pNode, LPWSTR szDest) {
     PDNODE pParent;
 
     pParent = pNode->pParent;
@@ -122,7 +122,7 @@ VOID GetTreePathIndirect(PDNODE pNode, LPWSTR szDest) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID GetTreePath(PDNODE pNode, LPWSTR szDest) {
+void GetTreePath(PDNODE pNode, LPWSTR szDest) {
     szDest[0] = CHAR_NULL;
     GetTreePathIndirect(pNode, szDest);
 
@@ -137,7 +137,7 @@ VOID GetTreePath(PDNODE pNode, LPWSTR szDest) {
 //
 //  Set node attributes for directory/junction/symlink
 //
-VOID SetNodeAttribs(PDNODE pNode, LPWSTR szPath) {
+void SetNodeAttribs(PDNODE pNode, LPWSTR szPath) {
     pNode->dwAttribs = GetFileAttributes(szPath);
     if (INVALID_FILE_ATTRIBUTES == pNode->dwAttribs) {
         pNode->dwAttribs = 0;
@@ -167,7 +167,7 @@ VOID SetNodeAttribs(PDNODE pNode, LPWSTR szPath) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID ScanDirLevel(PDNODE pParentNode, LPWSTR szPath, DWORD view) {
+void ScanDirLevel(PDNODE pParentNode, LPWSTR szPath, DWORD view) {
     BOOL bFound;
     BOOL bExclude;
 
@@ -428,7 +428,7 @@ INT InsertDirectory(
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID wfYield() {
+void wfYield() {
     MSG msg;
 
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -915,7 +915,7 @@ BOOL StealTreeData(HWND hwndTC, HWND hwndLB, LPWSTR szDir) {
     return FALSE;
 }
 
-VOID FreeAllTreeData(HWND hwndLB) {
+void FreeAllTreeData(HWND hwndLB) {
     INT nIndex;
     PDNODE pNode;
 
@@ -938,7 +938,7 @@ VOID FreeAllTreeData(HWND hwndLB) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID FillTreeListbox(HWND hwndTC, LPWSTR szDefaultDir, BOOL bFullyExpand, BOOL bDontSteal) {
+void FillTreeListbox(HWND hwndTC, LPWSTR szDefaultDir, BOOL bFullyExpand, BOOL bDontSteal) {
     PDNODE pNode;
     INT iNode;
     DWORD dwAttribs;
@@ -1025,7 +1025,7 @@ VOID FillTreeListbox(HWND hwndTC, LPWSTR szDefaultDir, BOOL bFullyExpand, BOOL b
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID FillOutTreeList(HWND hwndTC, LPWSTR szDir, DWORD nIndex, PDNODE pNode) {
+void FillOutTreeList(HWND hwndTC, LPWSTR szDir, DWORD nIndex, PDNODE pNode) {
     HWND hwndLB;
     DWORD dwAttribs;
     LPWSTR p;
@@ -1339,7 +1339,7 @@ BOOL IsNetPath(PDNODE pNode) {
     return pNode->dwNetType;
 }
 
-VOID TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
+void TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
     INT x, y, dy;
     INT nLevel;
     HDC hdc;
@@ -1500,7 +1500,7 @@ VOID TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
 }
 
 #ifdef TBCUSTSHOWSHARE
-VOID GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, INT nBuf) {
+void GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, INT nBuf) {
     PDNODE pNode;
     LPWSTR lpszPath;
     DWORD dwSize;
@@ -1569,7 +1569,7 @@ notshared:
 }
 #endif
 
-VOID InvalidateNetTypes(HWND hwndTree) {
+void InvalidateNetTypes(HWND hwndTree) {
     INT cItems;
     INT iItem;
     HWND hwndLB;
@@ -1592,7 +1592,7 @@ VOID InvalidateNetTypes(HWND hwndTree) {
     UpdateWindow(hwndLB);
 }
 
-VOID InvalidateAllNetTypes(VOID) {
+void InvalidateAllNetTypes(void) {
     HWND hwndT, hwndNext, hwndDir;
 
     for (hwndT = GetWindow(hwndMDIClient, GW_CHILD); hwndT; hwndT = hwndNext) {
@@ -1611,7 +1611,7 @@ VOID InvalidateAllNetTypes(VOID) {
 /* A helper for both ExpandLevel and TreeCtlWndProc.TC_COLLAPSELEVEL.
  * Code moved from TreeCtlWndProc to be shared.  EDH 13 Oct 91
  */
-VOID CollapseLevel(HWND hwndLB, PDNODE pNode, INT nIndex) {
+void CollapseLevel(HWND hwndLB, PDNODE pNode, INT nIndex) {
     PDNODE pParentNode = pNode;
     INT nIndexT = nIndex;
     UINT xTreeMax;
@@ -1658,7 +1658,7 @@ VOID CollapseLevel(HWND hwndLB, PDNODE pNode, INT nIndex) {
     InvalidateRect(hwndLB, NULL, TRUE);
 }
 
-VOID ExpandLevel(HWND hWnd, WPARAM wParam, INT nIndex, LPWSTR szPath) {
+void ExpandLevel(HWND hWnd, WPARAM wParam, INT nIndex, LPWSTR szPath) {
     HWND hwndLB;
     PDNODE pNode;
     INT iNumExpanded;

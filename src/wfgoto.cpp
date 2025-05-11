@@ -470,7 +470,7 @@ vector<PDNODE> GetDirectoryOptionsFromText(LPCWSTR szText, BOOL* pbLimited) {
     return final_options;
 }
 
-VOID UpdateGotoList(HWND hDlg) {
+void UpdateGotoList(HWND hDlg) {
     BOOL bLimited = FALSE;
     WCHAR szText[MAXPATHLEN];
 
@@ -542,7 +542,7 @@ LRESULT APIENTRY GotoEditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
     return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam);
 }
 
-VOID SetCurrentPathOfWindow(LPWSTR szPath) {
+void SetCurrentPathOfWindow(LPWSTR szPath) {
     WCHAR szFullPath[MAXPATHLEN];
     LPWSTR szFilePart;
     DWORD result;

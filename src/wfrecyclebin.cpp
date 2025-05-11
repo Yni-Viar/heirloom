@@ -16,7 +16,7 @@
 #include <shlobj.h>
 
 // Check if the Recycle Bin is empty
-BOOL IsRecycleBinEmpty(VOID) {
+BOOL IsRecycleBinEmpty(void) {
     SHQUERYRBINFO rbInfo;
     rbInfo.cbSize = sizeof(SHQUERYRBINFO);
 
@@ -42,7 +42,7 @@ BOOL GetRecycleBinSize(PLARGE_INTEGER pliSize) {
 }
 
 // Format the Recycle Bin size for display
-VOID FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPWSTR szBuffer) {
+void FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPWSTR szBuffer) {
     PutSize(pliSize, szBuffer);
 }
 

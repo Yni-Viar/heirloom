@@ -17,7 +17,7 @@ extern UINT g_dpi;
 extern FLOAT g_scale;
 
 // Initialize DPI awareness for the application
-VOID InitDPIAwareness(VOID);
+void InitDPIAwareness(void);
 
 // Scale a value by the DPI scale factor
 INT ScaleByDpi(INT value);
@@ -29,7 +29,7 @@ INT ScaleValueForDpi(INT value, UINT dpi);
 FLOAT GetDpiScaleFactor(UINT dpi);
 
 // Handle window DPI change event
-VOID HandleDpiChange(HWND hwnd, WPARAM wParam, LPARAM lParam);
+void HandleDpiChange(HWND hwnd, WPARAM wParam, LPARAM lParam);
 
 // Scale system metric value by current DPI
 INT ScaledSystemMetric(INT nIndex);

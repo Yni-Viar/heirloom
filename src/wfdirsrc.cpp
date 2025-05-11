@@ -20,8 +20,8 @@ HWND hwndGlobalSink = NULL;
 
 // Forward declare functions
 DWORD PerformDragOperation(HWND hwnd, LPWSTR pFiles, UINT iSel);
-VOID SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel);
-VOID ShowItemBitmaps(HWND hwndLB, INT iShow);
+void SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel);
+void ShowItemBitmaps(HWND hwndLB, INT iShow);
 int GetDragStatusText(int iOperation);
 
 HCURSOR
@@ -102,7 +102,7 @@ BOOL MatchFile(LPWSTR szFile, LPWSTR szSpec) {
     return !*szFile && !*szSpec;
 }
 
-VOID DSSetSelection(HWND hwndLB, BOOL bSelect, LPWSTR szSpec, BOOL bSearch) {
+void DSSetSelection(HWND hwndLB, BOOL bSelect, LPWSTR szSpec, BOOL bSearch) {
     INT i;
     INT iMac;
     LPXDTA lpxdta;
@@ -144,7 +144,7 @@ VOID DSSetSelection(HWND hwndLB, BOOL bSelect, LPWSTR szSpec, BOOL bSearch) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID ShowItemBitmaps(HWND hwndLB, INT iShow) {
+void ShowItemBitmaps(HWND hwndLB, INT iShow) {
     INT i;
     INT iMac;
     INT iFirstSel;
@@ -211,7 +211,7 @@ VOID ShowItemBitmaps(HWND hwndLB, INT iShow) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel) {
+void SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel) {
     //
     // Add the current item to the selection.
     //

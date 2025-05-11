@@ -32,5 +32,5 @@ typedef struct tagDNODE {
 } DNODE;
 typedef DNODE* PDNODE;
 
-VOID GetTreePath(PDNODE pNode, LPWSTR szDest);
-VOID SetNodeAttribs(PDNODE pNode, LPWSTR szPath);
+void GetTreePath(PDNODE pNode, LPWSTR szDest);
+void SetNodeAttribs(PDNODE pNode, LPWSTR szPath);

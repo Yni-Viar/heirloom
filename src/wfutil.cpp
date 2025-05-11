@@ -24,7 +24,7 @@ typedef struct HistoryDir {
 } HistoryDir;
 HistoryDir rghistoryDir[MAXHISTORY];
 
-VOID SaveHistoryDir(HWND hwnd, LPWSTR szDir) {
+void SaveHistoryDir(HWND hwnd, LPWSTR szDir) {
     if (rghistoryDir[historyCur].hwnd == hwnd && lstrcmpi(rghistoryDir[historyCur].szDir, szDir) == 0)
         return;
 
@@ -108,7 +108,7 @@ pszRemoveSurroundingQuotes(LPWSTR p) {
 
 // Set the status bar text for a given pane
 
-VOID CDECL SetStatusText(int nPane, UINT nFlags, LPCWSTR szFormat, ...) {
+void CDECL SetStatusText(int nPane, UINT nFlags, LPCWSTR szFormat, ...) {
     WCHAR szTemp[120 + MAXPATHLEN];
     WCHAR szTempFormat[120 + MAXPATHLEN];
 
@@ -149,7 +149,7 @@ BOOL GetSavedDirectory(DRIVE drive, LPWSTR pszPath) {
         return FALSE;
 }
 
-VOID SaveDirectory(LPWSTR pszPath) {
+void SaveDirectory(LPWSTR pszPath) {
     DRIVE drive;
 
     drive = DRIVEID(pszPath);
@@ -195,7 +195,7 @@ INT GetSelectedDrive() {
  *  NOTE: when drive != 0, string will be empty for an invalid drive.
  */
 
-VOID GetSelectedDirectory(DRIVE drive, LPWSTR pszDir) {
+void GetSelectedDirectory(DRIVE drive, LPWSTR pszDir) {
     HWND hwnd;
     DRIVE driveT;
 
@@ -247,7 +247,7 @@ BOOL GetDriveDirectory(INT iDrive, LPWSTR pszDir) {
 
 // similar to GetSelectedDirectory but for all already listed directories
 // doesn't change the current directory of the drives, but returns a list of them
-VOID GetAllDirectories(LPWSTR rgszDirs[]) {
+void GetAllDirectories(LPWSTR rgszDirs[]) {
     HWND mpdrivehwnd[MAX_DRIVES];
     HWND hwnd;
     DRIVE driveT;
@@ -292,7 +292,7 @@ VOID GetAllDirectories(LPWSTR rgszDirs[]) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID RefreshWindow(HWND hwndActive, BOOL bUpdateDriveList, BOOL bFlushCache) {
+void RefreshWindow(HWND hwndActive, BOOL bUpdateDriveList, BOOL bFlushCache) {
     HWND hwndTree, hwndDir;
     DRIVE drive;
 
@@ -349,7 +349,7 @@ VOID RefreshWindow(HWND hwndActive, BOOL bUpdateDriveList, BOOL bFlushCache) {
 // Assumes there are 2 extra spaces in the array.
 //
 
-VOID CheckEsc(LPWSTR szFile) {
+void CheckEsc(LPWSTR szFile) {
     // DrivesDropObject calls w/ 2*MAXPATHLEN
 
     WCHAR szT[2 * MAXPATHLEN];
@@ -537,7 +537,7 @@ INT GetMDIWindowText(HWND hwnd, LPWSTR szTitle, INT size) {
 // IN        hwnd    --  wnd to modify
 // INC       szTitle --  path/filter to add (modified but restored)
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:
@@ -555,7 +555,7 @@ INT GetMDIWindowText(HWND hwnd, LPWSTR szTitle, INT size) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID SetMDIWindowText(HWND hwnd, LPWSTR szTitle) {
+void SetMDIWindowText(HWND hwnd, LPWSTR szTitle) {
     WCHAR szTemp[MAXPATHLEN * 2 + 10];  // BONK!  is this big enough?
     WCHAR szNumber[20];
     HWND hwndT;
@@ -922,7 +922,7 @@ GetNextFile(LPWSTR pFrom, LPWSTR pTo, INT cchMax) {
 
 // sets the DOS current directory based on the currently active window
 
-VOID SetWindowDirectory() {
+void SetWindowDirectory() {
     // Actually, only needs to be MAX MDI Title = (MAXPATHLEN + few + MAX diskname)
     // like "d:\aaa .. aaa\filter.here - [albertt]"
     // which _could_ be > 2*MAXPATHLEN
@@ -944,7 +944,7 @@ VOID SetWindowDirectory() {
  * this does not really change the DOS current directory
  */
 
-VOID SetDlgDirectory(HWND hDlg, LPWSTR pszPath) {
+void SetDlgDirectory(HWND hDlg, LPWSTR pszPath) {
     HDC hDC;
     SIZE size;
     RECT rc;
@@ -997,7 +997,7 @@ VOID SetDlgDirectory(HWND hDlg, LPWSTR pszPath) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID WritePrivateProfileBool(LPWSTR szKey, BOOL bParam) {
+void WritePrivateProfileBool(LPWSTR szKey, BOOL bParam) {
     WCHAR szBool[6];
 
     wsprintf(szBool, SZ_PERCENTD, bParam);
@@ -1011,7 +1011,7 @@ VOID WritePrivateProfileBool(LPWSTR szKey, BOOL bParam) {
 // Synopsis: Make sure all the WM_FSC messages have been processed.
 //
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:
@@ -1023,7 +1023,7 @@ VOID WritePrivateProfileBool(LPWSTR szKey, BOOL bParam) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID CleanupMessages() {
+void CleanupMessages() {
     MSG msg;
 
     while (PeekMessage(&msg, NULL, 0, 0, TRUE)) {
@@ -1059,7 +1059,7 @@ BOOL IsWild(LPWSTR lpszPath) {
 
 /* Replaces frontslashes (evil) with backslashes (good). */
 
-VOID CheckSlashes(LPWSTR lpT) {
+void CheckSlashes(LPWSTR lpT) {
     while (*lpT) {
         if (*lpT == CHAR_SLASH)
             *lpT = CHAR_BACKSLASH;
@@ -1096,7 +1096,7 @@ UINT AddBackslash(LPWSTR lpszPath) {
  * the root directory.  Assumes a fully qualified directory path.
  */
 
-VOID StripBackslash(LPWSTR lpszPath) {
+void StripBackslash(LPWSTR lpszPath) {
     UINT len;
 
     len = (lstrlen(lpszPath) - 1);
@@ -1114,7 +1114,7 @@ VOID StripBackslash(LPWSTR lpszPath) {
 
 /* Remove the filespec portion from a path (including the backslash). */
 
-VOID StripFilespec(LPWSTR lpszPath) {
+void StripFilespec(LPWSTR lpszPath) {
     LPWSTR p;
 
     p = lpszPath + lstrlen(lpszPath);
@@ -1141,7 +1141,7 @@ VOID StripFilespec(LPWSTR lpszPath) {
 
 /* Extract only the filespec portion from a path. */
 
-VOID StripPath(LPWSTR lpszPath) {
+void StripPath(LPWSTR lpszPath) {
     LPWSTR p;
 
     p = lpszPath + lstrlen(lpszPath);

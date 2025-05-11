@@ -16,13 +16,13 @@
 #include "commdlg.h"
 #include "resize.h"
 
-VOID CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn);
+void CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn);
 BOOL NoQuotes(LPWSTR szT);
 
 // Return pointers to various bits of a path.
 // ie where the dir name starts, where the filename starts and where the
 // params are.
-VOID GetPathInfo(LPWSTR szTemp, LPWSTR* ppDir, LPWSTR* ppFile, LPWSTR* ppPar) {
+void GetPathInfo(LPWSTR szTemp, LPWSTR* ppDir, LPWSTR* ppFile, LPWSTR* ppPar) {
     // handle quoted things
     BOOL bInQuotes = FALSE;
 
@@ -51,7 +51,7 @@ VOID GetPathInfo(LPWSTR szTemp, LPWSTR* ppDir, LPWSTR* ppFile, LPWSTR* ppPar) {
 // filename with an asterisk.
 //
 
-VOID StarFilename(LPWSTR pszPath) {
+void StarFilename(LPWSTR pszPath) {
     LPWSTR p;
     WCHAR szTemp[MAXPATHLEN];
 
@@ -309,7 +309,7 @@ RunDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     return TRUE;
 }
 
-VOID EnableCopy(HWND hDlg, BOOL bCopy) {
+void EnableCopy(HWND hDlg, BOOL bCopy) {
     HWND hwnd;
 
     // turn these off
@@ -327,7 +327,7 @@ VOID EnableCopy(HWND hDlg, BOOL bCopy) {
     }
 }
 
-VOID MessWithRenameDirPath(LPWSTR pszPath) {
+void MessWithRenameDirPath(LPWSTR pszPath) {
     WCHAR szPath[MAXPATHLEN];
     LPWSTR lpsz;
 
@@ -731,7 +731,7 @@ SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     return TRUE;
 }
 
-VOID CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn) {
+void CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn) {
     INT i;
 
     if (dwAttribs3State & dwAttribs)
@@ -796,7 +796,7 @@ void FreeVersionInfo(void);
 // when the selection is a directory and also when a file has no
 // version stamps.
 
-VOID DisableVersionCtls(HWND hDlg) {
+void DisableVersionCtls(HWND hDlg) {
     EnableWindow(GetDlgItem(hDlg, IDD_VERSION_FRAME), FALSE);
     EnableWindow(GetDlgItem(hDlg, IDD_VERSION_KEY), FALSE);
     EnableWindow(GetDlgItem(hDlg, IDD_VERSION_VALUE), FALSE);
@@ -973,7 +973,7 @@ GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
 // GetVersionDatum calls will return NULL.  To avoid memory leaks,
 // always call this before the main properties dialog exits.
 
-VOID FreeVersionInfo(VOID) {
+void FreeVersionInfo(void) {
     lpVersionBuffer = NULL;
     dwHandle = 0L;
     if (hmemVersion) {
@@ -1016,7 +1016,7 @@ BOOL FillSimpleVersion(HWND hDlg, LPWSTR lpszValue) {
 // StringFileInfo block, and sets the version value text to the
 // value of the first item.
 
-VOID FillVersionList(HWND) {
+void FillVersionList(HWND) {
     // No longer used. It was broken and I don't think it's needed.
 }
 

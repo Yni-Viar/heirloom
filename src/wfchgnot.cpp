@@ -14,9 +14,9 @@
 //
 // Forward Declarations
 //
-VOID NotifyReset();
-VOID NotifyDeleteHandle(INT i);
-VOID NotifyAddHandle(INT i, HWND hwnd, LPWSTR lpPath, DWORD dwFilter);
+void NotifyReset();
+void NotifyDeleteHandle(INT i);
+void NotifyAddHandle(INT i, HWND hwnd, LPWSTR lpPath, DWORD dwFilter);
 
 //
 // Maximum number of windows that are viewable
@@ -29,7 +29,7 @@ INT nHandles;
 
 #define bNOTIFYACTIVE uChangeNotifyTime
 
-VOID vWaitMessage() {
+void vWaitMessage() {
     DWORD dwEvent;
 
     dwEvent = MsgWaitForMultipleObjects(nHandles, ahEvents, FALSE, INFINITE, QS_ALLINPUT);
@@ -74,9 +74,9 @@ VOID vWaitMessage() {
 //
 // Synopsis: Setups up change notifications
 //
-// IN        VOID
+// IN        void
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:  GetSettings has initialized uChangeNotifyTime
@@ -88,7 +88,7 @@ VOID vWaitMessage() {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID InitializeWatchList(VOID) {
+void InitializeWatchList(void) {
     INT i;
 
     //
@@ -112,9 +112,9 @@ VOID InitializeWatchList(VOID) {
 //
 // Synopsis: Initializes change notify system
 //
-// IN        VOID
+// IN        void
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:  InitializeWatchList has been called:
@@ -125,7 +125,7 @@ VOID InitializeWatchList(VOID) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID DestroyWatchList(VOID) {
+void DestroyWatchList(void) {
     PHANDLE phChange;
 
     //
@@ -141,7 +141,7 @@ VOID DestroyWatchList(VOID) {
     }
 }
 
-VOID NotifyReset() {
+void NotifyReset() {
     NotifyPause(-1, (UINT)-2);
     nHandles = 0;
 }
@@ -158,7 +158,7 @@ VOID NotifyReset() {
 // INC       -- uType    Type of drive to stop notification on
 //
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:  Called by main thread (drive windows stable)
@@ -172,7 +172,7 @@ VOID NotifyReset() {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID NotifyPause(DRIVE drive, UINT uType) {
+void NotifyPause(DRIVE drive, UINT uType) {
     INT i;
     DRIVE driveCurrent;
 
@@ -210,7 +210,7 @@ VOID NotifyPause(DRIVE drive, UINT uType) {
 //                       0 < drive < 26 is the drive to stop
 // INC       -- uType    Type of drive to stop notification on
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:  Called by main thread (drive windows stable)
@@ -224,7 +224,7 @@ VOID NotifyPause(DRIVE drive, UINT uType) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID NotifyResume(DRIVE drive, UINT uType) {
+void NotifyResume(DRIVE drive, UINT uType) {
     DRIVE driveCurrent;
     HWND hwnd;
 
@@ -272,7 +272,7 @@ VOID NotifyResume(DRIVE drive, UINT uType) {
 //                        NULL = terminate watch
 // IN        fdwFilter    notification events to watch
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:  Single threaded implementation.  All calls in this file
@@ -287,7 +287,7 @@ VOID NotifyResume(DRIVE drive, UINT uType) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID ModifyWatchList(HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
+void ModifyWatchList(HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
     INT i;
 
     if (!bNOTIFYACTIVE)
@@ -366,7 +366,7 @@ VOID ModifyWatchList(HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
 // INC       i  index in ahwndWindows[] to delete
 //
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:  Exclusive, safe access to globals.
@@ -378,7 +378,7 @@ VOID ModifyWatchList(HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID NotifyDeleteHandle(INT i) {
+void NotifyDeleteHandle(INT i) {
     if (INVALID_HANDLE_VALUE != ahEvents[i] && FindCloseChangeNotification(ahEvents[i]) == FALSE) {
     }
 
@@ -412,7 +412,7 @@ VOID NotifyDeleteHandle(INT i) {
 // INC       lpPath    --      path to watch, -1 == same as old
 // INC       fdwFilter --      filters for notification
 //
-// Return:   VOID
+// Return:   void
 //
 // Assumes:  i is a valid index; no boundary checking done.
 //
@@ -423,7 +423,7 @@ VOID NotifyDeleteHandle(INT i) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID NotifyAddHandle(INT i, HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
+void NotifyAddHandle(INT i, HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
     adrive[i] = DRIVEID(lpPath);
 
     ahwndWindows[i] = hwnd;

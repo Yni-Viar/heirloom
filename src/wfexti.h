@@ -30,6 +30,6 @@ typedef struct _EXTENSION {                         /* ;Internal */
 extern EXTENSION extensions[MAX_EXTENSIONS];                      /* ;Internal */
                                                                   /* ;Internal */
 LRESULT ExtensionMsgProc(UINT wMsg, WPARAM wParam, LPARAM lpSel); /* ;Internal */
-VOID FreeExtensions(VOID);                                        /* ;Internal */
+void FreeExtensions(void);                                        /* ;Internal */
 
 #endif /* _INC_WFEXTI */

@@ -22,10 +22,10 @@
 
 DWORD WINAPI FormatDrive(IN PVOID ThreadParameter);
 DWORD WINAPI CopyDiskette(IN PVOID ThreadParameter);
-VOID SwitchToSafeDrive(VOID);
-VOID MDIClientSizeChange(HWND hwndActive, INT iFlags);
+void SwitchToSafeDrive(void);
+void MDIClientSizeChange(HWND hwndActive, INT iFlags);
 
-VOID CancelDlgQuit(VOID);
+void CancelDlgQuit(void);
 
 BOOL GetProductVersion(WORD* pwMajor, WORD* pwMinor, WORD* pwBuild, WORD* pwRevision);
 
@@ -518,7 +518,7 @@ ProgressDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 // update all the windows and things after drives have been connected
 // or disconnected.
 
-VOID UpdateConnections(BOOL bUpdateDriveList) {
+void UpdateConnections(BOOL bUpdateDriveList) {
     HWND hwnd, hwndNext, hwndDrive, hwndTree;
     INT i;
     DRIVE drive;
@@ -633,9 +633,9 @@ VOID UpdateConnections(BOOL bUpdateDriveList) {
 //
 // Synopsis: Quits the cancel modeless dialog (status for diskcopy/format)
 //
-// IN: VOID
+// IN: void
 //
-// Return:   VOID
+// Return:   void
 //
 // Assumes:  Called from worker thread only; CancelInfo.hThread valid
 //
@@ -646,7 +646,7 @@ VOID UpdateConnections(BOOL bUpdateDriveList) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID CancelDlgQuit() {
+void CancelDlgQuit() {
     //
     // Close thread if successful
     //
@@ -672,7 +672,7 @@ VOID CancelDlgQuit() {
     ExitThread(0L);
 }
 
-VOID DestroyCancelWindow() {
+void DestroyCancelWindow() {
     if (!CancelInfo.hCancelDlg)
         return;
 

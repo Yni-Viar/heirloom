@@ -51,8 +51,8 @@ DWORD MKDir(LPWSTR, LPWSTR);
 DWORD RMDir(LPWSTR);
 BOOL WFSetAttr(LPWSTR lpFile, DWORD dwAttr);
 
-VOID AppendToPath(LPWSTR, LPCWSTR);
+void AppendToPath(LPWSTR, LPCWSTR);
 UINT RemoveLast(LPWSTR pFile);
-VOID Notify(HWND, WORD, LPWSTR, LPWSTR);
+void Notify(HWND, WORD, LPWSTR, LPWSTR);
 
 LPWSTR FindFileName(LPWSTR pPath);

@@ -17,10 +17,10 @@
 #include <commctrl.h>
 #include <shlobj.h>
 
-VOID RectDrive(DRIVEIND driveInd, BOOL bDraw);
-VOID InvalidateDrive(DRIVEIND driveInd);
+void RectDrive(DRIVEIND driveInd, BOOL bDraw);
+void InvalidateDrive(DRIVEIND driveInd);
 INT DriveFromPoint(HWND hwnd, POINT pt);
-VOID DrawDrive(HDC hdc, UINT dpi, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus);
+void DrawDrive(HDC hdc, UINT dpi, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus);
 INT KeyToItem(HWND hWnd, WORD nDriveLetter);
 int GetDragStatusText(int iOperation);
 
@@ -47,7 +47,7 @@ int GetDragStatusText(int iOperation);
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID NewTree(DRIVE drive, HWND hwndSrc) {
+void NewTree(DRIVE drive, HWND hwndSrc) {
     HWND hwnd, hwndTree, hwndDir;
     WCHAR szDir[MAXPATHLEN * 2];
     INT dxSplit;
@@ -151,7 +151,7 @@ VOID NewTree(DRIVE drive, HWND hwndSrc) {
 // assumes drive bar is visible.
 //
 
-VOID GetDriveRect(DRIVEIND driveInd, PRECT prc) {
+void GetDriveRect(DRIVEIND driveInd, PRECT prc) {
     RECT rc;
     INT nDrivesPerRow;
 
@@ -208,7 +208,7 @@ INT DriveFromPoint(HWND hwnd, POINT pt) {
     return -1;  // no hit
 }
 
-VOID InvalidateDrive(DRIVEIND driveInd) {
+void InvalidateDrive(DRIVEIND driveInd) {
     RECT rc;
 
     //
@@ -233,7 +233,7 @@ VOID InvalidateDrive(DRIVEIND driveInd) {
 //              FALSE, erase the rect (draw the default rect)
 //
 
-VOID RectDrive(DRIVEIND driveInd, BOOL bDraw) {
+void RectDrive(DRIVEIND driveInd, BOOL bDraw) {
     RECT rc, rcDrive;
     HBRUSH hBrush;
     HDC hdc;
@@ -273,7 +273,7 @@ VOID RectDrive(DRIVEIND driveInd, BOOL bDraw) {
 //      bFocus          draw with the focus
 //
 
-VOID DrawDrive(HDC hdc, UINT dpi, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus) {
+void DrawDrive(HDC hdc, UINT dpi, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus) {
     RECT rc;
     WCHAR szTemp[2];
     DWORD rgb;
@@ -416,7 +416,7 @@ BOOL CheckDrive(HWND hwnd, DRIVE drive, DWORD dwFunc) {
 
 // Old Win3.x style DrivesDropObject function removed (DROPSTRUCT based implementation)
 
-VOID DrivesPaint(HWND hWnd, INT nDriveFocus, INT nDriveCurrent) {
+void DrivesPaint(HWND hWnd, INT nDriveFocus, INT nDriveCurrent) {
     RECT rc;
     INT nDrive;
 
@@ -472,7 +472,7 @@ VOID DrivesPaint(HWND hWnd, INT nDriveFocus, INT nDriveCurrent) {
 // set the current window to a new drive
 //
 
-VOID DrivesSetDrive(HWND hWnd, DRIVEIND driveInd, DRIVEIND driveIndCur, BOOL bDontSteal) {
+void DrivesSetDrive(HWND hWnd, DRIVEIND driveInd, DRIVEIND driveIndCur, BOOL bDontSteal) {
     WCHAR szPath[MAXPATHLEN * 2];
 
     HWND hwndChild;

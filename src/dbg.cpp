@@ -27,14 +27,14 @@ unsigned long BreakFlags = 0
     // | BF_START
     ;  // set these to break on TRACEs
 
-VOID DbgAssert(LPCWSTR file, int line) {
+void DbgAssert(LPCWSTR file, int line) {
     wsprintf(szFmt, szAsrtFmt, file, line);
     OutputDebugString(szFmt);
     //    DbgPrint(szAsrtFmt, file, line);
     DebugBreak();
 }
 
-VOID DbgTrace(DWORD tf, LPWSTR lpstr) {
+void DbgTrace(DWORD tf, LPWSTR lpstr) {
     if (tf & TraceFlags) {
         wsprintf(szFmt, L"%s\n", lpstr);
         OutputDebugString(szFmt);
@@ -45,7 +45,7 @@ VOID DbgTrace(DWORD tf, LPWSTR lpstr) {
     }
 }
 
-VOID DbgBreak(DWORD bf, LPCWSTR file, int line) {
+void DbgBreak(DWORD bf, LPCWSTR file, int line) {
     if (bf & BreakFlags) {
         wsprintf(szFmt, L"BREAK at %s:%d\n", file, line);
         OutputDebugString(szFmt);
@@ -54,7 +54,7 @@ VOID DbgBreak(DWORD bf, LPCWSTR file, int line) {
     }
 }
 
-VOID DbgPrint1(DWORD tf, LPCWSTR fmt, LPWSTR p1) {
+void DbgPrint1(DWORD tf, LPCWSTR fmt, LPWSTR p1) {
     if (tf & TraceFlags) {
         wsprintf(szFmt, fmt, p1);
         OutputDebugString(szFmt);
@@ -68,15 +68,15 @@ VOID DbgPrint1(DWORD tf, LPCWSTR fmt, LPWSTR p1) {
     }
 }
 
-VOID DbgEnter(LPCWSTR funName) {
+void DbgEnter(LPCWSTR funName) {
     DbgPrint1(BF_PROCTRACE, L"> %s ", (LPWSTR)funName);
 }
 
-VOID DbgLeave(LPCWSTR funName) {
+void DbgLeave(LPCWSTR funName) {
     DbgPrint1(BF_PROCTRACE, L" <%s ", (LPWSTR)funName);
 }
 
-VOID DbgTraceMessage(LPWSTR funName, LPWSTR msgName) {
+void DbgTraceMessage(LPWSTR funName, LPWSTR msgName) {
     if (BF_MSGTRACE & TraceFlags) {
         wsprintf(szFmt, L"MSG: %s - %s\n", funName, msgName);
         OutputDebugString(szFmt);
@@ -87,7 +87,7 @@ VOID DbgTraceMessage(LPWSTR funName, LPWSTR msgName) {
     }
 }
 
-VOID DbgTraceDefMessage(LPWSTR funName, WORD msgId) {
+void DbgTraceDefMessage(LPWSTR funName, WORD msgId) {
     if (BF_DEFMSGTRACE & TraceFlags) {
         wsprintf(szFmt, L"MSG: %s - default(0x%x)\n", funName, msgId);
         OutputDebugString(szFmt);

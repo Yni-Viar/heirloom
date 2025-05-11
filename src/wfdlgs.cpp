@@ -17,11 +17,11 @@
 #include "resize.h"
 #include "gitbash.h"
 
-VOID MDIClientSizeChange(HWND hwndActive, INT iFlags);
+void MDIClientSizeChange(HWND hwndActive, INT iFlags);
 
 extern INT maxExt;
 
-VOID SaveWindows(HWND hwndMain) {
+void SaveWindows(HWND hwndMain) {
     // 2* added to both lines
     WCHAR szPath[2 * MAXPATHLEN];
     WCHAR buf2[2 * MAXPATHLEN + 6 * 12];
@@ -390,12 +390,12 @@ SelectDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     return TRUE;
 }
 
-VOID RepaintDrivesForFontChange(HWND hwndChild) {
+void RepaintDrivesForFontChange(HWND hwndChild) {
     if (bDriveBar)
         MDIClientSizeChange(hwndChild, DRIVEBAR_FLAG);
 }
 
-VOID NewFont() {
+void NewFont() {
     HFONT hOldFont;
     HANDLE hOld;
 
@@ -647,7 +647,7 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
     return TRUE;
 }
 
-VOID KillQuoteTrailSpace(LPWSTR szFile) {
+void KillQuoteTrailSpace(LPWSTR szFile) {
     LPWSTR pc;
     LPWSTR pcNext;
     LPWSTR pcLastSpace = NULL;
@@ -682,7 +682,7 @@ VOID KillQuoteTrailSpace(LPWSTR szFile) {
         *pcLastSpace = CHAR_NULL;
 }
 
-VOID ActivateCommonContextMenu(HWND hwnd, HWND hwndLB, LPARAM lParam) {
+void ActivateCommonContextMenu(HWND hwnd, HWND hwndLB, LPARAM lParam) {
     DWORD cmd, item;
     POINT pt;
 

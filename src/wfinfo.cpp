@@ -14,7 +14,7 @@
 #include <commctrl.h>
 
 #define U_HEAD(type)             \
-    VOID U_##type(DRIVE drive) { \
+    void U_##type(DRIVE drive) { \
         PDRIVEINFO pDriveInfo = &aDriveInfo[drive];
 
 //
@@ -41,8 +41,8 @@
     return;           \
     }
 
-VOID NetCon_UpdateLines(DRIVE drive, DWORD dwType);
-INT UpdateDriveListWorker(VOID);
+void NetCon_UpdateLines(DRIVE drive, DWORD dwType);
+INT UpdateDriveListWorker(void);
 
 CRITICAL_SECTION CriticalSectionUpdate;
 
@@ -62,11 +62,11 @@ DWORD adwAltNameTrans[MAX_ALTNAME] = {
 //
 // Initialize/destroy Info handler
 //
-VOID M_Info(VOID) {
+void M_Info(void) {
     InitializeCriticalSection(&CriticalSectionUpdate);
 }
 
-VOID D_Info(VOID) {
+void D_Info(void) {
     DeleteCriticalSection(&CriticalSectionUpdate);
 }
 
@@ -358,7 +358,7 @@ Done:
     return dwRetVal;
 }
 
-VOID NetCon_UpdateLines(DRIVE drive, DWORD dwType) {
+void NetCon_UpdateLines(DRIVE drive, DWORD dwType) {
     LPWSTR lpNext;
     DWORD dwLines = 0;
 
@@ -410,7 +410,7 @@ struct _DOC_BUCKET {
 //
 // Synopsis: Creates and initializes Doc structure for IsDocument
 //
-// IN        VOID
+// IN        void
 //
 // Return:   PPDOCBUCKET or NULL
 //
@@ -424,7 +424,7 @@ struct _DOC_BUCKET {
 /////////////////////////////////////////////////////////////////////
 
 PPDOCBUCKET
-DocConstruct(VOID) {
+DocConstruct(void) {
     return (PPDOCBUCKET)LocalAlloc(LPTR, sizeof(PDOCBUCKET) * DOCBUCKETMAX);
 }
 
@@ -436,7 +436,7 @@ DocConstruct(VOID) {
 //
 // INC       PPDOCBUCKET -- Doc structure to free
 //
-// Return:   VOID
+// Return:   void
 //
 // Assumes:
 //
@@ -447,7 +447,7 @@ DocConstruct(VOID) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID DocDestruct(PPDOCBUCKET ppDocBucket) {
+void DocDestruct(PPDOCBUCKET ppDocBucket) {
     INT i;
     PDOCBUCKET pDocBucket;
     PDOCBUCKET pDocBucketNext;
@@ -485,7 +485,7 @@ VOID DocDestruct(PPDOCBUCKET ppDocBucket) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID RemoveEndQuote(LPWSTR lpszExt) {
+void RemoveEndQuote(LPWSTR lpszExt) {
     LPWSTR ptr;
 
     if (lpszExt) {
@@ -753,7 +753,7 @@ DocEnum(PDOCENUM pDocEnum, PHICON phIcon) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID DocCloseEnum(PDOCENUM pDocEnum) {
+void DocCloseEnum(PDOCENUM pDocEnum) {
     LocalFree(pDocEnum);
 }
 #endif
@@ -838,9 +838,9 @@ VOID DocCloseEnum(PDOCENUM pDocEnum) {
 //
 // Synopsis: Handles update worker thread
 //
-// IN        VOID
+// IN        void
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:
@@ -919,7 +919,7 @@ UpdateInit(PVOID ThreadParameter) {
 //
 // Synopsis: Updates the drive information for worker thread.
 //
-// IN        VOID
+// IN        void
 //
 // Return:   new cDrives value
 //
@@ -937,7 +937,7 @@ UpdateInit(PVOID ThreadParameter) {
 
 #define BUF_SIZ 0x4000  // 16k buffer
 
-INT UpdateDriveListWorker(VOID) {
+INT UpdateDriveListWorker(void) {
     INT cRealDrives = 0;
     INT i;
     HANDLE hEnum;
@@ -1355,9 +1355,9 @@ WFGetConnection(DRIVE drive, LPWSTR* ppPath, BOOL bConvertClosed, DWORD dwType) 
 //
 // Synopsis: Worker thread read completed, update everything.
 //
-// IN        VOID
+// IN        void
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:  We are called via a SendMessage from the worker thread
@@ -1376,7 +1376,7 @@ WFGetConnection(DRIVE drive, LPWSTR* ppPath, BOOL bConvertClosed, DWORD dwType) 
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID UpdateDriveListComplete(VOID) {
+void UpdateDriveListComplete(void) {
     HWND hwnd, hwndNext;
     DRIVE drive;
     DRIVEIND driveInd;
@@ -1452,7 +1452,7 @@ VOID UpdateDriveListComplete(VOID) {
     }
 }
 
-VOID UpdateDriveList(VOID) {
+void UpdateDriveList(void) {
     if (!WAITNET_LOADED)
         return;
 
@@ -1464,7 +1464,7 @@ VOID UpdateDriveList(VOID) {
     LeaveCriticalSection(&CriticalSectionUpdate);
 }
 
-VOID UpdateWaitQuit(VOID) {
+void UpdateWaitQuit(void) {
     bUpdateRun = FALSE;
 
     EnterCriticalSection(&CriticalSectionUpdate);
@@ -1486,7 +1486,7 @@ VOID UpdateWaitQuit(VOID) {
 //
 // Synopsis: Loads the net after initfilemanager is called.
 //
-// IN        VOID
+// IN        void
 //
 // Return:   BOOL  T/F success/fail
 //
@@ -1511,7 +1511,7 @@ VOID UpdateWaitQuit(VOID) {
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL NetLoad(VOID) {
+BOOL NetLoad(void) {
     HMENU hMenuFrame;
 
     HWND hwnd, hwndT;
@@ -1606,9 +1606,9 @@ BOOL NetLoad(VOID) {
 //
 // Synopsis: Resets the drive info struct to a stable, minimum info state.
 //
-// IN      VOID
+// IN      void
 //
-// Return: VOID
+// Return: void
 //
 //
 // Assumes:
@@ -1622,7 +1622,7 @@ BOOL NetLoad(VOID) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID ResetDriveInfo() {
+void ResetDriveInfo() {
     PDRIVEINFO pDriveInfo;
     DRIVE drive;
     INT i;
@@ -1711,7 +1711,7 @@ VOID ResetDriveInfo() {
 // INC:      BOOL   bNet    TRUE   wait on net
 //                          FALSE  wait on acledit
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:
@@ -1723,7 +1723,7 @@ VOID ResetDriveInfo() {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID WaitLoadEvent(BOOL bNet) {
+void WaitLoadEvent(BOOL bNet) {
     HCURSOR hCursor;
 
     if (!(bNet ? bNetDone : bNetAcleditDone)) {

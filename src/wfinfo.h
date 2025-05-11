@@ -71,7 +71,7 @@ typedef struct _INFO_STATUS {
 #define C_NetCon(drive, retval) C_CLOSE(NetCon, drive, retval)
 #define C_VolInfo(drive, retval) C_CLOSE(VolInfo, drive, retval)
 
-#define U_PROTO(type) VOID U_##type(DRIVE drive)
+#define U_PROTO(type) void U_##type(DRIVE drive)
 
 U_PROTO(Type);
 U_PROTO(Space);
@@ -92,12 +92,12 @@ V_Variable(VolInfo);
 // Define constructors
 //
 
-#define M_PROTO(type) VOID M_##type(DRIVE drive)
+#define M_PROTO(type) void M_##type(DRIVE drive)
 #define M_Make(type) InitializeCriticalSection(&CriticalSectionInfo##type)
 
 // Default Constructors or prototypes
 
-VOID M_Info(VOID);
+void M_Info(void);
 
 #define M_Type() M_Make(Type)
 #define M_Space() M_Make(Space)
@@ -108,12 +108,12 @@ VOID M_Info(VOID);
 // Define destructors
 //
 
-#define D_PROTO(type) VOID D_##type(VOID)
+#define D_PROTO(type) void D_##type(void)
 #define D_Destroy(type) DeleteCriticalSection(&CriticalSectionInfo##type)
 
 // Default Destructors or prototypes
 
-VOID D_Info(VOID);
+void D_Info(void);
 
 #define D_Type() D_Destroy(Type)
 #define D_Space() D_Destroy(Space)
@@ -130,17 +130,17 @@ INT NetCon_UpdateAltName(DRIVE drive, DWORD dwRetVal);
 // Background update support
 //
 
-BOOL NetLoad(VOID);
+BOOL NetLoad(void);
 
 DWORD WINAPI UpdateInit(PVOID ThreadParameter);
 DWORD WFGetConnection(DRIVE, LPWSTR*, BOOL, DWORD);
 DWORD GetVolShare(DRIVE drive, LPWSTR* ppszVolShare, DWORD dwType);
-VOID UpdateDriveListComplete(VOID);
-VOID UpdateDriveList(VOID);
-VOID ResetDriveInfo(VOID);
+void UpdateDriveListComplete(void);
+void UpdateDriveList(void);
+void ResetDriveInfo(void);
 
-VOID UpdateWaitQuit(VOID);
-VOID WaitLoadEvent(BOOL bNet);
+void UpdateWaitQuit(void);
+void WaitLoadEvent(BOOL bNet);
 
 Extern BOOL bUpdateRun;
 Extern HANDLE hThreadUpdate;

@@ -26,15 +26,15 @@
 
 #define VIEW_NOCHANGE 0x0020  // previously VIEW_PLUSES
 
-VOID MDIClientSizeChange(HWND hwndActive, INT iFlags);
+void MDIClientSizeChange(HWND hwndActive, INT iFlags);
 HWND LocateDirWindow(LPWSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow);
-VOID UpdateAllDirWindows(LPWSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec);
-VOID AddNetMenuItems(VOID);
-VOID InitNetMenuItems(VOID);
+void UpdateAllDirWindows(LPWSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec);
+void AddNetMenuItems(void);
+void InitNetMenuItems(void);
 
-INT UpdateConnectionsOnConnect(VOID);
+INT UpdateConnectionsOnConnect(void);
 
-VOID NotifySearchFSC(LPWSTR pszPath, DWORD dwFunction) {
+void NotifySearchFSC(LPWSTR pszPath, DWORD dwFunction) {
     if (!hwndSearch)
         return;
 
@@ -43,7 +43,7 @@ VOID NotifySearchFSC(LPWSTR pszPath, DWORD dwFunction) {
     }
 }
 
-VOID RepaintDriveWindow(HWND hwndChild) {
+void RepaintDriveWindow(HWND hwndChild) {
     MDIClientSizeChange(hwndChild, DRIVEBAR_FLAG);
 }
 
@@ -51,7 +51,7 @@ VOID RepaintDriveWindow(HWND hwndChild) {
 //
 // Note: Assumes UpdateDriveList and InitDriveBitmaps already called!
 
-VOID RedoDriveWindows(HWND hwndActive) {
+void RedoDriveWindows(HWND hwndActive) {
     INT iCurDrive;
 
     if (hwndActive == NULL)
@@ -123,7 +123,7 @@ HWND LocateDirWindow(LPWSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID UpdateAllDirWindows(LPWSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec) {
+void UpdateAllDirWindows(LPWSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec) {
     HWND hwndT;
     HWND hwndDir;
     LPWSTR pT2;
@@ -189,7 +189,7 @@ VOID UpdateAllDirWindows(LPWSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec) {
  * QualifyPath() calls should work.
  */
 
-VOID ChangeFileSystem(DWORD dwFunction, LPCWSTR lpszFile, LPCWSTR lpszTo) {
+void ChangeFileSystem(DWORD dwFunction, LPCWSTR lpszFile, LPCWSTR lpszTo) {
     HWND hwnd, hwndTree, hwndOld;
     WCHAR szFrom[MAXPATHLEN];
     WCHAR szTo[MAXPATHLEN];
@@ -505,7 +505,7 @@ HWND CreateDirWindow(LPWSTR szPath, BOOL bReplaceOpen, HWND hwndActive) {
     return hwndActive;
 }
 
-VOID OpenOrEditSelection(HWND hwndActive, BOOL fEdit) {
+void OpenOrEditSelection(HWND hwndActive, BOOL fEdit) {
     LPWSTR p;
     BOOL bDir;
     DWORD ret;
@@ -636,7 +636,7 @@ OpenExit:
 // window changes (for example, when the status bar is turned on
 // or off).
 
-VOID MDIClientSizeChange(HWND hwndActive, INT iFlags) {
+void MDIClientSizeChange(HWND hwndActive, INT iFlags) {
     RECT rc;
 
     GetClientRect(hwndFrame, &rc);
@@ -1532,27 +1532,27 @@ BOOL AppCommandProc(DWORD id) {
 // SwitchToSafeDrive:
 // Used when on a network drive and disconnecting: must switch to
 // a "safe" drive so that we don't prevent disconnect.
-// IN: VOID
-// OUT: VOID
+// IN: void
+// OUT: void
 // Precond: System directory is on a safe hard disk
 //          szMessage not being used
 // Postcond: Switch to this directory.
 //          szMessage trashed.
 
-VOID SwitchToSafeDrive(VOID) {
+void SwitchToSafeDrive(void) {
     WCHAR szSafePath[MAXPATHLEN];
 
     GetSystemDirectory(szSafePath, COUNTOF(szSafePath));
     SetCurrentDirectory(szSafePath);
 }
 
-VOID AddNetMenuItems(VOID) {
+void AddNetMenuItems(void) {
     HMENU hMenu;
 
     hMenu = GetMenu(hwndFrame);
 }
 
-VOID InitNetMenuItems(VOID) {}
+void InitNetMenuItems(void) {}
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1581,7 +1581,7 @@ VOID InitNetMenuItems(VOID) {}
 //
 /////////////////////////////////////////////////////////////////////
 
-INT UpdateConnectionsOnConnect(VOID) {
+INT UpdateConnectionsOnConnect(void) {
     INT rgiOld[MAX_DRIVES];
 
     BOOL abRemembered[MAX_DRIVES];
@@ -1654,6 +1654,6 @@ ReadMoveStatus() {
     return dwEffect;
 }
 
-VOID UpdateMoveStatus(DWORD dwEffect) {
+void UpdateMoveStatus(DWORD dwEffect) {
     SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM)(dwEffect == DROPEFFECT_MOVE ? L"MOVE PENDING" : NULL));
 }

@@ -89,7 +89,7 @@ INT iDirsRead;
 DWORD dwLastUpdateTime;
 INT maxExtLast;
 
-VOID UpdateIfDirty(HWND hWnd);
+void UpdateIfDirty(HWND hWnd);
 INT FillSearchLB(HWND hwndLB, LPWSTR szSearchFileSpec, BOOL bRecurse, BOOL bIncludeSubdirs);
 INT SearchList(
     HWND hwndLB,
@@ -100,7 +100,7 @@ INT SearchList(
     LPXDTALINK* plpStart,
     INT iFileCount,
     BOOL bRoot);
-VOID ClearSearchLB(BOOL bWorkerCall);
+void ClearSearchLB(BOOL bWorkerCall);
 DWORD WINAPI SearchDrive(LPVOID lpParameter);
 
 #define SEARCH_FILE_WIDTH_DEFAULT 50
@@ -383,7 +383,7 @@ SearchEnd:
     return iFileCount;
 }
 
-VOID FixUpFileSpec(LPWSTR szFileSpec) {
+void FixUpFileSpec(LPWSTR szFileSpec) {
     WCHAR szTemp[MAXPATHLEN + 1];
     LPWSTR p;
 
@@ -487,7 +487,7 @@ INT FillSearchLB(HWND hwndLB, LPWSTR szSearchFileSpec, BOOL bRecurse, BOOL bIncl
     return (iRet);
 }
 
-VOID GetSearchPath(HWND hWnd, LPWSTR pszPath) {
+void GetSearchPath(HWND hWnd, LPWSTR pszPath) {
     LPWSTR p;
 
     WCHAR szTemp[MAXPATHLEN + 32];
@@ -512,7 +512,7 @@ VOID GetSearchPath(HWND hWnd, LPWSTR pszPath) {
 //
 //--------------------------------------------------------------------------
 
-VOID UpdateSearchStatus(HWND hwndLB, INT nCount) {
+void UpdateSearchStatus(HWND hwndLB, INT nCount) {
     SetStatusText(0, SST_FORMAT | SST_RESOURCE, (LPWSTR)MAKEINTRESOURCE(IDS_SEARCHMSG), nCount);
 
     if (SearchInfo.hThread)
@@ -918,7 +918,7 @@ SearchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     return (0L);
 }
 
-VOID UpdateIfDirty(HWND hwnd) {
+void UpdateIfDirty(HWND hwnd) {
     if (GetWindowLongPtr(hwnd, GWL_FSCFLAG)) {
         //
         // I am clean
@@ -928,11 +928,11 @@ VOID UpdateIfDirty(HWND hwnd) {
     }
 }
 
-VOID LockSearchFile() {
+void LockSearchFile() {
     EnableMenuItem(GetMenu(hwndFrame), IDM_SEARCH, MF_BYCOMMAND | MF_GRAYED);
 }
 
-VOID UnlockSearchFile() {
+void UnlockSearchFile() {
     EnableMenuItem(GetMenu(hwndFrame), IDM_SEARCH, MF_BYCOMMAND | MF_ENABLED);
 }
 
@@ -1046,9 +1046,9 @@ INT_PTR CALLBACK SearchProgDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 //
 // Synopsis: Handles display window of search results/brings up hwndSearch
 //
-// IN VOID
+// IN void
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:  At this point, either hwndSearch & hwndLB are valid,
@@ -1070,7 +1070,7 @@ INT_PTR CALLBACK SearchProgDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID SearchEnd(VOID) {
+void SearchEnd(void) {
     HWND hwndMDIChild;
 
     if (_SEARCH_INFO::SEARCH_MDICLOSE == SearchInfo.eStatus) {
@@ -1157,7 +1157,7 @@ SearchDrive(LPVOID lpParameter) {
 //
 // INC  bWorkerCall  --  T/F if called by worker thread
 //
-// Return:   VOID
+// Return:   void
 //
 //
 // Assumes:  * hThread non-NULL if worker thread up
@@ -1174,7 +1174,7 @@ SearchDrive(LPVOID lpParameter) {
 //
 /////////////////////////////////////////////////////////////////////
 
-VOID ClearSearchLB(BOOL bWorkerCall) {
+void ClearSearchLB(BOOL bWorkerCall) {
     //
     // When to free up:
     //

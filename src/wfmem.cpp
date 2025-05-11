@@ -68,7 +68,7 @@ MemNew() {
     return lpStart;
 }
 
-VOID MemDelete(LPXDTALINK lpStart) {
+void MemDelete(LPXDTALINK lpStart) {
     LPXDTALINK lpLink;
     LPXDTAHEAD lpHead;
     LPXDTA* plpxdta;

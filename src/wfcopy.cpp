@@ -18,7 +18,7 @@ BOOL* pbConfirmReadOnlyAll;
 
 INT ManySource;
 
-VOID wfYield(VOID);
+void wfYield(void);
 
 INT CopyMoveRetry(LPWSTR, INT, PBOOL);
 DWORD CopyError(LPWSTR, LPWSTR, DWORD, DWORD, INT, BOOL, BOOL);
@@ -46,7 +46,7 @@ DWORD GetNextPair(
     PDWORD pdwError,
     BOOL bIsLFNDriveDest);
 INT CheckMultiple(LPWSTR pInput);
-VOID DialogEnterFileStuff(HWND hwnd);
+void DialogEnterFileStuff(HWND hwnd);
 DWORD SafeFileRemove(LPWSTR szFileOEM);
 BOOL IsWindowsFile(LPWSTR szFileOEM);
 
@@ -134,7 +134,7 @@ FindFileName(LPWSTR pPath) {
  * replaced with AddBackslash(); lstrcat()
  */
 
-VOID AppendToPath(LPWSTR pPath, LPCWSTR pMore) {
+void AppendToPath(LPWSTR pPath, LPCWSTR pMore) {
     /* Don't append a \ to empty paths. */
     if (*pPath) {
         while (*pPath)
@@ -709,7 +709,7 @@ DiskNotThere:
     return 0;
 }
 
-VOID BuildDateLine(LPWSTR szTemp, PLFNDTA plfndta) {
+void BuildDateLine(LPWSTR szTemp, PLFNDTA plfndta) {
     wsprintf(szTemp, szBytes, plfndta->fd.nFileSizeLow);
     lstrcat(szTemp, szSpace);
     PutDate(&plfndta->fd.ftLastWriteTime, szTemp + lstrlen(szTemp));
@@ -726,7 +726,7 @@ typedef struct {
     BOOL bNoAccess;
 } PARAM_REPLACEDLG, FAR* LPPARAM_REPLACEDLG;
 
-VOID SetDlgItemPath(HWND hDlg, INT id, LPWSTR pszPath) {
+void SetDlgItemPath(HWND hDlg, INT id, LPWSTR pszPath) {
     RECT rc;
     HDC hdc;
     HFONT hFont;
@@ -977,7 +977,7 @@ CurPDTA(PCOPYROOT pcr) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-VOID GetNextCleanup(PCOPYROOT pcr) {
+void GetNextCleanup(PCOPYROOT pcr) {
     while (pcr->cDepth) {
         WFFindClose(CurPDTA(pcr));
         pcr->cDepth--;
@@ -1446,7 +1446,7 @@ ReturnPair:
     return dwOp;
 }
 
-VOID CdDotDot(LPWSTR szOrig) {
+void CdDotDot(LPWSTR szOrig) {
     WCHAR szTemp[MAXPATHLEN];
 
     lstrcpy(szTemp, szOrig);
@@ -1506,7 +1506,7 @@ INT CheckMultiple(LPWSTR pInput) {
 
 /* Prevents the user from diddling anything other than the cancel button. */
 
-VOID DialogEnterFileStuff(HWND hwnd) {
+void DialogEnterFileStuff(HWND hwnd) {
     HWND hwndT;
 
     //
@@ -1541,7 +1541,7 @@ VOID DialogEnterFileStuff(HWND hwnd) {
 // used for both the drag drop status dialogs and the manual user
 // entry dialogs so be careful what you change
 
-VOID Notify(HWND hDlg, WORD idMessage, LPWSTR szFrom, LPWSTR szTo) {
+void Notify(HWND hDlg, WORD idMessage, LPWSTR szFrom, LPWSTR szTo) {
     WCHAR szTemp[40];
 
     if (idMessage) {
@@ -1755,7 +1755,7 @@ WFMoveCopyDriver(PCOPYINFO pCopyInfo) {
 //         FUNC_COPY   - Copy files in pFrom to pTo
 //
 //
-// Return: VOID
+// Return: void
 //
 //         On finish, sends FS_COPYDONE back.
 //            wParam == error code
