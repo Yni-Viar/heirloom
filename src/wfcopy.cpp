@@ -1031,10 +1031,9 @@ GetNextPair(
                 //
                 pDTA->fd.dwFileAttributes |= ATTR_RETURNED;
 
-#ifdef FASTMOVE
                 if (pcr->bFastMove)
                     goto FastMoveSkipDir;
-#endif
+
                 // Check if we should skip an entry because it was e.g. an reparse point
                 if (pDTA->fd.dwFileAttributes & (ATTR_SYMBOLIC | ATTR_JUNCTION)) {
                     RemoveLast(pcr->szDest);
@@ -1074,18 +1073,11 @@ GetNextPair(
                 //
                 RemoveLast(pcr->sz);
 
-#ifdef FASTMOVE
             FastMoveSkipDir:
-#endif
 
                 RemoveLast(pcr->szDest);
 
-#ifdef FASTMOVE
                 if (pcr->fRecurse && !pcr->bFastMove) {
-#else
-                if (pcr->fRecurse) {
-#endif
-
                     //
                     // Tell the move/copy driver it can now delete
                     // the source directory if necessary.
@@ -1097,9 +1089,7 @@ GetNextPair(
                     goto ReturnPair;
                 }
 
-#ifdef FASTMOVE
                 pcr->bFastMove = FALSE;
-#endif
 
                 //
                 // Not recursing, get more stuff.
@@ -1877,9 +1867,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
 
         oper = GetNextPair(pcr, szSource, szDest, szDestSpec, pCopyInfo->dwFunc, &ret, bIsLFNDriveDest);
 
-#ifdef FASTMOVE
         pcr->bFastMove = FALSE;
-#endif
 
         // Check for no operation or error
 
@@ -2132,7 +2120,6 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                 Notify(hdlgProgress, IDS_CREATINGMSG, szDest, szNULL);
 
                 if (pCopyInfo->dwFunc == FUNC_MOVE) {
-#ifdef FASTMOVE
                     if ((CHAR_COLON == pcr->sz[1]) && (CHAR_COLON == szDest[1]) &&
                         (DRIVEID(pcr->sz) == DRIVEID(szDest))) {
                         //
@@ -2153,12 +2140,9 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                         pcr->bFastMove = TRUE;
                         goto DoMove;
                     }
-#endif
                 }
 
-#ifdef FASTMOVE
             DoMkDir:
-#endif
 
                 ret = WF_CreateDirectory(hdlgProgress, szDest, szSource);
 
@@ -2485,8 +2469,6 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                     if (ret == DE_OPCANCELLED)
                         goto CancelWholeOperation;
 
-#ifdef FASTMOVE
-
                     if (pcr->bFastMove) {
                         //
                         // In the case of access denied, don't try and recurse
@@ -2504,7 +2486,6 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                             goto DoMkDir;
                         }
                     }
-#endif
 
                     if (!ret) {
                         // set attributes of dest to those of the source
