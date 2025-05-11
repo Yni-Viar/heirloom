@@ -497,11 +497,6 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
             break;
         }
 
-        case WM_LBTRACKPOINT:
-            // Don't pass this message to the old window proc
-            // This prevents the old drag and drop system from activating
-            return 0;
-
         case WM_RBUTTONDOWN:
             break;
     }
@@ -745,10 +740,6 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 hwnd, (DWORD)GetWindowLongPtr(hwndParent, GWL_VIEW), (LPDRAWITEMSTRUCT)lParam,
                 ((LPDRAWITEMSTRUCT)lParam)->hwndItem == GetFocus());
             break;
-
-        case WM_LBTRACKPOINT:
-            // Disable old style drag and drop
-            return FALSE;
 
         case WM_MEASUREITEM:
 

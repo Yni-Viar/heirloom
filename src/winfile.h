@@ -48,16 +48,6 @@
 #undef atoi
 #endif
 
-// old winuserp.h
-#define WM_DROPOBJECT 0x022A
-#define WM_QUERYDROPOBJECT 0x022B
-#define WM_BEGINDRAG 0x022C
-#define WM_DRAGLOOP 0x022D
-#define WM_DRAGSELECT 0x022E
-#define WM_DRAGMOVE 0x022F
-
-#define WM_LBTRACKPOINT 0x0131
-
 typedef WCHAR TUCHAR, *PTUCHAR;
 
 //

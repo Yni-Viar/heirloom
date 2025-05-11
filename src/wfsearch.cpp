@@ -893,10 +893,6 @@ SearchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             break;
 #undef pLBItem
 
-        case WM_LBTRACKPOINT:
-            // Disable old style drag and drop
-            return FALSE;
-
         case WM_SYSCOMMAND:
             // Prevent minimization of MDI child windows
             // This is a workaround for the fact that we can't disable the minimize button
