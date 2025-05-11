@@ -1141,14 +1141,6 @@ Extern UINT dwMenuIDs[];
 #undef Extern
 #undef EQ
 
-// WFPNG.C
-
-typedef enum { PNG_TYPE_DRIVE, PNG_TYPE_ICON } PNG_TYPE;
-
-void PngStartup();
-void PngShutdown();
-void PngDraw(HDC hdc, UINT dpi, int x, int y, PNG_TYPE type, int index);
-
 // Recycle Bin functions
 BOOL IsRecycleBinEmpty();
 BOOL GetRecycleBinSize(PLARGE_INTEGER pliSize);

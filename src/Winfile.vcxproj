@@ -217,6 +217,7 @@
     <ClInclude Include="wfexti.h" />
     <ClInclude Include="wfinfo.h" />
     <ClInclude Include="wfmem.h" />
+    <ClInclude Include="wfpng.h" />
     <ClInclude Include="winexp.h" />
     <ClInclude Include="winfile.h" />
     <ClInclude Include="wnetcaps.h" />

@@ -14,6 +14,7 @@
 #include "treectl.h"
 #include "lfn.h"
 #include "wfcopy.h"
+#include "wfpng.h"
 #include <commctrl.h>
 #include <shlobj.h>
 

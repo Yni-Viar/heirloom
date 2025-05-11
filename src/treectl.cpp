@@ -16,6 +16,7 @@
 #include "wfcopy.h"
 #include "wfdrop.h"
 #include "wfdragsrc.h"
+#include "wfpng.h"
 #include <commctrl.h>
 #include <winnls.h>
 

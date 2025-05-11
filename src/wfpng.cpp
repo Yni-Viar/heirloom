@@ -1,5 +1,5 @@
+#include "wfpng.h"
 #include "winfile.h"
-#include <windows.h>
 #include <assert.h>
 #include <wincodec.h>
 
