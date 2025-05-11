@@ -361,19 +361,12 @@ void CheckEsc(LPWSTR szFile) {
             case CHAR_SPACE:
             case CHAR_COMMA:
             case CHAR_SEMICOLON:
-#ifdef CARETESC
-            case CHAR_CARET:
-#endif
             case CHAR_DQUOTE: {
                 // this path contains an annoying character
                 lstrcpy(szT, szFile);
                 p = szFile;
                 *p++ = CHAR_DQUOTE;
                 for (pT = szT; *pT;) {
-#ifdef CARETESC
-                    if (*pT == CHAR_CARET || *pT == CHAR_DQUOTE)
-                        *p++ = CHAR_CARET;
-#endif
                     *p++ = *pT++;
                 }
                 *p++ = CHAR_DQUOTE;
@@ -889,14 +882,6 @@ GetNextFile(LPWSTR pFrom, LPWSTR pTo, int cchMax) {
             // be stored in the pTo string, which is FATAL!
             continue;
         }
-
-#ifdef CARETESC
-        if (*pFrom == CHAR_CARET) {
-            ++pFrom;
-            if (!*pFrom)
-                break;
-        }
-#endif
 
         if (i < cchMax - 1) {
             i++;
