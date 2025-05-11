@@ -513,7 +513,7 @@ GetComps:
 /*--------------------------------------------------------------------------*/
 
 BOOL IsRootDirectory(LPWSTR pPath) {
-    if (!lstrcmpi(pPath + 1, TEXT(":\\")))
+    if (!lstrcmpi(pPath + 1, L":\\"))
         return (TRUE);
     if (!lstrcmpi(pPath, SZ_BACKSLASH))
         return (TRUE);
@@ -947,16 +947,16 @@ IsInvalidPath(LPWSTR pPath) {
 
     sz[n] = CHAR_NULL;
 
-    if (!lstrcmpi(sz, TEXT("CON")))
+    if (!lstrcmpi(sz, L"CON"))
         return ERROR_INVALID_NAME;
 
-    if (!lstrcmpi(sz, TEXT("MS$MOUSE")))
+    if (!lstrcmpi(sz, L"MS$MOUSE"))
         return ERROR_INVALID_NAME;
 
-    if (!lstrcmpi(sz, TEXT("EMMXXXX0")))
+    if (!lstrcmpi(sz, L"EMMXXXX0"))
         return ERROR_INVALID_NAME;
 
-    if (!lstrcmpi(sz, TEXT("CLOCK$")))
+    if (!lstrcmpi(sz, L"CLOCK$"))
         return ERROR_INVALID_NAME;
 
     return ERROR_SUCCESS;

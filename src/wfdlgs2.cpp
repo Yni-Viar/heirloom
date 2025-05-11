@@ -351,7 +351,7 @@ VOID MessWithRenameDirPath(LPWSTR pszPath) {
     //
     // prepend "..\" to this non absolute path
     //
-    lstrcpy(szPath, TEXT("..\\"));
+    lstrcpy(szPath, L"..\\");
     lstrcat(szPath, pszPath);
     lstrcpy(pszPath, szPath);
 }
@@ -497,7 +497,7 @@ SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                 for (drive = 0; drive < MAX_DRIVES; drive++) {
                     if (drive != driveCur && rgszDirs[drive] != NULL) {
                         if (!fFirst) {
-                            wcsncat_s(szDirs, MAXPATHLEN, TEXT(";"), 1);
+                            wcsncat_s(szDirs, MAXPATHLEN, L";", 1);
                         }
                         fFirst = FALSE;
 
@@ -784,8 +784,8 @@ UINT cchXlateString;
 #define VER_BLOCK_OFFSET 24  // to get block size (chars)
 
 // (not localized)
-WCHAR szFileVersion[] = TEXT("FileVersion");
-WCHAR szLegalCopyright[] = TEXT("LegalCopyright");
+WCHAR szFileVersion[] = L"FileVersion";
+WCHAR szLegalCopyright[] = L"LegalCopyright";
 
 WCHAR wszFileVersion[] = L"FileVersion";
 WCHAR wszLegalCopyright[] = L"LegalCopyright";
@@ -893,7 +893,7 @@ GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
     // We must always get the translation since we want to display
     // all the languages anyway.
     //
-    VerQueryValue(lpVersionBuffer, TEXT("\\VarFileInfo\\Translation"), (LPVOID*)&lpXlate, &cbValueTranslation);
+    VerQueryValue(lpVersionBuffer, L"\\VarFileInfo\\Translation", (LPVOID*)&lpXlate, &cbValueTranslation);
 
     if (cbValueTranslation != 0) {
         //
@@ -914,7 +914,7 @@ GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
     //
     // First try the language we are currently in.
     //
-    wsprintf(szVersionKey, TEXT("\\StringFileInfo\\%04X04B0\\"), LANGIDFROMLCID(lcid));
+    wsprintf(szVersionKey, L"\\StringFileInfo\\%04X04B0\\", LANGIDFROMLCID(lcid));
 
     lpszValue = GetVersionDatum(szFileVersion);
 
@@ -925,7 +925,7 @@ GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
     // Now try the first translation
     //
     if (cbValueTranslation != 0) {
-        wsprintf(szVersionKey, TEXT("\\StringFileInfo\\%04X%04X\\"), *lpXlate, *(lpXlate + 1));
+        wsprintf(szVersionKey, L"\\StringFileInfo\\%04X%04X\\", *lpXlate, *(lpXlate + 1));
 
         //
         // a required field
@@ -943,7 +943,7 @@ GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
     //
     // Now try the english, unicode
     //
-    lstrcpy(szVersionKey, TEXT("\\StringFileInfo\\040904B0\\"));
+    lstrcpy(szVersionKey, L"\\StringFileInfo\\040904B0\\");
     lpszValue = GetVersionDatum(szFileVersion);
 
     if (lpszValue != NULL)
@@ -953,7 +953,7 @@ GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
     // Try english with various code pages
     // (04E4) here
     //
-    lstrcpy(szVersionKey, TEXT("\\StringFileInfo\\040904E4\\"));
+    lstrcpy(szVersionKey, L"\\StringFileInfo\\040904E4\\");
     lpszValue = GetVersionDatum(szFileVersion);
 
     if (lpszValue != NULL)
@@ -963,7 +963,7 @@ GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
     // Try english with various code pages
     // (0000) here
     //
-    lstrcpy(szVersionKey, TEXT("\\StringFileInfo\\04090000\\"));
+    lstrcpy(szVersionKey, L"\\StringFileInfo\\04090000\\");
     lpszValue = GetVersionDatum(szFileVersion);
 
     return lpszValue;
@@ -1220,7 +1220,7 @@ INT InitPropertiesDialog(HWND hDlg) {
                     qCSize.HighPart = 0;
                 }
                 PutSize(&qCSize, szNum);
-                wsprintf(szTemp, TEXT("%s%%"), szNum);
+                wsprintf(szTemp, L"%s%%", szNum);
                 SetDlgItemText(hDlg, IDD_CRATIO, szTemp);
             } else {
                 ShowWindow(GetDlgItem(hDlg, IDD_CSIZELABEL), SW_HIDE);
@@ -1251,7 +1251,7 @@ INT InitPropertiesDialog(HWND hDlg) {
         SetDlgItemText(hDlg, IDD_SIZE, szTemp);
 
         PutDate(&ftLastWrite, szTemp);
-        lstrcat(szTemp, TEXT("  "));
+        lstrcat(szTemp, L"  ");
         PutTime(&ftLastWrite, szTemp + lstrlen(szTemp));
 
         SetDlgItemText(hDlg, IDD_DATE, szTemp);
@@ -1295,7 +1295,7 @@ INT InitPropertiesDialog(HWND hDlg) {
 
                 OffsetRect(&rc, 0, dyButton);
                 hwnd = CreateWindowEx(
-                    0L, TEXT("button"), szTemp, WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_PUSHBUTTON, rc.left, rc.top,
+                    0L, L"button", szTemp, WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_PUSHBUTTON, rc.left, rc.top,
                     rc.right - rc.left, rc.bottom - rc.top, hDlg, (HMENU)(DWORD_PTR)(i + IDD_NETWORKFIRST),
                     hAppInstance, NULL);
 

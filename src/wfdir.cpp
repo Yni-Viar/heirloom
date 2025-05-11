@@ -288,15 +288,15 @@ VOID CreateLBLine(DWORD dwLineFormat, LPXDTA lpxdta, LPWSTR szBuffer) {
         *pch++ = CHAR_TAB;
         if (dwAttr & ATTR_DIR) {
             if (dwAttr & ATTR_JUNCTION)
-                lstrcpy(pch, TEXT("<JUNCTION>"));
+                lstrcpy(pch, L"<JUNCTION>");
             else if (dwAttr & ATTR_SYMBOLIC)
-                lstrcpy(pch, TEXT("<SYMLINKD>"));
+                lstrcpy(pch, L"<SYMLINKD>");
             else
-                lstrcpy(pch, TEXT("<DIR>"));
+                lstrcpy(pch, L"<DIR>");
             pch += lstrlen(pch);
         } else {
             if (dwAttr & ATTR_SYMBOLIC) {
-                lstrcpy(pch, TEXT("<SYMLINK>"));
+                lstrcpy(pch, L"<SYMLINK>");
                 pch += lstrlen(pch);
             } else {
                 pch += PutSize(&lpxdta->qFileSize, pch);
@@ -1661,7 +1661,7 @@ INT PutSize(PLARGE_INTEGER pqSize, LPWSTR szOutStr) {
     /*
      *  Convert it into a string.
      */
-    wsprintf(szBuffer, TEXT("%I64u"), pqSize->QuadPart);
+    wsprintf(szBuffer, L"%I64u", pqSize->QuadPart);
 
     /*
      *  Format the string.
@@ -1935,7 +1935,7 @@ INT FixTabsAndThings(HWND hwndLB, WORD* pwTabs, INT iMaxWidthFileName, INT iMaxW
     // max size digits field  (allow for large integer - 2 dwords)
     //
     if (dwViewOpts & VIEW_SIZE) {
-        GetTextExtentPoint32(hdc, TEXT("999,999,999,999"), 15, &size);
+        GetTextExtentPoint32(hdc, L"999,999,999,999", 15, &size);
         i += size.cx + dxText;
         *pwTabs++ = (WORD)i;  // Size
     }

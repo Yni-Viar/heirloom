@@ -14,7 +14,7 @@
 
 #if DBG
 
-WCHAR szAsrtFmt[] = TEXT("Assertion Failure in %s at %d\n");
+WCHAR szAsrtFmt[] = L"Assertion Failure in %s at %d\n";
 WCHAR szFmt[300];
 unsigned long TraceFlags = BF_START
     //     | BF_PROCTRACE
@@ -36,7 +36,7 @@ VOID DbgAssert(LPCWSTR file, int line) {
 
 VOID DbgTrace(DWORD tf, LPWSTR lpstr) {
     if (tf & TraceFlags) {
-        wsprintf(szFmt, TEXT("%s\n"), lpstr);
+        wsprintf(szFmt, L"%s\n", lpstr);
         OutputDebugString(szFmt);
         //        DbgPrint("%s\n", lpstr);
         if (tf & BreakFlags) {
@@ -47,7 +47,7 @@ VOID DbgTrace(DWORD tf, LPWSTR lpstr) {
 
 VOID DbgBreak(DWORD bf, LPCWSTR file, int line) {
     if (bf & BreakFlags) {
-        wsprintf(szFmt, TEXT("BREAK at %s:%d\n"), file, line);
+        wsprintf(szFmt, L"BREAK at %s:%d\n", file, line);
         OutputDebugString(szFmt);
         //        DbgPrint("BREAK at %s:%d\n", file, line);
         DebugBreak();
@@ -59,7 +59,7 @@ VOID DbgPrint1(DWORD tf, LPCWSTR fmt, LPWSTR p1) {
         wsprintf(szFmt, fmt, p1);
         OutputDebugString(szFmt);
         //        DbgPrint("%d",GetTickCount());
-        OutputDebugString(TEXT("\n"));
+        OutputDebugString(L"\n");
         //        DbgPrint(fmt, p1);
         //        DbgPrint("\n");
     }
@@ -69,16 +69,16 @@ VOID DbgPrint1(DWORD tf, LPCWSTR fmt, LPWSTR p1) {
 }
 
 VOID DbgEnter(LPCWSTR funName) {
-    DbgPrint1(BF_PROCTRACE, TEXT("> %s "), (LPWSTR)funName);
+    DbgPrint1(BF_PROCTRACE, L"> %s ", (LPWSTR)funName);
 }
 
 VOID DbgLeave(LPCWSTR funName) {
-    DbgPrint1(BF_PROCTRACE, TEXT(" <%s "), (LPWSTR)funName);
+    DbgPrint1(BF_PROCTRACE, L" <%s ", (LPWSTR)funName);
 }
 
 VOID DbgTraceMessage(LPWSTR funName, LPWSTR msgName) {
     if (BF_MSGTRACE & TraceFlags) {
-        wsprintf(szFmt, TEXT("MSG: %s - %s\n"), funName, msgName);
+        wsprintf(szFmt, L"MSG: %s - %s\n", funName, msgName);
         OutputDebugString(szFmt);
         //        DbgPrint("MSG: %s - %s\n", funName, msgName);
     }
@@ -89,7 +89,7 @@ VOID DbgTraceMessage(LPWSTR funName, LPWSTR msgName) {
 
 VOID DbgTraceDefMessage(LPWSTR funName, WORD msgId) {
     if (BF_DEFMSGTRACE & TraceFlags) {
-        wsprintf(szFmt, TEXT("MSG: %s - default(0x%x)\n"), funName, msgId);
+        wsprintf(szFmt, L"MSG: %s - default(0x%x)\n", funName, msgId);
         OutputDebugString(szFmt);
         //        DbgPrint("MSG: %s - default(0x%x)\n", funName, msgId);
     }

@@ -46,7 +46,7 @@ VOID SaveWindows(HWND hwndMain) {
     // we tranlate this into screen coordinates prior to saving;
     // also, the values saved for the third and fourth values are width and height.
     wsprintf(
-        buf2, TEXT("%ld,%ld,%ld,%ld, , ,%u"), rcT.left + wp.rcNormalPosition.left, rcT.top + wp.rcNormalPosition.top,
+        buf2, L"%ld,%ld,%ld,%ld, , ,%u", rcT.left + wp.rcNormalPosition.left, rcT.top + wp.rcNormalPosition.top,
         wp.rcNormalPosition.right - wp.rcNormalPosition.left, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top,
         wp.showCmd);
 
@@ -95,7 +95,7 @@ DO_AGAIN:
 
             // NOTE: MDI child windows are in child coordinats; no translation is done.
             wsprintf(
-                buf2, TEXT("%ld,%ld,%ld,%ld,%ld,%ld,%u,%lu,%lu,%lu,%d,%s"), wp.rcNormalPosition.left,
+                buf2, L"%ld,%ld,%ld,%ld,%ld,%ld,%u,%lu,%lu,%lu,%d,%s", wp.rcNormalPosition.left,
                 wp.rcNormalPosition.top, wp.rcNormalPosition.right, wp.rcNormalPosition.bottom, wp.ptMinPosition.x,
                 wp.ptMinPosition.y, wp.showCmd, view, sort, attribs, GetSplit(hwnd), szPath);
 
@@ -686,7 +686,7 @@ VOID ActivateCommonContextMenu(HWND hwnd, HWND hwndLB, LPARAM lParam) {
     DWORD cmd, item;
     POINT pt;
 
-    HMENU hMenu = GetSubMenu(LoadMenu(hAppInstance, TEXT("CTXMENU")), 0);
+    HMENU hMenu = GetSubMenu(LoadMenu(hAppInstance, L"CTXMENU"), 0);
 
     // Enable or disable the Git Bash shell menu item based on Git Bash availability
     auto gitBashPath = GetGitBashPath();

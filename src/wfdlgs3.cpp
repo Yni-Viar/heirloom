@@ -165,7 +165,7 @@ AboutDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
         case WM_INITDIALOG:
             if (GetProductVersion(&wMajorVersion, &wMinorVersion, &wBuildNumber, &wRevisionNumber)) {
                 if (SUCCEEDED(StringCchPrintf(
-                        szVersion, CCH_VERSION, TEXT("Version %d.%d.%d.%d"), (int)wMajorVersion, (int)wMinorVersion,
+                        szVersion, CCH_VERSION, L"Version %d.%d.%d.%d", (int)wMajorVersion, (int)wMinorVersion,
                         (int)wBuildNumber, (int)wRevisionNumber))) {
                     SetDlgItemText(hDlg, IDD_VERTEXT, szVersion);
                 }
@@ -716,7 +716,7 @@ BOOL GetProductVersion(WORD* pwMajor, WORD* pwMinor, WORD* pwBuild, WORD* pwRevi
             if (pFileVerInfo) {
                 if (GetFileVersionInfo(szCurrentModulePath, 0, cbVerInfo, pFileVerInfo)) {
                     // Get the pointer to the VS_FIXEDFILEINFO structure
-                    if (VerQueryValue(pFileVerInfo, TEXT("\\"), (LPVOID*)&pFixedFileInfo, &uLen)) {
+                    if (VerQueryValue(pFileVerInfo, L"\\", (LPVOID*)&pFixedFileInfo, &uLen)) {
                         if (pFixedFileInfo && uLen) {
                             *pwMajor = HIWORD(pFixedFileInfo->dwProductVersionMS);
                             *pwMinor = LOWORD(pFixedFileInfo->dwProductVersionMS);

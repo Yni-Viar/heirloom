@@ -410,11 +410,11 @@ AddCommasInternal(LPWSTR szBuf, DWORD dw) {
     // if *szComma[0] == NULL, get out now
 
     if (!szComma[0]) {
-        wsprintf(szBuf, TEXT("%lu"), dw);
+        wsprintf(szBuf, L"%lu", dw);
         return szBuf;
     }
 
-    len = wsprintf(szTemp, TEXT("%lu"), dw);
+    len = wsprintf(szTemp, L"%lu", dw);
     iCommaLen = lstrlen(szComma);
 
     pTemp = szTemp + len - 1;
@@ -624,7 +624,7 @@ VOID SetMDIWindowText(HWND hwnd, LPWSTR szTitle) {
             max_num = cur_num;
         }
 
-        wsprintf(szNumber, TEXT(":%d"), max_num);
+        wsprintf(szNumber, L":%d", max_num);
         lstrcat(szTitle, szNumber);
     }
 

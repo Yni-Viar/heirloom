@@ -600,9 +600,9 @@ VOID OpenOrEditSelection(HWND hwndActive, BOOL fEdit) {
 
             // NOTE: assume system directory and "\\notepad.exe" never exceed MAXPATHLEN
             if (GetSystemDirectory(szNotepad, MAXPATHLEN) != 0)
-                lstrcat(szNotepad, TEXT("\\notepad.exe"));
+                lstrcat(szNotepad, L"\\notepad.exe");
             else
-                lstrcpy(szNotepad, TEXT("notepad.exe"));
+                lstrcpy(szNotepad, L"notepad.exe");
 
             GetPrivateProfileString(szSettings, szEditorPath, szNotepad, szEditPath, MAXPATHLEN, szTheINIFile);
 
@@ -657,7 +657,7 @@ BOOL FmifsLoaded() {
 
 BOOL GetPowershellExePath(LPWSTR szPSPath) {
     HKEY hkey;
-    if (ERROR_SUCCESS != RegOpenKey(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\PowerShell"), &hkey)) {
+    if (ERROR_SUCCESS != RegOpenKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\PowerShell", &hkey)) {
         return FALSE;
     }
 
@@ -673,7 +673,7 @@ BOOL GetPowershellExePath(LPWSTR szPSPath) {
             DWORD dwInstall;
             DWORD dwType;
             DWORD cbValue = sizeof(dwInstall);
-            dwError = RegGetValue(hkey, szSub, TEXT("Install"), RRF_RT_DWORD, &dwType, (PVOID)&dwInstall, &cbValue);
+            dwError = RegGetValue(hkey, szSub, L"Install", RRF_RT_DWORD, &dwType, (PVOID)&dwInstall, &cbValue);
 
             if (dwError == ERROR_SUCCESS && dwInstall == 1) {
                 // this install of powershell is active; get path
@@ -686,7 +686,7 @@ BOOL GetPowershellExePath(LPWSTR szPSPath) {
 
                     cbValue = (MAXPATHLEN - lstrlen(szPSExe)) * sizeof(WCHAR);
                     dwError = RegGetValue(
-                        hkeySub, TEXT("PowerShellEngine"), TEXT("ApplicationBase"),
+                        hkeySub, L"PowerShellEngine", L"ApplicationBase",
                         RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ, &dwType, (PVOID)szPSPath, &cbValue);
 
                     if (dwError == ERROR_SUCCESS) {
@@ -859,8 +859,8 @@ BOOL AppCommandProc(DWORD id) {
             WCHAR szToRun[MAXPATHLEN];
             LPWSTR szDir;
 
-#define ConEmuParamFormat TEXT(" -Single -Dir \"%s\"")
-#define CmdParamFormat TEXT("/k cd /d ")
+#define ConEmuParamFormat L" -Single -Dir \"%s\""
+#define CmdParamFormat L"/k cd /d "
             WCHAR szParams[MAXPATHLEN + max(COUNTOF(CmdParamFormat), COUNTOF(ConEmuParamFormat))];
 
             szDir = GetSelection(1 | 4 | 16, &bDir);
@@ -871,13 +871,13 @@ BOOL AppCommandProc(DWORD id) {
 
             // check if conemu exists: %ProgramFiles%\ConEmu\ConEmu64.exe
             bUseCmd = TRUE;
-            cchEnv = GetEnvironmentVariable(TEXT("ProgramFiles"), szToRun, MAXPATHLEN);
+            cchEnv = GetEnvironmentVariable(L"ProgramFiles", szToRun, MAXPATHLEN);
             if (cchEnv != 0) {
-                if (lstrcmpi(szToRun + cchEnv - 6, TEXT(" (x86)")) == 0) {
+                if (lstrcmpi(szToRun + cchEnv - 6, L" (x86)") == 0) {
                     szToRun[cchEnv - 6] = TEXT('\0');
                 }
                 // NOTE: assume ProgramFiles directory and "\\ConEmu\\ConEmu64.exe" never exceed MAXPATHLEN
-                lstrcat(szToRun, TEXT("\\ConEmu\\ConEmu64.exe"));
+                lstrcat(szToRun, L"\\ConEmu\\ConEmu64.exe");
                 if (PathFileExists(szToRun)) {
                     wsprintf(szParams, ConEmuParamFormat, szDir);
                     bUseCmd = FALSE;
@@ -888,9 +888,9 @@ BOOL AppCommandProc(DWORD id) {
             if (bUseCmd) {
                 // NOTE: assume system directory and "\\cmd.exe" never exceed MAXPATHLEN
                 if (GetSystemDirectory(szToRun, MAXPATHLEN) != 0)
-                    lstrcat(szToRun, TEXT("\\cmd.exe"));
+                    lstrcat(szToRun, L"\\cmd.exe");
                 else
-                    lstrcpy(szToRun, TEXT("cmd.exe"));
+                    lstrcpy(szToRun, L"cmd.exe");
 
                 if (bRunAs) {
                     // Execute a command prompt and cd into the directory
@@ -915,9 +915,9 @@ BOOL AppCommandProc(DWORD id) {
                 StripFilespec(szDir);
 
             if (GetSystemDirectory(szToRun, MAXPATHLEN) != 0)
-                lstrcat(szToRun, TEXT("\\..\\explorer.exe"));
+                lstrcat(szToRun, L"\\..\\explorer.exe");
             else
-                lstrcpy(szToRun, TEXT("explorer.exe"));
+                lstrcpy(szToRun, L"explorer.exe");
 
             WCHAR szParams[MAXPATHLEN] = { TEXT('\0') };
 
@@ -930,7 +930,7 @@ BOOL AppCommandProc(DWORD id) {
             BOOL bDir;
             WCHAR szToRun[MAXPATHLEN];
             LPWSTR szDir;
-#define PowerShellParamFormat TEXT(" -noexit -command \"cd \\\"%s\\\"\"")
+#define PowerShellParamFormat L" -noexit -command \"cd \\\"%s\\\"\""
             WCHAR szParams[MAXPATHLEN + COUNTOF(PowerShellParamFormat)];
 
             szDir = GetSelection(1 | 4 | 16, &bDir);
@@ -1030,7 +1030,7 @@ BOOL AppCommandProc(DWORD id) {
             }
 
             // Try "LongFileNameW"
-            fmtetcDrop.cfFormat = RegisterClipboardFormat(TEXT("LongFileNameW"));
+            fmtetcDrop.cfFormat = RegisterClipboardFormat(L"LongFileNameW");
             if (szFiles == NULL && pDataObj != NULL && pDataObj->GetData(&fmtetcDrop, &stgmed) == S_OK) {
                 LPWSTR lpFile = (LPWSTR)GlobalLock(stgmed.hGlobal);
                 SIZE_T cchFile = wcslen(lpFile);
@@ -1129,7 +1129,7 @@ BOOL AppCommandProc(DWORD id) {
                     SetClipboardData(RegisterClipboardFormat(CFSTR_PREFERREDDROPEFFECT), hMemDropEffect);
                 }
 
-                SetClipboardData(RegisterClipboardFormat(TEXT("LongFileNameW")), hMemLongW);
+                SetClipboardData(RegisterClipboardFormat(L"LongFileNameW"), hMemLongW);
                 SetClipboardData(CF_UNICODETEXT, hMemTextW);
                 SetClipboardData(CF_HDROP, hDrop);
 
@@ -1175,7 +1175,7 @@ BOOL AppCommandProc(DWORD id) {
                 sei.cbSize = sizeof(sei);
                 sei.fMask = SEE_MASK_INVOKEIDLIST;
                 sei.hwnd = hwndActive;
-                sei.lpVerb = TEXT("properties");
+                sei.lpVerb = L"properties";
                 sei.lpFile = szTemp;
 
                 if (!bDir) {
@@ -1655,5 +1655,5 @@ ReadMoveStatus() {
 }
 
 VOID UpdateMoveStatus(DWORD dwEffect) {
-    SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM)(dwEffect == DROPEFFECT_MOVE ? TEXT("MOVE PENDING") : NULL));
+    SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM)(dwEffect == DROPEFFECT_MOVE ? L"MOVE PENDING" : NULL));
 }

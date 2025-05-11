@@ -186,7 +186,7 @@ BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
             FORMATETC descriptor_format = { cp_format_descriptor, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
             FORMATETC contents_format = { cp_format_contents, NULL, DVASPECT_CONTENT, -1, TYMED_ISTREAM };
 
-            fmtetcLFN.cfFormat = RegisterClipboardFormat(TEXT("LongFileNameW"));
+            fmtetcLFN.cfFormat = RegisterClipboardFormat(L"LongFileNameW");
 
             if (pDataObj->QueryGetData(&fmtetcDrop) != S_OK && pDataObj->QueryGetData(&fmtetcLFN) != S_OK &&
                 (pDataObj->QueryGetData(&descriptor_format) != S_OK ||
@@ -545,7 +545,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             GetClientRect(hwndFrame, &rc);
 
             hwndMDIClient = CreateWindow(
-                TEXT("MDIClient"), NULL, WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL | WS_BORDER, 0, 0,
+                L"MDIClient", NULL, WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL | WS_BORDER, 0, 0,
                 rc.right, rc.bottom, hwnd, (HMENU)1, hAppInstance, (LPVOID)&ccs);
 
             if (!hwndMDIClient) {
@@ -662,7 +662,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             }
 
             // win.ini section [colors]
-            if (!lParam || !lstrcmpi((LPWSTR)lParam, TEXT("colors"))) {
+            if (!lParam || !lstrcmpi((LPWSTR)lParam, L"colors")) {
                 // we need to recreate the drives windows to change
                 // the bitmaps
 

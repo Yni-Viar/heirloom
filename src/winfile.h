@@ -144,28 +144,28 @@ INT atoiW(LPWSTR sz);
 #define FF_PRELOAD 0x2000
 #define FF_RETRY 0x4000
 
-#define SZ_NTLDR TEXT("NTLDR")
+#define SZ_NTLDR L"NTLDR"
 
-#define SZ_DQUOTE TEXT("\"")
-#define SZ_DOT TEXT(".")
-#define SZ_DOTDOT TEXT("..")
-#define SZ_QUESTION TEXT("?")
-#define SZ_ACOLONSLASH TEXT("A:\\")
-#define SZ_ACOLON TEXT("A:")
+#define SZ_DQUOTE L"\""
+#define SZ_DOT L"."
+#define SZ_DOTDOT L".."
+#define SZ_QUESTION L"?"
+#define SZ_ACOLONSLASH L"A:\\"
+#define SZ_ACOLON L"A:"
 
-#define SZ_PERCENTD TEXT("%d")
-#define SZ_PERCENTFORMAT TEXT("%3d%%")
+#define SZ_PERCENTD L"%d"
+#define SZ_PERCENTFORMAT L"%3d%%"
 
-#define SZ_NTFSNAME TEXT("NTFS")
-#define SZ_FATNAME TEXT("FAT")
-#define SZ_FILESYSNAMESEP TEXT(" - ")
-#define SZ_CLOSEBRACK TEXT("]")
-#define SZ_BACKSLASH TEXT("\\")
-#define SZ_COLON TEXT(":")
-#define SZ_STAR TEXT("*")
-#define SZ_DOTSTAR TEXT(".*")
-#define SZ_COLONONE TEXT(":1")
-#define SZ_SPACEDASHSPACE TEXT(" - ")
+#define SZ_NTFSNAME L"NTFS"
+#define SZ_FATNAME L"FAT"
+#define SZ_FILESYSNAMESEP L" - "
+#define SZ_CLOSEBRACK L"]"
+#define SZ_BACKSLASH L"\\"
+#define SZ_COLON L":"
+#define SZ_STAR L"*"
+#define SZ_DOTSTAR L".*"
+#define SZ_COLONONE L":1"
+#define SZ_SPACEDASHSPACE L" - "
 
 #define CHAR_DASH TEXT('-')
 #define CHAR_CARET TEXT('^')
@@ -923,11 +923,11 @@ typedef struct _DRIVE_INFO {
 //
 //----------------------------
 
-#define ACLEDIT_DLL TEXT("acledit.dll")
-#define FMIFS_DLL TEXT("fmifs.dll")
-#define MPR_DLL TEXT("mpr.dll")
-#define NTDLL_DLL TEXT("ntdll.dll")
-#define NTSHRUI_DLL TEXT("Ntshrui.dll")
+#define ACLEDIT_DLL L"acledit.dll"
+#define FMIFS_DLL L"fmifs.dll"
+#define MPR_DLL L"mpr.dll"
+#define NTDLL_DLL L"ntdll.dll"
+#define NTSHRUI_DLL L"Ntshrui.dll"
 
 #define WAITNET() WaitLoadEvent(TRUE)
 #define WAITACLEDIT() WaitLoadEvent(FALSE)
@@ -1047,76 +1047,76 @@ Extern BOOL bFSCTimerSet EQ(FALSE);
 
 Extern WCHAR chFirstDrive;  // 'A' or 'a'
 
-Extern WCHAR szExtensions[] EQ(TEXT("Extensions"));
-Extern WCHAR szFrameClass[] EQ(TEXT("WFS_Frame"));
-Extern WCHAR szTreeClass[] EQ(TEXT("WFS_Tree"));
-Extern WCHAR szDrivesClass[] EQ(TEXT("WFS_Drives"));
-Extern WCHAR szTreeControlClass[] EQ(TEXT("DirTree"));
-Extern WCHAR szDirClass[] EQ(TEXT("WFS_Dir"));
-Extern WCHAR szSearchClass[] EQ(TEXT("WFS_Search"));
+Extern WCHAR szExtensions[] EQ(L"Extensions");
+Extern WCHAR szFrameClass[] EQ(L"WFS_Frame");
+Extern WCHAR szTreeClass[] EQ(L"WFS_Tree");
+Extern WCHAR szDrivesClass[] EQ(L"WFS_Drives");
+Extern WCHAR szTreeControlClass[] EQ(L"DirTree");
+Extern WCHAR szDirClass[] EQ(L"WFS_Dir");
+Extern WCHAR szSearchClass[] EQ(L"WFS_Search");
 
-Extern WCHAR szDriveBar[] EQ(TEXT("DriveBar"));
-Extern WCHAR szNewWinOnNetConnect[] EQ(TEXT("NewWinOnNetConnect"));
-Extern WCHAR szDisableVisualStyles[] EQ(TEXT("DisableVisualStyles"));
-Extern WCHAR szUILanguage[] EQ(TEXT("UILanguage"));
-Extern WCHAR szEditorPath[] EQ(TEXT("EditorPath"));
-Extern WCHAR szMirrorContent[] EQ(TEXT("MirrorContent"));
-Extern WCHAR szCachedPath[] EQ(TEXT("CachedPath"));
+Extern WCHAR szDriveBar[] EQ(L"DriveBar");
+Extern WCHAR szNewWinOnNetConnect[] EQ(L"NewWinOnNetConnect");
+Extern WCHAR szDisableVisualStyles[] EQ(L"DisableVisualStyles");
+Extern WCHAR szUILanguage[] EQ(L"UILanguage");
+Extern WCHAR szEditorPath[] EQ(L"EditorPath");
+Extern WCHAR szMirrorContent[] EQ(L"MirrorContent");
+Extern WCHAR szCachedPath[] EQ(L"CachedPath");
 Extern WCHAR szCachedPathIni[MAXPATHLEN];
-Extern WCHAR szGotoCachePunctuation[] EQ(TEXT("GotoCachePunctuation"));
+Extern WCHAR szGotoCachePunctuation[] EQ(L"GotoCachePunctuation");
 Extern WCHAR szPunctuation[MAXPATHLEN];
 
-Extern WCHAR szMinOnRun[] EQ(TEXT("MinOnRun"));
-Extern WCHAR szIndexOnLaunch[] EQ(TEXT("IndexOnLaunch"));
-Extern WCHAR szIndexHiddenSystem[] EQ(TEXT("IndexHiddenSystem"));
-Extern WCHAR szStatusBar[] EQ(TEXT("StatusBar"));
-Extern WCHAR szSaveSettings[] EQ(TEXT("Save Settings"));
-Extern WCHAR szScrollOnExpand[] EQ(TEXT("ScrollOnExpand"));
+Extern WCHAR szMinOnRun[] EQ(L"MinOnRun");
+Extern WCHAR szIndexOnLaunch[] EQ(L"IndexOnLaunch");
+Extern WCHAR szIndexHiddenSystem[] EQ(L"IndexHiddenSystem");
+Extern WCHAR szStatusBar[] EQ(L"StatusBar");
+Extern WCHAR szSaveSettings[] EQ(L"Save Settings");
+Extern WCHAR szScrollOnExpand[] EQ(L"ScrollOnExpand");
 
-Extern WCHAR szConfirmDelete[] EQ(TEXT("ConfirmDelete"));
-Extern WCHAR szConfirmSubDel[] EQ(TEXT("ConfirmSubDel"));
-Extern WCHAR szConfirmReplace[] EQ(TEXT("ConfirmReplace"));
-Extern WCHAR szConfirmMouse[] EQ(TEXT("ConfirmMouse"));
-Extern WCHAR szConfirmFormat[] EQ(TEXT("ConfirmFormat"));
-Extern WCHAR szConfirmReadOnly[] EQ(TEXT("ConfirmSystemHiddenReadOnly"));
+Extern WCHAR szConfirmDelete[] EQ(L"ConfirmDelete");
+Extern WCHAR szConfirmSubDel[] EQ(L"ConfirmSubDel");
+Extern WCHAR szConfirmReplace[] EQ(L"ConfirmReplace");
+Extern WCHAR szConfirmMouse[] EQ(L"ConfirmMouse");
+Extern WCHAR szConfirmFormat[] EQ(L"ConfirmFormat");
+Extern WCHAR szConfirmReadOnly[] EQ(L"ConfirmSystemHiddenReadOnly");
 
-Extern WCHAR szDriveListFace[] EQ(TEXT("DriveListFace"));
+Extern WCHAR szDriveListFace[] EQ(L"DriveListFace");
 
-Extern WCHAR szChangeNotifyTime[] EQ(TEXT("ChangeNotifyTime"));
+Extern WCHAR szChangeNotifyTime[] EQ(L"ChangeNotifyTime");
 Extern UINT uChangeNotifyTime EQ(3000);
 
-Extern WCHAR szDirKeyFormat[] EQ(TEXT("dir%d"));
-Extern WCHAR szWindow[] EQ(TEXT("Window"));
-Extern WCHAR szWindows[] EQ(TEXT("Windows"));
+Extern WCHAR szDirKeyFormat[] EQ(L"dir%d");
+Extern WCHAR szWindow[] EQ(L"Window");
+Extern WCHAR szWindows[] EQ(L"Windows");
 
-Extern WCHAR szFace[] EQ(TEXT("Face"));
-Extern WCHAR szSize[] EQ(TEXT("Size"));
-Extern WCHAR szLowerCase[] EQ(TEXT("LowerCase"));
-Extern WCHAR szFaceWeight[] EQ(TEXT("FaceWeight"));
+Extern WCHAR szFace[] EQ(L"Face");
+Extern WCHAR szSize[] EQ(L"Size");
+Extern WCHAR szLowerCase[] EQ(L"LowerCase");
+Extern WCHAR szFaceWeight[] EQ(L"FaceWeight");
 
-Extern WCHAR szSaveCharset[] EQ(TEXT("Charset"));
+Extern WCHAR szSaveCharset[] EQ(L"Charset");
 
-Extern WCHAR szAddons[] EQ(TEXT("AddOns"));
+Extern WCHAR szAddons[] EQ(L"AddOns");
 
-Extern WCHAR szDefPrograms[] EQ(TEXT("EXE COM BAT PIF"));
-Extern WCHAR szRoamINIPath[] EQ(TEXT("\\Microsoft\\Winfile"));
-Extern WCHAR szBaseINIFile[] EQ(TEXT("WINFILE.INI"));
-Extern WCHAR szPrevious[] EQ(TEXT("Previous"));
-Extern WCHAR szSettings[] EQ(TEXT("Settings"));
-Extern WCHAR szInternational[] EQ(TEXT("Intl"));
-Extern WCHAR szStarDotStar[] EQ(TEXT("*.*"));
-Extern WCHAR szNULL[] EQ(TEXT(""));
-Extern WCHAR szBlank[] EQ(TEXT(" "));
-Extern WCHAR szEllipses[] EQ(TEXT("..."));
-Extern WCHAR szNetwork[] EQ(TEXT("Network"));
-Extern WCHAR szSpace[] EQ(TEXT(" "));
+Extern WCHAR szDefPrograms[] EQ(L"EXE COM BAT PIF");
+Extern WCHAR szRoamINIPath[] EQ(L"\\Microsoft\\Winfile");
+Extern WCHAR szBaseINIFile[] EQ(L"WINFILE.INI");
+Extern WCHAR szPrevious[] EQ(L"Previous");
+Extern WCHAR szSettings[] EQ(L"Settings");
+Extern WCHAR szInternational[] EQ(L"Intl");
+Extern WCHAR szStarDotStar[] EQ(L"*.*");
+Extern WCHAR szNULL[] EQ(L"");
+Extern WCHAR szBlank[] EQ(L" ");
+Extern WCHAR szEllipses[] EQ(L"...");
+Extern WCHAR szNetwork[] EQ(L"Network");
+Extern WCHAR szSpace[] EQ(L" ");
 Extern WCHAR szDirsRead[32];
-Extern WCHAR szCurrentFileSpec[14] EQ(TEXT("*.*"));
+Extern WCHAR szCurrentFileSpec[14] EQ(L"*.*");
 
-Extern WCHAR szComma[4] EQ(TEXT(","));
-Extern WCHAR szDecimal[4] EQ(TEXT("."));
+Extern WCHAR szComma[4] EQ(L",");
+Extern WCHAR szDecimal[4] EQ(L".");
 
-Extern WCHAR szListbox[] EQ(TEXT("ListBox"));  // window style
+Extern WCHAR szListbox[] EQ(L"ListBox");  // window style
 Extern WCHAR pwszInvalidTheme[] EQ(L" ");
 
 Extern WCHAR szTitle[128];

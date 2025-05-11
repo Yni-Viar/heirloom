@@ -501,9 +501,9 @@ VOID UpdateGotoList(HWND hDlg) {
         }
 
         if (bLimited) {
-            SendMessage(hwndLB, LB_ADDSTRING, 0, (LPARAM)TEXT("... limited ..."));
+            SendMessage(hwndLB, LB_ADDSTRING, 0, (LPARAM)L"... limited ...");
         } else if (options.size() > resultCount) {
-            SendMessage(hwndLB, LB_ADDSTRING, 0, (LPARAM)TEXT("... more ..."));
+            SendMessage(hwndLB, LB_ADDSTRING, 0, (LPARAM)L"... more ...");
         }
 
         SendMessage(hwndLB, LB_SETCURSEL, 0, 0);
@@ -583,7 +583,7 @@ GotoDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             wpOrigEditProc = (WNDPROC)SetWindowLongPtr(hwndEdit, GWLP_WNDPROC, (LONG_PTR)GotoEditSubclassProc);
 
             SendDlgItemMessage(
-                hDlg, IDD_GOTOLIST, LB_ADDSTRING, 0, (LPARAM)TEXT("<type name fragments into edit box>"));
+                hDlg, IDD_GOTOLIST, LB_ADDSTRING, 0, (LPARAM)L"<type name fragments into edit box>");
             break;
 
         case WM_COMMAND:
@@ -657,13 +657,13 @@ DWORD WINAPI BuildDirectoryTreeBagOValues(PVOID pv) {
     BagOValues<PDNODE>* pBagNew = new BagOValues<PDNODE>();
     vector<PDNODE>* pNodes = new vector<PDNODE>();
 
-    SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM)TEXT("BUILDING GOTO CACHE"));
+    SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM)L"BUILDING GOTO CACHE");
 
     // Read pathes, which shall be cached from winfile.ini
-    GetPrivateProfileString(szSettings, szGotoCachePunctuation, TEXT("- _."), szPunctuation, MAXPATHLEN, szTheINIFile);
+    GetPrivateProfileString(szSettings, szGotoCachePunctuation, L"- _.", szPunctuation, MAXPATHLEN, szTheINIFile);
 
     // Read pathes, which shall be cached from winfile.ini
-    GetPrivateProfileString(szSettings, szCachedPath, TEXT("c:\\"), szCachedPathIni, MAXPATHLEN, szTheINIFile);
+    GetPrivateProfileString(szSettings, szCachedPath, L"c:\\", szCachedPathIni, MAXPATHLEN, szTheINIFile);
 
     // Create a local copy, because once we save it to winfile.ini on exit we need the original value
     WCHAR szCached[MAXPATHLEN];

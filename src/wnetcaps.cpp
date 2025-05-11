@@ -61,10 +61,10 @@ BOOL WNetStat(INT nIndex) {
         //
 
         dwError =
-            RegOpenKey(HKEY_LOCAL_MACHINE, TEXT("System\\CurrentControlSet\\Control\\NetworkProvider\\Order"), &hKey);
+            RegOpenKey(HKEY_LOCAL_MACHINE, L"System\\CurrentControlSet\\Control\\NetworkProvider\\Order", &hKey);
 
         if (!dwError) {
-            dwError = RegQueryValueEx(hKey, TEXT("ProviderOrder"), NULL, NULL, NULL, &dwcbBuffer);
+            dwError = RegQueryValueEx(hKey, L"ProviderOrder", NULL, NULL, NULL, &dwcbBuffer);
 
             if (ERROR_SUCCESS == dwError && dwcbBuffer > 1) {
                 bNetwork = TRUE;
@@ -81,7 +81,7 @@ BOOL WNetStat(INT nIndex) {
         // Check for share-ability
         //
 
-        dwError = RegOpenKey(HKEY_LOCAL_MACHINE, TEXT("System\\CurrentControlSet\\Services\\LanmanServer"), &hKey);
+        dwError = RegOpenKey(HKEY_LOCAL_MACHINE, L"System\\CurrentControlSet\\Services\\LanmanServer", &hKey);
 
         if (!dwError) {
             fdwRet |= NS_SHAREDLG | NS_PROPERTYDLG;

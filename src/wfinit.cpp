@@ -23,8 +23,8 @@
 
 #include "dbg.h"
 
-WCHAR szNTlanman[] = TEXT("ntlanman.dll");
-WCHAR szHelv[] = TEXT("Segoe UI");
+WCHAR szNTlanman[] = L"ntlanman.dll";
+WCHAR szHelv[] = L"Segoe UI";
 
 HBITMAP hbmSave;
 
@@ -196,7 +196,7 @@ VOID GetSettings() {
     bScrollOnExpand = GetPrivateProfileInt(szSettings, szScrollOnExpand, bScrollOnExpand, szTheINIFile);
     weight = GetPrivateProfileInt(szSettings, szFaceWeight, 400, szTheINIFile);
 
-    GetPrivateProfileString(szSettings, szSize, TEXT("9"), szTemp, COUNTOF(szTemp), szTheINIFile);
+    GetPrivateProfileString(szSettings, szSize, L"9", szTemp, COUNTOF(szTemp), szTheINIFile);
 
     size = GetHeightFromPointsString(szTemp);
 
@@ -618,7 +618,7 @@ VOID GetTextStuff(HDC hdc) {
     SIZE size;
     TEXTMETRIC tm;
 
-    GetTextExtentPoint32(hdc, TEXT("W"), 1, &size);
+    GetTextExtentPoint32(hdc, L"W", 1, &size);
 
     dxText = size.cx;
     dyText = size.cy;
@@ -743,13 +743,13 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
 
     // setup ini file location
     lstrcpy(szTheINIFile, szBaseINIFile);
-    dwRetval = GetEnvironmentVariable(TEXT("APPDATA"), szBuffer, MAXPATHLEN);
+    dwRetval = GetEnvironmentVariable(L"APPDATA", szBuffer, MAXPATHLEN);
     if (dwRetval > 0 && dwRetval <= (DWORD)(MAXPATHLEN - lstrlen(szRoamINIPath) - 1 - lstrlen(szBaseINIFile) - 1)) {
-        wsprintf(szTheINIFile, TEXT("%s%s"), szBuffer, szRoamINIPath);
+        wsprintf(szTheINIFile, L"%s%s", szBuffer, szRoamINIPath);
         if (CreateDirectory(szTheINIFile, NULL) || GetLastError() == ERROR_ALREADY_EXISTS) {
-            wsprintf(szTheINIFile, TEXT("%s%s\\%s"), szBuffer, szRoamINIPath, szBaseINIFile);
+            wsprintf(szTheINIFile, L"%s%s\\%s", szBuffer, szRoamINIPath, szBaseINIFile);
         } else {
-            wsprintf(szTheINIFile, TEXT("%s\\%s"), szBuffer, szBaseINIFile);
+            wsprintf(szTheINIFile, L"%s\\%s", szBuffer, szBaseINIFile);
         }
     }
 
@@ -861,7 +861,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
     GetPrivateProfileString(szSettings, szDriveListFace, szHelv, szTemp, COUNTOF(szTemp), szTheINIFile);
 
     hfontDriveList = CreateFont(
-        GetHeightFromPointsString(TEXT("8")), 0, 0, 0, 400, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+        GetHeightFromPointsString(L"8"), 0, 0, 0, 400, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
         CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_SWISS, szTemp);
 
     ReleaseDC(NULL, hdcScreen);
@@ -869,8 +869,8 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
     /* Load the accelerator table. */
     hAccel = LoadAccelerators(hInstance, (LPWSTR)MAKEINTRESOURCE(WFACCELTABLE));
 
-    wHelpMessage = RegisterWindowMessage(TEXT("ShellHelp"));
-    wBrowseMessage = RegisterWindowMessage(TEXT("commdlg_help"));
+    wHelpMessage = RegisterWindowMessage(L"ShellHelp");
+    wBrowseMessage = RegisterWindowMessage(L"commdlg_help");
 
     hhkMsgFilter = SetWindowsHook(WH_MSGFILTER, MessageFilter);
 

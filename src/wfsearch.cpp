@@ -957,16 +957,16 @@ INT_PTR CALLBACK SearchProgDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
             SetDlgItemText(hDlg, IDD_NAME, szTemp);
 
             if (SearchInfo.ftSince.dwHighDateTime == 0 && SearchInfo.ftSince.dwLowDateTime == 0) {
-                SetDlgItemText(hDlg, IDD_DATE, TEXT("n/a"));
+                SetDlgItemText(hDlg, IDD_DATE, L"n/a");
             } else {
                 SYSTEMTIME st;
                 FILETIME ftLocal;
                 FileTimeToLocalFileTime(&SearchInfo.ftSince, &ftLocal);
                 FileTimeToSystemTime(&ftLocal, &st);
                 if (st.wHour == 0 && st.wMinute == 0) {
-                    wsprintf(szTemp, TEXT("%4d-%2d-%2d"), st.wYear, st.wMonth, st.wDay);
+                    wsprintf(szTemp, L"%4d-%2d-%2d", st.wYear, st.wMonth, st.wDay);
                 } else {
-                    wsprintf(szTemp, TEXT("%4d-%2d-%2d %02d:%02d"), st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute);
+                    wsprintf(szTemp, L"%4d-%2d-%2d %02d:%02d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute);
                 }
                 SetDlgItemText(hDlg, IDD_DATE, szTemp);
             }

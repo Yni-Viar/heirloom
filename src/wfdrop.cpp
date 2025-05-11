@@ -353,7 +353,7 @@ LPWSTR QuotedContentList(IDataObject* pDataObject) {
                         CheckEsc(szTempFile);
 
                         if (szFiles[0] != '\0')
-                            lstrcat(szFiles, TEXT(" "));
+                            lstrcat(szFiles, L" ");
                         lstrcat(szFiles, szTempFile);
                     }
 
@@ -442,7 +442,7 @@ try_ansi_format:
                         CheckEsc(szTempFile);
 
                         if (szFiles[0] != '\0')
-                            lstrcat(szFiles, TEXT(" "));
+                            lstrcat(szFiles, L" ");
                         lstrcat(szFiles, szTempFile);
                     }
 
