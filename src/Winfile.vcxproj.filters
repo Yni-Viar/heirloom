@@ -28,7 +28,6 @@
     <ClCompile Include="wfinfo.cpp" />
     <ClCompile Include="wfinit.cpp" />
     <ClCompile Include="wfmem.cpp" />
-
     <ClCompile Include="wfsearch.cpp" />
     <ClCompile Include="wftree.cpp" />
     <ClCompile Include="wfutil.cpp" />
@@ -39,6 +38,8 @@
     </ClCompile>
     <ClCompile Include="resize.cpp" />
     <ClCompile Include="wfpng.cpp" />
+    <ClCompile Include="wfdragsrc.cpp" />
+    <ClCompile Include="wfrecyclebin.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dbg.h" />
@@ -68,6 +69,7 @@
     </ClInclude>
     <ClInclude Include="resize.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="wfdragsrc.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res.rc" />
