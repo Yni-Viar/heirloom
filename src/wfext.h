@@ -122,3 +122,5 @@ typedef DWORD(APIENTRY* FM_EXT_PROC)(HWND, WPARAM, LPARAM);
 LONG WINAPI FMExtensionProcW(HWND hwnd, WPARAM wEvent, LPARAM lParam);
 
 } /* End of extern "C" { */
+
+void ExtSelItemsInvalidate();

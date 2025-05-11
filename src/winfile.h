@@ -248,10 +248,6 @@ typedef struct _SELINFO* PSELINFO;
 //
 //--------------------------------------------------------------------------
 
-// WFEXT.C
-
-void ExtSelItemsInvalidate();
-
 // WFUTIL.C
 
 LPWSTR pszNextComponent(LPWSTR pszCmdLine);
