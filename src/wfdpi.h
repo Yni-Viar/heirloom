@@ -9,8 +9,7 @@
 
 ********************************************************************/
 
-#ifndef _WFDPI_H
-#define _WFDPI_H
+#pragma once
 
 // DPI awareness functions
 extern UINT g_dpi;
@@ -33,5 +32,3 @@ void HandleDpiChange(HWND hwnd, WPARAM wParam, LPARAM lParam);
 
 // Scale system metric value by current DPI
 int ScaledSystemMetric(int nIndex);
-
-#endif  // _WFDPI_H

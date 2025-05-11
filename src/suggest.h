@@ -7,6 +7,8 @@
 
 ********************************************************************/
 
+#pragma once
+
 #include "windows.h"
 
 #define DE_BIT 29               // bit for app errors

@@ -9,8 +9,7 @@
 
 ********************************************************************/
 
-#ifndef _INC_WFEXT
-#define _INC_WFEXT /* #defined if wfext.h has been included */
+#pragma once
 
 extern "C" {
 
@@ -123,5 +122,3 @@ typedef DWORD(APIENTRY* FM_EXT_PROC)(HWND, WPARAM, LPARAM);
 LONG WINAPI FMExtensionProcW(HWND hwnd, WPARAM wEvent, LPARAM lParam);
 
 } /* End of extern "C" { */
-
-#endif /* _INC_WFEXT */

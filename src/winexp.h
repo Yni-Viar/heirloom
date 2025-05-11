@@ -7,6 +7,10 @@
 
 ********************************************************************/
 
+#pragma once
+
+#include <windows.h>
+
 #ifndef NOATOM
 /* atom manager internals */
 #define ATOMSTRUC struct atomstruct

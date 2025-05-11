@@ -7,6 +7,8 @@
 
 ********************************************************************/
 
+#pragma once
+
 #define SPC_SET_INVALID(q) ((q).HighPart = (LONG) - 1)
 #define SPC_SET_NOTREE(q) ((q).HighPart = (LONG) - 2)
 #define SPC_SET_HITDISK(q) ((q).HighPart = (LONG) - 3)

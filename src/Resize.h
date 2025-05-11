@@ -1,3 +1,4 @@
+#pragma once
 
 #define DIALOGRESIZECONTROLCLASSW L"DialogResizeControlClassW"
 #define DIALOGRESIZECONTROLCLASSA "DialogResizeControlClassA"

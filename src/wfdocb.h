@@ -9,8 +9,8 @@
 
 ********************************************************************/
 
-#ifndef _WFDOCB_H
-#define _WFDOCB_H
+#pragma once
+
 //
 // Doc prototypes; typdefs
 //
@@ -23,5 +23,3 @@ void DocDestruct(PPDOCBUCKET ppDocBucket);
 int DocInsert(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt, LPWSTR lpszFileIcon);
 PDOCBUCKET DocFind(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt);
 HICON DocGetIcon(PDOCBUCKET pDocBucket);
-
-#endif  // ndef _WFDOCB_H

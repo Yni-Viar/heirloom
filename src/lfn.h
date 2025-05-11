@@ -9,6 +9,8 @@
 
 ********************************************************************/
 
+#pragma once
+
 #define CCHMAXFILE MAXPATHLEN  // max size of a long name
 #define CCHMAXPATHCOMP 256
 #define LFNCANON_MASK 1

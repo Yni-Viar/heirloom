@@ -9,8 +9,7 @@
 
 ********************************************************************/
 
-#ifndef _INC_WFEXTI
-#define _INC_WFEXTI
+#pragma once
 
 //------------------ private stuff ---------------------------  /* ;Internal */
 /* ;Internal */
@@ -31,5 +30,3 @@ extern EXTENSION extensions[MAX_EXTENSIONS];                      /* ;Internal *
                                                                   /* ;Internal */
 LRESULT ExtensionMsgProc(UINT wMsg, WPARAM wParam, LPARAM lpSel); /* ;Internal */
 void FreeExtensions();                                            /* ;Internal */
-
-#endif /* _INC_WFEXTI */

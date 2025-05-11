@@ -9,11 +9,10 @@
 
 ********************************************************************/
 
+#pragma once
+
 #include <lmcons.h>
 #include <winnetwk.h>
-
-#ifndef _MPR_H_INCLUDED
-#define _MPR_H_INCLUDED
 
 // For restoring connection stuff. Add by congpay.
 //  const used by connect.c
@@ -263,5 +262,3 @@ typedef DWORD (*PF_NPGetReconnectFlags)(LPWSTR lpLocalName, LPBYTE lpPersistFlag
 #define CONNECT_PROVIDER_FLAGS(dwFlags) ((BYTE)(((dwFlags) & 0xFF000000) >> 24))
 
 }  // extern "C"
-
-#endif  // _MPR_H_INCLUDED

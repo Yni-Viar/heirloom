@@ -4,6 +4,8 @@
 // uses these codes so they really need to be global
 //
 
+#pragma once
+
 #include <windows.h>
 #include "resize.h"
 #include "dlgs.h"

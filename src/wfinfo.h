@@ -10,9 +10,7 @@
 
 ********************************************************************/
 
-#ifndef _WFINFO_H
-#define _WFINFO_H
-
+#pragma once
 #ifdef _GLOBALS
 #define Extern
 #define EQ(x) = x
@@ -146,5 +144,3 @@ Extern BOOL bUpdateRun;
 Extern HANDLE hThreadUpdate;
 Extern HANDLE hEventUpdate;
 Extern HANDLE hEventUpdatePartial;
-
-#endif  // ndef _WFINFO_H

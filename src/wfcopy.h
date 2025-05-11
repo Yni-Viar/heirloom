@@ -9,6 +9,8 @@
 
 ********************************************************************/
 
+#pragma once
+
 #define FIND_DIRS 0x0010
 
 #define CNF_DIR_EXISTS 0x0001

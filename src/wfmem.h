@@ -7,8 +7,7 @@
 
 ********************************************************************/
 
-#ifndef _WFMEM_H
-#define _WFMEM_H
+#pragma once
 
 typedef struct _XDTAHEAD* LPXDTAHEAD;
 typedef struct _XDTA* LPXDTA;
@@ -67,5 +66,3 @@ LPXDTA MemNext(LPXDTALINK* plpLink, LPXDTA lpxdta);
 #define MemLinkToHead(link) ((LPXDTAHEAD)((PBYTE)link + sizeof(XDTALINK)))
 
 #define pdtaNext(pdta) ((LPXDTA)((PBYTE)(pdta) + ((LPXDTA)pdta)->dwSize))
-
-#endif  // ndef _WFMEM_H

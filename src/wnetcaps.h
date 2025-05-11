@@ -7,8 +7,7 @@
 
 ********************************************************************/
 
-#ifndef _WNETCAPS_H
-#define _WNETCAPS_H
+#pragma once
 
 //
 // Prototypes
@@ -24,5 +23,3 @@ BOOL WNetStat(int nIndex);
 #define NS_CONNECTDLG 0x4
 #define NS_SHAREDLG 0x8
 #define NS_PROPERTYDLG 0x10
-
-#endif  // ndef _WNETCAPS_H

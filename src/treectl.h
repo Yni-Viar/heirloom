@@ -7,6 +7,8 @@
 
 ********************************************************************/
 
+#pragma once
+
 #define SHOVEIT(x) (MAKELONG((x), 0))
 
 /* Tree Node Flags. */

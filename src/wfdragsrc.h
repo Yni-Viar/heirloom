@@ -9,8 +9,7 @@
 
 **************************************************************************/
 
-#ifndef WFDRAGSRC_INC
-#define WFDRAGSRC_INC
+#pragma once
 
 #include <ole2.h>
 
@@ -40,5 +39,3 @@ class WF_IDropSource : public IDropSource {
 HRESULT CreateDropSource(WF_IDropSource** ppDropSource);
 HRESULT CreateDataObject(LPWSTR pszFiles, POINT pt, WF_IDataObject** ppDataObject);
 HRESULT WFDoDragDrop(HWND hwnd, LPWSTR pszFiles, POINT pt, DWORD* pdwEffect);
-
-#endif  // WFDRAGSRC_INC
