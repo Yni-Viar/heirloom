@@ -686,8 +686,8 @@ BOOL GetPowershellExePath(LPWSTR szPSPath) {
 
                     cbValue = (MAXPATHLEN - lstrlen(szPSExe)) * sizeof(WCHAR);
                     dwError = RegGetValue(
-                        hkeySub, L"PowerShellEngine", L"ApplicationBase",
-                        RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ, &dwType, (PVOID)szPSPath, &cbValue);
+                        hkeySub, L"PowerShellEngine", L"ApplicationBase", RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ, &dwType,
+                        (PVOID)szPSPath, &cbValue);
 
                     if (dwError == ERROR_SUCCESS) {
                         lstrcat(szPSPath, szPSExe);

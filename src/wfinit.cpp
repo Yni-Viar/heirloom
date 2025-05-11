@@ -861,8 +861,8 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
     GetPrivateProfileString(szSettings, szDriveListFace, szHelv, szTemp, COUNTOF(szTemp), szTheINIFile);
 
     hfontDriveList = CreateFont(
-        GetHeightFromPointsString(L"8"), 0, 0, 0, 400, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
-        CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_SWISS, szTemp);
+        GetHeightFromPointsString(L"8"), 0, 0, 0, 400, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+        DEFAULT_QUALITY, VARIABLE_PITCH | FF_SWISS, szTemp);
 
     ReleaseDC(NULL, hdcScreen);
 

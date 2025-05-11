@@ -582,8 +582,7 @@ GotoDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             // Subclass the edit control.
             wpOrigEditProc = (WNDPROC)SetWindowLongPtr(hwndEdit, GWLP_WNDPROC, (LONG_PTR)GotoEditSubclassProc);
 
-            SendDlgItemMessage(
-                hDlg, IDD_GOTOLIST, LB_ADDSTRING, 0, (LPARAM)L"<type name fragments into edit box>");
+            SendDlgItemMessage(hDlg, IDD_GOTOLIST, LB_ADDSTRING, 0, (LPARAM)L"<type name fragments into edit box>");
             break;
 
         case WM_COMMAND:

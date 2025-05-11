@@ -60,8 +60,7 @@ BOOL WNetStat(int nIndex) {
         // Check for connection dialog
         //
 
-        dwError =
-            RegOpenKey(HKEY_LOCAL_MACHINE, L"System\\CurrentControlSet\\Control\\NetworkProvider\\Order", &hKey);
+        dwError = RegOpenKey(HKEY_LOCAL_MACHINE, L"System\\CurrentControlSet\\Control\\NetworkProvider\\Order", &hKey);
 
         if (!dwError) {
             dwError = RegQueryValueEx(hKey, L"ProviderOrder", NULL, NULL, NULL, &dwcbBuffer);

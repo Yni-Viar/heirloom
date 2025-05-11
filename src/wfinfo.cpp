@@ -1536,8 +1536,8 @@ BOOL NetLoad() {
         if (!lpfnWNetGetDirectoryTypeW || !lpfnWNetGetPropertyTextW || !lpfnWNetRestoreSingleConnectionW ||
             !lpfnWNetPropertyDialogW || !lpfnWNetGetConnection2W || !lpfnWNetFormatNetworkNameW) {
             MessageBox(
-                hwndFrame, L"Heirloom File Manager is incompatible with your operating system version.",
-                L"Error", MB_OK | MB_ICONERROR);
+                hwndFrame, L"Heirloom File Manager is incompatible with your operating system version.", L"Error",
+                MB_OK | MB_ICONERROR);
             return FALSE;
         }
 

@@ -545,8 +545,8 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             GetClientRect(hwndFrame, &rc);
 
             hwndMDIClient = CreateWindow(
-                L"MDIClient", NULL, WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL | WS_BORDER, 0, 0,
-                rc.right, rc.bottom, hwnd, (HMENU)1, hAppInstance, (LPVOID)&ccs);
+                L"MDIClient", NULL, WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL | WS_BORDER, 0, 0, rc.right,
+                rc.bottom, hwnd, (HMENU)1, hAppInstance, (LPVOID)&ccs);
 
             if (!hwndMDIClient) {
                 return -1L;
