@@ -80,7 +80,6 @@ INT_PTR
 CALLBACK
 SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     LPTSTR p;
-    MDICREATESTRUCT MDICS;
     TCHAR szStart[MAXFILENAMELEN];
 
     if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
@@ -169,27 +168,17 @@ SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                         // but it's not portable
                         //
                         LoadString(hAppInstance, IDS_SEARCHTITLE, szMessage, COUNTOF(szMessage));
-
                         lstrcat(szMessage, SearchInfo.szSearch);
 
-                        // Have the MDIClient create the MDI directory window.
-
-                        MDICS.szClass = szSearchClass;
-                        MDICS.hOwner = hAppInstance;
-                        MDICS.szTitle = szMessage;
-
                         // Create max or normal based on current mdi child
+                        DWORD style = bMaximized ? WS_MAXIMIZE : WS_OVERLAPPED;
 
-                        MDICS.style = bMaximized ? WS_MAXIMIZE : WS_OVERLAPPED;
-                        MDICS.x = CW_USEDEFAULT;
-                        MDICS.y = 0;
-                        MDICS.cx = CW_USEDEFAULT;
-                        MDICS.cy = 0;
-
-                        SendMessage(hwndMDIClient, WM_MDICREATE, 0L, (LPARAM)(LPMDICREATESTRUCT)&MDICS);
+                        hwndSearch = CreateMDIWindow(
+                            szSearchClass, szMessage, style, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, hwndMDIClient,
+                            hAppInstance, 0);
 
                         // Forward the attributes to the search window, since hwndSearch was just created by
-                        // WM_MDICREATE
+                        // CreateMDIWindow
                         SetWindowLongPtr(hwndSearch, GWL_ATTRIBS, GetWindowLongPtr(hwndMDIChild, GWL_ATTRIBS));
                     }
 

@@ -359,8 +359,8 @@ VOID ChangeFileSystem(DWORD dwFunction, LPCTSTR lpszFile, LPCTSTR lpszTo) {
 /////////////////////////////////////////////////////////////////////
 
 HWND CreateTreeWindow(LPWSTR szPath, INT x, INT y, INT dx, INT dy, INT dxSplit) {
-    MDICREATESTRUCT MDICS;
     HWND hwnd;
+    DWORD style = 0L;
 
     //
     // this saves people from creating more windows than they should
@@ -374,26 +374,11 @@ HWND CreateTreeWindow(LPWSTR szPath, INT x, INT y, INT dx, INT dy, INT dxSplit) 
         return NULL;
     }
 
-    //
-    // Create the Directory Tree window
-    //
-    MDICS.szClass = szTreeClass;
-    MDICS.szTitle = szPath;
-    MDICS.hOwner = hAppInstance;
-    MDICS.style = 0L;
-
-    MDICS.x = x;
-    MDICS.y = y;
-    MDICS.cx = dx;
-    MDICS.cy = dy;
-
-    MDICS.lParam = dxSplit;
-
     hwnd = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
     if (hwnd && GetWindowLongPtr(hwnd, GWL_STYLE) & WS_MAXIMIZE)
-        MDICS.style |= WS_MAXIMIZE;
+        style |= WS_MAXIMIZE;
 
-    hwnd = (HWND)SendMessage(hwndMDIClient, WM_MDICREATE, 0L, (LPARAM)&MDICS);
+    hwnd = CreateMDIWindow(szTreeClass, szPath, style, x, y, dx, dy, hwndMDIClient, hAppInstance, dxSplit);
 
     //
     // Set all the view/sort/include parameters.  This is to make
