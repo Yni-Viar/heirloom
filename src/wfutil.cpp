@@ -907,13 +907,9 @@ GetNextFile(LPWSTR pFrom, LPWSTR pTo, int cchMax) {
             pFrom++;
     }
 
-#ifdef KEEPTRAILSPACE
-#else
     // Kill off trailing spaces
-
     while (CHAR_SPACE == *(--pTo))
         ;
-#endif
 
     *(++pTo) = CHAR_NULL;
 

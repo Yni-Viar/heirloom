@@ -407,13 +407,7 @@ GetComps:
                     // Keep track of last dot here.
                     //
 
-                    if (
-#ifdef KEEPTRAILSPACE
-#else
-                        CHAR_SPACE == *pOrig ||
-#endif
-                        CHAR_DOT == *pOrig) {
-
+                    if (CHAR_SPACE == *pOrig || CHAR_DOT == *pOrig) {
                         //
                         // Let this be a dot only if there isn't one
                         // already, and the previous character wasn't
