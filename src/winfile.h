@@ -522,7 +522,7 @@ VOID GetSelectedDirectory(INT iDrive, LPTSTR pszDir);
 VOID SaveDirectory(LPTSTR pszDir);
 INT GetSelectedDrive(VOID);
 VOID GetTextStuff(HDC hdc);
-INT GetHeightFromPointsString(LPTSTR szPoints);
+INT GetHeightFromPointsString(LPCWSTR szPoints);
 INT GetDrive(HWND hwnd, POINT pt);
 VOID CheckSlashes(LPTSTR);
 // DWORD IsNetDrive(DRIVE drive);

@@ -36,12 +36,12 @@ VOID GetSettings(VOID);
 #define MENU_STRING_SIZ 80
 #define PROFILE_STRING_SIZ 300
 
-INT GetHeightFromPointsString(LPTSTR szPoints) {
+INT GetHeightFromPointsString(LPCWSTR szPoints) {
     HDC hdc;
     INT height;
 
     hdc = GetDC(NULL);
-    height = MulDiv(-atoi(szPoints), GetDeviceCaps(hdc, LOGPIXELSY), 72);
+    height = MulDiv(-_wtoi(szPoints), GetDeviceCaps(hdc, LOGPIXELSY), 72);
     ReleaseDC(NULL, hdc);
 
     return height;

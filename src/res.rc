@@ -188,7 +188,7 @@ BEGIN
     MENUITEM    "Select &Files...", IDM_SELECT
     POPUP       "Start (&.)"
     BEGIN
-    MENUITEM    "Open Bash\tCtrl+B", IDM_STARTBASHSHELL
+    MENUITEM    "Open Git Bash\tCtrl+B", IDM_STARTBASHSHELL
     MENUITEM    "Open Command Prompt\tCtrl+K", IDM_STARTCMDSHELL
     MENUITEM    "Open PowerShell\tCtrl+P", IDM_STARTPOWERSHELL
     MENUITEM    "Open Explorer\tCtrl+E", IDM_STARTEXPLORER
@@ -277,7 +277,7 @@ BEGIN
     MENUITEM    SEPARATOR
     MENUITEM    "&Run...",          IDM_RUN
     MENUITEM    SEPARATOR
-    MENUITEM    "Open in Bash", IDM_STARTBASHSHELL
+    MENUITEM    "Open in Git Bash", IDM_STARTBASHSHELL
     MENUITEM    "Open in Command Prompt", IDM_STARTCMDSHELL
     MENUITEM    "Open in Po&werShell", IDM_STARTPOWERSHELL
     MENUITEM    "Open in E&xplorer", IDM_STARTEXPLORER

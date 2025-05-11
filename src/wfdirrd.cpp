@@ -21,7 +21,7 @@ typedef enum {
 
 typedef struct _EXT_LOCATION {
     HKEY hk;
-    LPTSTR lpszNode;
+    LPCWSTR lpszNode;
 } EXTLOCATION, *PEXTLOCATION;
 
 EXTLOCATION aExtLocation[] = { { HKEY_CLASSES_ROOT, L"" },
@@ -643,7 +643,8 @@ RestartOverFindFirst:
                     if (hwndTree = HasTreeWindow(hwnd)) {
                         // Check if it is a Reparse Point
                         lpTemp[0] = '\0';
-                        DWORD attr = GetFileAttributes(szPath);
+                        DWORD attr;
+                        attr = GetFileAttributes(szPath);
                         lpTemp[0] = CHAR_BACKSLASH;
                         if (attr & ATTR_REPARSE_POINT) {
                             // For dead Reparse Points just tell that the directory could not be read

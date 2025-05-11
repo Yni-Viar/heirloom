@@ -681,7 +681,7 @@ BOOL GetPowershellExePath(LPTSTR szPSPath) {
                 dwError = RegOpenKey(hkey, szSub, &hkeySub);
 
                 if (dwError == ERROR_SUCCESS) {
-                    LPTSTR szPSExe = TEXT("\\Powershell.exe");
+                    LPCWSTR szPSExe = L"\\Powershell.exe";
 
                     cbValue = (MAXPATHLEN - lstrlen(szPSExe)) * sizeof(TCHAR);
                     dwError = RegGetValue(

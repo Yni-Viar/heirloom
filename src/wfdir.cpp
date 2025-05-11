@@ -679,7 +679,7 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             UINT i, j;
             WCHAR ch;
             UINT cItems;
-            LPWSTR szItem;
+            LPCWSTR szItem{};
             WCHAR rgchMatch[MAXPATHLEN];
             SIZE_T cchMatch;
             UINT pos;
@@ -1281,9 +1281,12 @@ ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 goto Done;
             }
 
-            // Subclass the list box to handle drag and drop
-            WNDPROC lpfnOldProc = (WNDPROC)SetWindowLongPtr(hwndLB, GWLP_WNDPROC, (LONG_PTR)DirListBoxWndProc);
-            SetWindowLongPtr(hwndLB, GWLP_USERDATA, (LONG_PTR)lpfnOldProc);
+            // Introduce scope to isolate lfpnOldProc
+            {
+                // Subclass the list box to handle drag and drop
+                WNDPROC lpfnOldProc = (WNDPROC)SetWindowLongPtr(hwndLB, GWLP_WNDPROC, (LONG_PTR)DirListBoxWndProc);
+                SetWindowLongPtr(hwndLB, GWLP_USERDATA, (LONG_PTR)lpfnOldProc);
+            }
 
             if (!dwNewAttribs)
                 dwNewAttribs = ATTR_DEFAULT;

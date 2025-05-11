@@ -389,9 +389,8 @@ GetComps:
                 pOrig++;
 
         } else {
-            LPTSTR pT, pTT = NULL;
-
         AddComponent:
+            LPTSTR pT = NULL;
             uLen = AddBackslash(lpszPath);
             nSpaceLeft = MAXPATHLEN - 1 - uLen;
 
@@ -2743,10 +2742,13 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                     continue;
             }
 
-            INT errorIndex = pCopyInfo->dwFunc;
-            if (errorIndex == FUNC_HARD && IsDirectory(szSource))
-                errorIndex = FUNC_JUNC;
-            ret = CopyError(szSource, szDest, ret, errorIndex, oper, bErrorOnDest, bFatalError);
+            // Extra scope to contain errorIndex.
+            {
+                INT errorIndex = pCopyInfo->dwFunc;
+                if (errorIndex == FUNC_HARD && IsDirectory(szSource))
+                    errorIndex = FUNC_JUNC;
+                ret = CopyError(szSource, szDest, ret, errorIndex, oper, bErrorOnDest, bFatalError);
+            }
 
             switch (ret) {
                 case DE_RETRY:

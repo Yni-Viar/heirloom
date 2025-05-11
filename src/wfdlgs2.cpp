@@ -749,7 +749,7 @@ VOID CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3S
 // can show translations of these names to the user.
 
 struct vertbl {
-    WCHAR* pszName;
+    LPCWSTR pszName;
     WORD idString;
 };
 

@@ -5,6 +5,8 @@ alwaysApply: true
 ---
 # Heirloom File Manager
 - This is a modernized derivative of the classic Windows File Manager codebase.
-- When creating new source files, omit the file comment header seen in existing files.
-- We only support Windows 10 and above. Don't support older systems.
+- This is C++20.
+- When creating new source files, omit the file-level comment header.
+- We only support Windows 10 and above. In new code, do not support older systems.
+- We only support Unicode. Don't support ANSI. In new code, use WCHAR over TCHAR, LPWSTR over LPTSTR, L"" over TEXT(""), etc.
 - Always run the build with ` bash scripts/build.sh` after making changes. Include the space at the start to work around a bug.
