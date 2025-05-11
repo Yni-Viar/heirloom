@@ -15,6 +15,7 @@
 #include "lfn.h"
 #include "wnetcaps.h"  // WNetGetCaps()
 #include "wfdpi.h"     // Add DPI awareness header
+#include "gitbash.h"   // For GetGitBashPath()
 
 #include <ole2.h>
 #include <shlobj.h>
@@ -28,7 +29,7 @@ TCHAR szHelv[] = TEXT("Segoe UI");
 HBITMAP hbmSave;
 
 DWORD RGBToBGR(DWORD rgb);
-VOID BoilThatDustSpec(WCHAR* pStart, BOOL bLoadIt);
+VOID BoilThatDustSpec(PINT pnCmdShow);
 VOID DoRunEquals(PINT pnCmdShow);
 VOID GetSavedWindow(LPWSTR szBuf, PWINDOW pwin);
 VOID GetSettings(VOID);
@@ -265,6 +266,10 @@ VOID InitMenus() {
 
     if (bNewWinOnConnect)
         CheckMenuItem(hMenu, IDM_NEWWINONCONNECT, MF_BYCOMMAND | MF_CHECKED);
+
+    // Enable or disable the Git Bash shell menu item based on Git Bash availability
+    auto gitBashPath = GetGitBashPath();
+    EnableMenuItem(hMenu, IDM_STARTBASHSHELL, MF_BYCOMMAND | (gitBashPath.has_value() ? MF_ENABLED : MF_GRAYED));
 
     //
     // Init menus after the window/menu has been created

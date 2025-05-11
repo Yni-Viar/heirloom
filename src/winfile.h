@@ -9,6 +9,11 @@
 
 **************************************************************************/
 
+#pragma once
+
+#include <string>
+#include <optional>
+
 #define TOOLBAR
 #define NOCOMM
 #define WIN31

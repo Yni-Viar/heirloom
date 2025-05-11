@@ -15,6 +15,7 @@
 #include "lfn.h"
 #include "wfcopy.h"
 #include "resize.h"
+#include "gitbash.h"
 
 VOID MDIClientSizeChange(HWND hwndActive, INT iFlags);
 
@@ -686,6 +687,10 @@ VOID ActivateCommonContextMenu(HWND hwnd, HWND hwndLB, LPARAM lParam) {
     POINT pt;
 
     HMENU hMenu = GetSubMenu(LoadMenu(hAppInstance, TEXT("CTXMENU")), 0);
+
+    // Enable or disable the Git Bash shell menu item based on Git Bash availability
+    auto gitBashPath = GetGitBashPath();
+    EnableMenuItem(hMenu, IDM_STARTBASHSHELL, MF_BYCOMMAND | (gitBashPath.has_value() ? MF_ENABLED : MF_GRAYED));
 
     if (lParam == -1) {
         RECT rect;

@@ -14,6 +14,7 @@
 #include "wfcopy.h"
 #include "wnetcaps.h"  // WNetGetCaps()
 #include "wfdrop.h"
+#include "gitbash.h"
 
 #include <shlobj.h>
 #include <commctrl.h>
@@ -707,21 +708,11 @@ BOOL GetPowershellExePath(LPTSTR szPSPath) {
     return szPSPath[0] != TEXT('\0');
 }
 
-BOOL GetBashExePath(LPTSTR szBashPath, UINT bufSize) {
-    const TCHAR szBashFilename[] = TEXT("bash.exe");
-    UINT len;
-
-    len = GetSystemDirectory(szBashPath, bufSize);
-    if ((len != 0) && (len + COUNTOF(szBashFilename) + 1 < bufSize) && PathAppend(szBashPath, TEXT("bash.exe"))) {
-        if (PathFileExists(szBashPath))
-            return TRUE;
-    }
-
-    // If we are running 32 bit Winfile on 64 bit Windows, System32 folder is redirected to SysWow64, which
-    // doesn't include bash.exe. So we also need to check Sysnative folder, which always maps to System32 folder.
-    len = ExpandEnvironmentStrings(TEXT("%SystemRoot%\\Sysnative\\bash.exe"), szBashPath, bufSize);
-    if (len != 0 && len <= bufSize) {
-        return PathFileExists(szBashPath);
+BOOL GetBashExePath(LPWSTR szBashPath, UINT bufSize) {
+    auto gitBashPath = GetGitBashPath();
+    if (gitBashPath.has_value()) {
+        lstrcpy(szBashPath, gitBashPath.value().c_str());
+        return TRUE;
     }
 
     return FALSE;

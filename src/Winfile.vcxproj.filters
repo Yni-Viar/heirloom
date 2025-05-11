@@ -40,6 +40,7 @@
     <ClCompile Include="wfpng.cpp" />
     <ClCompile Include="wfdragsrc.cpp" />
     <ClCompile Include="wfrecyclebin.cpp" />
+    <ClCompile Include="gitbash.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dbg.h" />
@@ -70,6 +71,7 @@
     <ClInclude Include="resize.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="wfdragsrc.h" />
+    <ClInclude Include="gitbash.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res.rc" />
