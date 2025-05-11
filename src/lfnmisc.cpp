@@ -192,7 +192,6 @@ WORD I_LFNEditName(LPWSTR lpSrc, LPWSTR lpEd, LPWSTR lpRes, int iResBufSize) {
     // This is turned off until we agree
     // that cmd operates in the same way
 
-#ifdef USELASTDOT
     LPWSTR lpChar;
 
     //
@@ -211,15 +210,12 @@ WORD I_LFNEditName(LPWSTR lpSrc, LPWSTR lpEd, LPWSTR lpRes, int iResBufSize) {
     } else {
         lpChar = NULL;
     }
-#endif
 
     while (*lpEd) {
         if (ResLen < iResBufSize) {
             switch (*lpEd) {
                 case CHAR_STAR: {
                     WCHAR delimit = *(lpEd + 1);
-
-#ifdef USELASTDOT
 
                     //
                     // For all other delimiters, we use the first
@@ -230,10 +226,6 @@ WORD I_LFNEditName(LPWSTR lpSrc, LPWSTR lpEd, LPWSTR lpRes, int iResBufSize) {
 
                     while ((ResLen < iResBufSize) && (*lpSrc != CHAR_NULL) &&
                            (*lpSrc != delimit || (lpChar && lpChar != lpSrc))) {
-#else
-                    while ((ResLen < iResBufSize) && (*lpSrc != CHAR_NULL) && (*lpSrc != delimit)) {
-#endif
-
                         *(lpRes++) = *(lpSrc++);
                         ResLen++;
                     }
