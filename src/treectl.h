@@ -17,10 +17,6 @@
 #define TF_EXPANDED 0x04
 #define TF_DISABLED 0x08
 
-#ifdef USE_TF_LFN
-#define TF_LFN 0x10
-#endif
-
 #define TF_LOWERCASE 0x20
 
 typedef struct tagDNODE {

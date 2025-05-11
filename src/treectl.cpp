@@ -295,12 +295,6 @@ int InsertDirectory(
     pNode->wFlags = 0;
     pNode->dwNetType = (DWORD)-1;
 
-#ifdef USE_TF_LFN
-    if (IsLFN(szName)) {
-        pNode->wFlags |= TF_LFN;
-    }
-#endif
-
     if (!bCasePreserved)
         pNode->wFlags |= TF_LOWERCASE;
 
