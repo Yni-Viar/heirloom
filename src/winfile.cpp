@@ -35,7 +35,6 @@
 // prototypes
 //
 BOOL EnablePropertiesMenu(HWND hwnd, LPWSTR pszSel);
-BOOL bDialogMessage(PMSG pMsg);
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pszCmdLineA, int nCmdShow) {
     MSG msg;
@@ -66,14 +65,11 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pszCmdLineA, in
             if (msg.message == WM_SYSKEYDOWN && msg.wParam == VK_RETURN && IsIconic(hwndFrame)) {
                 ShowWindow(hwndFrame, SW_NORMAL);
 
-            } else {
-                if (!bDialogMessage(&msg)) {
-                    if (!TranslateMDISysAccel(hwndMDIClient, &msg) &&
-                        (!hwndFrame || !TranslateAccelerator(hwndFrame, hAccel, &msg))) {
-                        TranslateMessage(&msg);
-                        DispatchMessage(&msg);
-                    }
-                }
+            } else if (
+                !TranslateMDISysAccel(hwndMDIClient, &msg) &&
+                (!hwndFrame || !TranslateAccelerator(hwndFrame, hAccel, &msg))) {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
             }
         }
     }
@@ -406,45 +402,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
             break;
 
-        case FS_CANCELCOPYFORMATDEST:
-
-            if (CancelInfo.hCancelDlg) {
-                WCHAR szTemp[128];
-
-                if (CancelInfo.Info.Copy.bFormatDest) {
-                    LoadString(hAppInstance, IDS_FORMATTINGDEST, szTemp, COUNTOF(szTemp));
-                } else {
-                    LoadString(hAppInstance, IDS_COPYINGDISKTITLE, szTemp, COUNTOF(szTemp));
-                }
-
-                SetWindowText(CancelInfo.hCancelDlg, szTemp);
-            }
-            break;
-
-        case FS_CANCELMESSAGEBOX: {
-            WCHAR szMessage[MAXMESSAGELEN];
-            WCHAR szTitle[MAXTITLELEN];
-            HWND hwndT;
-
-            LoadString(hAppInstance, (UINT)wParam, szTitle, COUNTOF(szTitle));
-            LoadString(hAppInstance, (UINT)lParam, szMessage, COUNTOF(szMessage));
-
-            hwndT = CancelInfo.hCancelDlg ? CancelInfo.hCancelDlg : hwndFrame;
-
-            return MessageBox(hwndT, szMessage, szTitle, CancelInfo.fuStyle);
-        }
-
-        case FS_CANCELUPDATE:
-
-            // wParam = % completed
-
-            if (CancelInfo.hCancelDlg) {
-                CancelInfo.nPercentDrawn = (int)wParam;
-                SendMessage(CancelInfo.hCancelDlg, FS_CANCELUPDATE, 0, 0L);
-            }
-
-            break;
-
         case FS_SEARCHUPDATE:
 
             // wParam = iDirsRead
@@ -474,12 +431,6 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             }
 
             break;
-
-        case FS_CANCELEND:
-
-            DestroyCancelWindow();
-
-            return 0L;
 
         case FS_SEARCHEND:
 
@@ -951,16 +902,4 @@ BOOL EnablePropertiesMenu(HWND hwndActive, LPWSTR pSel) {
     }
 
     return (FALSE);
-}
-
-BOOL bDialogMessage(PMSG pMsg) {
-    if ((CancelInfo.hCancelDlg && !CancelInfo.bModal && IsDialogMessage(CancelInfo.hCancelDlg, pMsg)) ||
-
-        (hwndFormatSelect && IsDialogMessage(hwndFormatSelect, pMsg)) ||
-
-        (SearchInfo.hSearchDlg && IsDialogMessage(SearchInfo.hSearchDlg, pMsg)))
-
-        return TRUE;
-
-    return FALSE;
 }

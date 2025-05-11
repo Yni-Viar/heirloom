@@ -648,10 +648,6 @@ void MDIClientSizeChange(HWND hwndActive, int iFlags) {
     UpdateWindow(hwndFrame);
 }
 
-BOOL FmifsLoaded() {
-    return TRUE;
-}
-
 BOOL GetPowershellExePath(LPWSTR szPSPath) {
     HKEY hkey;
     if (ERROR_SUCCESS != RegOpenKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\PowerShell", &hkey)) {
@@ -1262,38 +1258,6 @@ BOOL AppCommandProc(DWORD id) {
                 // when it is safe
                 bCancelTree = 2;
                 break;
-            }
-
-            //
-            // If disk formatting/copying, ask user if they really want to quit.
-            //
-
-            if (CancelInfo.hThread) {
-                DWORD dwIDS;
-
-                switch (CancelInfo.eCancelType) {
-                    case _CANCEL_INFO::CANCEL_FORMAT:
-
-                        dwIDS = IDS_BUSYFORMATQUITVERIFY;
-                        break;
-
-                    case _CANCEL_INFO::CANCEL_COPY:
-
-                        dwIDS = IDS_BUSYCOPYQUITVERIFY;
-                        break;
-
-                    default:
-
-                        //
-                        // We should never get here
-                        //
-                        dwIDS = IDS_BUSYFORMATQUITVERIFY;
-                        break;
-                }
-
-                if (MyMessageBox(hwndFrame, IDS_WINFILE, dwIDS, MB_ICONEXCLAMATION | MB_OKCANCEL) == IDCANCEL) {
-                    break;
-                }
             }
 
             SetCurrentDirectory(szOriginalDirPath);

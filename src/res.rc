@@ -554,7 +554,6 @@ BEGIN
     IDS_DIRREMAINS              "Unable to finish operation on all files and directories."
 
     IDS_TOOMANYWINDOWS          "Too many directory windows are open.\n\nClose one or more windows, and then try again."
-    IDS_FMIFSLOADERR            "Unable to load a library required for this operation."
 
     IDS_NOSUCHDIRTITLE          "Cannot read directory"
     IDS_NOSUCHDIR               "Directory does not exist."

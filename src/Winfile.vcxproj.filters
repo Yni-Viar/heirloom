@@ -42,7 +42,6 @@
     <ClCompile Include="gitbash.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fmifs.h" />
     <ClInclude Include="lfn.h" />
     <ClInclude Include="BagOValues.h" />
     <ClInclude Include="mpr.h" />

@@ -29,7 +29,6 @@
 #include "wfext.h"
 #include <commdlg.h>
 #include <commctrl.h>
-#include "fmifs.h"
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <strsafe.h>
@@ -245,32 +244,6 @@ BOOL EmptyRecycleBin(HWND hwnd);
 DWORD MoveFileToRecycleBin(LPWSTR pszFile);
 void FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPWSTR szBuffer);
 
-typedef struct _CANCEL_INFO {
-    HWND hCancelDlg;
-    BOOL bCancel;
-    HANDLE hThread;
-    BOOL fmifsSuccess;
-    UINT dReason;
-    UINT fuStyle;       // Message box style
-    int nPercentDrawn;  // percent drawn so FAR
-    enum _CANCEL_TYPE { CANCEL_NULL = 0, CANCEL_FORMAT, CANCEL_COPY, CANCEL_BACKUP, CANCEL_RESTORE } eCancelType;
-    BOOL bModal;
-    struct _INFO {
-        struct _FORMAT {
-            int iFormatDrive;
-            FMIFS_MEDIA_TYPE fmMediaType;
-            BOOL fQuick;
-            DWORD fFlags;  // FF_ONLYONE = 0x1000
-            WCHAR szLabel[13];
-        } Format;
-        struct _COPY {
-            int iSourceDrive;
-            int iDestDrive;
-            BOOL bFormatDest;
-        } Copy;
-    } Info;
-} CANCEL_INFO, *PCANCEL_INFO;
-
 typedef struct _SEARCH_INFO {
     HWND hSearchDlg;
     int iDirsRead;
@@ -337,7 +310,6 @@ typedef struct _SELINFO* PSELINFO;
 
 // WFDLGS3.C
 
-void DestroyCancelWindow();
 void UpdateConnections(BOOL bUpdateDriveList);
 
 // WFDLGS.C
@@ -361,7 +333,6 @@ void vWaitMessage();
 // WFCOMMAN.C
 
 void RedoDriveWindows(HWND);
-BOOL FmifsLoaded();
 void ChangeFileSystem(DWORD dwOper, LPCWSTR lpPath, LPCWSTR lpTo);
 HWND CreateDirWindow(LPWSTR szPath, BOOL bReplaceOpen, HWND hwndActive);
 HWND CreateTreeWindow(LPWSTR szPath, int x, int y, int dx, int dy, int dxSplit);
@@ -372,7 +343,6 @@ void UpdateMoveStatus(DWORD dwEffect);
 // WFDOS.C
 
 void GetDiskSpace(DRIVE drive, PULARGE_INTEGER pqFreeSpace, PULARGE_INTEGER pqTotalSpace);
-int ChangeVolumeLabel(DRIVE, LPWSTR);
 DWORD GetVolumeLabel(DRIVE, LPWSTR*, BOOL);
 DWORD
 FillVolumeInfo(
@@ -553,10 +523,6 @@ LRESULT CALLBACK DirWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK SearchWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
-Extern void (*lpfnFormat)(PWSTR, FMIFS_MEDIA_TYPE, PWSTR, PWSTR, BOOLEAN, FMIFS_CALLBACK);
-Extern void (*lpfnDiskCopy)(PWSTR, PWSTR, BOOLEAN, FMIFS_CALLBACK);
-Extern BOOLEAN (*lpfnSetLabel)(PWSTR, PWSTR);
-Extern BOOLEAN (*lpfnQuerySupportedMedia)(PWSTR, PFMIFS_MEDIA_TYPE, DWORD, PDWORD);
 
 INT_PTR CALLBACK CancelDlgProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK DrivesDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
@@ -731,17 +697,11 @@ BOOL RectTreeItem(HWND hwndLB, int iItem, BOOL bFocusOn);
 #define FS_GETFILESPEC (WM_USER + 0x108)
 #define FS_SETSELECTION (WM_USER + 0x109)
 
-// modeless format/copy support
-#define FS_CANCELBEGIN (WM_USER + 0x10A)
-#define FS_CANCELEND (WM_USER + 0x10B)
 #define FS_SEARCHEND (WM_USER + 0x10C)
 #define FS_SEARCHLINEINSERT (WM_USER + 0x10D)
 
 #define FS_SEARCHUPDATE (WM_USER + 0x10E)
-#define FS_CANCELUPDATE (WM_USER + 0x10F)
 
-#define FS_CANCELMESSAGEBOX (WM_USER + 0x110)
-#define FS_CANCELCOPYFORMATDEST (WM_USER + 0x111)
 #define FS_UPDATEDRIVETYPECOMPLETE (WM_USER + 0x112)
 #define FS_UPDATEDRIVELISTCOMPLETE (WM_USER + 0x113)
 #define FS_FSCREQUEST (WM_USER + 0x114)
@@ -919,7 +879,6 @@ typedef struct _DRIVE_INFO {
 //----------------------------
 
 #define ACLEDIT_DLL L"acledit.dll"
-#define FMIFS_DLL L"fmifs.dll"
 #define MPR_DLL L"mpr.dll"
 #define NTDLL_DLL L"ntdll.dll"
 #define NTSHRUI_DLL L"Ntshrui.dll"
@@ -1221,7 +1180,6 @@ Extern HHOOK hhkMsgFilter EQ(NULL);
 Extern DWORD nLastDriveInd EQ(0);
 Extern DWORD fFormatFlags EQ(0);
 
-Extern CANCEL_INFO CancelInfo;
 Extern SEARCH_INFO SearchInfo;
 
 Extern BOOL bDeveloperModeAvailable EQ(FALSE);
