@@ -35,11 +35,7 @@ typedef enum { FDC_FALSE, FDC_FALSE_Q, FDC_TRUE } FDC_RET;
 
 FDC_RET
 FillDriveCapacity(HWND hDlg, int nDrive, FMIFS_MEDIA_TYPE fmSelect, BOOL fDoPopup) {
-#if defined(DBCS)
-    FMIFS_MEDIA_TYPE fmMedia[FmMediaEndOfData];  // Number of types in enumeration
-#else
     FMIFS_MEDIA_TYPE fmMedia[12];  // Number of types in enumeration
-#endif
     WCHAR wchDrive[4] = L"A:";
     DWORD MediaCount;
     int index;
@@ -52,12 +48,7 @@ FillDriveCapacity(HWND hDlg, int nDrive, FMIFS_MEDIA_TYPE fmSelect, BOOL fDoPopu
 
     wchDrive[0] += nDrive;
 
-#if defined(DBCS)
-    if (!(*lpfnQuerySupportedMedia)((LPWSTR)wchDrive, fmMedia, FmMediaEndOfData, (PDWORD)&MediaCount))
-#else
-    if (!(*lpfnQuerySupportedMedia)((LPWSTR)wchDrive, fmMedia, 12L, (PDWORD)&MediaCount))
-#endif
-    {
+    if (!(*lpfnQuerySupportedMedia)((LPWSTR)wchDrive, fmMedia, 12L, (PDWORD)&MediaCount)) {
         return FDC_FALSE;
     }
 

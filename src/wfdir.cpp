@@ -1118,27 +1118,9 @@ ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                         // lpStart added
                         //
 
-#ifdef DBCS
-                        // fix kksuzuka: #2852
-                        // DBCS dirname should not be compared ..
-                        if ((wParam != CD_PATH_FORCE) && lpStart) {
-                            int aLen = lstrlen(szPath);
-                            int bLen = lstrlen((LPWSTR)lParam);
-
-                            if ((WideCharToMultiByte(CP_ACP, 0L, szPath, aLen, NULL, 0L, NULL, NULL) == aLen) &&
-                                (WideCharToMultiByte(CP_ACP, 0L, (LPWSTR)lParam, bLen, NULL, 0L, NULL, NULL) == bLen)) {
-                                if (!lstrcmpi(szPath, (LPWSTR)lParam))
-                                    break;
-                            } else {
-                                if (!lstrcmp(szPath, (LPWSTR)lParam))
-                                    break;
-                            }
-                        }
-#else
                         if ((wParam != CD_PATH_FORCE) && lpStart && !lstrcmpi(szPath, (LPWSTR)lParam)) {
                             break;
                         }
-#endif
 
                         lstrcpy(szPath, (LPWSTR)lParam);
 
