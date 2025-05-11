@@ -246,7 +246,6 @@ BEGIN
     MENUITEM    "&Cascade\tShift+F5",   IDM_CASCADE
     MENUITEM    "Tile &Horizontally",   IDM_TILEHORIZONTALLY
     MENUITEM    "&Tile Vertically\tShift+F4",      IDM_TILE
-    MENUITEM    "&Arrange Icons",       IDM_ARRANGE
     MENUITEM    "&Refresh\tF5",         IDM_REFRESH
     END
     POPUP       "&Help"
@@ -660,7 +659,6 @@ BEGIN
     MH_MYITEMS+IDM_CASCADE,     "Cascades windows"
     MH_MYITEMS+IDM_TILEHORIZONTALLY,    "Tiles windows horizontally"
     MH_MYITEMS+IDM_TILE,        "Tiles windows vertically"
-    MH_MYITEMS+IDM_ARRANGE,     "Arranges icons"
     MH_MYITEMS+IDM_REFRESH,     "Updates the contents of a window"
 
     MH_MYITEMS+IDM_ABOUT,       "Displays information about Heirloom File Manager"

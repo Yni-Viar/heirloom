@@ -1462,10 +1462,6 @@ BOOL AppCommandProc(DWORD id) {
             SendMessage(hwndMDIClient, WM_MDITILE, 1, 0L);
             break;
 
-        case IDM_ARRANGE:
-            SendMessage(hwndMDIClient, WM_MDIICONARRANGE, 0L, 0L);
-            break;
-
         case IDM_REFRESH: {
             INT i;
 
