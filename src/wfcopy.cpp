@@ -878,50 +878,6 @@ ConfirmDialog(
     return (DWORD)nRetVal;
 }
 
-#ifdef NETCHECK
-/*--------------------------------------------------------------------------*/
-/*                                                                          */
-/*  NetCheck() -                                                            */
-/*                                                                          */
-/* check rmdirs and mkdirs with the net driver                              */
-/*--------------------------------------------------------------------------*/
-
-DWORD
-NetCheck(LPWSTR pPath, DWORD dwType) {
-    DWORD err;
-    WCHAR szT[MAXSUGGESTLEN];
-    WCHAR szProvider[128];
-    WCHAR szTitle[128];
-
-    //
-    // we will notify the winnet driver on all directory operations
-    // so we can implement cool net stuff on a local drives
-    //
-
-    WAITNET();
-
-    if (!lpfnWNetDirectoryNotifyW)
-        return WN_SUCCESS;
-
-    err = WNetDirectoryNotifyW(hdlgProgress, pPath, dwType);
-    switch (err) {
-        case WN_SUCCESS:
-        case WN_CONTINUE:
-        case WN_CANCEL:
-            return err;
-        case WN_NOT_SUPPORTED:
-            return WN_SUCCESS;
-    }
-
-    WNetGetLastError(&err, szT, COUNTOF(szT), szProvider, COUNTOF(szProvider));
-
-    LoadString(hAppInstance, IDS_NETERR, szTitle, COUNTOF(szTitle));
-    MessageBox(hdlgProgress, szT, szTitle, MB_OK | MB_ICONEXCLAMATION);
-
-    return WN_CANCEL;
-}
-#endif
-
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
 /*  IsInvalidPath() -                                                       */
@@ -1607,13 +1563,6 @@ SafeFileRemove(LPWSTR szFileOEM) {
         return WFRemove(szFileOEM);
 }
 
-#ifdef NETCHECK
-//
-// !! BUGBUG !!
-// Should do a NetCheck on all MKDirs.
-//
-#endif
-
 DWORD
 WF_CreateDirectory(HWND hwndParent, LPWSTR szDest, LPWSTR szSrc) {
     DWORD ret = 0;
@@ -1813,10 +1762,6 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
     BOOL bConfirmed;
     BOOL bFatalError = FALSE;
     BOOL bErrorOccured = FALSE;
-
-#ifdef NETCHECK
-    BOOL fInvalidate = FALSE;  // whether to invalidate net types
-#endif
 
     // Initialization stuff.  Disable all file system change processing until
     // we're all done
@@ -2104,45 +2049,26 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                                     if (IsCurrentDirectory(szDest))
                                         CdDotDot(szDest);
 
+                                    //
                                     // Remove directory
-#ifdef NETCHECK
-                                    fInvalidate = TRUE;  // following may delete share
+                                    //
 
-                                    ret = bConfirmed ? WN_SUCCESS : NetCheck(szDest, WNDN_RMDIR);
+                                    ret = RMDir(szDest);
 
-                                    switch (ret) {
-                                        case WN_SUCCESS:
-#endif
-                                            //
-                                            // Remove directory
-                                            //
+                                    if (ERROR_SHARING_VIOLATION == ret) {
+                                        //
+                                        // We could have been watching this
+                                        // with the notify system
+                                        //
 
-                                            ret = RMDir(szDest);
-
-                                            if (ERROR_SHARING_VIOLATION == ret) {
-                                                //
-                                                // We could have been watching this
-                                                // with the notify system
-                                                //
-
-                                                //
-                                                // Only do this for non-UNC
-                                                //
-                                                if (CHAR_COLON == szSource[1]) {
-                                                    NotifyPause(DRIVEID(szSource), (UINT)-1);
-                                                    ret = RMDir(szSource);
-                                                }
-                                            }
-#ifdef NETCHECK
-                                            break;
-
-                                        case WN_CONTINUE:
-                                            break;
-
-                                        case WN_CANCEL:
-                                            goto CancelWholeOperation;
+                                        //
+                                        // Only do this for non-UNC
+                                        //
+                                        if (CHAR_COLON == szSource[1]) {
+                                            NotifyPause(DRIVEID(szSource), (UINT)-1);
+                                            ret = RMDir(szSource);
+                                        }
                                     }
-#endif
                                 } else {
                                     //
                                     // On move, must delete destination file
@@ -2205,40 +2131,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                 CurIDS = IDS_CREATINGMSG;
                 Notify(hdlgProgress, IDS_CREATINGMSG, szDest, szNULL);
 
-#ifdef NETCHECK
-
-                if (!bConfirmed) {
-                    switch (NetCheck(szDest, WNDN_MKDIR)) {
-                        case WN_SUCCESS:
-                            break;
-
-                        case WN_CONTINUE:
-                            goto SkipMKDir;
-
-                        case WN_CANCEL:
-                            goto CancelWholeOperation;
-                    }
-                }
-#endif
-
                 if (pCopyInfo->dwFunc == FUNC_MOVE) {
-#ifdef NETCHECK
-                    if (!bConfirmed) {
-                        fInvalidate = TRUE;  // following may delete share
-
-                        switch (NetCheck(szSource, WNDN_MVDIR)) {
-                            case WN_SUCCESS:
-                                break;
-
-                            case WN_CONTINUE:
-                                goto SkipMKDir;
-
-                            case WN_CANCEL:
-                                goto CancelWholeOperation;
-                        }
-                    }
-#endif
-
 #ifdef FASTMOVE
                     if ((CHAR_COLON == pcr->sz[1]) && (CHAR_COLON == szDest[1]) &&
                         (DRIVEID(pcr->sz) == DRIVEID(szDest))) {
@@ -2287,11 +2180,6 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                 if (ret)
                     bErrorOnDest = TRUE;
 
-                // set attributes of new directory to those of the source
-
-#ifdef NETCHECK
-            SkipMKDir:
-#endif
                 break;
 
             // FUNC_HARD is here, because one can select a directory in the file-pane and have SHIFT+CTRL+ALT pressed to
@@ -2365,17 +2253,6 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
 
                 switch (dwResponse) {
                     case IDYES:
-
-#ifdef NETCHECK
-                        fInvalidate = TRUE;  // following may delete share
-                        switch (NetCheck(szSource, WNDN_RMDIR)) {
-                            case WN_SUCCESS:
-                                break;
-                            case WN_CANCEL:
-                            default:
-                                goto CancelWholeOperation;
-                        }
-#endif
                         break;
 
                     case IDNO:
@@ -2581,22 +2458,6 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                             ret = dwResponse;
                             goto ShowMessageBox;
                     }
-
-#ifdef NETCHECK
-                    if (IsDirectory(szSource)) {
-                        fInvalidate = TRUE;  // following may delete share
-                        switch (NetCheck(szSource, WNDN_MVDIR)) {
-                            case WN_SUCCESS:
-                                break;
-
-                            case WN_CONTINUE:
-                                goto RenameMoveDone;
-
-                            case WN_CANCEL:
-                                goto CancelWholeOperation;
-                        }
-                    }
-#endif
                 }
 
                 if (IsWindowsFile(szSource)) {
@@ -2660,9 +2521,6 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                         goto CancelWholeOperation;
                 }
 
-#ifdef NETCHECK
-            RenameMoveDone:
-#endif
                 break;
 
             case OPER_DOFILE | FUNC_DELETE:
@@ -2814,11 +2672,6 @@ ExitLoop:
     }
 
     NotifyResume(-1, (UINT)-1);
-
-#ifdef NETCHECK
-    if (fInvalidate)
-        InvalidateAllNetTypes(); /* update special icons */
-#endif
 
     SendMessage(hdlgProgress, FS_COPYDONE, ret, (LPARAM)pCopyInfo);
 

@@ -1630,32 +1630,26 @@ MakeDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
                     hdlgProgress = hDlg;
 
-#ifdef NETCHECK
-                    if (NetCheck(szPath, WNDN_MKDIR) == WN_SUCCESS) {
-#endif
-                        SendMessage(hwndFrame, FS_DISABLEFSC, 0, 0L);
+                    SendMessage(hwndFrame, FS_DISABLEFSC, 0, 0L);
 
-                        ret = WF_CreateDirectory(hDlg, szPath, NULL);
+                    ret = WF_CreateDirectory(hDlg, szPath, NULL);
 
-                        if (ret && ret != DE_OPCANCELLED) {
-                            // Handle error messages cleanly.
-                            // Special case ERROR_ALREADY_EXISTS
+                    if (ret && ret != DE_OPCANCELLED) {
+                        // Handle error messages cleanly.
+                        // Special case ERROR_ALREADY_EXISTS
 
-                            if (ERROR_ALREADY_EXISTS == ret) {
-                                ret = WFIsDir(szPath) ? DE_MAKEDIREXISTS : DE_DIREXISTSASFILE;
-                            }
-
-                            LoadString(hAppInstance, IDS_MAKEDIRERR, szMessage, COUNTOF(szMessage));
-                            FormatError(FALSE, szMessage, COUNTOF(szMessage), ret);
-
-                            GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
-                            MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONSTOP);
+                        if (ERROR_ALREADY_EXISTS == ret) {
+                            ret = WFIsDir(szPath) ? DE_MAKEDIREXISTS : DE_DIREXISTSASFILE;
                         }
 
-                        SendMessage(hwndFrame, FS_ENABLEFSC, 0, 0L);
-#ifdef NETCHECK
+                        LoadString(hAppInstance, IDS_MAKEDIRERR, szMessage, COUNTOF(szMessage));
+                        FormatError(FALSE, szMessage, COUNTOF(szMessage), ret);
+
+                        GetWindowText(hDlg, szTitle, COUNTOF(szTitle));
+                        MessageBox(hwndFrame, szMessage, szTitle, MB_OK | MB_ICONSTOP);
                     }
-#endif
+
+                    SendMessage(hwndFrame, FS_ENABLEFSC, 0, 0L);
 
                     break;
 

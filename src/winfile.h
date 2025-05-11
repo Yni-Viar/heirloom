@@ -511,7 +511,6 @@ BOOL IsTheDiskReallyThere(HWND hwnd, LPWSTR pPath, DWORD wFunc, BOOL bModal);
 BOOL QualifyPath(LPWSTR);
 int CheckMultiple(LPWSTR pInput);
 void SetDlgItemPath(HWND hDlg, int id, LPWSTR pszPath);
-DWORD NetCheck(LPWSTR pPath, DWORD dwType);
 
 void DialogEnterFileStuff(HWND hwnd);
 

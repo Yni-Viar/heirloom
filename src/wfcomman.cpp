@@ -286,9 +286,6 @@ void ChangeFileSystem(DWORD dwFunction, LPCWSTR lpszFile, LPCWSTR lpszTo) {
                         }
                     }
                 }
-#ifdef NETCHECK
-                InvalidateAllNetTypes();
-#endif
             }
             break;
         }
