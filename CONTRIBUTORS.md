@@ -19,6 +19,7 @@ After saving in Visual Studio, it will trash `resource.h`. Restore it using git.
     - Label: 8 DLU tall (Size to Content does it correctly)
     - Dialog margin: 7
 - Put labels above their associated textbox (not to the left). Using the grid editor, the label will be either too close or too far from the control. Put it in the "too close" position and hit the up arrow 3 times to move it up by 3 DLU.
+- To stack multiple lines of labels, use the grid editor to place them on top of each other. This will be too tight. Use the arrow key to space them out by an additional 2 arrow key steps each.
 - In the .rc file, set the left/top coordinates of the dialog (the first two numbers after DIALOGEX) to 20, 20.
 
 # Making a release

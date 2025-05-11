@@ -849,12 +849,7 @@ ConfirmDialog(
 
     pbConfirmReadOnlyAll = pbReadOnlyAll;
 
-    if (CONFIRMNOACCESS == dlg || CONFIRMNOACCESSDEST == dlg) {
-        params.bNoAccess = TRUE;
-        nRetVal = (INT)DialogBoxParam(
-            hAppInstance, (LPTSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
-
-    } else if (plfndtaDest->fd.dwFileAttributes & (ATTR_READONLY | ATTR_SYSTEM | ATTR_HIDDEN)) {
+    if (plfndtaDest->fd.dwFileAttributes & (ATTR_READONLY | ATTR_SYSTEM | ATTR_HIDDEN)) {
         if ((!bConfirmReadOnlyByDefault && !bConfirmByDefault) || *pbConfirmReadOnlyAll) {
             nRetVal = IDYES;
         } else {
@@ -2746,30 +2741,6 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
 
                 if (bErrorOccured)
                     continue;
-            }
-
-            if (ERROR_ACCESS_DENIED == ret) {
-                if (IDYES ==
-                    ConfirmDialog(
-                        hdlgProgress, bErrorOnDest ? CONFIRMNOACCESSDEST : CONFIRMNOACCESS, NULL, pDTA, szSource, NULL,
-                        FALSE, &bNoAccessAll, FALSE, &bFalse)) {
-                    // Put up message after finishing that
-                    // the dir is not empty (all files/dirs where
-                    // not deleted!)
-
-                    bDirNotEmpty = TRUE;
-                    bErrorOccured = TRUE;
-
-                    ret = 0;
-                    bErrorOnDest = FALSE;
-
-                    pcr->bFastMove = TRUE;
-
-                    continue;
-
-                } else {
-                    goto ExitLoop;
-                }
             }
 
             INT errorIndex = pCopyInfo->dwFunc;
