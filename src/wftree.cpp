@@ -14,6 +14,7 @@
 #include "wfcopy.h"
 #include "wfchgnot.h"
 #include "wfcomman.h"
+#include "wfutil.h"
 
 #include <commctrl.h>
 

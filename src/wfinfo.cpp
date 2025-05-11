@@ -12,6 +12,7 @@
 #include "winfile.h"
 #include "wnetcaps.h"
 #include "wfdos.h"
+#include "wfutil.h"
 #include <commctrl.h>
 
 #define U_HEAD(type)             \

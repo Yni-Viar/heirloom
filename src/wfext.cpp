@@ -9,6 +9,7 @@
 
 #include "winfile.h"
 #include "wfdos.h"
+#include "wfutil.h"
 
 //----------------------------
 //

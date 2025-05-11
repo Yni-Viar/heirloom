@@ -10,6 +10,7 @@
 #include "winfile.h"
 #include "wfdrop.h"
 #include "wfdragsrc.h"
+#include "wfutil.h"
 #include <commctrl.h>
 
 #define DO_DROPFILE 0x454C4946L

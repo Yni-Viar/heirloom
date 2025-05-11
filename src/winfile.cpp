@@ -14,6 +14,7 @@
 #include "wfrecyclebin.h"
 #include "wfchgnot.h"
 #include "wfcomman.h"
+#include "wfutil.h"
 #include <commctrl.h>
 #include <shlobj.h>
 

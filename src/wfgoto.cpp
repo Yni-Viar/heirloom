@@ -16,6 +16,7 @@
 #include "lfn.h"
 #include "resize.h"
 #include "wfcomman.h"
+#include "wfutil.h"
 
 void BuildDirectoryBagOValues(
     BagOValues<PDNODE>* pbov,

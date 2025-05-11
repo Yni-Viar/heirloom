@@ -16,6 +16,7 @@
 #include "wfcopy.h"
 #include "resize.h"
 #include "gitbash.h"
+#include "wfutil.h"
 
 void MDIClientSizeChange(HWND hwndActive, int iFlags);
 

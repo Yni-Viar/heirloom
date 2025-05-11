@@ -12,6 +12,7 @@
 #include "winfile.h"
 #include "wfdrop.h"
 #include "treectl.h"
+#include "wfutil.h"
 
 #include <ole2.h>
 #include <shlobj.h>

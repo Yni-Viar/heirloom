@@ -13,6 +13,7 @@
 
 #include "winfile.h"
 #include "lfn.h"
+#include "wfutil.h"
 
 #define FIL_STANDARD 1
 

@@ -15,6 +15,7 @@
 #include "wfrecyclebin.h"
 #include "wfchgnot.h"
 #include "wfcomman.h"
+#include "wfutil.h"
 
 BOOL* pbConfirmAll;
 BOOL* pbConfirmReadOnlyAll;

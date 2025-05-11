@@ -81,6 +81,7 @@
 
 #include "winfile.h"
 #include "lfn.h"
+#include "wfutil.h"
 
 #include <commctrl.h>
 

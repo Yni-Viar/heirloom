@@ -16,6 +16,7 @@
 #include "commdlg.h"
 #include "resize.h"
 #include "wfdos.h"
+#include "wfutil.h"
 
 void CheckAttribsDlgButton(HWND hDlg, int id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn);
 BOOL NoQuotes(LPWSTR szT);

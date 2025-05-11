@@ -12,8 +12,9 @@
 #include "winfile.h"
 #include "lfn.h"
 #include "wfcopy.h"
-#include <shlobj.h>
 #include "resize.h"
+#include "wfutil.h"
+#include <shlobj.h>
 
 #define LABEL_NTFS_MAX 32
 #define LABEL_FAT_MAX 11

@@ -12,6 +12,7 @@
 #include "winfile.h"
 #include "lfn.h"
 #include "wfdos.h"
+#include "wfutil.h"
 #include <commctrl.h>
 #include <stdlib.h>
 

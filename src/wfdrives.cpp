@@ -16,6 +16,7 @@
 #include "wfcopy.h"
 #include "wfpng.h"
 #include "wfcomman.h"
+#include "wfutil.h"
 #include <commctrl.h>
 #include <shlobj.h>
 
