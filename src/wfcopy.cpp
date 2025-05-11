@@ -18,7 +18,7 @@ BOOL* pbConfirmReadOnlyAll;
 
 int ManySource;
 
-void wfYield(void);
+void wfYield();
 
 int CopyMoveRetry(LPWSTR, int, PBOOL);
 DWORD CopyError(LPWSTR, LPWSTR, DWORD, DWORD, int, BOOL, BOOL);

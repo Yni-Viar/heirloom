@@ -790,7 +790,7 @@ WCHAR szLegalCopyright[] = L"LegalCopyright";
 WCHAR wszFileVersion[] = L"FileVersion";
 WCHAR wszLegalCopyright[] = L"LegalCopyright";
 
-void FreeVersionInfo(void);
+void FreeVersionInfo();
 
 // Disables the version controls in a properties dialog.  Used for
 // when the selection is a directory and also when a file has no
@@ -973,7 +973,7 @@ GetVersionInfo(PTSTR pszPath, PTSTR pszName) {
 // GetVersionDatum calls will return NULL.  To avoid memory leaks,
 // always call this before the main properties dialog exits.
 
-void FreeVersionInfo(void) {
+void FreeVersionInfo() {
     lpVersionBuffer = NULL;
     dwHandle = 0L;
     if (hmemVersion) {

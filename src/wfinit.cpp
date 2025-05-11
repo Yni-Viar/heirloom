@@ -32,7 +32,7 @@ DWORD RGBToBGR(DWORD rgb);
 void BoilThatDustSpec(PINT pnCmdShow);
 void DoRunEquals(PINT pnCmdShow);
 void GetSavedWindow(LPWSTR szBuf, PWINDOW pwin);
-void GetSettings(void);
+void GetSettings();
 
 #define MENU_STRING_SIZ 80
 #define PROFILE_STRING_SIZ 300
@@ -1307,7 +1307,7 @@ void FreeFileManager() {
 //
 /////////////////////////////////////////////////////////////////////
 
-void LoadFailMessage(void) {
+void LoadFailMessage() {
     WCHAR szMessage[MAXMESSAGELEN];
 
     szMessage[0] = 0;

@@ -42,7 +42,7 @@
     }
 
 void NetCon_UpdateLines(DRIVE drive, DWORD dwType);
-int UpdateDriveListWorker(void);
+int UpdateDriveListWorker();
 
 CRITICAL_SECTION CriticalSectionUpdate;
 
@@ -62,11 +62,11 @@ DWORD adwAltNameTrans[MAX_ALTNAME] = {
 //
 // Initialize/destroy Info handler
 //
-void M_Info(void) {
+void M_Info() {
     InitializeCriticalSection(&CriticalSectionUpdate);
 }
 
-void D_Info(void) {
+void D_Info() {
     DeleteCriticalSection(&CriticalSectionUpdate);
 }
 
@@ -424,7 +424,7 @@ struct _DOC_BUCKET {
 /////////////////////////////////////////////////////////////////////
 
 PPDOCBUCKET
-DocConstruct(void) {
+DocConstruct() {
     return (PPDOCBUCKET)LocalAlloc(LPTR, sizeof(PDOCBUCKET) * DOCBUCKETMAX);
 }
 
@@ -937,7 +937,7 @@ UpdateInit(PVOID ThreadParameter) {
 
 #define BUF_SIZ 0x4000  // 16k buffer
 
-int UpdateDriveListWorker(void) {
+int UpdateDriveListWorker() {
     int cRealDrives = 0;
     int i;
     HANDLE hEnum;
@@ -1376,7 +1376,7 @@ WFGetConnection(DRIVE drive, LPWSTR* ppPath, BOOL bConvertClosed, DWORD dwType) 
 //
 /////////////////////////////////////////////////////////////////////
 
-void UpdateDriveListComplete(void) {
+void UpdateDriveListComplete() {
     HWND hwnd, hwndNext;
     DRIVE drive;
     DRIVEIND driveInd;
@@ -1452,7 +1452,7 @@ void UpdateDriveListComplete(void) {
     }
 }
 
-void UpdateDriveList(void) {
+void UpdateDriveList() {
     if (!WAITNET_LOADED)
         return;
 
@@ -1464,7 +1464,7 @@ void UpdateDriveList(void) {
     LeaveCriticalSection(&CriticalSectionUpdate);
 }
 
-void UpdateWaitQuit(void) {
+void UpdateWaitQuit() {
     bUpdateRun = FALSE;
 
     EnterCriticalSection(&CriticalSectionUpdate);
@@ -1511,7 +1511,7 @@ void UpdateWaitQuit(void) {
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL NetLoad(void) {
+BOOL NetLoad() {
     HMENU hMenuFrame;
 
     HWND hwnd, hwndT;

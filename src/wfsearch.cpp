@@ -1070,7 +1070,7 @@ INT_PTR CALLBACK SearchProgDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 //
 /////////////////////////////////////////////////////////////////////
 
-void SearchEnd(void) {
+void SearchEnd() {
     HWND hwndMDIChild;
 
     if (_SEARCH_INFO::SEARCH_MDICLOSE == SearchInfo.eStatus) {

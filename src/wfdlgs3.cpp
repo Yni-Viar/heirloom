@@ -22,10 +22,10 @@
 
 DWORD WINAPI FormatDrive(IN PVOID ThreadParameter);
 DWORD WINAPI CopyDiskette(IN PVOID ThreadParameter);
-void SwitchToSafeDrive(void);
+void SwitchToSafeDrive();
 void MDIClientSizeChange(HWND hwndActive, int iFlags);
 
-void CancelDlgQuit(void);
+void CancelDlgQuit();
 
 BOOL GetProductVersion(WORD* pwMajor, WORD* pwMinor, WORD* pwBuild, WORD* pwRevision);
 

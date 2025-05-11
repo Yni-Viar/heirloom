@@ -18,11 +18,11 @@
 #include <shobjidl.h>  // For shell item identifiers
 
 // IUnknown methods for WF_IDropSource
-ULONG STDMETHODCALLTYPE WF_IDropSource::AddRef(void) {
+ULONG STDMETHODCALLTYPE WF_IDropSource::AddRef() {
     return InterlockedIncrement(&m_lRefCount);
 }
 
-ULONG STDMETHODCALLTYPE WF_IDropSource::Release(void) {
+ULONG STDMETHODCALLTYPE WF_IDropSource::Release() {
     LONG count = InterlockedDecrement(&m_lRefCount);
     if (count == 0) {
         delete this;

@@ -18,7 +18,7 @@
 typedef struct _DOC_BUCKET** PPDOCBUCKET;
 typedef struct _DOC_BUCKET* PDOCBUCKET;
 
-PPDOCBUCKET DocConstruct(void);
+PPDOCBUCKET DocConstruct();
 void DocDestruct(PPDOCBUCKET ppDocBucket);
 int DocInsert(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt, LPWSTR lpszFileIcon);
 PDOCBUCKET DocFind(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt);

@@ -16,7 +16,7 @@
 #include <shlobj.h>
 
 // Check if the Recycle Bin is empty
-BOOL IsRecycleBinEmpty(void) {
+BOOL IsRecycleBinEmpty() {
     SHQUERYRBINFO rbInfo;
     rbInfo.cbSize = sizeof(SHQUERYRBINFO);
 

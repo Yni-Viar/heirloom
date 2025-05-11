@@ -162,7 +162,7 @@ static BOOL EnsureScaledForDpi(PNG_BITMAP* png, UINT dpiTarget) {
     return TRUE;
 }
 
-void PngStartup(void) {
+void PngStartup() {
     if (s_initialized) {
         return;
     }
@@ -180,7 +180,7 @@ void PngStartup(void) {
     s_initialized = TRUE;
 }
 
-void PngShutdown(void) {
+void PngShutdown() {
     if (!s_initialized) {
         return;
     }

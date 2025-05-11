@@ -40,7 +40,7 @@ BOOL far PASCAL KillTask(HANDLE);
 
 /* print screen hooks */
 BOOL FAR PASCAL SetPrtScHook(FARPROC);
-FARPROC FAR PASCAL GetPrtScHook(void);
+FARPROC FAR PASCAL GetPrtScHook();
 
 /* module stuff */
 HANDLE FAR PASCAL GetDSModule(WORD);

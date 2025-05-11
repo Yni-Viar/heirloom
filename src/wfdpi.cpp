@@ -13,10 +13,10 @@ FLOAT g_scale = 1.0f;
 #define WM_DPICHANGED 0x02E0
 #endif
 
-extern void ResizeControls(void);
+extern void ResizeControls();
 
 // Initialize DPI awareness
-void InitDPIAwareness(void) {
+void InitDPIAwareness() {
     // On Windows 10+, Shcore.dll and modern DPI APIs are always available
     HDC hdc = GetDC(NULL);
     if (hdc) {

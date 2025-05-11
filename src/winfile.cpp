@@ -87,7 +87,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pszCmdLineA, in
     }
 }
 
-void ResizeControls(void) {
+void ResizeControls() {
     static int nViews[] = {
         1, 0,                // placeholder for the main menu handle
         1, IDC_STATUS, 0, 0  // signify the end of the list

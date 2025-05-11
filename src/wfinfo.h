@@ -97,7 +97,7 @@ V_Variable(VolInfo);
 
 // Default Constructors or prototypes
 
-void M_Info(void);
+void M_Info();
 
 #define M_Type() M_Make(Type)
 #define M_Space() M_Make(Space)
@@ -108,12 +108,12 @@ void M_Info(void);
 // Define destructors
 //
 
-#define D_PROTO(type) void D_##type(void)
+#define D_PROTO(type) void D_##type()
 #define D_Destroy(type) DeleteCriticalSection(&CriticalSectionInfo##type)
 
 // Default Destructors or prototypes
 
-void D_Info(void);
+void D_Info();
 
 #define D_Type() D_Destroy(Type)
 #define D_Space() D_Destroy(Space)
@@ -130,16 +130,16 @@ int NetCon_UpdateAltName(DRIVE drive, DWORD dwRetVal);
 // Background update support
 //
 
-BOOL NetLoad(void);
+BOOL NetLoad();
 
 DWORD WINAPI UpdateInit(PVOID ThreadParameter);
 DWORD WFGetConnection(DRIVE, LPWSTR*, BOOL, DWORD);
 DWORD GetVolShare(DRIVE drive, LPWSTR* ppszVolShare, DWORD dwType);
-void UpdateDriveListComplete(void);
-void UpdateDriveList(void);
-void ResetDriveInfo(void);
+void UpdateDriveListComplete();
+void UpdateDriveList();
+void ResetDriveInfo();
 
-void UpdateWaitQuit(void);
+void UpdateWaitQuit();
 void WaitLoadEvent(BOOL bNet);
 
 Extern BOOL bUpdateRun;

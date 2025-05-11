@@ -48,7 +48,7 @@ LPXDTALINK StealDTABlock(HWND hwndCur, LPWSTR pPath, DWORD dwAttribs);
 BOOL IsNetDir(LPWSTR pPath, LPWSTR pName);
 void DirReadAbort(HWND hwnd, LPXDTALINK lpStart, EDIRABORT eDirAbort);
 
-BOOL InitDirRead(void) {
+BOOL InitDirRead() {
     DWORD dwIgnore;
 
     bDirReadRun = TRUE;
@@ -75,7 +75,7 @@ BOOL InitDirRead(void) {
     return TRUE;
 }
 
-void DestroyDirRead(void) {
+void DestroyDirRead() {
     if (bDirReadRun) {
         bDirReadRun = FALSE;
 

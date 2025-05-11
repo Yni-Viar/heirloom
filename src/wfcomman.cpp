@@ -29,10 +29,10 @@
 void MDIClientSizeChange(HWND hwndActive, int iFlags);
 HWND LocateDirWindow(LPWSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow);
 void UpdateAllDirWindows(LPWSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec);
-void AddNetMenuItems(void);
-void InitNetMenuItems(void);
+void AddNetMenuItems();
+void InitNetMenuItems();
 
-int UpdateConnectionsOnConnect(void);
+int UpdateConnectionsOnConnect();
 
 void NotifySearchFSC(LPWSTR pszPath, DWORD dwFunction) {
     if (!hwndSearch)
@@ -1539,20 +1539,20 @@ BOOL AppCommandProc(DWORD id) {
 // Postcond: Switch to this directory.
 //          szMessage trashed.
 
-void SwitchToSafeDrive(void) {
+void SwitchToSafeDrive() {
     WCHAR szSafePath[MAXPATHLEN];
 
     GetSystemDirectory(szSafePath, COUNTOF(szSafePath));
     SetCurrentDirectory(szSafePath);
 }
 
-void AddNetMenuItems(void) {
+void AddNetMenuItems() {
     HMENU hMenu;
 
     hMenu = GetMenu(hwndFrame);
 }
 
-void InitNetMenuItems(void) {}
+void InitNetMenuItems() {}
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -1581,7 +1581,7 @@ void InitNetMenuItems(void) {}
 //
 /////////////////////////////////////////////////////////////////////
 
-int UpdateConnectionsOnConnect(void) {
+int UpdateConnectionsOnConnect() {
     int rgiOld[MAX_DRIVES];
 
     BOOL abRemembered[MAX_DRIVES];

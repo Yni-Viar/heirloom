@@ -88,7 +88,7 @@ void vWaitMessage() {
 //
 /////////////////////////////////////////////////////////////////////
 
-void InitializeWatchList(void) {
+void InitializeWatchList() {
     int i;
 
     //
@@ -125,7 +125,7 @@ void InitializeWatchList(void) {
 //
 /////////////////////////////////////////////////////////////////////
 
-void DestroyWatchList(void) {
+void DestroyWatchList() {
     PHANDLE phChange;
 
     //

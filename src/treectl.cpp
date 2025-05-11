@@ -1592,7 +1592,7 @@ void InvalidateNetTypes(HWND hwndTree) {
     UpdateWindow(hwndLB);
 }
 
-void InvalidateAllNetTypes(void) {
+void InvalidateAllNetTypes() {
     HWND hwndT, hwndNext, hwndDir;
 
     for (hwndT = GetWindow(hwndMDIClient, GW_CHILD); hwndT; hwndT = hwndNext) {

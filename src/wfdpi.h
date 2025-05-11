@@ -17,7 +17,7 @@ extern UINT g_dpi;
 extern FLOAT g_scale;
 
 // Initialize DPI awareness for the application
-void InitDPIAwareness(void);
+void InitDPIAwareness();
 
 // Scale a value by the DPI scale factor
 int ScaleByDpi(int value);

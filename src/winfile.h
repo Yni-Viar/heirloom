@@ -243,7 +243,7 @@ typedef int DRIVEIND;
 #define SHERB_NOSOUND 0x00000004
 
 // Recycle Bin functions
-BOOL IsRecycleBinEmpty(void);
+BOOL IsRecycleBinEmpty();
 BOOL GetRecycleBinSize(PLARGE_INTEGER pliSize);
 BOOL EmptyRecycleBin(HWND hwnd);
 DWORD MoveFileToRecycleBin(LPWSTR pszFile);
@@ -341,7 +341,7 @@ typedef struct _SELINFO* PSELINFO;
 
 // WFDLGS3.C
 
-void DestroyCancelWindow(void);
+void DestroyCancelWindow();
 void UpdateConnections(BOOL bUpdateDriveList);
 
 // WFDLGS.C
@@ -349,13 +349,13 @@ void UpdateConnections(BOOL bUpdateDriveList);
 void ActivateCommonContextMenu(HWND hwnd, HWND hwndLB, LPARAM lParam);
 void KillQuoteTrailSpace(LPWSTR szFile);
 void SaveWindows(HWND hwndMain);
-void NewFont(void);
+void NewFont();
 
 // WFCHGNOT.C
 
-void InitializeWatchList(void);
+void InitializeWatchList();
 void ModifyWatchList(HWND hwndWatch, LPWSTR lpPath, DWORD fdwFilter);
-void DestroyWatchList(void);
+void DestroyWatchList();
 void NotifyPause(DRIVE drive, UINT uType);
 void NotifyResume(DRIVE drive, UINT uType);
 void ChangeNotify(int iEvent);
@@ -365,7 +365,7 @@ void vWaitMessage();
 // WFCOMMAN.C
 
 void RedoDriveWindows(HWND);
-BOOL FmifsLoaded(void);
+BOOL FmifsLoaded();
 void ChangeFileSystem(DWORD dwOper, LPCWSTR lpPath, LPCWSTR lpTo);
 HWND CreateDirWindow(LPWSTR szPath, BOOL bReplaceOpen, HWND hwndActive);
 HWND CreateTreeWindow(LPWSTR szPath, int x, int y, int dx, int dy, int dxSplit);
@@ -399,7 +399,7 @@ LPWSTR pszNextComponent(LPWSTR pszCmdLine);
 LPWSTR pszRemoveSurroundingQuotes(LPWSTR p);
 void cdecl SetStatusText(int nPane, UINT nFormat, LPCWSTR szFormat, ...);
 void RefreshWindow(HWND hwndActive, BOOL bUpdateDriveList, BOOL bFlushCache);
-BOOL IsLastWindow(void);
+BOOL IsLastWindow();
 LPWSTR AddCommasInternal(LPWSTR szBuf, DWORD dw);
 
 void InvalidateChildWindows(HWND hwnd);
@@ -407,7 +407,7 @@ BOOL IsValidDisk(DRIVE drive);
 LPWSTR GetSelection(int iSelType, PBOOL pbDir);
 LPWSTR GetNextFile(LPWSTR pCurSel, LPWSTR szFile, int size);
 
-void SetWindowDirectory(void);
+void SetWindowDirectory();
 void SetDlgDirectory(HWND hDlg, LPWSTR pszPath);
 void WritePrivateProfileBool(LPWSTR szKey, BOOL bParam);
 void WritePrivateProfileInt(LPWSTR szKey, int wParam);
@@ -454,18 +454,18 @@ void SetLBFont(HWND hwnd, HWND hwndLB, HANDLE hNewFont, DWORD dwViewFlags, LPXDT
 
 // WFDIRRD.C
 
-BOOL InitDirRead(void);
-void DestroyDirRead(void);
+BOOL InitDirRead();
+void DestroyDirRead();
 LPXDTALINK CreateDTABlock(HWND hwnd, LPWSTR pPath, DWORD dwAttribs, BOOL bDontSteal);
 void FreeDTA(HWND hwnd);
 void DirReadDestroyWindow(HWND hwndDir);
 LPXDTALINK DirReadDone(HWND hwndDir, LPXDTALINK lpStart, int iError);
-void BuildDocumentString(void);
-void BuildDocumentStringWorker(void);
+void BuildDocumentString();
+void BuildDocumentStringWorker();
 
 // WFDIRSRC.C
 
-HCURSOR GetMoveCopyCursor(void);
+HCURSOR GetMoveCopyCursor();
 void DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasFocus);
 // Old Win3.x style drag and drop handlers removed
 void DSSetSelection(HWND hwndLB, BOOL bSelect, LPWSTR szSpec, BOOL bSearch);
@@ -487,18 +487,18 @@ void SwitchDriveSelection(HWND hwndActive);
 
 // WFINIT.C
 
-void GetInternational(void);
+void GetInternational();
 BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow);
-void InitDriveBitmaps(void);
-void InitExtensions(void);
-void FreeFileManager(void);
+void InitDriveBitmaps();
+void InitExtensions();
+void FreeFileManager();
 BOOL CreateSavedWindows(LPCWSTR pszInitialDir);
-void InitExtensions(void);
+void InitExtensions();
 int GetDriveOffset(DRIVE drive);
-void InitMenus(void);
+void InitMenus();
 UINT MapIDMToMenuPos(UINT idm);
 UINT MapMenuPosToIDM(UINT pos);
-void LoadFailMessage(void);
+void LoadFailMessage();
 UINT FillDocType(PPDOCBUCKET ppDoc, LPCWSTR pszSection, LPCWSTR pszDefault);
 BOOL CheckDirExists(LPWSTR szDir);
 
@@ -525,7 +525,7 @@ void GetAllDirectories(LPWSTR rgszDirs[]);
 BOOL GetDriveDirectory(int iDrive, LPWSTR pszDir);
 void GetSelectedDirectory(int iDrive, LPWSTR pszDir);
 void SaveDirectory(LPWSTR pszDir);
-int GetSelectedDrive(void);
+int GetSelectedDrive();
 void GetTextStuff(HDC hdc);
 int GetHeightFromPointsString(LPCWSTR szPoints);
 int GetDrive(HWND hwnd, POINT pt);
@@ -589,7 +589,7 @@ void SetCurrentPathOfWindow(LPWSTR szPath);
 void GetSearchPath(HWND hwnd, LPWSTR szTemp);
 INT_PTR CALLBACK SearchProgDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void UpdateSearchStatus(HWND hwndLB, int nCount);
-void SearchEnd(void);
+void SearchEnd();
 
 // WFFILE.C
 BOOL GetRootPath(LPWSTR szPath, LPWSTR szReturn);
@@ -607,8 +607,8 @@ DWORD WFJunction(LPCWSTR LinkDirectory, LPCWSTR LinkTarget);
 
 // TREECTL.C
 
-void wfYield(void);
-void InvalidateAllNetTypes(void);
+void wfYield();
+void InvalidateAllNetTypes();
 void GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, int nBuf);
 BOOL RectTreeItem(HWND hwndLB, int iItem, BOOL bFocusOn);
 
@@ -1267,12 +1267,12 @@ Extern UINT dwMenuIDs[];
 
 typedef enum { PNG_TYPE_DRIVE, PNG_TYPE_ICON } PNG_TYPE;
 
-void PngStartup(void);
-void PngShutdown(void);
+void PngStartup();
+void PngShutdown();
 void PngDraw(HDC hdc, UINT dpi, int x, int y, PNG_TYPE type, int index);
 
 // Recycle Bin functions
-BOOL IsRecycleBinEmpty(void);
+BOOL IsRecycleBinEmpty();
 BOOL GetRecycleBinSize(PLARGE_INTEGER pliSize);
 BOOL EmptyRecycleBin(HWND hwnd);
 DWORD MoveFileToRecycleBin(LPWSTR pszFile);
