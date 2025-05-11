@@ -42,7 +42,7 @@
     }
 
 void NetCon_UpdateLines(DRIVE drive, DWORD dwType);
-INT UpdateDriveListWorker(void);
+int UpdateDriveListWorker(void);
 
 CRITICAL_SECTION CriticalSectionUpdate;
 
@@ -272,7 +272,7 @@ Done :
         END_IF(NetCon) DoneSafe : U_CLOSE(NetCon)
 
                                       D_PROTO(NetCon) {
-    INT i;
+    int i;
     DRIVE drive;
     PDRIVEINFO pDriveInfo;
 
@@ -290,7 +290,7 @@ Done :
     D_Destroy(NetCon);
 }
 
-INT NetCon_UpdateAltName(DRIVE drive, DWORD dwRetVal) {
+int NetCon_UpdateAltName(DRIVE drive, DWORD dwRetVal) {
     PDRIVEINFO pDriveInfo = &aDriveInfo[drive];
     LPWSTR lpszBuf;
     DWORD dwSize;
@@ -448,7 +448,7 @@ DocConstruct(void) {
 /////////////////////////////////////////////////////////////////////
 
 void DocDestruct(PPDOCBUCKET ppDocBucket) {
-    INT i;
+    int i;
     PDOCBUCKET pDocBucket;
     PDOCBUCKET pDocBucketNext;
 
@@ -506,7 +506,7 @@ void RemoveEndQuote(LPWSTR lpszExt) {
 // INOUTC    ppDocBucket  --  Doc struct to add to
 // INOUTC    lpszExt      --  Extension to add
 //
-// Return:   INT   -1  Item already exists
+// Return:   int   -1  Item already exists
 //                 0   Error
 //                 1   Successfully added
 //
@@ -520,9 +520,9 @@ void RemoveEndQuote(LPWSTR lpszExt) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT DocInsert(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt, LPWSTR lpszFileIcon) {
+int DocInsert(PPDOCBUCKET ppDocBucket, LPWSTR lpszExt, LPWSTR lpszFileIcon) {
     PDOCBUCKET pDocBucket;
-    INT iBucket;
+    int iBucket;
     WCHAR szExt[EXTSIZ];
 
     //
@@ -623,7 +623,7 @@ HICON DocGetIcon(PDOCBUCKET pDocBucket) {
         WCHAR* pchT = wcsrchr(pDocBucket->lpszFI, ',');
 
         if (pchT != NULL) {
-            INT index = atoi(pchT + 1);
+            int index = atoi(pchT + 1);
             HICON hIcon;
 
             *pchT = '\0';
@@ -643,7 +643,7 @@ HICON DocGetIcon(PDOCBUCKET pDocBucket) {
 //
 struct _DOC_ENUM {
     PPDOCBUCKET ppDocBucketBase;
-    INT iCurChain;
+    int iCurChain;
     PDOCBUCKET pDocBucketCur;
 };
 
@@ -859,7 +859,7 @@ void DocCloseEnum(PDOCENUM pDocEnum) {
 DWORD
 WINAPI
 UpdateInit(PVOID ThreadParameter) {
-    INT cDrivesTmp;
+    int cDrivesTmp;
 
     while (bUpdateRun) {
         WaitForSingleObject(hEventUpdate, INFINITE);
@@ -937,9 +937,9 @@ UpdateInit(PVOID ThreadParameter) {
 
 #define BUF_SIZ 0x4000  // 16k buffer
 
-INT UpdateDriveListWorker(void) {
-    INT cRealDrives = 0;
-    INT i;
+int UpdateDriveListWorker(void) {
+    int cRealDrives = 0;
+    int i;
     HANDLE hEnum;
     LPTCH pcBuf;  // 16k buffer.  blech.
     DWORD dwEntries;
@@ -955,7 +955,7 @@ INT UpdateDriveListWorker(void) {
     BOOL bOpenEnumSucceed = FALSE;
     DWORD dwDrivesRemembered = 0;
 
-    INT iUpdatePhantom = iUpdateReal ^ 1;
+    int iUpdatePhantom = iUpdateReal ^ 1;
 
     hEnum = NULL;
 
@@ -1008,7 +1008,7 @@ INT UpdateDriveListWorker(void) {
                         bCheckEnum = TRUE;
 
                         // Setup Bitfield for remembered connections
-                        for (i = 0; i < (INT)dwEntries; i++) {
+                        for (i = 0; i < (int)dwEntries; i++) {
                             // Check if lpLocalName is non-NULL
 
                             if (((LPNETRESOURCE)pcBuf)[i].lpLocalName) {
@@ -1380,7 +1380,7 @@ void UpdateDriveListComplete(void) {
     HWND hwnd, hwndNext;
     DRIVE drive;
     DRIVEIND driveInd;
-    INT CurSel;
+    int CurSel;
     WCHAR szPath[2 * MAXPATHLEN];
     LPWSTR lpszVol, lpszOldVol;
 
@@ -1437,7 +1437,7 @@ void UpdateDriveListComplete(void) {
     //
     if (hwndDriveList) {
         SendMessage(hwndDriveList, WM_SETREDRAW, FALSE, 0);
-        CurSel = (INT)SendMessage(hwndDriveList, CB_GETCURSEL, 0, 0);
+        CurSel = (int)SendMessage(hwndDriveList, CB_GETCURSEL, 0, 0);
         for (driveInd = 0; driveInd < cDrives; driveInd++) {
             if (aDriveInfo[rgiDrive[driveInd]].dwLines[ALTNAME_MULTI] != 1) {
                 SendMessage(hwndDriveList, CB_DELETESTRING, driveInd, 0);
@@ -1625,7 +1625,7 @@ BOOL NetLoad(void) {
 void ResetDriveInfo() {
     PDRIVEINFO pDriveInfo;
     DRIVE drive;
-    INT i;
+    int i;
 
     //
     // Initialize the count of drives.

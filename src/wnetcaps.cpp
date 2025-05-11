@@ -33,7 +33,7 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL WNetStat(INT nIndex) {
+BOOL WNetStat(int nIndex) {
     static DWORD fdwRet = (DWORD)-1;
     DWORD dwError;
 

@@ -16,12 +16,12 @@
 BOOL* pbConfirmAll;
 BOOL* pbConfirmReadOnlyAll;
 
-INT ManySource;
+int ManySource;
 
 void wfYield(void);
 
-INT CopyMoveRetry(LPWSTR, INT, PBOOL);
-DWORD CopyError(LPWSTR, LPWSTR, DWORD, DWORD, INT, BOOL, BOOL);
+int CopyMoveRetry(LPWSTR, int, PBOOL);
+DWORD CopyError(LPWSTR, LPWSTR, DWORD, DWORD, int, BOOL, BOOL);
 BOOL IsRootDirectory(LPWSTR pPath);
 
 DWORD ConfirmDialog(
@@ -45,7 +45,7 @@ DWORD GetNextPair(
     DWORD dwFunc,
     PDWORD pdwError,
     BOOL bIsLFNDriveDest);
-INT CheckMultiple(LPWSTR pInput);
+int CheckMultiple(LPWSTR pInput);
 void DialogEnterFileStuff(HWND hwnd);
 DWORD SafeFileRemove(LPWSTR szFileOEM);
 BOOL IsWindowsFile(LPWSTR szFileOEM);
@@ -91,7 +91,7 @@ BOOL IsValidChar(TUCHAR ch, BOOL fPath, BOOL bLFN) {
 
 LPWSTR
 StripColon(LPWSTR pPath) {
-    INT cb = lstrlen(pPath);
+    int cb = lstrlen(pPath);
 
     if (cb > 2 && pPath[cb - 1] == CHAR_COLON)
         pPath[cb - 1] = CHAR_NULL;
@@ -216,7 +216,7 @@ UINT RemoveLast(LPWSTR pFile) {
 /////////////////////////////////////////////////////////////////////
 
 BOOL QualifyPath(LPWSTR lpszPath) {
-    INT cb, nSpaceLeft, i, j;
+    int cb, nSpaceLeft, i, j;
     WCHAR szTemp[MAXPATHLEN];
     DRIVE drive = 0;
     LPWSTR pOrig, pT;
@@ -434,7 +434,7 @@ GetComps:
                 // off and restore nSpaceLeft.
                 //
                 if (lpszDot) {
-                    nSpaceLeft += (INT)(pT - lpszDot);
+                    nSpaceLeft += (int)(pT - lpszDot);
                     pT = lpszDot;
                 }
 
@@ -581,7 +581,7 @@ BOOL IsTheDiskReallyThere(HWND hwnd, LPWSTR pPath, DWORD dwFunc, BOOL bModal) {
     WCHAR szTemp[MAXMESSAGELEN];
     WCHAR szMessage[MAXMESSAGELEN];
     WCHAR szTitle[128];
-    INT err = 0;
+    int err = 0;
     DWORD dwError;
 
     BOOL bTriedRoot = FALSE;
@@ -722,11 +722,11 @@ typedef struct {
     LPWSTR pFileSource;
     PLFNDTA plfndtaDest;
     PLFNDTA plfndtaSrc;
-    INT bWriteProtect;
+    int bWriteProtect;
     BOOL bNoAccess;
 } PARAM_REPLACEDLG, FAR* LPPARAM_REPLACEDLG;
 
-void SetDlgItemPath(HWND hDlg, INT id, LPWSTR pszPath) {
+void SetDlgItemPath(HWND hDlg, int id, LPWSTR pszPath) {
     RECT rc;
     HDC hdc;
     HFONT hFont;
@@ -834,7 +834,7 @@ ConfirmDialog(
     BOOL* pbAll,
     BOOL bConfirmReadOnlyByDefault,
     BOOL* pbReadOnlyAll) {
-    INT nRetVal;
+    int nRetVal;
     PARAM_REPLACEDLG params;
     WCHAR szMessage[MAXMESSAGELEN];
 
@@ -853,7 +853,7 @@ ConfirmDialog(
             nRetVal = IDYES;
         } else {
             params.bWriteProtect = TRUE;
-            nRetVal = (INT)DialogBoxParam(
+            nRetVal = (int)DialogBoxParam(
                 hAppInstance, (LPWSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
         }
 
@@ -868,7 +868,7 @@ ConfirmDialog(
     } else if (!bConfirmByDefault || *pbConfirmAll) {
         nRetVal = IDYES;
     } else {
-        nRetVal = (INT)DialogBoxParam(
+        nRetVal = (int)DialogBoxParam(
             hAppInstance, (LPWSTR)MAKEINTRESOURCE(dlg), hDlg, ReplaceDlgProc, (LPARAM)(LPPARAM_REPLACEDLG)&params);
     }
 
@@ -935,7 +935,7 @@ NetCheck(LPWSTR pPath, DWORD dwType) {
 DWORD
 IsInvalidPath(LPWSTR pPath) {
     WCHAR sz[9];
-    INT n = 0;
+    int n = 0;
 
     if (lstrlen(pPath) >= MAXPATHLEN)
         return ERROR_FILENAME_EXCED_RANGE;
@@ -1475,7 +1475,7 @@ BOOL IsCurrentDirectory(LPWSTR p) {
 // note: this may hit the disk in the directory check
 //
 
-INT CheckMultiple(LPWSTR pInput) {
+int CheckMultiple(LPWSTR pInput) {
     LPWSTR pT;
     WCHAR szTemp[MAXPATHLEN];
 
@@ -1802,7 +1802,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
     BOOL bDirNotEmpty = FALSE;
 
     BOOL bFalse = FALSE;  // For cases that aren't disableable
-    INT CurIDS = 0;       // Current string displayed in status
+    int CurIDS = 0;       // Current string displayed in status
 
     BOOL bErrorOnDest = FALSE;
     BOOL bIsLFNDriveDest = FALSE;
@@ -2744,7 +2744,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
 
             // Extra scope to contain errorIndex.
             {
-                INT errorIndex = pCopyInfo->dwFunc;
+                int errorIndex = pCopyInfo->dwFunc;
                 if (errorIndex == FUNC_HARD && IsDirectory(szSource))
                     errorIndex = FUNC_JUNC;
                 ret = CopyError(szSource, szDest, ret, errorIndex, oper, bErrorOnDest, bFatalError);
@@ -2838,7 +2838,7 @@ ExitLoop:
 // Used by Danger Mouse to do moves and copies.
 
 DWORD
-DMMoveCopyHelper(LPWSTR pFrom, LPWSTR pTo, INT iOperation) {
+DMMoveCopyHelper(LPWSTR pFrom, LPWSTR pTo, int iOperation) {
     DWORD dwStatus;
     LPWSTR pTemp;
     PCOPYINFO pCopyInfo;
@@ -2856,7 +2856,7 @@ DMMoveCopyHelper(LPWSTR pFrom, LPWSTR pTo, INT iOperation) {
     // Confirm mouse operations.
     //
     if (bConfirmMouse) {
-        INT iConfirmMsg = IDS_MOVEMOUSECONFIRM;
+        int iConfirmMsg = IDS_MOVEMOUSECONFIRM;
         switch (iOperation) {
             case DROP_COPY:
                 iConfirmMsg = IDS_COPYMOUSECONFIRM;
@@ -2999,7 +2999,7 @@ TryAgain:
             return result;
         }
 
-        result = CopyMoveRetry(pTo, (INT)result, pbErrorOnDest);
+        result = CopyMoveRetry(pTo, (int)result, pbErrorOnDest);
         if (!result)
             goto TryAgain;
         else
@@ -3047,7 +3047,7 @@ CopyError(
     LPWSTR pszDest,
     DWORD dwError,
     DWORD dwFunc,
-    INT nOper,
+    int nOper,
     BOOL bErrorOnDest,
     BOOL bFatalError) {
     WCHAR szVerb[MAXERRORLEN];   /* Verb describing error */
@@ -3129,11 +3129,11 @@ CopyError(
 ;
 ============================================================================*/
 
-INT CopyMoveRetry(LPWSTR pszDest, INT nError, PBOOL pbErrorOnDest) {
+int CopyMoveRetry(LPWSTR pszDest, int nError, PBOOL pbErrorOnDest) {
     WCHAR szReason[128]; /* Error message string */
     LPWSTR pTemp;        /* Pointer into filename */
     WORD wFlags;         /* Message box flags */
-    INT result;          /* Return from MessageBox call */
+    int result;          /* Return from MessageBox call */
     WCHAR szMessage[MAXMESSAGELEN];
     WCHAR szTitle[128];
 

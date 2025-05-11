@@ -26,13 +26,13 @@
 
 #define VIEW_NOCHANGE 0x0020  // previously VIEW_PLUSES
 
-void MDIClientSizeChange(HWND hwndActive, INT iFlags);
+void MDIClientSizeChange(HWND hwndActive, int iFlags);
 HWND LocateDirWindow(LPWSTR pszPath, BOOL bNoFileSpec, BOOL bNoTreeWindow);
 void UpdateAllDirWindows(LPWSTR pszPath, DWORD dwFunction, BOOL bNoFileSpec);
 void AddNetMenuItems(void);
 void InitNetMenuItems(void);
 
-INT UpdateConnectionsOnConnect(void);
+int UpdateConnectionsOnConnect(void);
 
 void NotifySearchFSC(LPWSTR pszPath, DWORD dwFunction) {
     if (!hwndSearch)
@@ -52,12 +52,12 @@ void RepaintDriveWindow(HWND hwndChild) {
 // Note: Assumes UpdateDriveList and InitDriveBitmaps already called!
 
 void RedoDriveWindows(HWND hwndActive) {
-    INT iCurDrive;
+    int iCurDrive;
 
     if (hwndActive == NULL)
         hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
-    iCurDrive = (INT)GetWindowLongPtr(hwndActive, GWL_TYPE);
+    iCurDrive = (int)GetWindowLongPtr(hwndActive, GWL_TYPE);
 
     MDIClientSizeChange(hwndActive, DRIVEBAR_FLAG);
 }
@@ -359,7 +359,7 @@ void ChangeFileSystem(DWORD dwFunction, LPCWSTR lpszFile, LPCWSTR lpszTo) {
 //
 /////////////////////////////////////////////////////////////////////
 
-HWND CreateTreeWindow(LPWSTR szPath, INT x, INT y, INT dx, INT dy, INT dxSplit) {
+HWND CreateTreeWindow(LPWSTR szPath, int x, int y, int dx, int dy, int dxSplit) {
     HWND hwnd;
     DWORD style = 0L;
 
@@ -418,7 +418,7 @@ HWND CreateTreeWindow(LPWSTR szPath, INT x, INT y, INT dx, INT dy, INT dxSplit) 
 
 HWND CreateDirWindow(LPWSTR szPath, BOOL bReplaceOpen, HWND hwndActive) {
     HWND hwndT;
-    INT dxSplit;
+    int dxSplit;
     BOOLEAN bDriveChanged;
 
     if (hwndActive == hwndSearch) {
@@ -445,7 +445,7 @@ HWND CreateDirWindow(LPWSTR szPath, BOOL bReplaceOpen, HWND hwndActive) {
     //
     if (bReplaceOpen) {
         DRIVE drive;
-        INT i;
+        int i;
 
         CharUpperBuff(szPath, 1);  // make sure
 
@@ -636,7 +636,7 @@ OpenExit:
 // window changes (for example, when the status bar is turned on
 // or off).
 
-void MDIClientSizeChange(HWND hwndActive, INT iFlags) {
+void MDIClientSizeChange(HWND hwndActive, int iFlags) {
     RECT rc;
 
     GetClientRect(hwndFrame, &rc);
@@ -730,7 +730,7 @@ BOOL AppCommandProc(DWORD id) {
     BOOL bTemp;
     HWND hwndT;
     WCHAR szPath[MAXPATHLEN];
-    INT ret;
+    int ret;
 
     hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
@@ -743,7 +743,7 @@ BOOL AppCommandProc(DWORD id) {
         case IDM_DIRONLY:
         case IDM_BOTH: {
             RECT rc;
-            INT x;
+            int x;
 
             if (hwndActive != hwndSearch) {
                 GetClientRect(hwndActive, &rc);
@@ -1079,7 +1079,7 @@ BOOL AppCommandProc(DWORD id) {
             HANDLE hMemDropEffect;
             WCHAR szPathLong[MAXPATHLEN];
             POINT pt;
-            INT iMultipleResult;
+            int iMultipleResult;
 
             pszFiles = GetSelection(4, NULL);
             if (pszFiles == NULL) {
@@ -1147,7 +1147,7 @@ BOOL AppCommandProc(DWORD id) {
 
         case IDM_ATTRIBS: {
             LPWSTR pSel, p;
-            INT count;
+            int count;
             WCHAR szTemp[MAXPATHLEN];
 
             BOOL bDir = FALSE;
@@ -1197,7 +1197,7 @@ BOOL AppCommandProc(DWORD id) {
 
         case IDM_SELALL:
         case IDM_DESELALL: {
-            INT iSave;
+            int iSave;
             HWND hwndLB;
             HWND hwndDir;
             LPXDTALINK lpStart;
@@ -1215,7 +1215,7 @@ BOOL AppCommandProc(DWORD id) {
 
             SendMessage(hwndLB, WM_SETREDRAW, FALSE, 0L);
 
-            iSave = (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
+            iSave = (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
             SendMessage(hwndLB, LB_SETSEL, (id == IDM_SELALL), -1L);
 
             if (id == IDM_DESELALL) {
@@ -1438,7 +1438,7 @@ BOOL AppCommandProc(DWORD id) {
             break;
 
         case IDM_NEWWINDOW:
-            NewTree((INT)SendMessage(hwndActive, FS_GETDRIVE, 0, 0L) - CHAR_A, hwndActive);
+            NewTree((int)SendMessage(hwndActive, FS_GETDRIVE, 0, 0L) - CHAR_A, hwndActive);
             break;
 
         case IDM_CASCADE:
@@ -1454,10 +1454,10 @@ BOOL AppCommandProc(DWORD id) {
             break;
 
         case IDM_REFRESH: {
-            INT i;
+            int i;
 
 #define NUMDRIVES (sizeof(rgiDrive) / sizeof(rgiDrive[0]))
-            INT rgiSaveDrives[NUMDRIVES];
+            int rgiSaveDrives[NUMDRIVES];
 
             if (WAITNET_LOADED) {
                 //
@@ -1512,7 +1512,7 @@ BOOL AppCommandProc(DWORD id) {
             break;
 
         default: {
-            INT i;
+            int i;
 
             for (i = 0; i < iNumExtensions; i++) {
                 WORD delta = extensions[i].Delta;
@@ -1567,7 +1567,7 @@ void InitNetMenuItems(void) {}
 //           this routine to always set all bValids to FALSE.
 //
 //
-// Return:   INT      >= 0 iDrive that is new
+// Return:   int      >= 0 iDrive that is new
 //                    = -1 if no detected new drive letter
 //
 // Assumes:
@@ -1581,8 +1581,8 @@ void InitNetMenuItems(void) {}
 //
 /////////////////////////////////////////////////////////////////////
 
-INT UpdateConnectionsOnConnect(void) {
-    INT rgiOld[MAX_DRIVES];
+int UpdateConnectionsOnConnect(void) {
+    int rgiOld[MAX_DRIVES];
 
     BOOL abRemembered[MAX_DRIVES];
     PDRIVEINFO pDriveInfo;

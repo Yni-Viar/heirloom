@@ -104,13 +104,13 @@ typedef struct _FMS_LOADW {
 #define LPFMS_LOAD LPFMS_LOADW
 
 typedef struct tagFMS_HELPSTRINGA {
-    INT idCommand;    /* input, -1==>the menu was selected */
+    int idCommand;    /* input, -1==>the menu was selected */
     HMENU hMenu;      /* input, the extensions menu */
     CHAR szHelp[128]; /* output, the help string */
 } FMS_HELPSTRINGA, FAR* LPFMS_HELPSTRINGA;
 
 typedef struct tagFMS_HELPSTRINGW {
-    INT idCommand;     /* input, -1==>the menu was selected */
+    int idCommand;     /* input, -1==>the menu was selected */
     HMENU hMenu;       /* input, the extensions menu */
     WCHAR szHelp[128]; /* output, the help string */
 } FMS_HELPSTRINGW, FAR* LPFMS_HELPSTRINGW;

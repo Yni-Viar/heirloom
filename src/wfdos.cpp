@@ -24,7 +24,7 @@ void GetDiskSpace(DRIVE drive, PULARGE_INTEGER pqFreeSpace, PULARGE_INTEGER pqTo
     }
 }
 
-INT ChangeVolumeLabel(DRIVE drive, LPWSTR lpNewVolName) {
+int ChangeVolumeLabel(DRIVE drive, LPWSTR lpNewVolName) {
     WCHAR szDrive[] = SZ_ACOLON;
 
     DRIVESET(szDrive, drive);

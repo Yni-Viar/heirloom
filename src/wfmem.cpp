@@ -276,7 +276,7 @@ LPXDTA
 MemNext(LPXDTALINK* plpLink, LPXDTA lpxdta) {
     LPXDTALINK lpLinkCur = *plpLink;
 
-    if ((PBYTE)lpxdta + lpxdta->dwSize - (PBYTE)lpLinkCur == (INT)lpLinkCur->dwNextFree) {
+    if ((PBYTE)lpxdta + lpxdta->dwSize - (PBYTE)lpLinkCur == (int)lpLinkCur->dwNextFree) {
         *plpLink = lpLinkCur->next;
         return (LPXDTA)(((PBYTE)*plpLink) + sizeof(XDTALINK));
     } else {

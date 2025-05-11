@@ -64,7 +64,7 @@ LONG GetExtSelection(
         //
         uExtSelItems = (UINT)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
 
-        lpExtSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(INT) * uExtSelItems);
+        lpExtSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(int) * uExtSelItems);
 
         if (lpExtSelItems == NULL) {
             uExtSelItems = (UINT)-1;
@@ -252,7 +252,7 @@ LONG GetDriveInfo(HWND hwnd, UINT uMsg, LPARAM lParam) {
 #undef lpSelA
 
 void FreeExtensions() {
-    INT i;
+    int i;
     HMENU hMenuFrame;
 
     hMenuFrame = GetMenu(hwndFrame);

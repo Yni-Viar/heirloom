@@ -27,7 +27,7 @@ typedef struct {
     DWORD dwAttrFilter;  // search attribute mask.
     DWORD err;           // error info if failure.
     WIN32_FIND_DATA fd;  // FindFirstFile() data structure;
-    INT nSpaceLeft;      // Space left for deeper paths
+    int nSpaceLeft;      // Space left for deeper paths
 } LFNDTA, *LPLFNDTA, *PLFNDTA;
 
 void LFNInit(void);
@@ -43,7 +43,7 @@ BOOL WFFindClose(LPLFNDTA);
 
 DWORD I_LFNCanon(USHORT CanonType, LPWSTR InFile, LPWSTR OutFile);
 DWORD LFNParse(LPWSTR, LPWSTR, LPWSTR);
-WORD I_LFNEditName(LPWSTR lpSrc, LPWSTR lpEd, LPWSTR lpRes, INT iResBufSize);
+WORD I_LFNEditName(LPWSTR lpSrc, LPWSTR lpEd, LPWSTR lpRes, int iResBufSize);
 
 BOOL WFIsDir(LPWSTR);
 BOOL LFNMergePath(LPWSTR, LPWSTR);

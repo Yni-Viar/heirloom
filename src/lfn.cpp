@@ -28,7 +28,7 @@ BOOL IsFATName(LPWSTR pName);
  */
 
 BOOL WFFindFirst(LPLFNDTA lpFind, LPWSTR lpName, DWORD dwAttrFilter) {
-    INT nLen;
+    int nLen;
     LPWSTR pEnd;
 
     //
@@ -334,7 +334,7 @@ BOOL IsLFN(LPWSTR pName) {
 
 BOOL LFNMergePath(LPWSTR lpMask, LPWSTR lpFile) {
     WCHAR szT[MAXPATHLEN * 2];
-    INT iResStrlen;
+    int iResStrlen;
 
     //
     // Get the directory portion (from root to parent) of the destination.

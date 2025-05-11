@@ -186,8 +186,8 @@ static WCHAR ach83InvalidChars[] = TEXT(
  *
  *****************************************************************************/
 
-WORD I_LFNEditName(LPWSTR lpSrc, LPWSTR lpEd, LPWSTR lpRes, INT iResBufSize) {
-    INT ResLen = 0;  // Length of result
+WORD I_LFNEditName(LPWSTR lpSrc, LPWSTR lpEd, LPWSTR lpRes, int iResBufSize) {
+    int ResLen = 0;  // Length of result
 
     // This is turned off until we agree
     // that cmd operates in the same way

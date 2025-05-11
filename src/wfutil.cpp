@@ -174,11 +174,11 @@ void SaveDirectory(LPWSTR pszPath) {
  *           (search windows NOT allowed)
  */
 
-INT GetSelectedDrive() {
+int GetSelectedDrive() {
     HWND hwnd;
 
     hwnd = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
-    return (INT)SendMessage(hwnd, FS_GETDRIVE, 0, 0L) - (INT)CHAR_A;
+    return (int)SendMessage(hwnd, FS_GETDRIVE, 0, 0L) - (int)CHAR_A;
 }
 
 /*
@@ -218,7 +218,7 @@ hwndfound:
     StripBackslash(pszDir);
 }
 
-BOOL GetDriveDirectory(INT iDrive, LPWSTR pszDir) {
+BOOL GetDriveDirectory(int iDrive, LPWSTR pszDir) {
     WCHAR drvstr[4];
     DWORD ret;
 
@@ -402,10 +402,10 @@ LPWSTR
 AddCommasInternal(LPWSTR szBuf, DWORD dw) {
     WCHAR szTemp[40];
     LPWSTR pTemp;
-    INT count, len;
+    int count, len;
     LPWSTR p;
-    INT iCommaLen;
-    INT i;
+    int iCommaLen;
+    int i;
 
     // if *szComma[0] == NULL, get out now
 
@@ -443,14 +443,14 @@ AddCommasInternal(LPWSTR szBuf, DWORD dw) {
 
 BOOL IsLastWindow() {
     HWND hwnd;
-    INT count;
+    int count;
 
     count = 0;
 
     // count all non title/search windows to see if close is allowed
 
     for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = GetWindow(hwnd, GW_HWNDNEXT))
-        if (!GetWindow(hwnd, GW_OWNER) && ((INT)GetWindowLongPtr(hwnd, GWL_TYPE) >= 0))
+        if (!GetWindow(hwnd, GW_OWNER) && ((int)GetWindowLongPtr(hwnd, GWL_TYPE) >= 0))
             count++;
 
     return count == 1;
@@ -479,14 +479,14 @@ BOOL IsLastWindow() {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT GetMDIWindowText(HWND hwnd, LPWSTR szTitle, INT size) {
+int GetMDIWindowText(HWND hwnd, LPWSTR szTitle, int size) {
     //
     // Need temp buffer due to filter + path
     //
     WCHAR szTemp[2 * MAXPATHLEN + 40];
 
     LPWSTR lpLast;
-    INT iWindowNumber;
+    int iWindowNumber;
 
     EnterCriticalSection(&CriticalSectionPath);
 
@@ -559,7 +559,7 @@ void SetMDIWindowText(HWND hwnd, LPWSTR szTitle) {
     WCHAR szTemp[MAXPATHLEN * 2 + 10];  // BONK!  is this big enough?
     WCHAR szNumber[20];
     HWND hwndT;
-    INT num, max_num, cur_num;
+    int num, max_num, cur_num;
     LPWSTR lpszVolShare;
     LPWSTR lpszVolName;
 
@@ -696,8 +696,8 @@ void SetMDIWindowText(HWND hwnd, LPWSTR szTitle) {
 
 #define ISDIGIT(c) ((c) >= TEXT('0') && (c) <= TEXT('9'))
 
-INT atoiW(LPWSTR sz) {
-    INT n = 0;
+int atoiW(LPWSTR sz) {
+    int n = 0;
     BOOL bNeg = FALSE;
 
     if (*sz == CHAR_DASH) {
@@ -828,7 +828,7 @@ BOOL IsLFNSelected() {
 //--------------------------------------------------------------------------
 
 LPWSTR
-GetSelection(INT iSelType, PBOOL pbDir) {
+GetSelection(int iSelType, PBOOL pbDir) {
     HWND hwndActive;
 
     hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
@@ -853,8 +853,8 @@ GetSelection(INT iSelType, PBOOL pbDir) {
 //
 
 LPWSTR
-GetNextFile(LPWSTR pFrom, LPWSTR pTo, INT cchMax) {
-    INT i;
+GetNextFile(LPWSTR pFrom, LPWSTR pTo, int cchMax) {
+    int i;
 
     // Originally, this code tested if the first char was a double quote,
     // then either (1) scanned for the next space or (2) scanned for the next
@@ -1186,7 +1186,7 @@ GetExtension(LPWSTR pszFile) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-INT MyMessageBox(HWND hwnd, DWORD idTitle, DWORD idMessage, DWORD wStyle) {
+int MyMessageBox(HWND hwnd, DWORD idTitle, DWORD idMessage, DWORD wStyle) {
     WCHAR szTitle[MAXTITLELEN];
     WCHAR szMessage[MAXMESSAGELEN];
     WCHAR szTemp[MAXMESSAGELEN];
@@ -1232,8 +1232,8 @@ INT MyMessageBox(HWND hwnd, DWORD idTitle, DWORD idMessage, DWORD wStyle) {
 DWORD
 ExecProgram(LPWSTR lpPath, LPWSTR lpParms, LPWSTR lpDir, BOOL bLoadIt, BOOL bRunAs) {
     DWORD_PTR ret;
-    INT iCurCount;
-    INT i;
+    int iCurCount;
+    int i;
     HCURSOR hCursor;
     LPWSTR lpszTitle;
 

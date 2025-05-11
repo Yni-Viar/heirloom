@@ -37,10 +37,10 @@ void GetTreePathIndirect(PDNODE pNode, LPWSTR szDest);
 
 void ScanDirLevel(PDNODE pParentNode, LPWSTR szPath, DWORD view);
 
-INT InsertDirectory(
+int InsertDirectory(
     HWND hwndTreeCtl,
     PDNODE pParentNode,
-    INT iParentNode,
+    int iParentNode,
     LPWSTR szName,
     PDNODE* ppNode,
     BOOL bCasePreserved,
@@ -52,7 +52,7 @@ BOOL ReadDirLevel(
     PDNODE pParentNode,
     LPWSTR szPath,
     UINT uLevel,
-    INT iParentNode,
+    int iParentNode,
     DWORD dwAttribs,
     BOOL bFullyExpand,
     LPWSTR szAutoExpand,
@@ -62,7 +62,7 @@ void FillTreeListbox(HWND hwndTreeCtl, LPWSTR szDefaultDir, BOOL bFullyExpand, B
 
 BOOL FindItemFromPath(HWND hwndLB, LPWSTR lpszPath, BOOL bReturnParent, DWORD* pIndex, PDNODE* ppNode);
 
-INT BuildTreeName(LPWSTR lpszPath, INT iLen, INT iSize);
+int BuildTreeName(LPWSTR lpszPath, int iLen, int iSize);
 
 UINT GetRealExtent(PDNODE pNode, HWND hwndLB, LPWSTR szPath, int* pLen);
 
@@ -206,8 +206,8 @@ void ScanDirLevel(PDNODE pParentNode, LPWSTR szPath, DWORD view) {
 //
 // p1 and p2 must be on the same level (p1->nLevels == p2->nLevels)
 
-INT ComparePath(PDNODE p1, PDNODE p2) {
-    INT ret;
+int ComparePath(PDNODE p1, PDNODE p2) {
+    int ret;
 
     if ((p1 == p2) || (!p1) || (!p2)) {
         return 0;  // equal (base case)
@@ -226,9 +226,9 @@ INT ComparePath(PDNODE p1, PDNODE p2) {
     }
 }
 
-INT CompareNodes(PDNODE p1, PDNODE p2) {
+int CompareNodes(PDNODE p1, PDNODE p2) {
     PDNODE p1save, p2save;
-    INT ret;
+    int ret;
 
     ASSERT(p1 && p2);
 
@@ -250,7 +250,7 @@ INT CompareNodes(PDNODE p1, PDNODE p2) {
     ret = ComparePath(p1, p2);
 
     if (ret == 0)
-        ret = (INT)p1save->nLevels - (INT)p2save->nLevels;
+        ret = (int)p1save->nLevels - (int)p2save->nLevels;
 
     return ret;
 }
@@ -269,10 +269,10 @@ INT CompareNodes(PDNODE p1, PDNODE p2) {
 // Returns iNode and fills ppNode with pNode.
 //
 
-INT InsertDirectory(
+int InsertDirectory(
     HWND hwndTreeCtl,
     PDNODE pParentNode,
-    INT iParentNode,
+    int iParentNode,
     LPWSTR szName,
     PDNODE* ppNode,
     BOOL bCasePreserved,
@@ -282,7 +282,7 @@ INT InsertDirectory(
     UINT x, xTreeMax;
     PDNODE pNode, pMid;
     HWND hwndLB;
-    INT iMin, iMax, iMid;
+    int iMin, iMax, iMid;
     WCHAR szPathName[MAXPATHLEN * 2];
 
     len = lstrlen(szName);
@@ -329,7 +329,7 @@ INT InsertDirectory(
         SendMessage(hwndLB, LB_SETHORIZONTALEXTENT, x, 0L);
     }
 
-    iMax = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+    iMax = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
 
     if (iMax > 0) {
         // do a binary insert
@@ -400,7 +400,7 @@ INT InsertDirectory(
     // if no one below me or the level of the guy below is less, then
     // this is the last entry for this level
 
-    if (((INT)SendMessage(hwndLB, LB_GETTEXT, iMax, (LPARAM)&pMid) == LB_ERR) || (pMid->nLevels < pNode->nLevels)) {
+    if (((int)SendMessage(hwndLB, LB_GETTEXT, iMax, (LPARAM)&pMid) == LB_ERR) || (pMid->nLevels < pNode->nLevels)) {
         pNode->wFlags |= TF_LASTLEVELENTRY;
     }
 
@@ -505,14 +505,14 @@ BOOL ReadDirLevel(
     PDNODE pParentNode,
     LPWSTR szPath,
     UINT uLevel,
-    INT iParentNode,
+    int iParentNode,
     DWORD dwAttribs,
     BOOL bFullyExpand,
     LPWSTR szAutoExpand,
     BOOL bPartialSort) {
     HWND hwndParent;
     LPWSTR szEndPath;
-    INT iNode;
+    int iNode;
     BOOL bFound;
     BOOL bAutoExpand;
     PDNODE pNode;
@@ -521,7 +521,7 @@ BOOL ReadDirLevel(
     WCHAR szMessage[MAXPATHLEN];
     UINT uYieldCount = 0;
     HWND hwndLB;
-    INT count = 0;
+    int count = 0;
     BOOL bResult = TRUE;
     LPXDTALINK lpStart = NULL;  // assume none to steal from
     HWND hwndDir;
@@ -553,7 +553,7 @@ BOOL ReadDirLevel(
                     //
                     // holds number of entries, NOT size.
                     //
-                    count = (INT)MemLinkToHead(lpStart)->dwEntries;
+                    count = (int)MemLinkToHead(lpStart)->dwEntries;
 
                     //
                     // We are currently using it, so mark it as in use.
@@ -673,7 +673,7 @@ BOOL ReadDirLevel(
         uYieldCount++;
 
         if (bCancelTree) {
-            INT iDrive = (INT)GetWindowLongPtr(hwndParent, GWL_TYPE);
+            int iDrive = (int)GetWindowLongPtr(hwndParent, GWL_TYPE);
 
             if (!IsValidDisk(iDrive))
                 PostMessage(hwndParent, WM_SYSCOMMAND, SC_CLOSE, 0L);
@@ -820,7 +820,7 @@ DONE:
 // return the pointer to that node.
 
 PDNODE
-FindParent(INT iLevelParent, INT iStartInd, HWND hwndLB) {
+FindParent(int iLevelParent, int iStartInd, HWND hwndLB) {
     PDNODE pNode;
 
     while (TRUE) {
@@ -871,14 +871,14 @@ BOOL StealTreeData(HWND hwndTC, HWND hwndLB, LPWSTR szDir) {
 
     if (hwndSrc) {
         PDNODE pNode, pNewNode, pLastParent;
-        INT i;
+        int i;
 
         hwndLBSrc = GetDlgItem(hwndT, IDCW_TREELISTBOX);
 
         //
         // don't seal from a tree that hasn't been read yet!
         //
-        if ((INT)SendMessage(hwndLBSrc, LB_GETCOUNT, 0, 0L) == 0) {
+        if ((int)SendMessage(hwndLBSrc, LB_GETCOUNT, 0, 0L) == 0) {
             return FALSE;
         }
 
@@ -916,12 +916,12 @@ BOOL StealTreeData(HWND hwndTC, HWND hwndLB, LPWSTR szDir) {
 }
 
 void FreeAllTreeData(HWND hwndLB) {
-    INT nIndex;
+    int nIndex;
     PDNODE pNode;
 
     // Free up the old tree (if any)
 
-    nIndex = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L) - 1;
+    nIndex = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L) - 1;
     while (nIndex >= 0) {
         SendMessage(hwndLB, LB_GETTEXT, nIndex, (LPARAM)&pNode);
         LocalFree((HANDLE)pNode);
@@ -940,7 +940,7 @@ void FreeAllTreeData(HWND hwndLB) {
 
 void FillTreeListbox(HWND hwndTC, LPWSTR szDefaultDir, BOOL bFullyExpand, BOOL bDontSteal) {
     PDNODE pNode;
-    INT iNode;
+    int iNode;
     DWORD dwAttribs;
     WCHAR szTemp[MAXPATHLEN + 1] = SZ_ACOLONSLASH;
     WCHAR szExpand[MAXPATHLEN + 1];
@@ -1198,8 +1198,8 @@ BOOL FindItemFromPath(HWND hwndLB, LPWSTR lpszPath, BOOL bReturnParent, DWORD* p
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-BOOL RectTreeItem(HWND hwndLB, INT iItem, BOOL bFocusOn) {
-    INT len;
+BOOL RectTreeItem(HWND hwndLB, int iItem, BOOL bFocusOn) {
+    int len;
     HDC hdc;
     RECT rc;
     RECT rcClip;
@@ -1286,7 +1286,7 @@ BOOL RectTreeItem(HWND hwndLB, INT iItem, BOOL bFocusOn) {
 // message.  this usually starts from the source or dest of a drop
 // and travels up until we find a drive or hit the MDI client
 //
-INT GetDrive(HWND hwnd, POINT pt) {
+int GetDrive(HWND hwnd, POINT pt) {
     WCHAR chDrive;
 
     //
@@ -1340,8 +1340,8 @@ BOOL IsNetPath(PDNODE pNode) {
 }
 
 void TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
-    INT x, y, dy;
-    INT nLevel;
+    int x, y, dy;
+    int nLevel;
     HDC hdc;
     int len;
     RECT rc;
@@ -1350,7 +1350,7 @@ void TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
     DWORD rgbText;
     DWORD rgbBackground;
     HBRUSH hBrush, hOld;
-    INT iBitmap;
+    int iBitmap;
     DWORD view;
 
     // +1 added since IsNetPath->GetTreePath->GetTreePathIndirect
@@ -1500,11 +1500,11 @@ void TCWP_DrawItem(LPDRAWITEMSTRUCT lpLBItem, HWND hwndLB, HWND hWnd) {
 }
 
 #ifdef TBCUSTSHOWSHARE
-void GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, INT nBuf) {
+void GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, int nBuf) {
     PDNODE pNode;
     LPWSTR lpszPath;
     DWORD dwSize;
-    INT i;
+    int i;
     HWND hwndLB;
     DWORD dwError;
 
@@ -1513,7 +1513,7 @@ void GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, INT nBuf) {
 
     hwndLB = GetDlgItem(hwndTree, IDCW_TREELISTBOX);
 
-    i = (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
+    i = (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
     if (i < 0)
         goto notshared;
 
@@ -1570,8 +1570,8 @@ notshared:
 #endif
 
 void InvalidateNetTypes(HWND hwndTree) {
-    INT cItems;
-    INT iItem;
+    int cItems;
+    int iItem;
     HWND hwndLB;
     PDNODE pNode;
 
@@ -1580,7 +1580,7 @@ void InvalidateNetTypes(HWND hwndTree) {
 
     hwndLB = GetDlgItem(hwndTree, IDCW_TREELISTBOX);
 
-    cItems = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+    cItems = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
 
     for (iItem = 0; iItem < cItems; iItem++) {
         if (SendMessage(hwndLB, LB_GETTEXT, iItem, (LPARAM)&pNode) == LB_ERR)
@@ -1611,9 +1611,9 @@ void InvalidateAllNetTypes(void) {
 /* A helper for both ExpandLevel and TreeCtlWndProc.TC_COLLAPSELEVEL.
  * Code moved from TreeCtlWndProc to be shared.  EDH 13 Oct 91
  */
-void CollapseLevel(HWND hwndLB, PDNODE pNode, INT nIndex) {
+void CollapseLevel(HWND hwndLB, PDNODE pNode, int nIndex) {
     PDNODE pParentNode = pNode;
-    INT nIndexT = nIndex;
+    int nIndexT = nIndex;
     UINT xTreeMax;
 
     //
@@ -1658,15 +1658,15 @@ void CollapseLevel(HWND hwndLB, PDNODE pNode, INT nIndex) {
     InvalidateRect(hwndLB, NULL, TRUE);
 }
 
-void ExpandLevel(HWND hWnd, WPARAM wParam, INT nIndex, LPWSTR szPath) {
+void ExpandLevel(HWND hWnd, WPARAM wParam, int nIndex, LPWSTR szPath) {
     HWND hwndLB;
     PDNODE pNode;
-    INT iNumExpanded;
-    INT iBottomIndex;
-    INT iTopIndex;
-    INT iNewTopIndex;
-    INT iExpandInView;
-    INT iCurrentIndex;
+    int iNumExpanded;
+    int iBottomIndex;
+    int iTopIndex;
+    int iNewTopIndex;
+    int iExpandInView;
+    int iCurrentIndex;
     RECT rc;
     DWORD dwAttribs;
 
@@ -1679,7 +1679,7 @@ void ExpandLevel(HWND hWnd, WPARAM wParam, INT nIndex, LPWSTR szPath) {
     hwndLB = GetDlgItem(hWnd, IDCW_TREELISTBOX);
 
     if (nIndex == -1)
-        if ((nIndex = (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L)) == LB_ERR)
+        if ((nIndex = (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L)) == LB_ERR)
             return;
 
     SendMessage(hwndLB, LB_GETTEXT, nIndex, (LPARAM)&pNode);
@@ -1700,9 +1700,9 @@ void ExpandLevel(HWND hWnd, WPARAM wParam, INT nIndex, LPWSTR szPath) {
 
     SendMessage(hwndLB, WM_SETREDRAW, FALSE, 0L);  // Disable redrawing.
 
-    iCurrentIndex = (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
-    iNumExpanded = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
-    iTopIndex = (INT)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
+    iCurrentIndex = (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
+    iNumExpanded = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+    iTopIndex = (int)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
     GetClientRect(hwndLB, &rc);
     iBottomIndex = iTopIndex + (rc.bottom + 1) / dyFileName;
 
@@ -1718,12 +1718,12 @@ void ExpandLevel(HWND hWnd, WPARAM wParam, INT nIndex, LPWSTR szPath) {
 
     // this is how many will be in view
 
-    iExpandInView = (iBottomIndex - (INT)iCurrentIndex);
+    iExpandInView = (iBottomIndex - (int)iCurrentIndex);
 
-    iNumExpanded = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L) - iNumExpanded;
+    iNumExpanded = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L) - iNumExpanded;
 
     if (iNumExpanded >= iExpandInView) {
-        iNewTopIndex = min((INT)iCurrentIndex, iTopIndex + iNumExpanded - iExpandInView + 1);
+        iNewTopIndex = min((int)iCurrentIndex, iTopIndex + iNumExpanded - iExpandInView + 1);
 
         // Control tree view scroll behavior on expand via winfile.ini[Settings]ScrollOnExpand. Default == TRUE
         if (TRUE == bScrollOnExpand)
@@ -1759,9 +1759,9 @@ void ExpandLevel(HWND hWnd, WPARAM wParam, INT nIndex, LPWSTR szPath) {
 LRESULT
 CALLBACK
 TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    INT iSel;
-    INT i, j;
-    INT nIndex;
+    int iSel;
+    int i, j;
+    int nIndex;
     PDNODE pNode, pNodeNext;
     HWND hwndLB;
     HWND hwndParent;
@@ -1791,9 +1791,9 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 break;
 
             if (wParam) {
-                nIndex = (INT)wParam;
+                nIndex = (int)wParam;
             } else {
-                nIndex = (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
+                nIndex = (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
                 if (nIndex == LB_ERR)
                     break;
             }
@@ -1819,7 +1819,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             if (GetWindowLongPtr(hwnd, GWL_READLEVEL))
                 break;
 
-            ExpandLevel(hwnd, wParam, (INT)-1, szPath);
+            ExpandLevel(hwnd, wParam, (int)-1, szPath);
             break;
 
         case TC_TOGGLELEVEL:
@@ -1830,7 +1830,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             if (GetWindowLongPtr(hwnd, GWL_READLEVEL))
                 return 1;
 
-            SendMessage(hwndLB, LB_GETTEXT, (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L), (LPARAM)&pNode);
+            SendMessage(hwndLB, LB_GETTEXT, (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L), (LPARAM)&pNode);
 
             if (pNode->wFlags & TF_EXPANDED)
                 uMsg = TC_COLLAPSELEVEL;
@@ -1966,7 +1966,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         }
 
         case WM_CHARTOITEM: {
-            INT cItems;
+            int cItems;
             WCHAR ch;
             PDNODE pNode;
             WCHAR rgchMatch[MAXPATHLEN];
@@ -1978,8 +1978,8 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             if ((ch = LOWORD(wParam)) == CHAR_BACKSLASH)
                 return 0L;
 
-            cItems = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
-            i = (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
+            cItems = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+            i = (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
 
             if (i < 0 || ch <= CHAR_SPACE)  // filter all other control chars
                 return -2L;
@@ -1999,7 +1999,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 if (cchMatch > wcslen(pNode->szName))
                     cchMatch = wcslen(pNode->szName);
                 if (CompareString(
-                        LOCALE_USER_DEFAULT, NORM_IGNORECASE, rgchMatch, (INT)cchMatch, pNode->szName, (INT)cchMatch) ==
+                        LOCALE_USER_DEFAULT, NORM_IGNORECASE, rgchMatch, (int)cchMatch, pNode->szName, (int)cchMatch) ==
                     2)
                     break;
             }
@@ -2095,7 +2095,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     // auto expand the branch so they can see the new
                     // directory just created
                     //
-                    if (!(pNode->wFlags & TF_EXPANDED) && (nIndex == (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L)) &&
+                    if (!(pNode->wFlags & TF_EXPANDED) && (nIndex == (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L)) &&
                         ((wParam & FSC_QUIET) == 0)) {
                         SendMessage(hwnd, TC_EXPANDLEVEL, FALSE, 0L);
                     }
@@ -2185,8 +2185,8 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     // this should work in all cases because you can't delete
                     // the root.
 
-                    j = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
-                    i = (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
+                    j = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+                    i = (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
 
                     SendMessage(hwnd, TC_COLLAPSELEVEL, nIndex, 0L);
                     SendMessage(hwndLB, LB_DELETESTRING, nIndex, 0L);
@@ -2195,7 +2195,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                         //
                         // Set j to the number of dirs removed from the list
                         //
-                        j -= (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+                        j -= (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
 
                         if (i < nIndex + j) {
                             //
@@ -2229,13 +2229,13 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             switch (GET_WM_COMMAND_CMD(wParam, lParam)) {
                 case LBN_SELCHANGE: {
                     HWND hwndDir;
-                    INT CurSel;
+                    int CurSel;
                     UINT uStrLen;
 
                     //
                     // CurSel is returned from SendMessage
                     //
-                    CurSel = (INT)SendMessage(hwnd, TC_GETDIR, (WPARAM)-1, (LPARAM)szPath);
+                    CurSel = (int)SendMessage(hwnd, TC_GETDIR, (WPARAM)-1, (LPARAM)szPath);
                     if (CurSel == -1) {
                         break;
                     }
@@ -2254,7 +2254,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                         //
                         // don't allow abort on first or last directories
                         //
-                        if (CurSel > 0 && CurSel != ((INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L) - 1)) {
+                        if (CurSel > 0 && CurSel != ((int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L) - 1)) {
                             id = CD_PATH | CD_ALLOWABORT;
                         }
 
@@ -2285,9 +2285,9 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     UpdateStatus(hwndParent);  // update the status bar
                 UpdateSelection:
 
-                    iSel = (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
+                    iSel = (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
 
-                    if ((INT)SendMessage(hwndLB, LB_GETITEMRECT, (WPARAM)iSel, (LPARAM)&rect) != LB_ERR)
+                    if ((int)SendMessage(hwndLB, LB_GETITEMRECT, (WPARAM)iSel, (LPARAM)&rect) != LB_ERR)
 
                         InvalidateRect(hwndLB, &rect, TRUE);
 
@@ -2317,12 +2317,12 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             //
 
             HDC hdc;
-            INT xNode;
+            int xNode;
             MSG msg;
             RECT rc;
             HFONT hOld;
             POINT pt;
-            INT len;
+            int len;
             SIZE size;
 
             //
@@ -2443,7 +2443,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
         case WM_VKEYTOITEM:
 
-            i = (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
+            i = (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
             if (i < 0)
                 return -2L;
 
@@ -2557,7 +2557,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 }
 
                 case VK_BACK: {
-                    INT nStartLevel;
+                    int nStartLevel;
 
                     TypeAheadString('\0', NULL);
                     if (i <= 0)
@@ -2588,7 +2588,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
         case WM_SIZE:
             if (!IsIconic(hwndParent)) {
-                INT iMax;
+                int iMax;
 
                 MoveWindow(hwndLB, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
 
@@ -2602,13 +2602,13 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
                 InvalidateRect(hwndLB, NULL, TRUE);
 
-                iMax = (INT)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
+                iMax = (int)SendMessage(hwndLB, LB_GETCURSEL, 0, 0L);
                 if (iMax >= 0) {
                     RECT rc;
-                    INT top, bottom;
+                    int top, bottom;
 
                     GetClientRect(hwndLB, &rc);
-                    top = (INT)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
+                    top = (int)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
                     bottom = top + rc.bottom / dyFileName;
                     if (iMax < top || iMax > bottom)
                         SendMessage(hwndLB, LB_SETTOPINDEX, iMax - ((bottom - top) / 2), 0L);
@@ -2622,7 +2622,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     return 0L;
 }
 
-INT BuildTreeName(LPWSTR lpszPath, INT iLen, INT iSize) {
+int BuildTreeName(LPWSTR lpszPath, int iLen, int iSize) {
     DRIVE drive = DRIVEID(lpszPath);
 
     if (3 != iLen || CHAR_BACKSLASH != lpszPath[2])

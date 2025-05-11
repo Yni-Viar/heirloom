@@ -16,7 +16,7 @@
 #include "commdlg.h"
 #include "resize.h"
 
-void CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn);
+void CheckAttribsDlgButton(HWND hDlg, int id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn);
 BOOL NoQuotes(LPWSTR szT);
 
 // Return pointers to various bits of a path.
@@ -370,7 +370,7 @@ INT_PTR
 CALLBACK
 SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     UINT len;
-    INT iCtrl;
+    int iCtrl;
     LPWSTR pszFrom;
     //
     // WFMoveCopyDrive tries to append \*.* to directories and
@@ -731,8 +731,8 @@ SuperDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     return TRUE;
 }
 
-void CheckAttribsDlgButton(HWND hDlg, INT id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn) {
-    INT i;
+void CheckAttribsDlgButton(HWND hDlg, int id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn) {
+    int i;
 
     if (dwAttribs3State & dwAttribs)
         i = 2;
@@ -1020,7 +1020,7 @@ void FillVersionList(HWND) {
     // No longer used. It was broken and I don't think it's needed.
 }
 
-INT InitPropertiesDialog(HWND hDlg) {
+int InitPropertiesDialog(HWND hDlg) {
     HWND hwndLB, hwndActive, hwndTree;
     LPXDTA lpxdta;
     DWORD dwAttribsOn, dwAttribs3State, dwAttribsLast;
@@ -1030,14 +1030,14 @@ INT InitPropertiesDialog(HWND hDlg) {
     WCHAR szTemp[MAXPATHLEN + 20];
     WCHAR szBuf[MAXPATHLEN];
     WCHAR szNum[MAXPATHLEN];
-    INT i, iMac, iCount, dyButton;
+    int i, iMac, iCount, dyButton;
     RECT rc, rcT;
     DWORD dwAttrib;
     FILETIME ftLastWrite;
     LFNDTA lfndta;
     LPWSTR p;
     HFONT hFont;
-    INT nType = 0;
+    int nType = 0;
     DWORD dwFlags;
     BOOL bFileCompression = FALSE;
     BOOL bFileEncryption = FALSE;
@@ -1100,7 +1100,7 @@ INT InitPropertiesDialog(HWND hDlg) {
         hwndView = hwndActive;
     }
 
-    iMac = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+    iMac = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
 
     szPath[0] = CHAR_NULL;
     szName[0] = CHAR_NULL;
@@ -1369,9 +1369,9 @@ AttribsDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     UINT state;
     WCHAR szName[MAXPATHLEN];
     WCHAR szTemp[MAXPATHLEN];
-    static INT nType;
+    static int nType;
     LPWSTR lpszValue;
-    INT idx;
+    int idx;
 
     UNREFERENCED_PARAMETER(lParam);
 
@@ -1437,7 +1437,7 @@ AttribsDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
                     if (GET_WM_COMMAND_CMD(wParam, lParam) != LBN_SELCHANGE)
                         break;
-                    idx = (INT)SendDlgItemMessage(hDlg, IDD_VERSION_KEY, LB_GETCURSEL, 0, 0L);
+                    idx = (int)SendDlgItemMessage(hDlg, IDD_VERSION_KEY, LB_GETCURSEL, 0, 0L);
                     lpszValue = (LPWSTR)SendDlgItemMessage(hDlg, IDD_VERSION_KEY, LB_GETITEMDATA, idx, 0L);
 
                     SetDlgItemText(hDlg, IDD_VERSION_VALUE, lpszValue);
@@ -1581,7 +1581,7 @@ MakeDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     // Must be at least MAXPATHLEN
     //
     WCHAR szPath[MAXPATHLEN * 2];
-    INT ret;
+    int ret;
 
     if (ResizeDialogProc(hDlg, wMsg, wParam, lParam)) {
         return TRUE;

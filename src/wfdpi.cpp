@@ -32,14 +32,14 @@ FLOAT GetDpiScaleFactor(UINT dpi) {
 }
 
 // Scale a value by the current global DPI factor
-INT ScaleByDpi(INT value) {
-    return (INT)((FLOAT)value * g_scale + 0.5f);
+int ScaleByDpi(int value) {
+    return (int)((FLOAT)value * g_scale + 0.5f);
 }
 
 // Scale a value by a specific DPI value
-INT ScaleValueForDpi(INT value, UINT dpi) {
+int ScaleValueForDpi(int value, UINT dpi) {
     FLOAT scale = GetDpiScaleFactor(dpi);
-    return (INT)((FLOAT)value * scale + 0.5f);
+    return (int)((FLOAT)value * scale + 0.5f);
 }
 
 // Handle WM_DPICHANGED message
@@ -70,8 +70,8 @@ void HandleDpiChange(HWND hwnd, WPARAM wParam, LPARAM lParam) {
 }
 
 // Scale system metric based on current DPI
-INT ScaledSystemMetric(INT nIndex) {
-    INT value = GetSystemMetrics(nIndex);
+int ScaledSystemMetric(int nIndex) {
+    int value = GetSystemMetrics(nIndex);
     return ScaleByDpi(value);
 }
 

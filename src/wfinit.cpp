@@ -37,9 +37,9 @@ void GetSettings(void);
 #define MENU_STRING_SIZ 80
 #define PROFILE_STRING_SIZ 300
 
-INT GetHeightFromPointsString(LPCWSTR szPoints) {
+int GetHeightFromPointsString(LPCWSTR szPoints) {
     HDC hdc;
-    INT height;
+    int height;
 
     hdc = GetDC(NULL);
     height = MulDiv(-_wtoi(szPoints), GetDeviceCaps(hdc, LOGPIXELSY), 72);
@@ -86,9 +86,9 @@ void InitExtensions() {
     HMODULE hMod;
     FM_EXT_PROC fp;
     HMENU hMenu;
-    INT iMenuBase;
+    int iMenuBase;
     HMENU hMenuFrame;
-    INT iMenuOffset = 0;
+    int iMenuOffset = 0;
 
     hMenuFrame = GetMenu(hwndFrame);
 
@@ -169,10 +169,10 @@ void InitExtensions() {
 
 void GetSettings() {
     WCHAR szTemp[128];
-    INT size;
-    INT weight;
+    int size;
+    int weight;
 
-    INT bfCharset;
+    int bfCharset;
 
     /* Get the flags out of the INI file. */
     bMinOnRun = GetPrivateProfileInt(szSettings, szMinOnRun, bMinOnRun, szTheINIFile);
@@ -220,7 +220,7 @@ void GetInternational() {
     GetLocaleInfoW(lcid, LOCALE_SDECIMAL, (LPWSTR)szDecimal, COUNTOF(szDecimal));
 }
 
-INT GetDriveOffset(DRIVE drive) {
+int GetDriveOffset(DRIVE drive) {
     if (IsRemoteDrive(drive)) {
         if (aDriveInfo[drive].bRemembered)
             return 5;
@@ -393,7 +393,7 @@ void BoilThatDustSpec(WCHAR* pStart, BOOL bLoadIt) {
 
 void GetSavedWindow(LPWSTR szBuf, PWINDOW pwin) {
     PINT pint;
-    INT count;
+    int count;
 
     //
     // defaults
@@ -417,7 +417,7 @@ void GetSavedWindow(LPWSTR szBuf, PWINDOW pwin) {
     //
     // BUGBUG: (LATER)
     // This assumes the members of the point structure are
-    // the same size as INT (sizeof(LONG) == sizeof(INT) == sizeof(UINT))!
+    // the same size as int (sizeof(LONG) == sizeof(int) == sizeof(UINT))!
     //
 
     count = 0;
@@ -464,9 +464,9 @@ BOOL CreateSavedWindows(LPCWSTR pszInitialDir) {
     //
     WCHAR szDir[2 * MAXPATHLEN];
 
-    INT nDirNum;
+    int nDirNum;
     HWND hwnd;
-    INT iNumTrees;
+    int iNumTrees;
 
     //
     // Initialize window geometry to use system default
@@ -702,8 +702,8 @@ UINT FillDocType(PPDOCBUCKET ppDoc, LPCWSTR pszSection, LPCWSTR pszDefault) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
-    INT i;
+BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
+    int i;
     HDC hdcScreen;
 
     //
@@ -1212,7 +1212,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow) {
         HWND hwndTree;
 
         if ((hwndTree = HasTreeWindow(hwnd)) &&
-            (INT)SendMessage(GetDlgItem(hwndTree, IDCW_TREELISTBOX), LB_GETCOUNT, 0, 0L) == 0) {
+            (int)SendMessage(GetDlgItem(hwndTree, IDCW_TREELISTBOX), LB_GETCOUNT, 0, 0L) == 0) {
             SendMessage(hwndTree, TC_SETDRIVE, MAKEWORD(FALSE, 0), 0L);
             hwnd = GetWindow(hwndMDIClient, GW_CHILD);
         } else {

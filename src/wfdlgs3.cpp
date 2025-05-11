@@ -23,7 +23,7 @@
 DWORD WINAPI FormatDrive(IN PVOID ThreadParameter);
 DWORD WINAPI CopyDiskette(IN PVOID ThreadParameter);
 void SwitchToSafeDrive(void);
-void MDIClientSizeChange(HWND hwndActive, INT iFlags);
+void MDIClientSizeChange(HWND hwndActive, int iFlags);
 
 void CancelDlgQuit(void);
 
@@ -34,7 +34,7 @@ DWORD ulTotalSpace, ulSpaceAvail;
 typedef enum { FDC_FALSE, FDC_FALSE_Q, FDC_TRUE } FDC_RET;
 
 FDC_RET
-FillDriveCapacity(HWND hDlg, INT nDrive, FMIFS_MEDIA_TYPE fmSelect, BOOL fDoPopup) {
+FillDriveCapacity(HWND hDlg, int nDrive, FMIFS_MEDIA_TYPE fmSelect, BOOL fDoPopup) {
 #if defined(DBCS)
     FMIFS_MEDIA_TYPE fmMedia[FmMediaEndOfData];  // Number of types in enumeration
 #else
@@ -42,11 +42,11 @@ FillDriveCapacity(HWND hDlg, INT nDrive, FMIFS_MEDIA_TYPE fmSelect, BOOL fDoPopu
 #endif
     WCHAR wchDrive[4] = L"A:";
     DWORD MediaCount;
-    INT index;
+    int index;
     UINT uiCount;
     WCHAR szTemp[32];
 
-    INT iCurSel = 0;
+    int iCurSel = 0;
 
     SendDlgItemMessage(hDlg, IDD_HIGHCAP, CB_RESETCONTENT, 0, 0L);
 
@@ -342,8 +342,8 @@ CancelDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
             PAINTSTRUCT ps;
             WCHAR buffer[32];
             SIZE size;
-            INT xText, yText;
-            INT nDivideRects;
+            int xText, yText;
+            int nDivideRects;
             RECT rectDone, rectLeftToDo;
 
             // The gas gauge is drawn by drawing a text string stating
@@ -520,7 +520,7 @@ ProgressDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
 void UpdateConnections(BOOL bUpdateDriveList) {
     HWND hwnd, hwndNext, hwndDrive, hwndTree;
-    INT i;
+    int i;
     DRIVE drive;
     HCURSOR hCursor;
     LPWSTR lpszVol;
@@ -613,7 +613,7 @@ void UpdateConnections(BOOL bUpdateDriveList) {
 
     hwndDrive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
-    i = (INT)GetWindowLongPtr(hwndDrive, GWL_TYPE);
+    i = (int)GetWindowLongPtr(hwndDrive, GWL_TYPE);
 
     if (TYPE_SEARCH == i) {
         i = DRIVEID(SearchInfo.szSearch);

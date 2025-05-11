@@ -20,10 +20,10 @@ extern FLOAT g_scale;
 void InitDPIAwareness(void);
 
 // Scale a value by the DPI scale factor
-INT ScaleByDpi(INT value);
+int ScaleByDpi(int value);
 
 // Scale a value by a specific DPI value
-INT ScaleValueForDpi(INT value, UINT dpi);
+int ScaleValueForDpi(int value, UINT dpi);
 
 // Get the DPI scale factor (1.0 for standard 96 DPI, 1.25 for 120 DPI, etc.)
 FLOAT GetDpiScaleFactor(UINT dpi);
@@ -32,6 +32,6 @@ FLOAT GetDpiScaleFactor(UINT dpi);
 void HandleDpiChange(HWND hwnd, WPARAM wParam, LPARAM lParam);
 
 // Scale system metric value by current DPI
-INT ScaledSystemMetric(INT nIndex);
+int ScaledSystemMetric(int nIndex);
 
 #endif  // _WFDPI_H

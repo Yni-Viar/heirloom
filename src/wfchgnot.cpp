@@ -15,8 +15,8 @@
 // Forward Declarations
 //
 void NotifyReset();
-void NotifyDeleteHandle(INT i);
-void NotifyAddHandle(INT i, HWND hwnd, LPWSTR lpPath, DWORD dwFilter);
+void NotifyDeleteHandle(int i);
+void NotifyAddHandle(int i, HWND hwnd, LPWSTR lpPath, DWORD dwFilter);
 
 //
 // Maximum number of windows that are viewable
@@ -25,7 +25,7 @@ void NotifyAddHandle(INT i, HWND hwnd, LPWSTR lpPath, DWORD dwFilter);
 HWND ahwndWindows[MAX_WINDOWS];
 DRIVE adrive[MAX_WINDOWS];
 HANDLE ahEvents[MAX_WINDOWS];
-INT nHandles;
+int nHandles;
 
 #define bNOTIFYACTIVE uChangeNotifyTime
 
@@ -89,7 +89,7 @@ void vWaitMessage() {
 /////////////////////////////////////////////////////////////////////
 
 void InitializeWatchList(void) {
-    INT i;
+    int i;
 
     //
     // Change notify system is off if uChangeNotifyTime == 0
@@ -173,7 +173,7 @@ void NotifyReset() {
 /////////////////////////////////////////////////////////////////////
 
 void NotifyPause(DRIVE drive, UINT uType) {
-    INT i;
+    int i;
     DRIVE driveCurrent;
 
     if (!bNOTIFYACTIVE)
@@ -288,7 +288,7 @@ void NotifyResume(DRIVE drive, UINT uType) {
 /////////////////////////////////////////////////////////////////////
 
 void ModifyWatchList(HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
-    INT i;
+    int i;
 
     if (!bNOTIFYACTIVE)
         return;
@@ -378,7 +378,7 @@ void ModifyWatchList(HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
 //
 /////////////////////////////////////////////////////////////////////
 
-void NotifyDeleteHandle(INT i) {
+void NotifyDeleteHandle(int i) {
     if (INVALID_HANDLE_VALUE != ahEvents[i] && FindCloseChangeNotification(ahEvents[i]) == FALSE) {
     }
 
@@ -407,7 +407,7 @@ void NotifyDeleteHandle(INT i) {
 //
 // Synopsis: Adds handle and associated data
 //
-// INC       i         INT     Index to modify
+// INC       i         int     Index to modify
 // INC       hwnd      --      hwnd of window to watch (hwndTree, not hwndDir)
 // INC       lpPath    --      path to watch, -1 == same as old
 // INC       fdwFilter --      filters for notification
@@ -423,7 +423,7 @@ void NotifyDeleteHandle(INT i) {
 //
 /////////////////////////////////////////////////////////////////////
 
-void NotifyAddHandle(INT i, HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
+void NotifyAddHandle(int i, HWND hwnd, LPWSTR lpPath, DWORD fdwFilter) {
     adrive[i] = DRIVEID(lpPath);
 
     ahwndWindows[i] = hwnd;

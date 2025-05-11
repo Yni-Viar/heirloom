@@ -19,9 +19,9 @@
 
 void RectDrive(DRIVEIND driveInd, BOOL bDraw);
 void InvalidateDrive(DRIVEIND driveInd);
-INT DriveFromPoint(HWND hwnd, POINT pt);
-void DrawDrive(HDC hdc, UINT dpi, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus);
-INT KeyToItem(HWND hWnd, WORD nDriveLetter);
+int DriveFromPoint(HWND hwnd, POINT pt);
+void DrawDrive(HDC hdc, UINT dpi, int x, int y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus);
+int KeyToItem(HWND hWnd, WORD nDriveLetter);
 int GetDragStatusText(int iOperation);
 
 /////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ int GetDragStatusText(int iOperation);
 void NewTree(DRIVE drive, HWND hwndSrc) {
     HWND hwnd, hwndTree, hwndDir;
     WCHAR szDir[MAXPATHLEN * 2];
-    INT dxSplit;
+    int dxSplit;
     BOOL bDir;
     LPWSTR pszSearchDir = NULL;
     LPWSTR psz;
@@ -153,7 +153,7 @@ void NewTree(DRIVE drive, HWND hwndSrc) {
 
 void GetDriveRect(DRIVEIND driveInd, PRECT prc) {
     RECT rc;
-    INT nDrivesPerRow;
+    int nDrivesPerRow;
 
     GetClientRect(hwndDriveBar, &rc);
 
@@ -172,9 +172,9 @@ void GetDriveRect(DRIVEIND driveInd, PRECT prc) {
     prc->right = prc->left + dxDrive;
 }
 
-INT DriveFromPoint(HWND hwnd, POINT pt) {
+int DriveFromPoint(HWND hwnd, POINT pt) {
     RECT rc, rcDrive;
-    INT x, y;
+    int x, y;
 
     DRIVEIND driveInd;
 
@@ -273,7 +273,7 @@ void RectDrive(DRIVEIND driveInd, BOOL bDraw) {
 //      bFocus          draw with the focus
 //
 
-void DrawDrive(HDC hdc, UINT dpi, INT x, INT y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus) {
+void DrawDrive(HDC hdc, UINT dpi, int x, int y, DRIVEIND driveInd, BOOL bCurrent, BOOL bFocus) {
     RECT rc;
     WCHAR szTemp[2];
     DWORD rgb;
@@ -416,16 +416,16 @@ BOOL CheckDrive(HWND hwnd, DRIVE drive, DWORD dwFunc) {
 
 // Old Win3.x style DrivesDropObject function removed (DROPSTRUCT based implementation)
 
-void DrivesPaint(HWND hWnd, INT nDriveFocus, INT nDriveCurrent) {
+void DrivesPaint(HWND hWnd, int nDriveFocus, int nDriveCurrent) {
     RECT rc;
-    INT nDrive;
+    int nDrive;
 
     HDC hdc;
     PAINTSTRUCT ps;
 
-    INT x, y;
+    int x, y;
     HANDLE hOld;
-    INT cDriveRows, cDrivesPerRow;
+    int cDriveRows, cDrivesPerRow;
 
     UINT dpi = GetDpiForWindow(hWnd);
 
@@ -588,27 +588,27 @@ void DrivesSetDrive(HWND hWnd, DRIVEIND driveInd, DRIVEIND driveIndCur, BOOL bDo
 LRESULT
 CALLBACK
 DrivesWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
-    INT nDrive, nDriveCurrent, nDriveFocus;
+    int nDrive, nDriveCurrent, nDriveFocus;
     RECT rc;
-    static INT nDriveDoubleClick = -1;
-    static INT nDriveDragging = -1;
+    static int nDriveDoubleClick = -1;
+    static int nDriveDragging = -1;
     HWND hwndChild;
 
     hwndChild = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
-    nDriveCurrent = (INT)GetWindowLongPtr(hWnd, GWL_CURDRIVEIND);
-    nDriveFocus = (INT)GetWindowLongPtr(hWnd, GWL_CURDRIVEFOCUS);
+    nDriveCurrent = (int)GetWindowLongPtr(hWnd, GWL_CURDRIVEIND);
+    nDriveFocus = (int)GetWindowLongPtr(hWnd, GWL_CURDRIVEFOCUS);
 
     switch (wMsg) {
         case WM_CREATE: {
-            INT i;
+            int i;
 
             // Find the current drive, set the drive bitmaps
 
             if (hwndChild == 0)
                 nDrive = 0;
             else
-                nDrive = (INT)GetWindowLongPtr(hwndChild, GWL_TYPE);
+                nDrive = (int)GetWindowLongPtr(hwndChild, GWL_TYPE);
 
             for (i = 0; i < cDrives; i++) {
                 if (rgiDrive[i] == nDrive) {
@@ -851,8 +851,8 @@ DrivesWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 /* Returns nDrive if found, else -1 */
-INT KeyToItem(HWND hWnd, WORD nDriveLetter) {
-    INT nDrive;
+int KeyToItem(HWND hWnd, WORD nDriveLetter) {
+    int nDrive;
 
     if (nDriveLetter > CHAR_Z)
         nDriveLetter -= CHAR_a;

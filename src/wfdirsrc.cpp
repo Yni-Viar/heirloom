@@ -21,7 +21,7 @@ HWND hwndGlobalSink = NULL;
 // Forward declare functions
 DWORD PerformDragOperation(HWND hwnd, LPWSTR pFiles, UINT iSel);
 void SelectItem(HWND hwndLB, WPARAM wParam, BOOL bSel);
-void ShowItemBitmaps(HWND hwndLB, INT iShow);
+void ShowItemBitmaps(HWND hwndLB, int iShow);
 int GetDragStatusText(int iOperation);
 
 HCURSOR
@@ -103,8 +103,8 @@ BOOL MatchFile(LPWSTR szFile, LPWSTR szSpec) {
 }
 
 void DSSetSelection(HWND hwndLB, BOOL bSelect, LPWSTR szSpec, BOOL bSearch) {
-    INT i;
-    INT iMac;
+    int i;
+    int iMac;
     LPXDTA lpxdta;
     LPXDTALINK lpStart;
     WCHAR szTemp[MAXPATHLEN];
@@ -116,7 +116,7 @@ void DSSetSelection(HWND hwndLB, BOOL bSelect, LPWSTR szSpec, BOOL bSearch) {
     if (!lpStart)
         return;
 
-    iMac = (INT)MemLinkToHead(lpStart)->dwEntries;
+    iMac = (int)MemLinkToHead(lpStart)->dwEntries;
 
     for (i = 0; i < iMac; i++) {
         if (SendMessage(hwndLB, LB_GETTEXT, i, (LPARAM)&lpxdta) == LB_ERR)
@@ -144,12 +144,12 @@ void DSSetSelection(HWND hwndLB, BOOL bSelect, LPWSTR szSpec, BOOL bSearch) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-void ShowItemBitmaps(HWND hwndLB, INT iShow) {
-    INT i;
-    INT iMac;
-    INT iFirstSel;
+void ShowItemBitmaps(HWND hwndLB, int iShow) {
+    int i;
+    int iMac;
+    int iFirstSel;
     RECT rc;
-    INT dx;
+    int dx;
     LPINT lpSelItems;
 
     if (iShow == iShowSourceBitmaps)
@@ -162,18 +162,18 @@ void ShowItemBitmaps(HWND hwndLB, INT iShow) {
     //
     // Invalidate the bitmap parts of all visible, selected items.
     //
-    iFirstSel = (INT)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
-    iMac = (INT)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
+    iFirstSel = (int)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
+    iMac = (int)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
 
     if (iMac == LB_ERR)
         return;
 
-    lpSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(INT) * iMac);
+    lpSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(int) * iMac);
 
     if (lpSelItems == NULL)
         return;
 
-    iMac = (INT)SendMessage(hwndLB, LB_GETSELITEMS, (WPARAM)iMac, (LPARAM)lpSelItems);
+    iMac = (int)SendMessage(hwndLB, LB_GETSELITEMS, (WPARAM)iMac, (LPARAM)lpSelItems);
 
     for (i = 0; i < iMac; i++) {
         if (lpSelItems[i] < iFirstSel)
@@ -315,7 +315,7 @@ WORD DropFilesOnApplication(LPWSTR pszFiles) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSearch) {
+int DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSearch) {
     UINT iSel;
     MSG msg;
     RECT rc;
@@ -328,13 +328,13 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
     BOOL bUnselectIfNoDrag;
     LPWSTR pszFile;
     POINT pt;
-    INT iSelCount;
+    int iSelCount;
 
     bSelectOneItem = FALSE;
     bUnselectIfNoDrag = FALSE;
 
     bSelected = (BOOL)SendMessage(hwndLB, LB_GETSEL, wParam, 0L);
-    iSelCount = (INT)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
+    iSelCount = (int)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
 
     if (GetKeyState(VK_SHIFT) < 0) {
         // What is the state of the Anchor point?
@@ -429,7 +429,7 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
     }
 
     // User is starting a drag operation - prepare the cursor
-    iSelCount = (INT)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
+    iSelCount = (int)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
 
     if (iSelCount == 1) {
         LPXDTA lpxdta;
@@ -520,7 +520,7 @@ INT DSTrackPoint(HWND hwnd, HWND hwndLB, WPARAM wParam, LPARAM lParam, BOOL bSea
 LPWSTR
 SkipPathHead(LPWSTR lpszPath) {
     LPWSTR p = lpszPath;
-    INT i;
+    int i;
 
     if (ISUNCPATH(p)) {
         for (i = 0, p += 2; *p && i < 2; p++) {

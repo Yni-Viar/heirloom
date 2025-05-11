@@ -21,7 +21,7 @@ extern WCHAR szInternational[];
 //
 LPWSTR
 ShortSizeFormatInternal(LPWSTR szBuf, LARGE_INTEGER qw) {
-    INT i;
+    int i;
     UINT uInt, uLen, uDec;
     WCHAR szTemp[10], szOrder[20];
 

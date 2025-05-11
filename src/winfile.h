@@ -104,7 +104,7 @@ typedef WCHAR TUCHAR, *PTUCHAR;
 #endif
 
 #define atoi atoiW
-INT atoiW(LPWSTR sz);
+int atoiW(LPWSTR sz);
 
 #define SIZENOMDICRAP 944
 #define MAX_TAB_COLUMNS 10
@@ -232,8 +232,8 @@ INT atoiW(LPWSTR sz);
 //
 
 typedef HWND* PHWND;
-typedef INT DRIVE;
-typedef INT DRIVEIND;
+typedef int DRIVE;
+typedef int DRIVEIND;
 
 #include "wfinfo.h"
 
@@ -256,20 +256,20 @@ typedef struct _CANCEL_INFO {
     BOOL fmifsSuccess;
     UINT dReason;
     UINT fuStyle;       // Message box style
-    INT nPercentDrawn;  // percent drawn so FAR
+    int nPercentDrawn;  // percent drawn so FAR
     enum _CANCEL_TYPE { CANCEL_NULL = 0, CANCEL_FORMAT, CANCEL_COPY, CANCEL_BACKUP, CANCEL_RESTORE } eCancelType;
     BOOL bModal;
     struct _INFO {
         struct _FORMAT {
-            INT iFormatDrive;
+            int iFormatDrive;
             FMIFS_MEDIA_TYPE fmMediaType;
             BOOL fQuick;
             DWORD fFlags;  // FF_ONLYONE = 0x1000
             WCHAR szLabel[13];
         } Format;
         struct _COPY {
-            INT iSourceDrive;
-            INT iDestDrive;
+            int iSourceDrive;
+            int iDestDrive;
             BOOL bFormatDest;
         } Copy;
     } Info;
@@ -277,8 +277,8 @@ typedef struct _CANCEL_INFO {
 
 typedef struct _SEARCH_INFO {
     HWND hSearchDlg;
-    INT iDirsRead;
-    INT iFileCount;
+    int iDirsRead;
+    int iFileCount;
     DWORD dwError;
     HANDLE hThread;
     HWND hwndLB;
@@ -287,7 +287,7 @@ typedef struct _SEARCH_INFO {
     BOOL bDontSearchSubs;
     BOOL bIncludeSubDirs;
     BOOL bCasePreserved;
-    INT iRet;
+    int iRet;
     LPXDTALINK lpStart;
     enum _SEARCH_STATUS { SEARCH_NULL = 0, SEARCH_CANCEL, SEARCH_ERROR, SEARCH_MDICLOSE } eStatus;
     WCHAR szSearch[MAXPATHLEN + 1];
@@ -324,11 +324,11 @@ typedef struct {
     //
     RECT rc;
     POINT pt;
-    INT sw;
+    int sw;
     DWORD dwView;
     DWORD dwSort;
     DWORD dwAttribs;
-    INT nSplit;
+    int nSplit;
 } WINDOW, *PWINDOW;
 
 typedef struct _SELINFO* PSELINFO;
@@ -358,7 +358,7 @@ void ModifyWatchList(HWND hwndWatch, LPWSTR lpPath, DWORD fdwFilter);
 void DestroyWatchList(void);
 void NotifyPause(DRIVE drive, UINT uType);
 void NotifyResume(DRIVE drive, UINT uType);
-void ChangeNotify(INT iEvent);
+void ChangeNotify(int iEvent);
 void ChangeNotifyRefresh(DWORD iEvent);
 void vWaitMessage();
 
@@ -368,7 +368,7 @@ void RedoDriveWindows(HWND);
 BOOL FmifsLoaded(void);
 void ChangeFileSystem(DWORD dwOper, LPCWSTR lpPath, LPCWSTR lpTo);
 HWND CreateDirWindow(LPWSTR szPath, BOOL bReplaceOpen, HWND hwndActive);
-HWND CreateTreeWindow(LPWSTR szPath, INT x, INT y, INT dx, INT dy, INT dxSplit);
+HWND CreateTreeWindow(LPWSTR szPath, int x, int y, int dx, int dy, int dxSplit);
 void SwitchToSafeDrive();
 DWORD ReadMoveStatus();
 void UpdateMoveStatus(DWORD dwEffect);
@@ -376,7 +376,7 @@ void UpdateMoveStatus(DWORD dwEffect);
 // WFDOS.C
 
 void GetDiskSpace(DRIVE drive, PULARGE_INTEGER pqFreeSpace, PULARGE_INTEGER pqTotalSpace);
-INT ChangeVolumeLabel(DRIVE, LPWSTR);
+int ChangeVolumeLabel(DRIVE, LPWSTR);
 DWORD GetVolumeLabel(DRIVE, LPWSTR*, BOOL);
 DWORD
 FillVolumeInfo(
@@ -397,20 +397,20 @@ void ExtSelItemsInvalidate();
 
 LPWSTR pszNextComponent(LPWSTR pszCmdLine);
 LPWSTR pszRemoveSurroundingQuotes(LPWSTR p);
-void cdecl SetStatusText(INT nPane, UINT nFormat, LPCWSTR szFormat, ...);
+void cdecl SetStatusText(int nPane, UINT nFormat, LPCWSTR szFormat, ...);
 void RefreshWindow(HWND hwndActive, BOOL bUpdateDriveList, BOOL bFlushCache);
 BOOL IsLastWindow(void);
 LPWSTR AddCommasInternal(LPWSTR szBuf, DWORD dw);
 
 void InvalidateChildWindows(HWND hwnd);
 BOOL IsValidDisk(DRIVE drive);
-LPWSTR GetSelection(INT iSelType, PBOOL pbDir);
-LPWSTR GetNextFile(LPWSTR pCurSel, LPWSTR szFile, INT size);
+LPWSTR GetSelection(int iSelType, PBOOL pbDir);
+LPWSTR GetNextFile(LPWSTR pCurSel, LPWSTR szFile, int size);
 
 void SetWindowDirectory(void);
 void SetDlgDirectory(HWND hDlg, LPWSTR pszPath);
 void WritePrivateProfileBool(LPWSTR szKey, BOOL bParam);
-void WritePrivateProfileInt(LPWSTR szKey, INT wParam);
+void WritePrivateProfileInt(LPWSTR szKey, int wParam);
 BOOL IsWild(LPWSTR lpszPath);
 UINT AddBackslash(LPWSTR lpszPath);
 void StripBackslash(LPWSTR lpszPath);
@@ -418,7 +418,7 @@ void StripFilespec(LPWSTR lpszPath);
 void StripPath(LPWSTR lpszPath);
 LPWSTR GetExtension(LPWSTR pszFile);
 BOOL FindExtensionInList(LPWSTR pszExt, LPWSTR pszList);
-INT MyMessageBox(HWND hWnd, DWORD idTitle, DWORD idMessage, DWORD dwStyle);
+int MyMessageBox(HWND hWnd, DWORD idTitle, DWORD idMessage, DWORD dwStyle);
 DWORD ExecProgram(LPWSTR, LPWSTR, LPWSTR, BOOL, BOOL);
 PDOCBUCKET IsBucketFile(LPWSTR lpszPath, PPDOCBUCKET ppDocBucket);
 BOOL IsNTFSDrive(DRIVE);
@@ -427,10 +427,10 @@ BOOL IsCasePreservedDrive(DRIVE);
 BOOL IsRemovableDrive(DRIVE);
 BOOL IsRemoteDrive(DRIVE);
 void SetMDIWindowText(HWND hwnd, LPWSTR szTitle);
-INT GetMDIWindowText(HWND hwnd, LPWSTR szTitle, INT size);
-BOOL ResizeSplit(HWND hWnd, INT dxSplit);
+int GetMDIWindowText(HWND hwnd, LPWSTR szTitle, int size);
+BOOL ResizeSplit(HWND hWnd, int dxSplit);
 void CheckEsc(LPWSTR);
-void GetMDIWindowVolume(HWND hWnd, LPWSTR szTitle, INT size);
+void GetMDIWindowVolume(HWND hWnd, LPWSTR szTitle, int size);
 BOOL TypeAheadString(WCHAR ch, LPWSTR szT);
 
 void SaveHistoryDir(HWND hwnd, LPWSTR szDir);
@@ -439,16 +439,16 @@ BOOL GetPrevHistoryDir(BOOL forward, HWND* phwnd, LPWSTR szDir);
 // WFDIR.C
 
 void UpdateStatus(HWND hWnd);
-LPWSTR DirGetSelection(HWND hwndDir, HWND hwndView, HWND hwndLB, INT iSelType, BOOL* pfDir, PINT piLastSel);
+LPWSTR DirGetSelection(HWND hwndDir, HWND hwndView, HWND hwndLB, int iSelType, BOOL* pfDir, PINT piLastSel);
 void FillDirList(HWND hwndDir, LPXDTALINK lpStart);
 void CreateLBLine(DWORD dwLineFormat, LPXDTA lpxdta, LPWSTR szBuffer);
-INT GetMaxExtent(HWND hwndLB, LPXDTALINK lpXDTA, BOOL bNTFS);
+int GetMaxExtent(HWND hwndLB, LPXDTALINK lpXDTA, BOOL bNTFS);
 void UpdateSelection(HWND hwndLB);
 
-INT PutDate(LPFILETIME lpftDate, LPWSTR szStr);
-INT PutTime(LPFILETIME lpftTime, LPWSTR szStr);
-INT PutSize(PLARGE_INTEGER pqSize, LPWSTR szOutStr);
-INT PutAttributes(DWORD dwAttribute, LPWSTR szStr);
+int PutDate(LPFILETIME lpftDate, LPWSTR szStr);
+int PutTime(LPFILETIME lpftTime, LPWSTR szStr);
+int PutSize(PLARGE_INTEGER pqSize, LPWSTR szOutStr);
+int PutAttributes(DWORD dwAttribute, LPWSTR szStr);
 HWND GetMDIChildFromDescendant(HWND hwnd);
 void SetLBFont(HWND hwnd, HWND hwndLB, HANDLE hNewFont, DWORD dwViewFlags, LPXDTALINK lpStart);
 
@@ -459,7 +459,7 @@ void DestroyDirRead(void);
 LPXDTALINK CreateDTABlock(HWND hwnd, LPWSTR pPath, DWORD dwAttribs, BOOL bDontSteal);
 void FreeDTA(HWND hwnd);
 void DirReadDestroyWindow(HWND hwndDir);
-LPXDTALINK DirReadDone(HWND hwndDir, LPXDTALINK lpStart, INT iError);
+LPXDTALINK DirReadDone(HWND hwndDir, LPXDTALINK lpStart, int iError);
 void BuildDocumentString(void);
 void BuildDocumentStringWorker(void);
 
@@ -469,18 +469,18 @@ HCURSOR GetMoveCopyCursor(void);
 void DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasFocus);
 // Old Win3.x style drag and drop handlers removed
 void DSSetSelection(HWND hwndLB, BOOL bSelect, LPWSTR szSpec, BOOL bSearch);
-INT FixTabsAndThings(HWND hwndLB, WORD* pwTabs, INT iMaxWidthFileName, INT iMaxWidthNTFSFileName, DWORD dwViewOpts);
+int FixTabsAndThings(HWND hwndLB, WORD* pwTabs, int iMaxWidthFileName, int iMaxWidthNTFSFileName, DWORD dwViewOpts);
 LPWSTR SkipPathHead(LPWSTR lpszPath);
 
 // WINFILE.C
 
 BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive);
-LRESULT CALLBACK MessageFilter(INT nCode, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK MessageFilter(int nCode, WPARAM wParam, LPARAM lParam);
 
 // WFTREE.C
 
 BOOL CompactPath(HDC hdc, LPWSTR szPath, DWORD dx);
-void ResizeWindows(HWND hwndParent, INT dxWindow, INT dyWindow);
+void ResizeWindows(HWND hwndParent, int dxWindow, int dyWindow);
 void GetTreeWindows(HWND hwnd, PHWND phwndTree, PHWND phwndDir);
 HWND GetTreeFocus(HWND hWnd);
 void SwitchDriveSelection(HWND hwndActive);
@@ -488,13 +488,13 @@ void SwitchDriveSelection(HWND hwndActive);
 // WFINIT.C
 
 void GetInternational(void);
-BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, INT nCmdShow);
+BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow);
 void InitDriveBitmaps(void);
 void InitExtensions(void);
 void FreeFileManager(void);
 BOOL CreateSavedWindows(LPCWSTR pszInitialDir);
 void InitExtensions(void);
-INT GetDriveOffset(DRIVE drive);
+int GetDriveOffset(DRIVE drive);
 void InitMenus(void);
 UINT MapIDMToMenuPos(UINT idm);
 UINT MapMenuPosToIDM(UINT pos);
@@ -506,15 +506,15 @@ DWORD StartBuildingDirectoryTrie();
 
 // WFCOPY.C
 
-DWORD DMMoveCopyHelper(LPWSTR pFrom, LPWSTR pTo, INT iOperation);
+DWORD DMMoveCopyHelper(LPWSTR pFrom, LPWSTR pTo, int iOperation);
 DWORD WFMoveCopyDriver(PCOPYINFO pCopyInfo);
 DWORD WINAPI WFMoveCopyDriverThread(LPVOID lpParameter);
 
 BOOL IsDirectory(LPWSTR pPath);
 BOOL IsTheDiskReallyThere(HWND hwnd, LPWSTR pPath, DWORD wFunc, BOOL bModal);
 BOOL QualifyPath(LPWSTR);
-INT CheckMultiple(LPWSTR pInput);
-void SetDlgItemPath(HWND hDlg, INT id, LPWSTR pszPath);
+int CheckMultiple(LPWSTR pInput);
+void SetDlgItemPath(HWND hDlg, int id, LPWSTR pszPath);
 DWORD NetCheck(LPWSTR pPath, DWORD dwType);
 
 void DialogEnterFileStuff(HWND hwnd);
@@ -522,13 +522,13 @@ void DialogEnterFileStuff(HWND hwnd);
 // WFUTIL.C
 
 void GetAllDirectories(LPWSTR rgszDirs[]);
-BOOL GetDriveDirectory(INT iDrive, LPWSTR pszDir);
-void GetSelectedDirectory(INT iDrive, LPWSTR pszDir);
+BOOL GetDriveDirectory(int iDrive, LPWSTR pszDir);
+void GetSelectedDirectory(int iDrive, LPWSTR pszDir);
 void SaveDirectory(LPWSTR pszDir);
-INT GetSelectedDrive(void);
+int GetSelectedDrive(void);
 void GetTextStuff(HDC hdc);
-INT GetHeightFromPointsString(LPCWSTR szPoints);
-INT GetDrive(HWND hwnd, POINT pt);
+int GetHeightFromPointsString(LPCWSTR szPoints);
+int GetDrive(HWND hwnd, POINT pt);
 void CheckSlashes(LPWSTR);
 // DWORD IsNetDrive(DRIVE drive);
 BOOL IsCDRomDrive(DRIVE drive);
@@ -588,7 +588,7 @@ void SetCurrentPathOfWindow(LPWSTR szPath);
 
 void GetSearchPath(HWND hwnd, LPWSTR szTemp);
 INT_PTR CALLBACK SearchProgDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-void UpdateSearchStatus(HWND hwndLB, INT nCount);
+void UpdateSearchStatus(HWND hwndLB, int nCount);
 void SearchEnd(void);
 
 // WFFILE.C
@@ -609,8 +609,8 @@ DWORD WFJunction(LPCWSTR LinkDirectory, LPCWSTR LinkTarget);
 
 void wfYield(void);
 void InvalidateAllNetTypes(void);
-void GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, INT nBuf);
-BOOL RectTreeItem(HWND hwndLB, INT iItem, BOOL bFocusOn);
+void GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, int nBuf);
+BOOL RectTreeItem(HWND hwndLB, int iItem, BOOL bFocusOn);
 
 //--------------------------------------------------------------------------
 //
@@ -854,7 +854,7 @@ BOOL RectTreeItem(HWND hwndLB, INT iItem, BOOL bFocusOn);
 #define BM_IND_FILREPARSE 17
 
 typedef struct _DRIVE_INFO {
-    INT iBusy;
+    int iBusy;
     BOOL bRemembered : 1;
     BOOL bUpdating : 1;
 
@@ -863,7 +863,7 @@ typedef struct _DRIVE_INFO {
     UINT uType;
 
     //-----------------------------------
-    INT iOffset;
+    int iOffset;
 
     //-----------------------------------
     STATUSNAME(NetCon);
@@ -1002,7 +1002,7 @@ Extern BOOL bNetAcleditDone EQ(FALSE);
 
 #define rgiDrive rgiDriveReal[iUpdateReal]
 
-Extern INT iUpdateReal EQ(0);
+Extern int iUpdateReal EQ(0);
 Extern DRIVE rgiDriveReal[2][26];
 Extern DRIVEINFO aDriveInfo[26];
 
@@ -1042,7 +1042,7 @@ Extern BOOL bSaveSettings EQ(TRUE);
 Extern BOOL bScrollOnExpand EQ(TRUE);
 
 Extern BOOL bConnectable EQ(FALSE);
-Extern INT iShowSourceBitmaps EQ(1);
+Extern int iShowSourceBitmaps EQ(1);
 Extern BOOL bFSCTimerSet EQ(FALSE);
 
 Extern WCHAR chFirstDrive;  // 'A' or 'a'
@@ -1133,40 +1133,40 @@ Extern WCHAR szTheINIFile[MAXPATHLEN];  // ini file location in %APPDATA%
 Extern WCHAR szBytes[20];
 Extern WCHAR szSBytes[10];
 
-Extern INT cDrives;
-Extern INT dxDrive;
-Extern INT dyDrive;
-Extern INT dxDriveBitmap;
-Extern INT dyDriveBitmap;
-Extern INT dxEllipses;
-Extern INT dxFolder;
-Extern INT dyFolder;
-Extern INT dyBorder;         // System Border Width/Height
-Extern INT dyBorderx2;       // System Border Width/Height * 2
-Extern INT dxText;           // System Font Width 'M'
-Extern INT dyText;           // System Font Height
-Extern INT cchDriveListMax;  // ave # chars in drive list
-Extern INT dyIcon EQ(32);
-Extern INT dxIcon EQ(32);
+Extern int cDrives;
+Extern int dxDrive;
+Extern int dyDrive;
+Extern int dxDriveBitmap;
+Extern int dyDriveBitmap;
+Extern int dxEllipses;
+Extern int dxFolder;
+Extern int dyFolder;
+Extern int dyBorder;         // System Border Width/Height
+Extern int dyBorderx2;       // System Border Width/Height * 2
+Extern int dxText;           // System Font Width 'M'
+Extern int dyText;           // System Font Height
+Extern int cchDriveListMax;  // ave # chars in drive list
+Extern int dyIcon EQ(32);
+Extern int dxIcon EQ(32);
 
-Extern INT dyFileName;
-Extern INT nFloppies;  // Number of Removable Drives
+Extern int dyFileName;
+Extern int nFloppies;  // Number of Removable Drives
 
-Extern INT iSelHighlight EQ(-1);
+Extern int iSelHighlight EQ(-1);
 
-Extern INT cDisableFSC EQ(0);  // has fsc been disabled?
-Extern INT iReadLevel EQ(0);   // global.  if !0 someone is reading a tree
-Extern INT dxFrame;
-Extern INT dxClickRect;
-Extern INT dyClickRect;
-Extern INT iNumWindows EQ(0);
+Extern int cDisableFSC EQ(0);  // has fsc been disabled?
+Extern int iReadLevel EQ(0);   // global.  if !0 someone is reading a tree
+Extern int dxFrame;
+Extern int dxClickRect;
+Extern int dyClickRect;
+Extern int iNumWindows EQ(0);
 
-Extern INT dxButtonSep EQ(8);
-Extern INT dxButton EQ(24);
-Extern INT dyButton EQ(22);
-Extern INT dxDriveList EQ(205);
-Extern INT dyDriveItem EQ(17);
-Extern INT xFirstButton;
+Extern int dxButtonSep EQ(8);
+Extern int dxButton EQ(24);
+Extern int dyButton EQ(22);
+Extern int dxDriveList EQ(205);
+Extern int dyDriveItem EQ(17);
+Extern int xFirstButton;
 Extern HFONT hfontDriveList;
 Extern HFONT hFont;
 Extern HFONT hFontStatus;
@@ -1177,7 +1177,7 @@ Extern HINSTANCE hAppInstance;
 Extern HBITMAP hbmBitmaps EQ(NULL);
 Extern HDC hdcMem EQ(NULL);
 
-Extern INT iCurDrag EQ(0);
+Extern int iCurDrag EQ(0);
 
 Extern HICON hicoTree EQ(NULL);
 Extern HICON hicoTreeDir EQ(NULL);
@@ -1218,7 +1218,7 @@ Extern LARGE_INTEGER qTotalSpace;
 
 Extern HWND hwndStatus EQ(NULL);
 
-Extern INT iNumExtensions EQ(0);
+Extern int iNumExtensions EQ(0);
 Extern EXTENSION extensions[MAX_EXTENSIONS];
 
 Extern HHOOK hhkMsgFilter EQ(NULL);
@@ -1279,4 +1279,4 @@ DWORD MoveFileToRecycleBin(LPWSTR pszFile);
 void FormatRecycleBinSize(PLARGE_INTEGER pliSize, LPWSTR szBuffer);
 
 // Replacement for Windows 3.x style drag and drop highlighting
-BOOL RectHighlightItem(HWND hwndLB, INT iItem, BOOL bFocusOn, BOOL bSearch);
+BOOL RectHighlightItem(HWND hwndLB, int iItem, BOOL bFocusOn, BOOL bSearch);

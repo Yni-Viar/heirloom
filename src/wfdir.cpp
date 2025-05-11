@@ -26,8 +26,8 @@ WCHAR szAttr[] = L"RHSACE";
 typedef struct _SELINFO {
     LPWSTR pSel;
     BOOL bSelOnly;
-    INT iTop;
-    INT iLastSel;
+    int iTop;
+    int iLastSel;
     WCHAR szCaret[MAXFILENAMELEN];
     WCHAR szAnchor[MAXFILENAMELEN];
     WCHAR szTopIndex[MAXFILENAMELEN];
@@ -35,25 +35,25 @@ typedef struct _SELINFO {
 
 void RightTabbedTextOut(
     HDC hdc,
-    INT x,
-    INT y,
+    int x,
+    int y,
     LPWSTR pLine,
     WORD* pTabStops,
-    INT x_offset,
+    int x_offset,
     DWORD dwAlternateFileNameExtent);
 LRESULT ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT CompareDTA(LPXDTA lpItem1, LPXDTA lpItem2, DWORD dwSort);
+int CompareDTA(LPXDTA lpItem1, LPXDTA lpItem2, DWORD dwSort);
 BOOL SetDirFocus(HWND hwndDir);
 void DirGetAnchorFocus(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo);
 BOOL SetSelection(HWND hwndLB, LPXDTALINK lpStart, LPWSTR pszSel);
-INT DirFindIndex(HWND hwndLB, LPXDTALINK lpStart, LPWSTR lpszFile);
+int DirFindIndex(HWND hwndLB, LPXDTALINK lpStart, LPWSTR lpszFile);
 void SortDirList(HWND hwndDir, LPXDTALINK lpStart, DWORD count, LPXDTA* lplpxdta);
 void GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2);
 void FreeSelInfo(PSELINFO pSelInfo);
 BOOL SetSelInfo(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo);
 
 void DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasFocus) {
-    INT x, y, i;
+    int x, y, i;
     BOOL bDrawSelected;
     HWND hwndLB;
     RECT rc;
@@ -61,7 +61,7 @@ void DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasF
     WCHAR szBuf[MAXFILENAMELEN * 2];
 
     LPWSTR pszLine = szBuf;
-    INT iError;
+    int iError;
 
 #define dyHeight dyFileName
 
@@ -76,7 +76,7 @@ void DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasF
     //
     // Print out any errors
     //
-    iError = (INT)GetWindowLongPtr(hwnd, GWL_IERROR);
+    iError = (int)GetWindowLongPtr(hwnd, GWL_IERROR);
 
     if (iError) {
         if (LoadString(hAppInstance, iError, szBuf, COUNTOF(szBuf))) {
@@ -209,7 +209,7 @@ void DrawItem(HWND hwnd, DWORD dwViewOpts, LPDRAWITEMSTRUCT lpLBItem, BOOL bHasF
 
             if (hbr = CreateSolidBrush(GetSysColor(COLOR_HIGHLIGHT))) {
                 rc = lpLBItem->rcItem;
-                rc.right = max(rc.right, rc.left + (INT)SendMessage(hwndLB, LB_GETHORIZONTALEXTENT, 0, 0)) - dyBorder;
+                rc.right = max(rc.right, rc.left + (int)SendMessage(hwndLB, LB_GETHORIZONTALEXTENT, 0, 0)) - dyBorder;
                 rc.left += dyBorder;
 
                 if (lpLBItem->itemID > 0 && SendMessage(hwndLB, LB_GETSEL, lpLBItem->itemID - 1, 0L))
@@ -337,7 +337,7 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
     static HWND hwndParent = NULL;
     // Add variables to track whether a multi-selection click occurred
     static BOOL fMultiSelectClick = FALSE;
-    static INT iClickedItem = -1;
+    static int iClickedItem = -1;
 
     switch (wMsg) {
         case WM_LBUTTONDOWN: {
@@ -360,14 +360,14 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
             // Only process if item is valid (not in client area outside items)
             if (HIWORD(itemIndex) == 0) {
                 BOOL isSelected = (BOOL)SendMessage(hWnd, LB_GETSEL, LOWORD(itemIndex), 0);
-                INT selCount = (INT)SendMessage(hWnd, LB_GETSELCOUNT, 0, 0L);
+                int selCount = (int)SendMessage(hWnd, LB_GETSELCOUNT, 0, 0L);
 
                 // Handle selection logic ourselves to preserve multi-selection for drag
                 if (GetKeyState(VK_SHIFT) < 0) {
                     // Shift-click: Select from anchor to here
-                    INT anchorIndex = (INT)SendMessage(hWnd, LB_GETANCHORINDEX, 0, 0L);
-                    INT startIdx = min(anchorIndex, (INT)LOWORD(itemIndex));
-                    INT endIdx = max(anchorIndex, (INT)LOWORD(itemIndex));
+                    int anchorIndex = (int)SendMessage(hWnd, LB_GETANCHORINDEX, 0, 0L);
+                    int startIdx = min(anchorIndex, (int)LOWORD(itemIndex));
+                    int endIdx = max(anchorIndex, (int)LOWORD(itemIndex));
 
                     if (!(GetKeyState(VK_CONTROL) < 0)) {
                         // Clear existing selection first if Ctrl is not pressed
@@ -375,7 +375,7 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
                     }
 
                     // Select the range
-                    for (INT i = startIdx; i <= endIdx; i++) {
+                    for (int i = startIdx; i <= endIdx; i++) {
                         SendMessage(hWnd, LB_SETSEL, TRUE, i);
                     }
 
@@ -423,7 +423,7 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
             if (fDragging && (wParam & MK_LBUTTON)) {
                 POINT pt;
                 POINT ptScreen;
-                INT dx, dy;
+                int dx, dy;
 
                 // Get current mouse position
                 pt.x = GET_X_LPARAM(lParam);
@@ -435,7 +435,7 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
 
                 // Only start drag after moved a certain distance
                 if ((abs(dx) > GetSystemMetrics(SM_CXDRAG)) || (abs(dy) > GetSystemMetrics(SM_CYDRAG))) {
-                    INT iSelType = SELECTION_ANY;  // Get any selected files
+                    int iSelType = SELECTION_ANY;  // Get any selected files
                     BOOL fIsDir = FALSE;
                     LPWSTR pszFiles;
 
@@ -477,8 +477,8 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
                     POINT ptOriginScreen = ptOrigin;
                     ClientToScreen(hWnd, &ptOriginScreen);
 
-                    INT dx = ptCurrent.x - ptOriginScreen.x;
-                    INT dy = ptCurrent.y - ptOriginScreen.y;
+                    int dx = ptCurrent.x - ptOriginScreen.x;
+                    int dy = ptCurrent.y - ptOriginScreen.y;
 
                     // If we didn't move far enough to start a drag,
                     // clear selection and select only this item
@@ -513,7 +513,7 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
 LRESULT
 CALLBACK
 DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    INT i;
+    int i;
     HWND hwndLB;
     LPXDTA lpxdta;
     WCHAR szTemp[MAXPATHLEN * 2];
@@ -550,7 +550,7 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             //
             SendMessage(hwndLB, WM_SETREDRAW, FALSE, 0L);
 
-            lpStart = DirReadDone(hwnd, (LPXDTALINK)lParam, (INT)wParam);
+            lpStart = DirReadDone(hwnd, (LPXDTALINK)lParam, (int)wParam);
 
             if (lpStart) {
                 //
@@ -575,7 +575,7 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
         case FS_GETDIRECTORY:
 
-            GetMDIWindowText(hwndParent, (LPWSTR)lParam, (INT)wParam);
+            GetMDIWindowText(hwndParent, (LPWSTR)lParam, (int)wParam);
 
             //
             // get the string
@@ -598,7 +598,7 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             // returns the current filespec (from View.Include...).  this is
             // an uppercase ANSI string
             //
-            GetMDIWindowText(hwndParent, (LPWSTR)lParam, (INT)wParam);
+            GetMDIWindowText(hwndParent, (LPWSTR)lParam, (int)wParam);
             StripPath((LPWSTR)lParam);
 
             break;
@@ -621,7 +621,7 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             //
             // return = pszDir
             //
-            return (LRESULT)DirGetSelection(hwnd, hwnd, hwndLB, (INT)wParam, (BOOL*)lParam, NULL);
+            return (LRESULT)DirGetSelection(hwnd, hwnd, hwndLB, (int)wParam, (BOOL*)lParam, NULL);
         case FS_TESTEMPTY: {
             HWND hwndNext;
 
@@ -688,7 +688,7 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 return (-1L);
 
             i = GET_WM_CHARTOITEM_POS(wParam, lParam);
-            cItems = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+            cItems = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
 
             // if more that one character to match, start at current position; else next position
             if (TypeAheadString(ch, rgchMatch))
@@ -879,11 +879,11 @@ DirWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
         case WM_SIZE:
             if (!IsIconic(hwndParent)) {
-                INT iMax;
+                int iMax;
 
                 MoveWindow(hwndLB, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
 
-                iMax = (INT)SendMessage(hwndLB, LB_GETCARETINDEX, 0, 0L);
+                iMax = (int)SendMessage(hwndLB, LB_GETCARETINDEX, 0, 0L);
                 if (iMax >= 0)  // scroll item into view
                     /* SETCARETINDEX will scroll item into view */
                     SendMessage(hwndLB, LB_SETCARETINDEX, iMax, 0L);
@@ -1005,7 +1005,7 @@ ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     //
                     pSelInfo->pSel = DirGetSelection(hwnd, hwnd, hwndLB, 8, NULL, &pSelInfo->iLastSel);
 
-                    pSelInfo->iTop = (INT)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
+                    pSelInfo->iTop = (int)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
 
                     DirGetAnchorFocus(hwndLB, lpStart, pSelInfo);
 
@@ -1059,7 +1059,7 @@ ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
                     pSelInfo->pSel = DirGetSelection(hwnd, hwnd, hwndLB, 8, NULL, &pSelInfo->iLastSel);
 
-                    pSelInfo->iTop = (INT)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
+                    pSelInfo->iTop = (int)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
                     DirGetAnchorFocus(hwndLB, lpStart, pSelInfo);
 
                     lstrcpy(pSelInfo->szTopIndex, pSelInfo->szCaret);
@@ -1122,8 +1122,8 @@ ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                         // fix kksuzuka: #2852
                         // DBCS dirname should not be compared ..
                         if ((wParam != CD_PATH_FORCE) && lpStart) {
-                            INT aLen = lstrlen(szPath);
-                            INT bLen = lstrlen((LPWSTR)lParam);
+                            int aLen = lstrlen(szPath);
+                            int bLen = lstrlen((LPWSTR)lParam);
 
                             if ((WideCharToMultiByte(CP_ACP, 0L, szPath, aLen, NULL, 0L, NULL, NULL) == aLen) &&
                                 (WideCharToMultiByte(CP_ACP, 0L, (LPWSTR)lParam, bLen, NULL, 0L, NULL, NULL) == bLen)) {
@@ -1168,7 +1168,7 @@ ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                         if (!pSelInfoOld) {
                             pSelInfo->pSel = DirGetSelection(hwnd, hwnd, hwndLB, 8, NULL, &pSelInfo->iLastSel);
 
-                            pSelInfo->iTop = (INT)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
+                            pSelInfo->iTop = (int)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
 
                             DirGetAnchorFocus(hwndLB, lpStart, pSelInfo);
 
@@ -1439,12 +1439,12 @@ void FreeSelInfo(PSELINFO pSelInfo) {
 /////////////////////////////////////////////////////////////////////
 
 BOOL SetSelInfo(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo) {
-    INT iSel;
-    INT iLBCount;
+    int iSel;
+    int iLBCount;
     LPXDTA lpxdta;
-    INT iTop;
+    int iTop;
 
-    iLBCount = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+    iLBCount = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
 
     if (!pSelInfo) {
         goto SelectFirst;
@@ -1587,7 +1587,7 @@ UINT GetPict(WCHAR ch, LPCWSTR pszStr) {
 // IN        lpst       LPSYSTEMTIME  local system time
 // INOUT     lpszOutStr --            string of date
 //
-// Return:   INT   length of date
+// Return:   int   length of date
 //
 // Assumes:  lpszOutStr is large enough for the date string.
 //           Separator is one character long
@@ -1599,7 +1599,7 @@ UINT GetPict(WCHAR ch, LPCWSTR pszStr) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT CreateDate(LPSYSTEMTIME lpst, LPWSTR szOutStr) {
+int CreateDate(LPSYSTEMTIME lpst, LPWSTR szOutStr) {
     /*
      *  Need to subtract one from the return from GetDateFormatW
      *  to exclude the null terminator.
@@ -1616,7 +1616,7 @@ INT CreateDate(LPSYSTEMTIME lpst, LPWSTR szOutStr) {
 // IN    lpst       LPSYSTEMTIME  local time
 // INOUT lpszOutStr --            String
 //
-// Return:   INT  length of string
+// Return:   int  length of string
 //
 //
 // Assumes:   lpszOutStr is big enough for all times
@@ -1629,7 +1629,7 @@ INT CreateDate(LPSYSTEMTIME lpst, LPWSTR szOutStr) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT CreateTime(LPSYSTEMTIME lpst, LPWSTR szOutStr) {
+int CreateTime(LPSYSTEMTIME lpst, LPWSTR szOutStr) {
     /*
      *  Need to subtract one from the return from GetTimeFormatW
      *  to exclude the null terminator.
@@ -1653,8 +1653,8 @@ INT CreateTime(LPSYSTEMTIME lpst, LPWSTR szOutStr) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT PutSize(PLARGE_INTEGER pqSize, LPWSTR szOutStr) {
-    INT Size;
+int PutSize(PLARGE_INTEGER pqSize, LPWSTR szOutStr) {
+    int Size;
     WCHAR szBuffer[MAXFILENAMELEN];
     NUMBERFMT NumFmt;
 
@@ -1685,7 +1685,7 @@ INT PutSize(PLARGE_INTEGER pqSize, LPWSTR szOutStr) {
      *  unformatted.
      */
     lstrcpy(szOutStr, szBuffer);
-    return ((INT)wcslen(szOutStr));
+    return ((int)wcslen(szOutStr));
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1705,7 +1705,7 @@ INT PutSize(PLARGE_INTEGER pqSize, LPWSTR szOutStr) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT PutDate(LPFILETIME lpftDate, LPWSTR szStr) {
+int PutDate(LPFILETIME lpftDate, LPWSTR szStr) {
     SYSTEMTIME st;
     FILETIME ftNew;
 
@@ -1731,7 +1731,7 @@ INT PutDate(LPFILETIME lpftDate, LPWSTR szStr) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT PutTime(LPFILETIME lpftTime, LPWSTR szStr) {
+int PutTime(LPFILETIME lpftTime, LPWSTR szStr) {
     SYSTEMTIME st;
     FILETIME ftNew;
 
@@ -1757,8 +1757,8 @@ INT PutTime(LPFILETIME lpftTime, LPWSTR szStr) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT PutAttributes(DWORD dwAttribute, LPWSTR pszStr) {
-    INT cch = 0;
+int PutAttributes(DWORD dwAttribute, LPWSTR pszStr) {
+    int cch = 0;
 
     if (dwAttribute & ATTR_READONLY) {
         *pszStr++ = szAttr[0];
@@ -1813,10 +1813,10 @@ INT PutAttributes(DWORD dwAttribute, LPWSTR pszStr) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT GetMaxExtent(HWND hwndLB, LPXDTALINK lpLink, BOOL bNTFS) {
+int GetMaxExtent(HWND hwndLB, LPXDTALINK lpLink, BOOL bNTFS) {
     HDC hdc;
     DWORD dwItems;
-    INT maxWidth = 0;
+    int maxWidth = 0;
     SIZE size;
     HFONT hOld;
     WCHAR szPath[MAXPATHLEN];
@@ -1898,8 +1898,8 @@ NoDTA:
 //
 /////////////////////////////////////////////////////////////////////
 
-INT FixTabsAndThings(HWND hwndLB, WORD* pwTabs, INT iMaxWidthFileName, INT iMaxWidthNTFSFileName, DWORD dwViewOpts) {
-    INT i;
+int FixTabsAndThings(HWND hwndLB, WORD* pwTabs, int iMaxWidthFileName, int iMaxWidthNTFSFileName, DWORD dwViewOpts) {
+    int i;
     HDC hdc;
     HFONT hOld;
     WCHAR szBuf[30];
@@ -2023,7 +2023,7 @@ INT FixTabsAndThings(HWND hwndLB, WORD* pwTabs, INT iMaxWidthFileName, INT iMaxW
 /////////////////////////////////////////////////////////////////////
 
 void SetLBFont(HWND hwnd, HWND hwndLB, HANDLE hNewFont, DWORD dwViewFlags, LPXDTALINK lpStart) {
-    INT dxMaxExtent;
+    int dxMaxExtent;
     LPXDTAHEAD lpHead;
 
     SendMessage(hwndLB, WM_SETFONT, (WPARAM)hNewFont, MAKELPARAM(TRUE, 0));
@@ -2056,26 +2056,26 @@ void SetLBFont(HWND hwnd, HWND hwndLB, HANDLE hNewFont, DWORD dwViewFlags, LPXDT
     }
 }
 
-INT CharCountToTab(LPWSTR pszStr) {
+int CharCountToTab(LPWSTR pszStr) {
     LPWSTR pszTmp = pszStr;
 
     while (*pszStr && *pszStr != CHAR_TAB) {
         pszStr++;
     }
 
-    return (INT)(pszStr - pszTmp);
+    return (int)(pszStr - pszTmp);
 }
 
 void RightTabbedTextOut(
     HDC hdc,
-    INT x,
-    INT y,
+    int x,
+    int y,
     LPWSTR pLine,
     WORD* pTabStops,
-    INT x_offset,
+    int x_offset,
     DWORD dwAlternateFileNameExtent) {
-    INT len, cch;
-    INT count = 0;
+    int len, cch;
+    int count = 0;
     SIZE size;
 
     len = lstrlen(pLine);
@@ -2136,7 +2136,7 @@ void FillDirList(HWND hwndDir, LPXDTALINK lpStart) {
     DWORD count;
     UINT i;
     LPXDTAHEAD lpHead;
-    INT iError;
+    int iError;
     HWND hwndLB = GetDlgItem(hwndDir, IDCW_LISTBOX);
 
     //
@@ -2144,7 +2144,7 @@ void FillDirList(HWND hwndDir, LPXDTALINK lpStart) {
     //
     ExtSelItemsInvalidate();
 
-    iError = (INT)GetWindowLongPtr(hwndDir, GWL_IERROR);
+    iError = (int)GetWindowLongPtr(hwndDir, GWL_IERROR);
 
     lpHead = MemLinkToHead(lpStart);
 
@@ -2195,8 +2195,8 @@ void FillDirList(HWND hwndDir, LPXDTALINK lpStart) {
 //
 /////////////////////////////////////////////////////////////////////
 
-INT CompareDTA(LPXDTA lpItem1, LPXDTA lpItem2, DWORD dwSort) {
-    INT ret;
+int CompareDTA(LPXDTA lpItem1, LPXDTA lpItem2, DWORD dwSort) {
+    int ret;
 
     if (!lpItem1 || !lpItem2)
         return lpItem1 ? 1 : -1;
@@ -2358,11 +2358,11 @@ CDDone:
 /////////////////////////////////////////////////////////////////////
 
 LPWSTR
-DirGetSelection(HWND hwndDir, HWND hwndView, HWND hwndLB, INT iSelType, BOOL* pfDir, PINT piLastSel) {
+DirGetSelection(HWND hwndDir, HWND hwndView, HWND hwndLB, int iSelType, BOOL* pfDir, PINT piLastSel) {
     LPWSTR p = NULL, pT;
-    INT i;
-    INT cch;
-    INT iMac;
+    int i;
+    int cch;
+    int iMac;
     LPXDTA lpxdta;
     LPXDTALINK lpStart;
     LPXDTA* alpxdta;
@@ -2421,7 +2421,7 @@ DirGetSelection(HWND hwndDir, HWND hwndView, HWND hwndLB, INT iSelType, BOOL* pf
 
     bCompressTest = (iSelType & 64);
 
-    iMac = (INT)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
+    iMac = (int)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
     if (iMac == 0) {
         if (p) {
             LocalFree(p);
@@ -2430,13 +2430,13 @@ DirGetSelection(HWND hwndDir, HWND hwndView, HWND hwndLB, INT iSelType, BOOL* pf
         goto GDSDone;
     }
 
-    lpSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(INT) * iMac);
+    lpSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(int) * iMac);
     if (lpSelItems == NULL)
         goto Fail;
 
     alpxdta = MemLinkToHead(lpStart)->alpxdtaSorted;
 
-    iMac = (INT)SendMessage(hwndLB, LB_GETSELITEMS, (WPARAM)iMac, (LPARAM)lpSelItems);
+    iMac = (int)SendMessage(hwndLB, LB_GETSELITEMS, (WPARAM)iMac, (LPARAM)lpSelItems);
 
     if (piLastSel) {
         if (iMac != -1)
@@ -2600,7 +2600,7 @@ GDSDone:
 // IN    hDTA      DTA to search match strings against
 // IN    lpszFile  file to search for
 //
-// Return:  INT    index, (-1) = not found
+// Return:  int    index, (-1) = not found
 //
 // Assumes: hDTA->head.alpxdtaSorted is valid and matches listbox
 //          structure
@@ -2614,8 +2614,8 @@ GDSDone:
 //
 /////////////////////////////////////////////////////////////////////
 
-INT DirFindIndex(HWND hwndLB, LPXDTALINK lpStart, LPWSTR lpszFile) {
-    INT i;
+int DirFindIndex(HWND hwndLB, LPXDTALINK lpStart, LPWSTR lpszFile) {
+    int i;
     DWORD dwSel;
     LPXDTA lpxdta;
 
@@ -2624,7 +2624,7 @@ INT DirFindIndex(HWND hwndLB, LPXDTALINK lpStart, LPWSTR lpszFile) {
 
     dwSel = MemLinkToHead(lpStart)->dwEntries;
 
-    for (i = 0; i < (INT)dwSel; i++) {
+    for (i = 0; i < (int)dwSel; i++) {
         if (SendMessage(hwndLB, LB_GETTEXT, i, (LPARAM)&lpxdta) == LB_ERR)
             return -1;
 
@@ -2648,11 +2648,11 @@ INT DirFindIndex(HWND hwndLB, LPXDTALINK lpStart, LPWSTR lpszFile) {
 /////////////////////////////////////////////////////////////////////
 
 void DirGetAnchorFocus(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo) {
-    INT iSel, iCount;
+    int iSel, iCount;
     LPXDTA lpxdta;
 
-    iSel = (INT)SendMessage(hwndLB, LB_GETANCHORINDEX, 0, 0L);
-    iCount = (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
+    iSel = (int)SendMessage(hwndLB, LB_GETANCHORINDEX, 0, 0L);
+    iCount = (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L);
 
     pSelInfo->szAnchor[0] = CHAR_NULL;
     pSelInfo->szCaret[0] = CHAR_NULL;
@@ -2674,14 +2674,14 @@ void DirGetAnchorFocus(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo) {
         lstrcpy(pSelInfo->szAnchor, MemGetFileName(lpxdta));
     }
 
-    iSel = (INT)SendMessage(hwndLB, LB_GETCARETINDEX, 0, 0L);
+    iSel = (int)SendMessage(hwndLB, LB_GETCARETINDEX, 0, 0L);
 
     if (iSel >= 0 && iSel < iCount) {
         SendMessage(hwndLB, LB_GETTEXT, (WPARAM)iSel, (LPARAM)&lpxdta);
         lstrcpy(pSelInfo->szCaret, MemGetFileName(lpxdta));
     }
 
-    iSel = (INT)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
+    iSel = (int)SendMessage(hwndLB, LB_GETTOPINDEX, 0, 0L);
 
     if (iSel >= 0 && iSel < iCount) {
         SendMessage(hwndLB, LB_GETTEXT, (WPARAM)iSel, (LPARAM)&lpxdta);
@@ -2713,7 +2713,7 @@ void DirGetAnchorFocus(HWND hwndLB, LPXDTALINK lpStart, PSELINFO pSelInfo) {
 /////////////////////////////////////////////////////////////////////
 
 BOOL SetSelection(HWND hwndLB, LPXDTALINK lpStart, LPWSTR pszSel) {
-    INT i;
+    int i;
     WCHAR szFile[MAXPATHLEN];
     BOOL bDidSomething = FALSE;
 
@@ -2825,18 +2825,18 @@ void UpdateStatus(HWND hwnd) {
 HWND GetDirSelData(
     HWND hwnd,
     LARGE_INTEGER* pqSelSize,
-    INT* piSelCount,
+    int* piSelCount,
     LARGE_INTEGER* pqTotalSize,
-    INT* piTotalCount,
+    int* piTotalCount,
     LPFILETIME* ppftLastWrite,
     BOOL* pisDir,
     BOOL* pisNet,
     LPWSTR pszName) {
-    INT i;
+    int i;
     LPXDTA lpxdta;
     LPXDTALINK lpStart;
     HWND hwndLB;
-    INT iMac;
+    int iMac;
     LPXDTAHEAD lpHead;
     LPINT lpSelItems;
 
@@ -2863,19 +2863,19 @@ HWND GetDirSelData(
     lpHead = MemLinkToHead(lpStart);
 
     *pqTotalSize = lpHead->qTotalSize;
-    *piTotalCount = (INT)lpHead->dwTotalCount;
+    *piTotalCount = (int)lpHead->dwTotalCount;
 
-    iMac = (INT)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
+    iMac = (int)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
 
     if (iMac == LB_ERR)
         return NULL;
 
-    lpSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(INT) * iMac);
+    lpSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(int) * iMac);
 
     if (lpSelItems == NULL)
         return NULL;
 
-    iMac = (INT)SendMessage(hwndLB, LB_GETSELITEMS, (WPARAM)iMac, (LPARAM)lpSelItems);
+    iMac = (int)SendMessage(hwndLB, LB_GETSELITEMS, (WPARAM)iMac, (LPARAM)lpSelItems);
 
     for (i = 0; i < iMac; i++) {
         SendMessage(hwndLB, LB_GETTEXT, lpSelItems[i], (LPARAM)(LPWSTR)&lpxdta);
@@ -2903,7 +2903,7 @@ HWND GetDirSelData(
 }
 
 void GetDirStatus(HWND hwnd, LPWSTR szMessage1, LPWSTR szMessage2) {
-    INT iSelCount, iCount;
+    int iSelCount, iCount;
     LARGE_INTEGER qSelSize, qSize;
     WCHAR szNumBuf[40];
     HWND hwndLB;
@@ -2976,17 +2976,17 @@ HWND GetMDIChildFromDescendant(HWND hwnd) {
 }
 
 void UpdateSelection(HWND hwndLB) {
-    INT iMac, i;
+    int iMac, i;
     RECT rc;
     LPINT lpSelItems;
 
-    iMac = (INT)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
-    lpSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(INT) * iMac);
+    iMac = (int)SendMessage(hwndLB, LB_GETSELCOUNT, 0, 0L);
+    lpSelItems = (LPINT)LocalAlloc(LMEM_FIXED, sizeof(int) * iMac);
 
     if (lpSelItems == NULL)
         return;
 
-    i = (INT)SendMessage(hwndLB, LB_GETSELITEMS, (WPARAM)iMac, (LPARAM)lpSelItems);
+    i = (int)SendMessage(hwndLB, LB_GETSELITEMS, (WPARAM)iMac, (LPARAM)lpSelItems);
 
     for (i = 0; i < iMac; i++) {
         SendMessage(hwndLB, LB_GETITEMRECT, lpSelItems[i], (LPARAM)&rc);
@@ -2997,9 +2997,9 @@ void UpdateSelection(HWND hwndLB) {
 }
 
 void SortDirList(HWND hwndDir, LPXDTALINK lpStart, DWORD count, LPXDTA* lplpxdta) {
-    INT i, j;
+    int i, j;
     DWORD dwSort;
-    INT iMax, iMin, iMid;
+    int iMax, iMin, iMid;
     LPXDTA lpxdta;
 
     dwSort = (DWORD)GetWindowLongPtr((HWND)GetWindowLongPtr(hwndDir, GWL_LISTPARMS), GWL_SORT);
@@ -3008,7 +3008,7 @@ void SortDirList(HWND hwndDir, LPXDTALINK lpStart, DWORD count, LPXDTA* lplpxdta
 
     lplpxdta[0] = lpxdta;
 
-    for (i = 1; i < (INT)count; i++) {
+    for (i = 1; i < (int)count; i++) {
         //
         // advance to next
         //

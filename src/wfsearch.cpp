@@ -84,21 +84,21 @@
 
 #include <commctrl.h>
 
-INT maxExt;
-INT iDirsRead;
+int maxExt;
+int iDirsRead;
 DWORD dwLastUpdateTime;
-INT maxExtLast;
+int maxExtLast;
 
 void UpdateIfDirty(HWND hWnd);
-INT FillSearchLB(HWND hwndLB, LPWSTR szSearchFileSpec, BOOL bRecurse, BOOL bIncludeSubdirs);
-INT SearchList(
+int FillSearchLB(HWND hwndLB, LPWSTR szSearchFileSpec, BOOL bRecurse, BOOL bIncludeSubdirs);
+int SearchList(
     HWND hwndLB,
     LPWSTR szPath,
     LPWSTR szFileSpec,
     BOOL bRecurse,
     BOOL bIncludeSubdirs,
     LPXDTALINK* plpStart,
-    INT iFileCount,
+    int iFileCount,
     BOOL bRoot);
 void ClearSearchLB(BOOL bWorkerCall);
 DWORD WINAPI SearchDrive(LPVOID lpParameter);
@@ -112,7 +112,7 @@ DWORD WINAPI SearchDrive(LPVOID lpParameter);
 // Synopsis: Recursive search
 //
 //
-// Return:   INT, # of files found
+// Return:   int, # of files found
 //
 //
 // Assumes:
@@ -124,16 +124,16 @@ DWORD WINAPI SearchDrive(LPVOID lpParameter);
 //
 /////////////////////////////////////////////////////////////////////
 
-INT SearchList(
+int SearchList(
     HWND hwndLB,
     LPWSTR szPath,
     LPWSTR szFileSpec,
     BOOL bRecurse,
     BOOL bIncludeSubdirs,
     LPXDTALINK* plpStart,
-    INT iFileCount,
+    int iFileCount,
     BOOL bRoot) {
-    INT iRetVal;
+    int iRetVal;
     SIZE size;
     BOOL bFound;
     LPWSTR pszNewPath;
@@ -150,7 +150,7 @@ INT SearchList(
 
     BOOL bLFN;
     DWORD dwAttrs;
-    INT iBitmap;
+    int iBitmap;
 
     //
     // hack: setup ATTR_LOWERCASE if a letter'd (NON-unc) drive
@@ -422,9 +422,9 @@ void FixUpFileSpec(LPWSTR szFileSpec) {
  *  bSubDirOnly      : TRUE, if only subdirectories are to be searched;
  */
 
-INT FillSearchLB(HWND hwndLB, LPWSTR szSearchFileSpec, BOOL bRecurse, BOOL bIncludeSubdirs) {
-    INT iRet;
-    INT iFileCount;
+int FillSearchLB(HWND hwndLB, LPWSTR szSearchFileSpec, BOOL bRecurse, BOOL bIncludeSubdirs) {
+    int iRet;
+    int iFileCount;
     WCHAR szFileSpec[MAXPATHLEN + 1];
     WCHAR szPathName[MAXPATHLEN + 1];
     WCHAR szWildCard[MAXPATHLEN + 1];
@@ -512,7 +512,7 @@ void GetSearchPath(HWND hWnd, LPWSTR pszPath) {
 //
 //--------------------------------------------------------------------------
 
-void UpdateSearchStatus(HWND hwndLB, INT nCount) {
+void UpdateSearchStatus(HWND hwndLB, int nCount) {
     SetStatusText(0, SST_FORMAT | SST_RESOURCE, (LPWSTR)MAKEINTRESOURCE(IDS_SEARCHMSG), nCount);
 
     if (SearchInfo.hThread)
@@ -542,7 +542,7 @@ void UpdateSearchStatus(HWND hwndLB, INT nCount) {
 LRESULT
 CALLBACK
 SearchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    INT iSel;
+    int iSel;
     HWND hwndLB;
     WCHAR szPath[MAXPATHLEN];
     WCHAR szTitle[128];
@@ -622,7 +622,7 @@ SearchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             break;
 
         case FS_GETSELECTION:
-            return (LRESULT)DirGetSelection(NULL, hwnd, hwndLB, (INT)wParam, (BOOL*)lParam, NULL);
+            return (LRESULT)DirGetSelection(NULL, hwnd, hwndLB, (int)wParam, (BOOL*)lParam, NULL);
             break;
 
         case WM_MDIACTIVATE:
@@ -640,7 +640,7 @@ SearchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 // update status bar
                 // and inform SearchList to update the status bar
                 //
-                UpdateSearchStatus(hwndLB, (INT)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L));
+                UpdateSearchStatus(hwndLB, (int)SendMessage(hwndLB, LB_GETCOUNT, 0, 0L));
                 SearchInfo.bUpdateStatus = TRUE;
 
                 //
@@ -774,7 +774,7 @@ SearchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     break;
 
                 case LBN_SELCHANGE: {
-                    INT i;
+                    int i;
 
                     ExtSelItemsInvalidate();
 
@@ -939,7 +939,7 @@ void UnlockSearchFile() {
 INT_PTR CALLBACK SearchProgDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     DWORD dwIgnore;
     WCHAR szTemp[MAXPATHLEN];
-    INT i;
+    int i;
     DRIVE drive;
 
     switch (uMsg) {
@@ -1119,7 +1119,7 @@ void SearchEnd(void) {
         // the focus doesn't get set on the results window (specifically the LB); do so no.
         PostMessage(hwndSearch, WM_SETFOCUS, 0, 0L);
 
-        UpdateSearchStatus(SearchInfo.hwndLB, (INT)SendMessage(SearchInfo.hwndLB, LB_GETCOUNT, 0, 0L));
+        UpdateSearchStatus(SearchInfo.hwndLB, (int)SendMessage(SearchInfo.hwndLB, LB_GETCOUNT, 0, 0L));
     }
 }
 

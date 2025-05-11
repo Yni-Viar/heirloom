@@ -746,7 +746,7 @@ HRESULT CreateDropTarget(HWND hwnd, WF_IDropTarget** ppDropTarget) {
 
 // This function is a stub replacement for the old DSRectItem function
 // It just invalidates the item rectangle to force a redraw
-BOOL RectHighlightItem(HWND hwndLB, INT iItem, BOOL bFocusOn, BOOL bSearch) {
+BOOL RectHighlightItem(HWND hwndLB, int iItem, BOOL bFocusOn, BOOL bSearch) {
     if (iItem == -1) {
         return FALSE;
     }

@@ -49,11 +49,11 @@ DWORD adwSuggest[][3] = {
 /////////////////////////////////////////////////////////////////////
 
 DWORD
-FormatError(BOOL bNullString, LPWSTR lpBuf, INT iSize, DWORD dwError) {
-    INT iLen;
+FormatError(BOOL bNullString, LPWSTR lpBuf, int iSize, DWORD dwError) {
+    int iLen;
     DWORD dwNumChars = 0;
     PDWORD pdwSuggest;
-    INT iAddNewline = 0;
+    int iAddNewline = 0;
 
     WORD wLangId;
     BOOL bTryAgain;
@@ -183,7 +183,7 @@ SuggestPunt:
 PDWORD
 FormatSuggest(DWORD dwError) {
     PDWORD pdwReturn = NULL;
-    INT i;
+    int i;
 
     // If error == 0, just return...
     if (!dwError)

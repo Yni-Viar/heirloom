@@ -199,7 +199,7 @@ StealDTABlock(HWND hwndCur, LPWSTR pPath, DWORD dwAttribs) {
     WCHAR szPath[MAXPATHLEN];
 
     LPXDTALINK lpStart, lpStartCopy;
-    INT iError;
+    int iError;
 
     for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = GetWindow(hwnd, GW_HWNDNEXT)) {
         if ((hwndDir = HasDirWindow(hwnd)) && (hwndDir != hwndCur)) {
@@ -207,7 +207,7 @@ StealDTABlock(HWND hwndCur, LPWSTR pPath, DWORD dwAttribs) {
 
             if ((dwAttribs == (DWORD)GetWindowLongPtr(hwnd, GWL_ATTRIBS)) && !lstrcmpi(pPath, szPath) &&
                 (lpStart = (LPXDTALINK)GetWindowLongPtr(hwndDir, GWL_HDTA))) {
-                iError = (INT)GetWindowLongPtr(hwndDir, GWL_IERROR);
+                iError = (int)GetWindowLongPtr(hwndDir, GWL_IERROR);
                 if (!iError || IDS_NOFILES == iError) {
                     lpStartCopy = MemClone(lpStart);
 
@@ -283,7 +283,7 @@ void DirReadDestroyWindow(HWND hwndDir) {
 /////////////////////////////////////////////////////////////////////
 
 LPXDTALINK
-DirReadDone(HWND hwndDir, LPXDTALINK lpStart, INT iError) {
+DirReadDone(HWND hwndDir, LPXDTALINK lpStart, int iError) {
     HWND hwndLB = GetDlgItem(hwndDir, IDCW_LISTBOX);
     HWND hwndParent = GetParent(hwndDir);
     WCHAR szPath[MAXPATHLEN];
@@ -359,9 +359,9 @@ void BuildDocumentString() {
 
 void BuildDocumentStringWorker() {
     LPWSTR p;
-    INT uLen;
+    int uLen;
     WCHAR szT[EXTSIZ + 1];
-    INT i, j;
+    int i, j;
     LPWSTR pszDocuments = NULL;
     HKEY hk;
     BOOL bCloseKey;
@@ -553,7 +553,7 @@ CreateDTABlockWorker(HWND hwnd, HWND hwndDir) {
 
     LPXDTA lpxdta;
 
-    INT iBitmap;
+    int iBitmap;
     DRIVE drive;
 
     LPWSTR lpTemp;
@@ -568,7 +568,7 @@ CreateDTABlockWorker(HWND hwnd, HWND hwndDir) {
     DWORD dwAttribs;
     LPXDTALINK lpStart;
 
-    INT iError = 0;
+    int iError = 0;
 
     lpStart = MemNew();
 

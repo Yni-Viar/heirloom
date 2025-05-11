@@ -68,7 +68,7 @@ HWND GetTreeFocus(HWND hwndTree) {
 /*--------------------------------------------------------------------------*/
 
 BOOL CompactPath(HDC hDC, LPWSTR lpszPath, DWORD dx) {
-    INT len;
+    int len;
     SIZE sizeF, sizeT;
     LPWSTR lpEnd;   /* end of the unfixed string */
     LPWSTR lpFixed; /* start of text that we always display */
@@ -80,7 +80,7 @@ BOOL CompactPath(HDC hDC, LPWSTR lpszPath, DWORD dx) {
     // Does it already fit?
     //
     GetTextExtentPoint32(hDC, lpszPath, lstrlen(lpszPath), &sizeF);
-    if (sizeF.cx <= (INT)dx)
+    if (sizeF.cx <= (int)dx)
         return (TRUE);
 
     //
@@ -108,7 +108,7 @@ BOOL CompactPath(HDC hDC, LPWSTR lpszPath, DWORD dx) {
         if (bEllipsesIn)
             len += dxEllipses;
 
-        if (len <= (INT)dx)
+        if (len <= (int)dx)
             break;
 
         bEllipsesIn = TRUE;
@@ -157,7 +157,7 @@ BOOL CompactPath(HDC hDC, LPWSTR lpszPath, DWORD dx) {
 //
 /////////////////////////////////////////////////////////////////////
 
-BOOL ResizeSplit(HWND hwnd, INT dxSplit) {
+BOOL ResizeSplit(HWND hwnd, int dxSplit) {
     RECT rc;
     HWND hwndTree, hwndDir, hwndLB;
 
@@ -325,7 +325,7 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
             if (uMenuFlags & MF_POPUP) {
                 // NormalHelp with MF_POPUP case; fix up ids to workaround some bugs in MenuHelp
-                INT idm = MapMenuPosToIDM(uMenuID);
+                int idm = MapMenuPosToIDM(uMenuID);
                 dwMenuIDs[MHPOP_CURRENT] = MH_POPUP + idm;
                 dwMenuIDs[MHPOP_CURRENT + 1] = uMenuID;
             }
@@ -401,7 +401,7 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             // a trailing backslash.  if you want to do a SetCurrentDirector()
             // you must first StripBackslash() the thing!
 
-            GetMDIWindowText(hwnd, (LPWSTR)lParam, (INT)wParam);  // get the string
+            GetMDIWindowText(hwnd, (LPWSTR)lParam, (int)wParam);  // get the string
             StripFilespec((LPWSTR)lParam);                        // Remove the trailing extension
             AddBackslash((LPWSTR)lParam);                         // terminate with a backslash
             break;
@@ -414,7 +414,7 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             // returns the current filespec (from View.Include...).  this is
             // an uppercase ANSI string
 
-            GetMDIWindowText(hwnd, (LPWSTR)lParam, (INT)wParam);
+            GetMDIWindowText(hwnd, (LPWSTR)lParam, (int)wParam);
             StripPath((LPWSTR)lParam);
             break;
 
@@ -437,7 +437,7 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 #define lpcs ((LPCREATESTRUCT)lParam)
 #define lpmdics ((LPMDICREATESTRUCT)(lpcs->lpCreateParams))
 
-            INT dxSplit;
+            int dxSplit;
             DRIVE drive;
             DWORD dwNewExStyle;
             WCHAR szPath[2 * MAXFILENAMELEN];
@@ -453,7 +453,7 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             //
             // if dxSplit is negative we split in the middle
             //
-            dxSplit = (INT)lpmdics->lParam;
+            dxSplit = (int)lpmdics->lParam;
 
             //
             // if dxSplit is negative we split in the middle
@@ -594,7 +594,7 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
         case WM_LBUTTONDOWN: {
             MSG msg;
-            INT x, y, dx, dy;
+            int x, y, dx, dy;
 
             if (IsIconic(hwnd))
                 break;
@@ -782,8 +782,8 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     return 0L;
 }
 
-void ResizeWindows(HWND hwndParent, INT dxWindow, INT dyWindow) {
-    INT y, dy, split;
+void ResizeWindows(HWND hwndParent, int dxWindow, int dyWindow) {
+    int y, dy, split;
 
     HWND hwndTree, hwndDir;
     RECT rc;

@@ -13,7 +13,7 @@
 //
 // Prototypes
 //
-BOOL WNetStat(INT nIndex);
+BOOL WNetStat(int nIndex);
 
 //
 // There must be < 32 controls here.

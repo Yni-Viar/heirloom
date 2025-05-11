@@ -17,9 +17,9 @@
 #include "resize.h"
 #include "gitbash.h"
 
-void MDIClientSizeChange(HWND hwndActive, INT iFlags);
+void MDIClientSizeChange(HWND hwndActive, int iFlags);
 
-extern INT maxExt;
+extern int maxExt;
 
 void SaveWindows(HWND hwndMain) {
     // 2* added to both lines
@@ -27,7 +27,7 @@ void SaveWindows(HWND hwndMain) {
     WCHAR buf2[2 * MAXPATHLEN + 6 * 12];
 
     WCHAR key[10];
-    INT dir_num;
+    int dir_num;
     HWND hwnd;
     BOOL bCounting;
     RECT rcT;
@@ -64,7 +64,7 @@ DO_AGAIN:
 
     for (hwnd = GetWindow(hwndMDIClient, GW_CHILD); hwnd; hwnd = GetWindow(hwnd, GW_HWNDNEXT)) {
         HWND ht = HasTreeWindow(hwnd);
-        INT nReadLevel = ht ? (INT)GetWindowLongPtr(ht, GWL_READLEVEL) : 0;
+        int nReadLevel = ht ? (int)GetWindowLongPtr(ht, GWL_READLEVEL) : 0;
 
         // don't save MDI icon title windows or search windows,
         // or any dir window which is currently recursing
@@ -404,7 +404,7 @@ void NewFont() {
     LOGFONT lf;
     CHOOSEFONT cf;
     WCHAR szBuf[10];
-    INT res;
+    int res;
     UINT uOld, uNew;
 
 #define MAX_PT_SIZE 36
@@ -475,7 +475,7 @@ void NewFont() {
         if (GetWindow(hwnd, GW_OWNER))
             continue;
 
-        if ((INT)GetWindowLongPtr(hwnd, GWL_TYPE) == TYPE_SEARCH) {
+        if ((int)GetWindowLongPtr(hwnd, GWL_TYPE) == TYPE_SEARCH) {
             SendMessage((HWND)GetDlgItem(hwnd, IDCW_LISTBOX), WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
             SendMessage((HWND)GetDlgItem(hwnd, IDCW_LISTBOX), LB_SETITEMHEIGHT, 0, (LONG)dyFileName);
 

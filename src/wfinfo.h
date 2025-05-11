@@ -124,7 +124,7 @@ D_PROTO(NetCon);
 // Misc prototypes
 //
 
-INT NetCon_UpdateAltName(DRIVE drive, DWORD dwRetVal);
+int NetCon_UpdateAltName(DRIVE drive, DWORD dwRetVal);
 
 //
 // Background update support

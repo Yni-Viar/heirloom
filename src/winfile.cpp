@@ -37,7 +37,7 @@
 BOOL EnablePropertiesMenu(HWND hwnd, LPWSTR pszSel);
 BOOL bDialogMessage(PMSG pMsg);
 
-INT APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pszCmdLineA, INT nCmdShow) {
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pszCmdLineA, int nCmdShow) {
     MSG msg;
     LPWSTR pszCmdLine;
 
@@ -63,7 +63,7 @@ INT APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pszCmdLineA, IN
                 HeapCheckDestroy();
 #endif
 
-                return (INT)msg.wParam;
+                return (int)msg.wParam;
             }
 
             //
@@ -88,14 +88,14 @@ INT APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pszCmdLineA, IN
 }
 
 void ResizeControls(void) {
-    static INT nViews[] = {
+    static int nViews[] = {
         1, 0,                // placeholder for the main menu handle
         1, IDC_STATUS, 0, 0  // signify the end of the list
     };
 
     RECT rc;
-    INT cDrivesPerRow;
-    INT dyDriveBar;
+    int cDrivesPerRow;
+    int dyDriveBar;
 
     //
     // These controls move and resize themselves
@@ -386,7 +386,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
             bRedoDriveBar = TRUE;
 
-            if (cDrives == (INT)wParam) {
+            if (cDrives == (int)wParam) {
                 for (driveInd = 0; driveInd < cDrives; driveInd++) {
                     if (rgiDriveReal[0][driveInd] != rgiDriveReal[1][driveInd])
                         break;
@@ -395,7 +395,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                 bRedoDriveBar = (driveInd != cDrives);
             }
 
-            cDrives = (INT)wParam;
+            cDrives = (int)wParam;
             iUpdateReal ^= 1;
 
             //
@@ -447,7 +447,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             // wParam = % completed
 
             if (CancelInfo.hCancelDlg) {
-                CancelInfo.nPercentDrawn = (INT)wParam;
+                CancelInfo.nPercentDrawn = (int)wParam;
                 SendMessage(CancelInfo.hCancelDlg, FS_CANCELUPDATE, 0, 0L);
             }
 
@@ -478,7 +478,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             // preemption only at message start/end)
             //
             if (SearchInfo.bUpdateStatus) {
-                UpdateSearchStatus(SearchInfo.hwndLB, (INT)lParam);
+                UpdateSearchStatus(SearchInfo.hwndLB, (int)lParam);
             }
 
             break;
@@ -509,17 +509,17 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             return 0L;
 
         case FS_SEARCHLINEINSERT: {
-            INT iRetVal;
+            int iRetVal;
 
             // wParam = &iFileCount
             // lParam = lpxdta
 
             ExtSelItemsInvalidate();
 
-            iRetVal = (INT)SendMessage(SearchInfo.hwndLB, LB_ADDSTRING, 0, lParam);
+            iRetVal = (int)SendMessage(SearchInfo.hwndLB, LB_ADDSTRING, 0, lParam);
 
             if (iRetVal >= 0) {
-                (*(INT*)wParam)++;
+                (*(int*)wParam)++;
             }
         }
 
@@ -570,8 +570,8 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
             if (hwndStatus) {
                 HDC hDC;
-                INT nParts[3];
-                INT nInch;
+                int nParts[3];
+                int nInch;
 
                 hDC = GetDC(NULL);
                 nInch = GetDeviceCaps(hDC, LOGPIXELSX);
@@ -589,7 +589,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
         case WM_INITMENUPOPUP: {
             HWND hwndActive;
             UINT uMenu;
-            INT index;
+            int index;
 
             hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
             uMenu = MapMenuPosToIDM((UINT)LOWORD(lParam));
@@ -781,7 +781,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                         //
                         if (uMenuFlags & MF_SYSMENU || uMenuID >= 0xf000) {
                         } else {
-                            INT iExt;
+                            int iExt;
 
                             iExt = uMenuID / 100 - 1;
 
@@ -820,7 +820,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
 LRESULT
 CALLBACK
-MessageFilter(INT nCode, WPARAM wParam, LPARAM lParam) {
+MessageFilter(int nCode, WPARAM wParam, LPARAM lParam) {
     LPMSG lpMsg = (LPMSG)lParam;
 
     if (nCode < 0)
@@ -845,7 +845,7 @@ MessageFilter(INT nCode, WPARAM wParam, LPARAM lParam) {
     } else
 
     DefHook:
-        return (INT)DefHookProc(nCode, wParam, (LPARAM)lpMsg, &hhkMsgFilter);
+        return (int)DefHookProc(nCode, wParam, (LPARAM)lpMsg, &hhkMsgFilter);
 
     return 0;
 }

@@ -15,7 +15,7 @@ typedef struct {
     BOOL fFSCFlag;
     WORD wSort;
     DWORD dwAttribs;
-    INT iSplit;
+    int iSplit;
     LPTREECTLDATA lptcd;
     LPDIRDDATA lpdird;
     LPDRIVESDATA lpdrvd;
@@ -23,14 +23,14 @@ typedef struct {
 
 typedef struct {
     HWND hwnd;
-    INT iReadLevel;
+    int iReadLevel;
     HWND hwndLB;
     LPTREEDATA lptreed;
 } TREECTLDATA, FAR* LPTREECTLDATA;
 
 typedef struct {
     HWND hwnd;
-    INT iFirstTab;
+    int iFirstTab;
     HANDLE hDTA;
     HWND hwndLB;
     LPTREEDATA lptreed;
@@ -39,8 +39,8 @@ typedef struct {
 typedef struct {
     HWND hwnd;
     LPWSTR lpstrVolume;
-    INT iCurDriveInd;
-    INT iCurDriveFocus;
+    int iCurDriveInd;
+    int iCurDriveFocus;
     LPTREEDATA lptreed;
 } DRIVESDATA, FAR* LPDRIVESDATA;
 
