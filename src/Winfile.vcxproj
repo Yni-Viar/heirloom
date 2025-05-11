@@ -205,7 +205,6 @@
     <ClInclude Include="res.h" />
     <ClInclude Include="resize.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="spinlock.h" />
     <ClInclude Include="suggest.h" />
     <ClInclude Include="treectl.h" />
     <ClInclude Include="wfcopy.h" />

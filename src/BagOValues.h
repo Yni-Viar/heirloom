@@ -13,41 +13,39 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-
-#include "spinlock.h"
-
-using namespace std;
+#include <mutex>
+#include <iterator>
 
 template <class TValue>
 class BagOValues {
-    typedef pair<wstring, TValue> TPair;
-    typedef vector<TPair> TVector;
+    typedef std::pair<std::wstring, TValue> TPair;
+    typedef std::vector<TPair> TVector;
     typedef typename TVector::const_iterator TItr;
 
-    SpinLock m_spinlock;
+    std::mutex m_mutex;
     TVector m_Values;
-    wstring m_lastStr;
+    std::wstring m_lastStr;
     TItr m_LastItr;
 
    public:
     BagOValues() {}
 
     // copies the value, but doesn't assume any memory management needs be done
-    void Add(wstring key, TValue value) {
-        this->m_spinlock.Lock();
-        wstring lowered;
+    void Add(std::wstring key, TValue value) {
+        this->m_mutex.lock();
+        std::wstring lowered;
         lowered.resize(key.size());
         transform(std::begin(key), std::end(key), std::begin(lowered), ::tolower);
         m_Values.emplace_back(make_pair(std::move(lowered), value));
 
         m_lastStr.resize(0);  // clear this after new data added
-        this->m_spinlock.Unlock();
+        this->m_mutex.unlock();
     }
 
     void Sort() {
-        this->m_spinlock.Lock();
+        this->m_mutex.lock();
         sort(m_Values.begin(), m_Values.end());
-        this->m_spinlock.Unlock();
+        this->m_mutex.unlock();
     }
 
     // Retrieve with fPrefix = true means return values for the tree at the point of the query matched;
@@ -55,16 +53,16 @@ class BagOValues {
     // fPrefix = false means that we only return values when an entire key matches and we match substrings of the query
     //
     // NOTE: returns a newly allocated vector; must delete it
-    vector<TValue> Retrieve(const wstring& query, bool fPrefix = true, unsigned maxResults = ULONG_MAX) {
-        wstring lowered;
+    std::vector<TValue> Retrieve(const std::wstring& query, bool fPrefix = true, unsigned maxResults = ULONG_MAX) {
+        std::wstring lowered;
         lowered.resize(query.size());
         transform(std::cbegin(query), std::cend(query), std::begin(lowered), ::tolower);
 
-        vector<TValue> results;
+        std::vector<TValue> results;
         TValue val = TValue();
         TPair laspair = make_pair(lowered, val);
 
-        this->m_spinlock.Lock();
+        this->m_mutex.lock();
 
         // if last saved string/iterator is a prefix of the new string, start there
         TItr itr;
@@ -78,7 +76,7 @@ class BagOValues {
         }
 
         for (; itr != m_Values.end(); itr++) {
-            const wstring& key = itr->first;
+            const std::wstring& key = itr->first;
             int cmp = key.compare(0, lowered.size(), lowered);
             if (cmp == 0) {
                 if (!fPrefix && key.size() != lowered.size()) {
@@ -96,7 +94,7 @@ class BagOValues {
             }
         }
 
-        this->m_spinlock.Unlock();
+        this->m_mutex.unlock();
         return results;
     }
 
