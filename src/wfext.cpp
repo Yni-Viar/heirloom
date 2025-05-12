@@ -12,6 +12,7 @@
 #include "wfutil.h"
 #include "wfdir.h"
 #include "wftree.h"
+#include "wfinit.h"
 
 //----------------------------
 //

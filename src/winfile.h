@@ -253,24 +253,6 @@ typedef struct _SELINFO* PSELINFO;
 BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive);
 LRESULT CALLBACK MessageFilter(int nCode, WPARAM wParam, LPARAM lParam);
 
-// WFINIT.C
-
-void GetInternational();
-BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow);
-void InitExtensions();
-void FreeFileManager();
-BOOL CreateSavedWindows(LPCWSTR pszInitialDir);
-void InitExtensions();
-int GetDriveOffset(DRIVE drive);
-void InitMenus();
-UINT MapIDMToMenuPos(UINT idm);
-UINT MapMenuPosToIDM(UINT pos);
-void LoadFailMessage();
-UINT FillDocType(PPDOCBUCKET ppDoc, LPCWSTR pszSection, LPCWSTR pszDefault);
-BOOL CheckDirExists(LPWSTR szDir);
-
-DWORD StartBuildingDirectoryTrie();
-
 // WFCOPY.C
 
 DWORD DMMoveCopyHelper(LPWSTR pFrom, LPWSTR pTo, int iOperation);

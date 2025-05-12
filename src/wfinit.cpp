@@ -21,6 +21,7 @@
 #include "wfcomman.h"
 #include "wfutil.h"
 #include "wfdirrd.h"
+#include "wfinit.h"
 
 #include <ole2.h>
 #include <shlobj.h>

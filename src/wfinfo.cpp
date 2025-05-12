@@ -13,6 +13,7 @@
 #include "wnetcaps.h"
 #include "wfdos.h"
 #include "wfutil.h"
+#include "wfinit.h"
 #include <commctrl.h>
 
 #define U_HEAD(type)             \
