@@ -253,20 +253,6 @@ typedef struct _SELINFO* PSELINFO;
 BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive);
 LRESULT CALLBACK MessageFilter(int nCode, WPARAM wParam, LPARAM lParam);
 
-// WFCOPY.C
-
-DWORD DMMoveCopyHelper(LPWSTR pFrom, LPWSTR pTo, int iOperation);
-DWORD WFMoveCopyDriver(PCOPYINFO pCopyInfo);
-DWORD WINAPI WFMoveCopyDriverThread(LPVOID lpParameter);
-
-BOOL IsDirectory(LPWSTR pPath);
-BOOL IsTheDiskReallyThere(HWND hwnd, LPWSTR pPath, DWORD wFunc, BOOL bModal);
-BOOL QualifyPath(LPWSTR);
-int CheckMultiple(LPWSTR pInput);
-void SetDlgItemPath(HWND hDlg, int id, LPWSTR pszPath);
-
-void DialogEnterFileStuff(HWND hwnd);
-
 // WFUTIL.C
 
 void GetAllDirectories(LPWSTR rgszDirs[]);

@@ -11,6 +11,9 @@
 
 #pragma once
 
+#include "winfile.h"
+#include "lfn.h"
+
 #define FIND_DIRS 0x0010
 
 #define CNF_DIR_EXISTS 0x0001
@@ -56,3 +59,15 @@ UINT RemoveLast(LPWSTR pFile);
 void Notify(HWND, WORD, LPWSTR, LPWSTR);
 
 LPWSTR FindFileName(LPWSTR pPath);
+
+DWORD DMMoveCopyHelper(LPWSTR pFrom, LPWSTR pTo, int iOperation);
+DWORD WFMoveCopyDriver(PCOPYINFO pCopyInfo);
+DWORD WINAPI WFMoveCopyDriverThread(LPVOID lpParameter);
+
+BOOL IsDirectory(LPWSTR pPath);
+BOOL IsTheDiskReallyThere(HWND hwnd, LPWSTR pPath, DWORD wFunc, BOOL bModal);
+BOOL QualifyPath(LPWSTR);
+int CheckMultiple(LPWSTR pInput);
+void SetDlgItemPath(HWND hDlg, int id, LPWSTR pszPath);
+
+void DialogEnterFileStuff(HWND hwnd);

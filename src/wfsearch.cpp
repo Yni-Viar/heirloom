@@ -84,6 +84,7 @@
 #include "wfutil.h"
 #include "wfdir.h"
 #include "wfdirsrc.h"
+#include "wfcopy.h"
 
 #include <commctrl.h>
 
