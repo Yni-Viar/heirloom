@@ -283,13 +283,6 @@ INT_PTR CALLBACK GotoDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lPar
 
 void SetCurrentPathOfWindow(LPWSTR szPath);
 
-// WFSEARCH.C
-
-void GetSearchPath(HWND hwnd, LPWSTR szTemp);
-INT_PTR CALLBACK SearchProgDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-void UpdateSearchStatus(HWND hwndLB, int nCount);
-void SearchEnd();
-
 // WFFILE.C
 BOOL GetRootPath(LPWSTR szPath, LPWSTR szReturn);
 

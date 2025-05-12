@@ -17,6 +17,7 @@
 #include "wfutil.h"
 #include "wfdirrd.h"
 #include "wfinit.h"
+#include "wfsearch.h"
 #include <commctrl.h>
 #include <shlobj.h>
 

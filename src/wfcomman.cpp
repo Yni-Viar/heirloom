@@ -22,6 +22,7 @@
 #include "wftree.h"
 #include "wfinit.h"
 #include "wfdrives.h"
+#include "wfsearch.h"
 
 #include <shlobj.h>
 #include <commctrl.h>

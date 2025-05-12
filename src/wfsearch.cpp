@@ -85,6 +85,7 @@
 #include "wfdir.h"
 #include "wfdirsrc.h"
 #include "wfcopy.h"
+#include "wfsearch.h"
 
 #include <commctrl.h>
 
