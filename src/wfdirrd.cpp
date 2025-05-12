@@ -17,6 +17,7 @@
 #include "wfdir.h"
 #include "wfdirrd.h"
 #include "wfinit.h"
+#include "stringconstants.h"
 
 typedef enum {
     EDIRABORT_NULL = 0,
@@ -378,7 +379,7 @@ void BuildDocumentStringWorker() {
     if (!ppDocBucket)
         goto Return;
 
-    FillDocType(ppDocBucket, L"Documents", szNULL);
+    FillDocType(ppDocBucket, L"Documents", kEmptyString);
 
     uLen = 0;
 
@@ -394,7 +395,7 @@ void BuildDocumentStringWorker() {
             goto Return;
         }
 
-    } while (GetProfileString(szExtensions, NULL, szNULL, pszDocuments, uLen) == (DWORD)uLen - 2);
+    } while (GetProfileString(kExtensions, NULL, kEmptyString, pszDocuments, uLen) == (DWORD)uLen - 2);
 
     //
     // Step through each of the keywords in 'szDocuments' changing NULLS into
@@ -685,7 +686,7 @@ RestartOverFindFirst:
                     DWORD tag = DecodeReparsePoint(szTemp, szLinkDest, COUNTOF(szLinkDest));
                     if (tag != IO_REPARSE_TAG_RESERVED_ZERO) {
                         lstrcpy(szPath, szLinkDest);
-                        AppendToPath(szPath, szStarDotStar);
+                        AppendToPath(szPath, kStarDotStar);
                         goto RestartOverFindFirst;
                     } else {
                         iError = IDS_NOACCESSDIR;

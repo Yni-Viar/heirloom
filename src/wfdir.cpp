@@ -24,6 +24,7 @@
 #include "wfdirrd.h"
 #include "wfdirsrc.h"
 #include "wftree.h"
+#include "stringconstants.h"
 #include <commctrl.h>
 
 // Constants for selection types passed to DirGetSelection
@@ -1245,7 +1246,7 @@ ChangeDisplay(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             //
             hwndLB = CreateWindowEx(
                 0L,
-                szListbox,  // atomDirListBox,
+                kListbox,  // atomDirListBox,
                 NULL, ws, dyBorder, dyBorder, rc.right - 2 * dyBorder, rc.bottom - 2 * dyBorder, hwnd,
                 (HMENU)IDCW_LISTBOX, hAppInstance, NULL);
 
@@ -2546,7 +2547,7 @@ DirGetSelection(HWND hwndDir, HWND hwndView, HWND hwndLB, int iSelType, BOOL* pf
 
         if ((!bLFNTest) && ((i + 1) < iMac)) {
             if (p)
-                lstrcat(p, szBlank);
+                lstrcat(p, kSpace);
         }
     }
 
@@ -2792,14 +2793,14 @@ void UpdateStatus(HWND hwnd) {
             }
         }
     } else
-        SetStatusText(0, 0L, szNULL);
+        SetStatusText(0, 0L, kEmptyString);
 
     hwndDir = HasDirWindow(hwnd);
 
     if (hwndDir) {
         GetDirStatus(hwndDir, szStatusTree, szStatusDir);
     } else {
-        SetStatusText(1, 0L, szNULL);
+        SetStatusText(1, 0L, kEmptyString);
     }
 }
 

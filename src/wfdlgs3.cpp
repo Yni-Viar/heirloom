@@ -16,6 +16,7 @@
 #include "wfutil.h"
 #include "wftree.h"
 #include "wfsearch.h"
+#include "stringconstants.h"
 #include <shlobj.h>
 
 #define LABEL_NTFS_MAX 32
@@ -127,7 +128,7 @@ ProgressDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                 SetWindowText(hdlgProgress, szTitle);
 
             } else {
-                SetDlgItemText(hdlgProgress, IDD_TOSTATUS, szNULL);
+                SetDlgItemText(hdlgProgress, IDD_TOSTATUS, kEmptyString);
             }
 
             //

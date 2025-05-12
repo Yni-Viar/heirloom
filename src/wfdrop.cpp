@@ -14,6 +14,7 @@
 #include "treectl.h"
 #include "wfutil.h"
 #include "wfcopy.h"
+#include "stringconstants.h"
 
 #include <ole2.h>
 #include <shlobj.h>
@@ -682,7 +683,7 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
     }
 
     AddBackslash(szDest);
-    lstrcat(szDest, szStarDotStar);  // put files in this dir
+    lstrcat(szDest, kStarDotStar);  // put files in this dir
 
     CheckEsc(szDest);
 

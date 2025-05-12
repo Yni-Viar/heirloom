@@ -17,6 +17,7 @@
 #include "resize.h"
 #include "wfcomman.h"
 #include "wfutil.h"
+#include "stringconstants.h"
 
 void BuildDirectoryBagOValues(
     BagOValues<PDNODE>* pbov,
@@ -305,13 +306,13 @@ BOOL BuildDirectoryBagOValues(
         pbov->Add(szPath, pNodeParent);
     }
 
-    if (lstrlen(szPath) + lstrlen(szStarDotStar) >= COUNTOF(szPath)) {
+    if (lstrlen(szPath) + lstrlen(kStarDotStar) >= COUNTOF(szPath)) {
         // path too long
         return TRUE;
     }
 
     // add *.* to end of path
-    lstrcat(szPath, szStarDotStar);
+    lstrcat(szPath, kStarDotStar);
 
     dwAttr = ATTR_DIR;
     if (bIndexHiddenSystem) {
@@ -664,10 +665,10 @@ DWORD WINAPI BuildDirectoryTreeBagOValues(PVOID pv) {
     SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM)L"BUILDING GOTO CACHE");
 
     // Read pathes, which shall be cached from winfile.ini
-    GetPrivateProfileString(szSettings, szGotoCachePunctuation, L"- _.", szPunctuation, MAXPATHLEN, szTheINIFile);
+    GetPrivateProfileString(kSettings, kGotoCachePunctuation, L"- _.", szPunctuation, MAXPATHLEN, szTheINIFile);
 
     // Read pathes, which shall be cached from winfile.ini
-    GetPrivateProfileString(szSettings, szCachedPath, L"c:\\", szCachedPathIni, MAXPATHLEN, szTheINIFile);
+    GetPrivateProfileString(kSettings, kCachedPath, L"c:\\", szCachedPathIni, MAXPATHLEN, szTheINIFile);
 
     // Create a local copy, because once we save it to winfile.ini on exit we need the original value
     WCHAR szCached[MAXPATHLEN];

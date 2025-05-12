@@ -205,6 +205,7 @@
     <ClInclude Include="res.h" />
     <ClInclude Include="resize.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="stringconstants.h" />
     <ClInclude Include="suggest.h" />
     <ClInclude Include="treectl.h" />
     <ClInclude Include="wfchgnot.h" />

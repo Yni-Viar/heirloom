@@ -18,6 +18,7 @@
 #include "gitbash.h"
 #include "wfutil.h"
 #include "wfdir.h"
+#include "stringconstants.h"
 
 void MDIClientSizeChange(HWND hwndActive, int iFlags);
 
@@ -52,9 +53,9 @@ void SaveWindows(HWND hwndMain) {
         wp.rcNormalPosition.right - wp.rcNormalPosition.left, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top,
         wp.showCmd);
 
-    WritePrivateProfileString(szSettings, szWindow, buf2, szTheINIFile);
+    WritePrivateProfileString(kSettings, kWindow, buf2, szTheINIFile);
 
-    WritePrivateProfileBool(szScrollOnExpand, bScrollOnExpand);
+    WritePrivateProfileBool(kScrollOnExpand, bScrollOnExpand);
 
     // write out dir window strings in reverse order
     // so that when we read them back in we get the same Z order
@@ -87,7 +88,7 @@ DO_AGAIN:
 
             GetMDIWindowText(hwnd, szPath, COUNTOF(szPath));
 
-            wsprintf(key, szDirKeyFormat, dir_num--);
+            wsprintf(key, kDirKeyFormat, dir_num--);
 
             // format:
             //   x_win, y_win,
@@ -103,7 +104,7 @@ DO_AGAIN:
 
             // the dir is an ANSI string (?)
 
-            WritePrivateProfileString(szSettings, key, buf2, szTheINIFile);
+            WritePrivateProfileString(kSettings, key, buf2, szTheINIFile);
         }
     }
 
@@ -113,15 +114,15 @@ DO_AGAIN:
         // erase the last dir window so that if they save with
         // fewer dirs open we don't pull in old open windows
 
-        wsprintf(key, szDirKeyFormat, dir_num + 1);
-        WritePrivateProfileString(szSettings, key, NULL, szTheINIFile);
+        wsprintf(key, kDirKeyFormat, dir_num + 1);
+        WritePrivateProfileString(kSettings, key, NULL, szTheINIFile);
 
         goto DO_AGAIN;
     }
 
     // Save CachedPath and GotoCachePunctuation
-    WritePrivateProfileString(szSettings, szCachedPath, szCachedPathIni, szTheINIFile);
-    WritePrivateProfileString(szSettings, szGotoCachePunctuation, szPunctuation, szTheINIFile);
+    WritePrivateProfileString(kSettings, kCachedPath, szCachedPathIni, szTheINIFile);
+    WritePrivateProfileString(kSettings, kGotoCachePunctuation, szPunctuation, szTheINIFile);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -265,7 +266,7 @@ IncludeDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                     KillQuoteTrailSpace(szInclude);
 
                     if (szInclude[0] == 0L)
-                        lstrcpy(szInclude, szStarDotStar);
+                        lstrcpy(szInclude, kStarDotStar);
 
                     dwAttribs = 0;
                     if (IsDlgButtonChecked(hDlg, IDD_DIR))
@@ -332,7 +333,7 @@ SelectDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
     switch (wMsg) {
         case WM_INITDIALOG:
             SendDlgItemMessage(hDlg, IDD_NAME, EM_LIMITTEXT, COUNTOF(szList) - 1, 0L);
-            SetDlgItemText(hDlg, IDD_NAME, szStarDotStar);
+            SetDlgItemText(hDlg, IDD_NAME, kStarDotStar);
             break;
 
         case WM_COMMAND:
@@ -445,10 +446,10 @@ void NewFont() {
     else
         wTextAttribs &= ~TA_ITALIC;
 
-    WritePrivateProfileString(szSettings, szFace, lf.lfFaceName, szTheINIFile);
-    WritePrivateProfileString(szSettings, szSize, szBuf, szTheINIFile);
-    WritePrivateProfileBool(szLowerCase, wTextAttribs);
-    WritePrivateProfileBool(szFaceWeight, lf.lfWeight);
+    WritePrivateProfileString(kSettings, kFace, lf.lfFaceName, szTheINIFile);
+    WritePrivateProfileString(kSettings, kSize, szBuf, szTheINIFile);
+    WritePrivateProfileBool(kLowerCase, wTextAttribs);
+    WritePrivateProfileBool(kFaceWeight, lf.lfWeight);
 
     hOldFont = hFont;
 
@@ -553,13 +554,13 @@ ConfirmDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
                     bConfirmReadOnly = IsDlgButtonChecked(hDlg, IDD_READONLY);
 
-                    WritePrivateProfileBool(szConfirmDelete, bConfirmDelete);
-                    WritePrivateProfileBool(szConfirmSubDel, bConfirmSubDel);
-                    WritePrivateProfileBool(szConfirmReplace, bConfirmReplace);
-                    WritePrivateProfileBool(szConfirmMouse, bConfirmMouse);
-                    WritePrivateProfileBool(szConfirmFormat, bConfirmFormat);
+                    WritePrivateProfileBool(kConfirmDelete, bConfirmDelete);
+                    WritePrivateProfileBool(kConfirmSubDel, bConfirmSubDel);
+                    WritePrivateProfileBool(kConfirmReplace, bConfirmReplace);
+                    WritePrivateProfileBool(kConfirmMouse, bConfirmMouse);
+                    WritePrivateProfileBool(kConfirmFormat, bConfirmFormat);
 
-                    WritePrivateProfileBool(szConfirmReadOnly, bConfirmReadOnly);
+                    WritePrivateProfileBool(kConfirmReadOnly, bConfirmReadOnly);
 
                     EndDialog(hDlg, TRUE);
                     break;
@@ -604,7 +605,7 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
     switch (wMsg) {
         case WM_INITDIALOG:
-            GetPrivateProfileString(szSettings, szEditorPath, NULL, szTempEditPath, MAXPATHLEN, szTheINIFile);
+            GetPrivateProfileString(kSettings, kEditorPath, NULL, szTempEditPath, MAXPATHLEN, szTheINIFile);
             SetDlgItemText(hDlg, IDD_EDITOR, szTempEditPath);
 
             CheckDlgButton(hDlg, IDC_GOTO, bIndexOnLaunch);
@@ -624,11 +625,11 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 
                 case IDOK:
                     GetDlgItemText(hDlg, IDD_EDITOR, szTempEditPath, MAXPATHLEN);
-                    WritePrivateProfileString(szSettings, szEditorPath, szTempEditPath, szTheINIFile);
+                    WritePrivateProfileString(kSettings, kEditorPath, szTempEditPath, szTheINIFile);
 
                     bIndexOnLaunch = IsDlgButtonChecked(hDlg, IDC_GOTO);
 
-                    WritePrivateProfileBool(szIndexOnLaunch, bIndexOnLaunch);
+                    WritePrivateProfileBool(kIndexOnLaunch, bIndexOnLaunch);
 
                     EndDialog(hDlg, TRUE);
                     break;

@@ -27,6 +27,7 @@
 #include "wftree.h"
 #include "treectl.h"
 #include "wfdir.h"
+#include "stringconstants.h"
 
 #include <ole2.h>
 #include <shlobj.h>
@@ -103,10 +104,10 @@ void InitExtensions() {
 
     iMenuBase = MapIDMToMenuPos(IDM_EXTENSIONS);
 
-    GetPrivateProfileString(szAddons, NULL, szNULL, szBuf, COUNTOF(szBuf), szTheINIFile);
+    GetPrivateProfileString(kAddons, NULL, kEmptyString, szBuf, COUNTOF(szBuf), szTheINIFile);
 
     for (p = szBuf; *p && iNumExtensions < MAX_EXTENSIONS; p += lstrlen(p) + 1) {
-        GetPrivateProfileString(szAddons, p, szNULL, szPath, COUNTOF(szPath), szTheINIFile);
+        GetPrivateProfileString(kAddons, p, kEmptyString, szPath, COUNTOF(szPath), szTheINIFile);
 
         hMod = LoadLibrary(szPath);
 
@@ -183,32 +184,31 @@ void GetSettings() {
     int bfCharset;
 
     /* Get the flags out of the INI file. */
-    bMinOnRun = GetPrivateProfileInt(szSettings, szMinOnRun, bMinOnRun, szTheINIFile);
-    bIndexOnLaunch = GetPrivateProfileInt(szSettings, szIndexOnLaunch, bIndexOnLaunch, szTheINIFile);
-    bIndexHiddenSystem = GetPrivateProfileInt(szSettings, szIndexHiddenSystem, bIndexHiddenSystem, szTheINIFile);
-    wTextAttribs = (WORD)GetPrivateProfileInt(szSettings, szLowerCase, wTextAttribs, szTheINIFile);
-    bStatusBar = GetPrivateProfileInt(szSettings, szStatusBar, bStatusBar, szTheINIFile);
-    bDisableVisualStyles = GetPrivateProfileInt(szSettings, szDisableVisualStyles, bDisableVisualStyles, szTheINIFile);
+    bMinOnRun = GetPrivateProfileInt(kSettings, kMinOnRun, bMinOnRun, szTheINIFile);
+    bIndexOnLaunch = GetPrivateProfileInt(kSettings, kIndexOnLaunch, bIndexOnLaunch, szTheINIFile);
+    bIndexHiddenSystem = GetPrivateProfileInt(kSettings, kIndexHiddenSystem, bIndexHiddenSystem, szTheINIFile);
+    wTextAttribs = (WORD)GetPrivateProfileInt(kSettings, kLowerCase, wTextAttribs, szTheINIFile);
+    bStatusBar = GetPrivateProfileInt(kSettings, kStatusBar, bStatusBar, szTheINIFile);
 
-    bDriveBar = GetPrivateProfileInt(szSettings, szDriveBar, bDriveBar, szTheINIFile);
+    bDriveBar = GetPrivateProfileInt(kSettings, kDriveBar, bDriveBar, szTheINIFile);
 
-    bNewWinOnConnect = GetPrivateProfileInt(szSettings, szNewWinOnNetConnect, bNewWinOnConnect, szTheINIFile);
-    bConfirmDelete = GetPrivateProfileInt(szSettings, szConfirmDelete, bConfirmDelete, szTheINIFile);
-    bConfirmSubDel = GetPrivateProfileInt(szSettings, szConfirmSubDel, bConfirmSubDel, szTheINIFile);
-    bConfirmReplace = GetPrivateProfileInt(szSettings, szConfirmReplace, bConfirmReplace, szTheINIFile);
-    bConfirmMouse = GetPrivateProfileInt(szSettings, szConfirmMouse, bConfirmMouse, szTheINIFile);
-    bConfirmFormat = GetPrivateProfileInt(szSettings, szConfirmFormat, bConfirmFormat, szTheINIFile);
-    bConfirmReadOnly = GetPrivateProfileInt(szSettings, szConfirmReadOnly, bConfirmReadOnly, szTheINIFile);
-    uChangeNotifyTime = GetPrivateProfileInt(szSettings, szChangeNotifyTime, uChangeNotifyTime, szTheINIFile);
-    bSaveSettings = GetPrivateProfileInt(szSettings, szSaveSettings, bSaveSettings, szTheINIFile);
-    bScrollOnExpand = GetPrivateProfileInt(szSettings, szScrollOnExpand, bScrollOnExpand, szTheINIFile);
-    weight = GetPrivateProfileInt(szSettings, szFaceWeight, 400, szTheINIFile);
+    bNewWinOnConnect = GetPrivateProfileInt(kSettings, kNewWinOnNetConnect, bNewWinOnConnect, szTheINIFile);
+    bConfirmDelete = GetPrivateProfileInt(kSettings, kConfirmDelete, bConfirmDelete, szTheINIFile);
+    bConfirmSubDel = GetPrivateProfileInt(kSettings, kConfirmSubDel, bConfirmSubDel, szTheINIFile);
+    bConfirmReplace = GetPrivateProfileInt(kSettings, kConfirmReplace, bConfirmReplace, szTheINIFile);
+    bConfirmMouse = GetPrivateProfileInt(kSettings, kConfirmMouse, bConfirmMouse, szTheINIFile);
+    bConfirmFormat = GetPrivateProfileInt(kSettings, kConfirmFormat, bConfirmFormat, szTheINIFile);
+    bConfirmReadOnly = GetPrivateProfileInt(kSettings, kConfirmReadOnly, bConfirmReadOnly, szTheINIFile);
+    uChangeNotifyTime = GetPrivateProfileInt(kSettings, kChangeNotifyTime, uChangeNotifyTime, szTheINIFile);
+    bSaveSettings = GetPrivateProfileInt(kSettings, kSaveSettings, bSaveSettings, szTheINIFile);
+    bScrollOnExpand = GetPrivateProfileInt(kSettings, kScrollOnExpand, bScrollOnExpand, szTheINIFile);
+    weight = GetPrivateProfileInt(kSettings, kFaceWeight, 400, szTheINIFile);
 
-    GetPrivateProfileString(szSettings, szSize, L"9", szTemp, COUNTOF(szTemp), szTheINIFile);
+    GetPrivateProfileString(kSettings, kSize, L"9", szTemp, COUNTOF(szTemp), szTheINIFile);
 
     size = GetHeightFromPointsString(szTemp);
 
-    GetPrivateProfileString(szSettings, szFace, szHelv, szTemp, COUNTOF(szTemp), szTheINIFile);
+    GetPrivateProfileString(kSettings, kFace, szHelv, szTemp, COUNTOF(szTemp), szTheINIFile);
 
     bfCharset = ANSI_CHARSET;
 
@@ -370,7 +370,7 @@ void BoilThatDustSpec(WCHAR* pStart, BOOL bLoadIt) {
         else
             *pEnd = CHAR_NULL;
 
-        ret = ExecProgram(pStart, szNULL, NULL, bLoadIt, FALSE);
+        ret = ExecProgram(pStart, kEmptyString, NULL, bLoadIt, FALSE);
         if (ret)
             MyMessageBox(NULL, IDS_EXECERRTITLE, ret, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
 
@@ -497,9 +497,9 @@ BOOL CreateSavedWindows(LPCWSTR pszInitialDir) {
     iNumTrees = 0;
 
     do {
-        wsprintf(key, szDirKeyFormat, nDirNum++);
+        wsprintf(key, kDirKeyFormat, nDirNum++);
 
-        GetPrivateProfileString(szSettings, key, szNULL, buf, COUNTOF(buf), szTheINIFile);
+        GetPrivateProfileString(kSettings, key, kEmptyString, buf, COUNTOF(buf), szTheINIFile);
 
         if (*buf) {
             GetSavedWindow(buf, &win);
@@ -560,11 +560,11 @@ BOOL CreateSavedWindows(LPCWSTR pszInitialDir) {
     //
 
     if (pszInitialDir != NULL) {
-        SizeAvailable = COUNTOF(buf) - (DWORD)wcslen(szStarDotStar) - 1;
+        SizeAvailable = COUNTOF(buf) - (DWORD)wcslen(kStarDotStar) - 1;
         CharsCopied = GetFullPathName(pszInitialDir, SizeAvailable, buf, &FilePart);
         if (CharsCopied > 0 && CharsCopied < SizeAvailable && !ISUNCPATH(buf) && CheckDirExists(buf)) {
             AddBackslash(buf);
-            lstrcat(buf, szStarDotStar);
+            lstrcat(buf, kStarDotStar);
 
             //
             // use the settings of the most recent window as defaults
@@ -597,7 +597,7 @@ BOOL CreateSavedWindows(LPCWSTR pszInitialDir) {
     if (!iNumTrees) {
         lstrcpy(buf, szOriginalDirPath);
         AddBackslash(buf);
-        lstrcat(buf, szStarDotStar);
+        lstrcat(buf, kStarDotStar);
 
         //
         // default to split window
@@ -678,7 +678,7 @@ UINT FillDocType(PPDOCBUCKET ppDoc, LPCWSTR pszSection, LPCWSTR pszDefault) {
             return 0;
         }
 
-    } while (GetProfileString(szWindows, pszSection, pszDefault, pszDocuments, uLen) == (DWORD)uLen - 2);
+    } while (GetProfileString(kWindows, pszSection, pszDefault, pszDocuments, uLen) == (DWORD)uLen - 2);
 
     //
     // Parse through string, searching for blanks
@@ -750,14 +750,14 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
     hAppInstance = hInstance;
 
     // setup ini file location
-    lstrcpy(szTheINIFile, szBaseINIFile);
+    lstrcpy(szTheINIFile, kBaseINIFile);
     dwRetval = GetEnvironmentVariable(L"APPDATA", szBuffer, MAXPATHLEN);
-    if (dwRetval > 0 && dwRetval <= (DWORD)(MAXPATHLEN - lstrlen(szRoamINIPath) - 1 - lstrlen(szBaseINIFile) - 1)) {
-        wsprintf(szTheINIFile, L"%s%s", szBuffer, szRoamINIPath);
+    if (dwRetval > 0 && dwRetval <= (DWORD)(MAXPATHLEN - lstrlen(kRoamINIPath) - 1 - lstrlen(kBaseINIFile) - 1)) {
+        wsprintf(szTheINIFile, L"%s%s", szBuffer, kRoamINIPath);
         if (CreateDirectory(szTheINIFile, NULL) || GetLastError() == ERROR_ALREADY_EXISTS) {
-            wsprintf(szTheINIFile, L"%s%s\\%s", szBuffer, szRoamINIPath, szBaseINIFile);
+            wsprintf(szTheINIFile, L"%s%s\\%s", szBuffer, kRoamINIPath, kBaseINIFile);
         } else {
-            wsprintf(szTheINIFile, L"%s\\%s", szBuffer, szBaseINIFile);
+            wsprintf(szTheINIFile, L"%s\\%s", szBuffer, kBaseINIFile);
         }
     }
 
@@ -866,7 +866,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
     dxClickRect = max(GetSystemMetrics(SM_CXDOUBLECLK) / 2, 2 * dxText);
     dyClickRect = max(GetSystemMetrics(SM_CYDOUBLECLK) / 2, dyText);
 
-    GetPrivateProfileString(szSettings, szDriveListFace, szHelv, szTemp, COUNTOF(szTemp), szTheINIFile);
+    GetPrivateProfileString(kSettings, kDriveListFace, szHelv, szTemp, COUNTOF(szTemp), szTheINIFile);
 
     hfontDriveList = CreateFont(
         GetHeightFromPointsString(L"8"), 0, 0, 0, 400, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
@@ -884,7 +884,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
 
     hcurArrow = LoadCursor(NULL, IDC_ARROW);
 
-    wndClass.lpszClassName = szFrameClass;
+    wndClass.lpszClassName = kFrameClass;
     wndClass.style = 0L;
     wndClass.lpfnWndProc = FrameWndProc;
     wndClass.cbClsExtra = 0;
@@ -899,7 +899,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
         return FALSE;
     }
 
-    wndClass.lpszClassName = szTreeClass;
+    wndClass.lpszClassName = kTreeClass;
 
     wndClass.style = 0;  // WS_CLIPCHILDREN;  //CS_VREDRAW | CS_HREDRAW;
 
@@ -918,7 +918,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
         return FALSE;
     }
 
-    wndClass.lpszClassName = szDrivesClass;
+    wndClass.lpszClassName = kDrivesClass;
     wndClass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     wndClass.lpfnWndProc = DrivesWndProc;
     // wndClass.cbClsExtra     = 0;
@@ -936,7 +936,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
         return FALSE;
     }
 
-    wndClass.lpszClassName = szTreeControlClass;
+    wndClass.lpszClassName = kTreeControlClass;
     wndClass.style = CS_DBLCLKS;
     wndClass.lpfnWndProc = TreeControlWndProc;
     // wndClass.cbClsExtra     = 0;
@@ -951,7 +951,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
         return FALSE;
     }
 
-    wndClass.lpszClassName = szDirClass;
+    wndClass.lpszClassName = kDirClass;
     wndClass.style = 0;  // CS_VREDRAW | CS_HREDRAW;
     wndClass.lpfnWndProc = DirWndProc;
     // wndClass.cbClsExtra     = 0;
@@ -966,7 +966,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
         return FALSE;
     }
 
-    wndClass.lpszClassName = szSearchClass;
+    wndClass.lpszClassName = kSearchClass;
     wndClass.style = 0L;
     wndClass.lpfnWndProc = SearchWndProc;
     // wndClass.cbClsExtra     = 0;
@@ -990,7 +990,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
         return FALSE;
     }
 
-    GetPrivateProfileString(szSettings, szWindow, szNULL, szBuffer, COUNTOF(szBuffer), szTheINIFile);
+    GetPrivateProfileString(kSettings, kWindow, kEmptyString, szBuffer, COUNTOF(szBuffer), szTheINIFile);
     GetSavedWindow(szBuffer, &win);
 
     // Check that at least some portion of the window is visible;
@@ -1063,7 +1063,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
     }
 
     if (!CreateWindowEx(
-            dwExStyle, szFrameClass, szTitle, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, win.rc.left, win.rc.top,
+            dwExStyle, kFrameClass, szTitle, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, win.rc.left, win.rc.top,
             win.rc.right, win.rc.bottom, NULL, NULL, hInstance, NULL)) {
         return FALSE;
     }
@@ -1156,7 +1156,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
     GetInternational();
 
     if (ppProgBucket = DocConstruct()) {
-        FillDocType(ppProgBucket, L"Programs", szDefPrograms);
+        FillDocType(ppProgBucket, L"Programs", kDefPrograms);
     }
 
     BuildDocumentStringWorker();

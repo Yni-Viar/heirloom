@@ -81,6 +81,7 @@
     <ClInclude Include="wfsearch.h" />
     <ClInclude Include="wftree.h" />
     <ClInclude Include="wfutil.h" />
+    <ClInclude Include="stringconstants.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res.rc" />

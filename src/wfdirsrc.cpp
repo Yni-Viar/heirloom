@@ -12,6 +12,7 @@
 #include "wfdragsrc.h"
 #include "wfutil.h"
 #include "wfdir.h"
+#include "stringconstants.h"
 #include <commctrl.h>
 
 #define DO_DROPFILE 0x454C4946L
@@ -66,8 +67,8 @@ GetMoveCopyCursor() {
 BOOL MatchFile(LPWSTR szFile, LPWSTR szSpec) {
 #define IS_DOTEND(ch) ((ch) == CHAR_DOT || (ch) == CHAR_NULL)
 
-    if (!lstrcmp(szSpec, SZ_STAR) ||      // "*" matches everything
-        !lstrcmp(szSpec, szStarDotStar))  // so does "*.*"
+    if (!lstrcmp(szSpec, SZ_STAR) ||     // "*" matches everything
+        !lstrcmp(szSpec, kStarDotStar))  // so does "*.*"
         return TRUE;
 
     while (*szFile && *szSpec) {

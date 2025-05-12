@@ -24,6 +24,7 @@
 #include "wfdrives.h"
 #include "wfsearch.h"
 #include "wfgoto.h"
+#include "stringconstants.h"
 
 #include <shlobj.h>
 #include <commctrl.h>
@@ -385,7 +386,7 @@ HWND CreateTreeWindow(LPWSTR szPath, int x, int y, int dx, int dy, int dxSplit) 
     if (hwnd && GetWindowLongPtr(hwnd, GWL_STYLE) & WS_MAXIMIZE)
         style |= WS_MAXIMIZE;
 
-    hwnd = CreateMDIWindow(szTreeClass, szPath, style, x, y, dx, dy, hwndMDIClient, hAppInstance, dxSplit);
+    hwnd = CreateMDIWindow(kTreeClass, szPath, style, x, y, dx, dy, hwndMDIClient, hAppInstance, dxSplit);
 
     //
     // Set all the view/sort/include parameters.  This is to make
@@ -497,7 +498,7 @@ HWND CreateDirWindow(LPWSTR szPath, BOOL bReplaceOpen, HWND hwndActive) {
     }
 
     AddBackslash(szPath);  // default to all files
-    lstrcat(szPath, szStarDotStar);
+    lstrcat(szPath, kStarDotStar);
 
     //
     // create tree and/or dir based on current window split
@@ -610,7 +611,7 @@ void OpenOrEditSelection(HWND hwndActive, BOOL fEdit) {
             else
                 lstrcpy(szNotepad, L"notepad.exe");
 
-            GetPrivateProfileString(szSettings, szEditorPath, szNotepad, szEditPath, MAXPATHLEN, szTheINIFile);
+            GetPrivateProfileString(kSettings, kEditorPath, szNotepad, szEditPath, MAXPATHLEN, szTheINIFile);
 
             CheckEsc(szPath);  // add quotes if necessary; reserved space for them above
 
@@ -621,7 +622,7 @@ void OpenOrEditSelection(HWND hwndActive, BOOL fEdit) {
                 ret = ExecProgram(szNotepad, szPath, NULL, (GetKeyState(VK_SHIFT) < 0), FALSE);
 
         } else {
-            ret = ExecProgram(szPath, szNULL, NULL, (GetKeyState(VK_SHIFT) < 0), (GetKeyState(VK_CONTROL) < 0));
+            ret = ExecProgram(szPath, kEmptyString, NULL, (GetKeyState(VK_SHIFT) < 0), (GetKeyState(VK_CONTROL) < 0));
         }
         if (ret)
             MyMessageBox(hwndFrame, IDS_EXECERRTITLE, ret, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL);
@@ -1054,7 +1055,7 @@ BOOL AppCommandProc(DWORD id) {
                 SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szTemp), (LPARAM)szTemp);
 
                 AddBackslash(szTemp);
-                lstrcat(szTemp, szStarDotStar);  // put files in this dir
+                lstrcat(szTemp, kStarDotStar);  // put files in this dir
 
                 CheckEsc(szTemp);
 
@@ -1357,7 +1358,7 @@ BOOL AppCommandProc(DWORD id) {
 
         case IDM_STATUSBAR:
             bTemp = bStatusBar = !bStatusBar;
-            WritePrivateProfileBool(szStatusBar, bStatusBar);
+            WritePrivateProfileBool(kStatusBar, bStatusBar);
 
             ShowWindow(hwndStatus, bStatusBar ? SW_SHOW : SW_HIDE);
             MDIClientSizeChange(hwndActive, DRIVEBAR_FLAG);
@@ -1367,7 +1368,7 @@ BOOL AppCommandProc(DWORD id) {
 
         case IDM_DRIVEBAR:
             bTemp = bDriveBar = !bDriveBar;
-            WritePrivateProfileBool(szDriveBar, bDriveBar);
+            WritePrivateProfileBool(kDriveBar, bDriveBar);
 
             ShowWindow(hwndDriveBar, bDriveBar ? SW_SHOW : SW_HIDE);
             MDIClientSizeChange(hwndActive, DRIVEBAR_FLAG);
@@ -1385,17 +1386,17 @@ BOOL AppCommandProc(DWORD id) {
 
         case IDM_SAVESETTINGS:
             bTemp = bSaveSettings = !bSaveSettings;
-            WritePrivateProfileBool(szSaveSettings, bSaveSettings);
+            WritePrivateProfileBool(kSaveSettings, bSaveSettings);
             goto CHECK_OPTION;
 
         case IDM_MINONRUN:
             bTemp = bMinOnRun = !bMinOnRun;
-            WritePrivateProfileBool(szMinOnRun, bMinOnRun);
+            WritePrivateProfileBool(kMinOnRun, bMinOnRun);
             goto CHECK_OPTION;
 
         case IDM_INDEXONLAUNCH:
             bTemp = bIndexOnLaunch = !bIndexOnLaunch;
-            WritePrivateProfileBool(szIndexOnLaunch, bIndexOnLaunch);
+            WritePrivateProfileBool(kIndexOnLaunch, bIndexOnLaunch);
             goto CHECK_OPTION;
 
         CHECK_OPTION:

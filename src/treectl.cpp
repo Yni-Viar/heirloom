@@ -20,6 +20,7 @@
 #include "wfutil.h"
 #include "wfdir.h"
 #include "wftree.h"
+#include "stringconstants.h"
 #include <commctrl.h>
 #include <winnls.h>
 
@@ -180,7 +181,7 @@ void ScanDirLevel(PDNODE pParentNode, LPWSTR szPath, DWORD view) {
     /* Add '*.*' to the current path. */
     lstrcpy(szMessage, szPath);
     AddBackslash(szMessage);
-    lstrcat(szMessage, szStarDotStar);
+    lstrcat(szMessage, kStarDotStar);
 
     /* Search for the first subdirectory on this level. */
 
@@ -539,7 +540,7 @@ BOOL ReadDirLevel(
         if (!lstrcmpi(szMessage, szPath)) {
             SendMessage(hwndDir, FS_GETFILESPEC, COUNTOF(szMessage), (LPARAM)szMessage);
 
-            if (!lstrcmp(szMessage, szStarDotStar)) {
+            if (!lstrcmp(szMessage, kStarDotStar)) {
                 lpStart = (LPXDTALINK)GetWindowLongPtr(hwndDir, GWL_HDTA);
 
                 if (lpStart) {
@@ -580,7 +581,7 @@ BOOL ReadDirLevel(
     // Add '\*.*' to the current path.
     //
     AddBackslash(szPath);
-    lstrcat(szPath, szStarDotStar);
+    lstrcat(szPath, kStarDotStar);
 
     if ((lpStart) && (plpxdta = MemLinkToHead(lpStart)->alpxdtaSorted)) {
         //
@@ -1204,7 +1205,7 @@ BOOL RectTreeItem(HWND hwndLB, int iItem, BOOL bFocusOn) {
 
     if (iItem == -1) {
     EmptyStatusAndReturn:
-        SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)szNULL);
+        SendMessage(hwndStatus, SB_SETTEXT, SBT_NOBORDERS | 255, (LPARAM)kEmptyString);
         UpdateWindow(hwndStatus);
         return FALSE;
     }
@@ -1957,7 +1958,7 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             // create the owner draw list box for the tree
             //
             hwndLB = CreateWindowEx(
-                0L, szListbox, NULL, WS_TREESTYLE | WS_BORDER, 0, 0, 0, 0, hwnd, (HMENU)IDCW_TREELISTBOX, hAppInstance,
+                0L, kListbox, NULL, WS_TREESTYLE | WS_BORDER, 0, 0, 0, 0, hwnd, (HMENU)IDCW_TREELISTBOX, hAppInstance,
                 NULL);
 
             if (!hwndLB)

@@ -15,6 +15,7 @@
 #include "wfutil.h"
 #include "wftree.h"
 #include "wfdrives.h"
+#include "stringconstants.h"
 #include <commctrl.h>
 #include <stdlib.h>
 
@@ -986,7 +987,7 @@ void WritePrivateProfileBool(LPCWSTR szKey, BOOL bParam) {
     WCHAR szBool[6];
 
     wsprintf(szBool, SZ_PERCENTD, bParam);
-    WritePrivateProfileString(szSettings, szKey, szBool, szTheINIFile);
+    WritePrivateProfileString(kSettings, szKey, szBool, szTheINIFile);
 }
 
 /////////////////////////////////////////////////////////////////////

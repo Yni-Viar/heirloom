@@ -21,6 +21,7 @@
 #include "wftree.h"
 #include "treectl.h"
 #include "wfsearch.h"
+#include "stringconstants.h"
 
 void CheckAttribsDlgButton(HWND hDlg, int id, DWORD dwAttribs, DWORD dwAttribs3State, DWORD dwAttribsOn);
 BOOL NoQuotes(LPWSTR szT);
@@ -72,7 +73,7 @@ void StarFilename(LPWSTR pszPath) {
         pszPath[0] = CHAR_STAR;
         lstrcpy(pszPath + 1, p - 1);
     } else {
-        lstrcpy(pszPath, szStarDotStar);
+        lstrcpy(pszPath, kStarDotStar);
     }
 }
 
@@ -180,7 +181,7 @@ SearchDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam) {
                         DWORD style = bMaximized ? WS_MAXIMIZE : WS_OVERLAPPED;
 
                         hwndSearch = CreateMDIWindow(
-                            szSearchClass, szMessage, style, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, hwndMDIClient,
+                            kSearchClass, szMessage, style, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, hwndMDIClient,
                             hAppInstance, 0);
 
                         // Forward the attributes to the search window, since hwndSearch was just created by

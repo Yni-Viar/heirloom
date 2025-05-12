@@ -18,6 +18,7 @@
 #include "wfdirrd.h"
 #include "wfinit.h"
 #include "wfsearch.h"
+#include "stringconstants.h"
 #include <commctrl.h>
 #include <shlobj.h>
 
@@ -505,7 +506,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             // make new drives window
 
             hwndDriveBar = CreateWindow(
-                szDrivesClass, NULL,
+                kDrivesClass, NULL,
                 bDriveBar ? WS_CHILD | WS_BORDER | WS_VISIBLE | WS_CLIPSIBLINGS
                           : WS_CHILD | WS_BORDER | WS_CLIPSIBLINGS,
                 0, 0, 0, 0, hwndFrame, 0, hAppInstance, NULL);
@@ -516,7 +517,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             hwndStatus = CreateStatusWindow(
                 bStatusBar ? WS_CHILD | WS_BORDER | WS_VISIBLE | WS_CLIPSIBLINGS
                            : WS_CHILD | WS_BORDER | WS_CLIPSIBLINGS,
-                szNULL, hwndFrame, IDC_STATUS);
+                kEmptyString, hwndFrame, IDC_STATUS);
 
             if (hwndStatus) {
                 HDC hDC;
@@ -591,7 +592,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
 
         case WM_SYSCOLORCHANGE:
         case WM_WININICHANGE:
-            if (!lParam || !lstrcmpi((LPWSTR)lParam, szInternational)) {
+            if (!lParam || !lstrcmpi((LPWSTR)lParam, kInternational)) {
                 HWND hwnd, hwndT;
                 DWORD dwFlags;
 

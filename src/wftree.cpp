@@ -19,6 +19,7 @@
 #include "wftree.h"
 #include "wfinit.h"
 #include "wfdrives.h"
+#include "stringconstants.h"
 
 #include <commctrl.h>
 
@@ -103,7 +104,7 @@ BOOL CompactPath(HDC hDC, LPWSTR lpszPath, DWORD dx) {
     lpEnd = lpFixed;
     bEllipsesIn = FALSE;
 
-    GetTextExtentPoint32(hDC, szEllipses, 3, &sizeF);
+    GetTextExtentPoint32(hDC, kEllipses, 3, &sizeF);
     dxEllipses = sizeF.cx;
 
     GetTextExtentPoint32(hDC, lpFixed, lstrlen(lpFixed), &sizeF);
@@ -123,7 +124,7 @@ BOOL CompactPath(HDC hDC, LPWSTR lpszPath, DWORD dx) {
         if (lpEnd <= lpszPath) {
             // Things didn't fit.
 
-            lstrcpy(lpszPath, szEllipses);
+            lstrcpy(lpszPath, kEllipses);
             lstrcat(lpszPath, szTemp);
             return (FALSE);
         }
@@ -133,7 +134,7 @@ BOOL CompactPath(HDC hDC, LPWSTR lpszPath, DWORD dx) {
     }
 
     if (bEllipsesIn) {
-        lstrcpy(lpEnd, szEllipses);
+        lstrcpy(lpEnd, kEllipses);
         lstrcat(lpEnd, szTemp);
     }
 
@@ -179,7 +180,7 @@ BOOL ResizeSplit(HWND hwnd, int dxSplit) {
         if (!hwndTree) {  // make new tree window
 
             hwndTree = CreateWindowEx(
-                0L, szTreeControlClass, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, 0, 0, 0, 0, hwnd,
+                0L, kTreeControlClass, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, 0, 0, 0, 0, hwnd,
                 (HMENU)IDCW_TREECONTROL, hAppInstance, NULL);
 
             if (!hwndTree)
@@ -220,7 +221,7 @@ BOOL ResizeSplit(HWND hwnd, int dxSplit) {
     if ((rc.right - dxSplit) > dxDriveBitmap * 2) {
         if (!hwndDir) {
             hwndDir = CreateWindowEx(
-                0L, szDirClass, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, 0, 0, 0, 0, hwnd, (HMENU)IDCW_DIR,
+                0L, kDirClass, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, 0, 0, 0, 0, hwnd, (HMENU)IDCW_DIR,
                 hAppInstance, NULL);
             if (!hwndDir)
                 return FALSE;

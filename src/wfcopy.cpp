@@ -20,6 +20,7 @@
 #include "wfdirsrc.h"
 #include "wftree.h"
 #include "wfdrives.h"
+#include "stringconstants.h"
 
 BOOL* pbConfirmAll;
 BOOL* pbConfirmReadOnlyAll;
@@ -713,9 +714,9 @@ DiskNotThere:
 
 void BuildDateLine(LPWSTR szTemp, PLFNDTA plfndta) {
     wsprintf(szTemp, szBytes, plfndta->fd.nFileSizeLow);
-    lstrcat(szTemp, szSpace);
+    lstrcat(szTemp, kSpace);
     PutDate(&plfndta->fd.ftLastWriteTime, szTemp + lstrlen(szTemp));
-    lstrcat(szTemp, szSpace);
+    lstrcat(szTemp, kSpace);
     PutTime(&plfndta->fd.ftLastWriteTime, szTemp + lstrlen(szTemp));
 }
 
@@ -1051,7 +1052,7 @@ GetNextPair(
                 //
                 // Search for all subfiles in directory.
                 //
-                AppendToPath(pcr->sz, szStarDotStar);
+                AppendToPath(pcr->sz, kStarDotStar);
                 goto BeginSearch;
             }
 
@@ -1497,8 +1498,8 @@ void Notify(HWND hDlg, WORD idMessage, LPCWSTR szFrom, LPCWSTR szTo) {
         SetDlgItemText(hDlg, IDD_STATUS, szTemp);
         SetDlgItemPath(hDlg, IDD_NAME, szFrom);
     } else {
-        SetDlgItemText(hDlg, IDD_STATUS, szNULL);
-        SetDlgItemText(hDlg, IDD_NAME, szNULL);
+        SetDlgItemText(hDlg, IDD_STATUS, kEmptyString);
+        SetDlgItemText(hDlg, IDD_NAME, kEmptyString);
     }
 
     // is this the drag/drop status dialog or the move/copy dialog
@@ -1832,7 +1833,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
             if (!IsWild(pCopyInfo->pTo) && (ManySource || IsDirectory(pCopyInfo->pTo)) &&
                 pCopyInfo->dwFunc != FUNC_LINK && pCopyInfo->dwFunc != FUNC_HARD) {
                 AddBackslash(pCopyInfo->pTo);
-                lstrcat(pCopyInfo->pTo, szStarDotStar);
+                lstrcat(pCopyInfo->pTo, kStarDotStar);
             }
         }
 
@@ -2119,7 +2120,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
             case OPER_MKDIR | FUNC_MOVE:  // Create dest, verify source delete
 
                 CurIDS = IDS_CREATINGMSG;
-                Notify(hdlgProgress, IDS_CREATINGMSG, szDest, szNULL);
+                Notify(hdlgProgress, IDS_CREATINGMSG, szDest, kEmptyString);
 
                 if (pCopyInfo->dwFunc == FUNC_MOVE) {
                     if ((CHAR_COLON == pcr->sz[1]) && (CHAR_COLON == szDest[1]) &&
@@ -2193,7 +2194,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                     }
                 }
                 CurIDS = IDS_CREATINGMSG;
-                Notify(hdlgProgress, IDS_CREATINGMSG, szDest, szNULL);
+                Notify(hdlgProgress, IDS_CREATINGMSG, szDest, kEmptyString);
                 switch (pCopyInfo->dwFunc) {
                     case FUNC_LINK:
                         ret = WFSymbolicLink(szSource, szDest, SYMBOLIC_LINK_FLAG_DIRECTORY);
@@ -2255,7 +2256,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
             case OPER_RMDIR | FUNC_DELETE:
 
                 CurIDS = IDS_REMOVINGDIRMSG;
-                Notify(hdlgProgress, IDS_REMOVINGDIRMSG, szSource, szNULL);
+                Notify(hdlgProgress, IDS_REMOVINGDIRMSG, szSource, kEmptyString);
                 if (IsRootDirectory(szSource))
                     break;
                 if (IsCurrentDirectory(szSource))
@@ -2370,7 +2371,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
 
                 if (CurIDS != IDS_RENAMINGMSG) {
                     CurIDS = IDS_RENAMINGMSG;
-                    Notify(hdlgProgress, IDS_RENAMINGMSG, szNULL, szNULL);
+                    Notify(hdlgProgress, IDS_RENAMINGMSG, kEmptyString, kEmptyString);
                 }
 
                 // Get raw source and dest paths.  Check to make sure the
@@ -2398,7 +2399,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
 
                 if (CurIDS != IDS_MOVINGMSG) {
                     CurIDS = IDS_MOVINGMSG;
-                    Notify(hdlgProgress, IDS_MOVINGMSG, szNULL, szNULL);
+                    Notify(hdlgProgress, IDS_MOVINGMSG, kEmptyString, kEmptyString);
                 }
             DoMoveRename:
 
@@ -2510,7 +2511,7 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
 
                 if (CurIDS != IDS_DELETINGMSG) {
                     CurIDS = IDS_DELETINGMSG;
-                    Notify(hdlgProgress, IDS_DELETINGMSG, szNULL, szNULL);
+                    Notify(hdlgProgress, IDS_DELETINGMSG, kEmptyString, kEmptyString);
                 }
 
                 //

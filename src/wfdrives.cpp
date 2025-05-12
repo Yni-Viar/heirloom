@@ -20,6 +20,7 @@
 #include "wfdir.h"
 #include "wftree.h"
 #include "wfdrives.h"
+#include "stringconstants.h"
 #include <commctrl.h>
 #include <shlobj.h>
 
@@ -115,7 +116,7 @@ void NewTree(DRIVE drive, HWND hwndSrc) {
         }
 
         AddBackslash(szDir);
-        lstrcat(szDir, szStarDotStar);
+        lstrcat(szDir, kStarDotStar);
     }
 
     if (hwndSrc == hwndSearch) {

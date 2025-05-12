@@ -86,6 +86,7 @@
 #include "wfdirsrc.h"
 #include "wfcopy.h"
 #include "wfsearch.h"
+#include "stringconstants.h"
 
 #include <commctrl.h>
 
@@ -340,7 +341,7 @@ SearchCleanup:
     //
     // Now see if there are any subdirectories here
     //
-    lstrcpy(pszNextFile, szStarDotStar);
+    lstrcpy(pszNextFile, kStarDotStar);
 
     bFound = WFFindFirst(&lfndta, pszNewPath, ATTR_DIR | ATTR_HS);
 
@@ -525,7 +526,7 @@ void UpdateSearchStatus(HWND hwndLB, int nCount) {
     if (SearchInfo.hThread)
         SetStatusText(1, SST_RESOURCE, (LPWSTR)MAKEINTRESOURCE(IDS_SEARCHING));
     else
-        SetStatusText(1, 0, szNULL);
+        SetStatusText(1, 0, kEmptyString);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -814,7 +815,7 @@ SearchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
             GetClientRect(hwnd, &rc);
             hwndLB = CreateWindowEx(
-                0L, szListbox, NULL,
+                0L, kListbox, NULL,
                 WS_CHILD | WS_BORDER | LBS_SORT | LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_EXTENDEDSEL |
                     LBS_NOINTEGRALHEIGHT | LBS_WANTKEYBOARDINPUT | WS_VSCROLL | WS_HSCROLL | WS_VISIBLE,
                 -1, -1, rc.right + 2, rc.bottom + 2, hwnd, (HMENU)IDCW_LISTBOX, hAppInstance, NULL);
