@@ -861,6 +861,3 @@ Extern UINT dwMenuIDs[];
 
 #undef Extern
 #undef EQ
-
-// Replacement for Windows 3.x style drag and drop highlighting
-BOOL RectHighlightItem(HWND hwndLB, int iItem, BOOL bFocusOn, BOOL bSearch);

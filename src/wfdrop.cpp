@@ -745,31 +745,3 @@ HRESULT CreateDropTarget(HWND hwnd, WF_IDropTarget** ppDropTarget) {
 
     return (*ppDropTarget) ? S_OK : E_OUTOFMEMORY;
 }
-
-// This function is a stub replacement for the old DSRectItem function
-// It just invalidates the item rectangle to force a redraw
-BOOL RectHighlightItem(HWND hwndLB, int iItem, BOOL bFocusOn, BOOL bSearch) {
-    if (iItem == -1) {
-        return FALSE;
-    }
-
-    RECT rc;
-    if (SendMessage(hwndLB, LB_GETITEMRECT, iItem, (LPARAM)&rc) != LB_ERR) {
-        if (bFocusOn) {
-            HDC hDC = GetDC(hwndLB);
-            if (hDC) {
-                HBRUSH hBrush = CreateSolidBrush(GetSysColor(COLOR_WINDOWFRAME));
-                if (hBrush) {
-                    FrameRect(hDC, &rc, hBrush);
-                    DeleteObject(hBrush);
-                }
-                ReleaseDC(hwndLB, hDC);
-                return TRUE;
-            }
-        } else {
-            InvalidateRect(hwndLB, &rc, FALSE);
-            UpdateWindow(hwndLB);
-        }
-    }
-    return FALSE;
-}
