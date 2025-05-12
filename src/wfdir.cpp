@@ -22,6 +22,7 @@
 #include "wfutil.h"
 #include "wfdir.h"
 #include "wfdirrd.h"
+#include "wfdirsrc.h"
 #include <commctrl.h>
 
 // Constants for selection types passed to DirGetSelection

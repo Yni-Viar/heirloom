@@ -83,6 +83,7 @@
 #include "lfn.h"
 #include "wfutil.h"
 #include "wfdir.h"
+#include "wfdirsrc.h"
 
 #include <commctrl.h>
 

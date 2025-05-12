@@ -17,6 +17,7 @@
 #include "wfcomman.h"
 #include "wfutil.h"
 #include "wfdir.h"
+#include "wfdirsrc.h"
 
 BOOL* pbConfirmAll;
 BOOL* pbConfirmReadOnlyAll;
