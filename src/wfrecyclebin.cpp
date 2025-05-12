@@ -78,9 +78,7 @@ DWORD MoveFileToRecycleBin(LPWSTR pszFile) {
 
 // Empty the Recycle Bin
 BOOL EmptyRecycleBin(HWND hwnd) {
-    DWORD flags = SHERB_NOCONFIRMATION | SHERB_NOPROGRESSUI | SHERB_NOSOUND;
-
-    HRESULT hr = SHEmptyRecycleBin(hwnd, NULL, flags);
+    HRESULT hr = SHEmptyRecycleBin(hwnd, NULL, 0);
 
     // Update recycle bin state
     bRecycleBinEmpty = TRUE;

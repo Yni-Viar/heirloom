@@ -788,18 +788,6 @@ BOOL AppCommandProc(DWORD id) {
             break;
 
         case IDM_EMPTYRECYCLE:
-            // Prompt for confirmation if enabled in settings
-            if (bConfirmDelete) {
-                WCHAR szTitle[64];
-                WCHAR szMessage[128];
-
-                LoadString(hAppInstance, 431, szTitle, COUNTOF(szTitle));
-                LoadString(hAppInstance, 432, szMessage, COUNTOF(szMessage));
-
-                if (MessageBox(hwndFrame, szMessage, szTitle, MB_ICONQUESTION | MB_OKCANCEL) != IDOK)
-                    break;
-            }
-
             // Empty the Recycle Bin
             EmptyRecycleBin(hwndFrame);
 
