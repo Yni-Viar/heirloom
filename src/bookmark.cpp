@@ -717,6 +717,9 @@ ManageBookmarksDialog::ManageBookmarksDialogProc(HWND hDlg, UINT message, WPARAM
 
         case WM_SIZE:
             return dlg->onSize(hDlg);
+
+        case WM_CLOSE:
+            return dlg->onClose(hDlg);
     }
 
     return FALSE;
