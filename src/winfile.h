@@ -281,9 +281,6 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK GotoDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
-// WFFILE.C
-BOOL GetRootPath(LPWSTR szPath, LPWSTR szReturn);
-
 // LFN.C
 
 DWORD WFCopy(LPWSTR, LPWSTR);
