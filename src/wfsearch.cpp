@@ -89,6 +89,8 @@
 
 #include <commctrl.h>
 
+SEARCH_INFO SearchInfo;
+
 int maxExt;
 int iDirsRead;
 DWORD dwLastUpdateTime;

@@ -184,25 +184,6 @@ typedef int DRIVEIND;
 
 #include "wfinfo.h"
 
-typedef struct _SEARCH_INFO {
-    HWND hSearchDlg;
-    int iDirsRead;
-    int iFileCount;
-    DWORD dwError;
-    HANDLE hThread;
-    HWND hwndLB;
-    BOOL bUpdateStatus;
-    BOOL bCancel;
-    BOOL bDontSearchSubs;
-    BOOL bIncludeSubDirs;
-    BOOL bCasePreserved;
-    int iRet;
-    LPXDTALINK lpStart;
-    enum _SEARCH_STATUS { SEARCH_NULL = 0, SEARCH_CANCEL, SEARCH_ERROR, SEARCH_MDICLOSE } eStatus;
-    WCHAR szSearch[MAXPATHLEN + 1];
-    FILETIME ftSince;  // UTC
-} SEARCH_INFO, *PSEARCH_INFO;
-
 typedef struct _COPYINFO {
     LPWSTR pFrom;
     LPWSTR pTo;
@@ -262,7 +243,6 @@ LRESULT CALLBACK DrivesWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPara
 LRESULT CALLBACK TreeControlWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK DirWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
-LRESULT CALLBACK SearchWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
 INT_PTR CALLBACK CancelDlgProc(HWND, UINT, WPARAM, LPARAM);
@@ -887,8 +867,6 @@ Extern HHOOK hhkMsgFilter EQ(NULL);
 
 Extern DWORD nLastDriveInd EQ(0);
 Extern DWORD fFormatFlags EQ(0);
-
-Extern SEARCH_INFO SearchInfo;
 
 Extern BOOL bDeveloperModeAvailable EQ(FALSE);
 

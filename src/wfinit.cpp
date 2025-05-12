@@ -23,6 +23,7 @@
 #include "wfdirrd.h"
 #include "wfinit.h"
 #include "wfdrives.h"
+#include "wfsearch.h"
 
 #include <ole2.h>
 #include <shlobj.h>
