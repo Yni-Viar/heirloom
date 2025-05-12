@@ -24,6 +24,9 @@
 #include "wfinit.h"
 #include "wfdrives.h"
 #include "wfsearch.h"
+#include "wftree.h"
+#include "treectl.h"
+#include "wfdir.h"
 
 #include <ole2.h>
 #include <shlobj.h>

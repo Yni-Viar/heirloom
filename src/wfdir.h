@@ -16,3 +16,5 @@ int PutSize(PLARGE_INTEGER pqSize, LPWSTR szOutStr);
 int PutAttributes(DWORD dwAttribute, LPWSTR szStr);
 HWND GetMDIChildFromDescendant(HWND hwnd);
 void SetLBFont(HWND hwnd, HWND hwndLB, HANDLE hNewFont, DWORD dwViewFlags, LPXDTALINK lpStart);
+LRESULT CALLBACK DirWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);

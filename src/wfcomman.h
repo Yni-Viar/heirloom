@@ -9,3 +9,4 @@ HWND CreateTreeWindow(LPWSTR szPath, int x, int y, int dx, int dy, int dxSplit);
 void SwitchToSafeDrive();
 DWORD ReadMoveStatus();
 void UpdateMoveStatus(DWORD dwEffect);
+BOOL AppCommandProc(DWORD id);

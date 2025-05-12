@@ -37,3 +37,4 @@ void wfYield();
 void InvalidateAllNetTypes();
 void GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, int nBuf);
 BOOL RectTreeItem(HWND hwndLB, int iItem, BOOL bFocusOn);
+LRESULT CALLBACK TreeControlWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
