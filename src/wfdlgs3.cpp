@@ -14,6 +14,7 @@
 #include "wfcopy.h"
 #include "resize.h"
 #include "wfutil.h"
+#include "wftree.h"
 #include <shlobj.h>
 
 #define LABEL_NTFS_MAX 32

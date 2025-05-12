@@ -253,14 +253,6 @@ typedef struct _SELINFO* PSELINFO;
 BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive);
 LRESULT CALLBACK MessageFilter(int nCode, WPARAM wParam, LPARAM lParam);
 
-// WFTREE.C
-
-BOOL CompactPath(HDC hdc, LPWSTR szPath, DWORD dx);
-void ResizeWindows(HWND hwndParent, int dxWindow, int dyWindow);
-void GetTreeWindows(HWND hwnd, PHWND phwndTree, PHWND phwndDir);
-HWND GetTreeFocus(HWND hWnd);
-void SwitchDriveSelection(HWND hwndActive);
-
 // WFINIT.C
 
 void GetInternational();

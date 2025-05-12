@@ -11,6 +11,7 @@
 #include "wfdos.h"
 #include "wfutil.h"
 #include "wfdir.h"
+#include "wftree.h"
 
 //----------------------------
 //

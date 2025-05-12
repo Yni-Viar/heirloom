@@ -13,6 +13,7 @@
 #include "lfn.h"
 #include "wfdos.h"
 #include "wfutil.h"
+#include "wftree.h"
 #include <commctrl.h>
 #include <stdlib.h>
 

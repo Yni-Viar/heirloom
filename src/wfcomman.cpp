@@ -19,6 +19,7 @@
 #include "wfcomman.h"
 #include "wfutil.h"
 #include "wfdir.h"
+#include "wftree.h"
 
 #include <shlobj.h>
 #include <commctrl.h>
