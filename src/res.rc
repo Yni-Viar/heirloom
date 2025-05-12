@@ -284,8 +284,6 @@ BEGIN
     MENUITEM    "Open in Po&werShell", IDM_STARTPOWERSHELL
     MENUITEM    "Open in E&xplorer", IDM_STARTEXPLORER
     MENUITEM    SEPARATOR
-    MENUITEM    "Empty &Recycle Bin", IDM_EMPTYRECYCLE
-    MENUITEM    SEPARATOR
     MENUITEM    "Proper&ties\tAlt+Enter",IDM_ATTRIBS
     END
 END
