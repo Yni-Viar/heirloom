@@ -47,7 +47,6 @@
 #include "wfdlgs.h"
 
 /* Menu Command Defines */
-#define IDM_FILE 0
 #define IDM_OPEN 101
 
 #define IDM_SEARCH 104
@@ -84,12 +83,9 @@
 // This IDM_ is reserved for IDH_GROUP_ATTRIBS
 #define IDM_GROUP_ATTRIBS 199
 
-#define IDM_TREE 2
 #define IDM_EXPONE 301
 #define IDM_COLLAPSE 304
-#define IDM_NEWTREE 305
 
-#define IDM_VIEW 3
 #define IDM_VNAME 401
 #define IDM_VDETAILS 402
 #define IDM_VOTHER 403
@@ -110,7 +106,6 @@
 
 #define IDM_ESCAPE 420
 
-#define IDM_OPTIONS 4
 #define IDM_CONFIRM 501
 #define IDM_LOWERCASE 502
 #define IDM_STATUSBAR 503
@@ -130,10 +125,6 @@
 
 #define IDM_PREF 515
 
-// No longer exists but the logic uses it to convert between IDM and menu positions.
-#define IDM_SECURITY 5
-
-#define IDM_BOOKMARKS 7
 #define IDM_ADDBOOKMARK 701
 #define IDM_MANAGEBOOKMARKS 702
 #define IDM_BOOKMARK_FIRST 50000

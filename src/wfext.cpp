@@ -262,12 +262,8 @@ void FreeExtensions() {
 
     hMenuFrame = GetMenu(hwndFrame);
 
-    // we are going to delete all extensions and thus each one to delete is at the same place
-    UINT posToDelete = MapIDMToMenuPos(IDM_EXTENSIONS);
-
     for (i = 0; i < iNumExtensions; i++) {
         (extensions[i].ExtProc)(NULL, FMEVENT_UNLOAD, 0L);
-        DeleteMenu(hMenuFrame, posToDelete, MF_BYPOSITION);
         FreeLibrary((HMODULE)extensions[i].hModule);
     }
     iNumExtensions = 0;

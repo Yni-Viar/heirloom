@@ -1306,16 +1306,6 @@ BOOL AppCommandProc(DWORD id) {
             return FALSE;
             break;
 
-        case IDM_EXPONE:
-            if (hwndT = HasTreeWindow(hwndActive))
-                SendMessage(hwndT, TC_EXPANDLEVEL, FALSE, 0L);
-            break;
-
-        case IDM_COLLAPSE:
-            if (hwndT = HasTreeWindow(hwndActive))
-                SendMessage(hwndT, TC_COLLAPSELEVEL, 0, 0L);
-            break;
-
         case IDM_VNAME:
             dwFlags = VIEW_NAMEONLY | (GetWindowLongPtr(hwndActive, GWL_VIEW) & VIEW_NOCHANGE);
             id = CD_VIEW;

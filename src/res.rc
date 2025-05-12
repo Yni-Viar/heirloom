@@ -590,18 +590,6 @@ BEGIN
 END
 #undef SUGGEST
 
-/* Help strings for the popup menus.
- */
-STRINGTABLE
-BEGIN
-    MH_POPUP+IDM_FILE,          "Commands for working with files"
-    MH_POPUP+IDM_TREE,          "Commands for working in the tree window"
-    MH_POPUP+IDM_VIEW,          "Commands for determining how information is displayed"
-    MH_POPUP+IDM_OPTIONS,       "Commands for setting options"
-    MH_POPUP+IDM_SECURITY,      "Commands for manipulating file and directory security"
-    MH_POPUP+IDM_WINDOW,        "Commands for arranging windows"
-END
-
 
 // Help strings for the "standard" toolbar items.
 

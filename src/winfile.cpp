@@ -129,7 +129,7 @@ void ResizeControls() {
         hwndMDIClient, rc.left - dyBorder, rc.top - dyBorder, rc.right, rc.bottom - rc.top + 2 * dyBorder - 1, TRUE);
 }
 
-BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
+BOOL InitPopupMenu(const std::wstring& popupName, HMENU hMenu, HWND hwndActive) {
     DWORD dwSort;
     DWORD dwView;
     UINT uMenuFlags;
@@ -145,7 +145,7 @@ BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
 
     bLFN = FALSE;  // For now, ignore the case.
 
-    if (uMenus & (1 << IDM_FILE)) {
+    if (popupName == L"&File") {
         LPWSTR pSel = NULL;
         BOOL bDir = TRUE;
         IDataObject* pDataObj;
@@ -232,17 +232,7 @@ BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
         EnableMenuItem(hMenu, IDM_EMPTYRECYCLE, uMenuFlags);
 
         uMenuFlags = MF_BYCOMMAND;
-    }
-
-    if (uMenus & (1 << IDM_TREE)) {
-        if (!hwndTree || iReadLevel)
-            uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
-
-        EnableMenuItem(hMenu, IDM_EXPONE, uMenuFlags);
-        EnableMenuItem(hMenu, IDM_COLLAPSE, uMenuFlags);
-    }
-
-    if (uMenus & (1 << IDM_VIEW)) {
+    } else if (popupName == L"&View") {
         if (hwndActive == hwndSearch || IsIconic(hwndActive))
             uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
         else {
@@ -304,15 +294,37 @@ BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive) {
         if (IsIconic(hwndActive))
             uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
         EnableMenuItem(hMenu, IDM_VINCLUDE, uMenuFlags);
-    }
-
-    if (uMenus & (1 << IDM_OPTIONS)) {
+    } else if (popupName == L"&Options") {
         if (iReadLevel)
             uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
 
         EnableMenuItem(hMenu, IDM_EXPANDTREE, uMenuFlags);
 
         uMenuFlags = MF_BYCOMMAND | MF_GRAYED;
+    } else if (popupName == L"&Bookmarks") {
+        // First, remove any existing bookmark entries (keep only "Add Bookmark..." and "Manage Bookmarks..."
+        int count = GetMenuItemCount(hMenu);
+        for (int i = count - 1; i > 1; i--) {  // Skip 0 and 1 which are "Add Bookmark..." and "Manage Bookmarks..."
+            DeleteMenu(hMenu, i, MF_BYPOSITION);
+        }
+
+        // Get the list of bookmarks
+        auto bookmarks = BookmarkList::instance().read();
+
+        // If there are bookmarks, add a separator after "Manage Bookmarks..."
+        if (!bookmarks.empty()) {
+            AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+
+            // Add each bookmark to the menu
+            int id = IDM_BOOKMARK_FIRST;
+            for (const auto& bookmark : bookmarks) {
+                // Only add if we haven't exceeded the maximum number of bookmarks
+                if (id <= IDM_BOOKMARK_LAST) {
+                    AppendMenuW(hMenu, MF_STRING, id, bookmark->name().c_str());
+                    id++;
+                }
+            }
+        }
     }
 
     return TRUE;
@@ -539,49 +551,28 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
         }
 
         case WM_INITMENUPOPUP: {
-            HWND hwndActive;
-            UINT uMenu;
-            int index;
-            UINT menuPosition = LOWORD(lParam);  // Get the menu position directly
+            HMENU hPopup = (HMENU)wParam;  // the popup menu being opened
 
-            hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
-            uMenu = MapMenuPosToIDM((UINT)LOWORD(lParam));
-
-            if ((uMenu >= IDM_EXTENSIONS) && (uMenu < ((UINT)iNumExtensions + IDM_EXTENSIONS))) {
-                index = uMenu - IDM_EXTENSIONS;
-                (extensions[index].ExtProc)(hwndFrame, FMEVENT_INITMENU, (LPARAM)(HMENU)wParam);
-            } else if (menuPosition == 5) {  // Check for the Bookmarks menu position directly
-                // Special handling for Bookmarks menu
-                HMENU hMenu = (HMENU)wParam;
-
-                // First, remove any existing bookmark entries (keep only "Add Bookmark..." and "Manage Bookmarks..."
-                // items)
-                int count = GetMenuItemCount(hMenu);
-                for (int i = count - 1; i > 1;
-                     i--) {  // Skip 0 and 1 which are "Add Bookmark..." and "Manage Bookmarks..."
-                    DeleteMenu(hMenu, i, MF_BYPOSITION);
-                }
-
-                // Get the list of bookmarks
-                auto bookmarks = BookmarkList::instance().read();
-
-                // If there are bookmarks, add a separator after "Manage Bookmarks..."
-                if (!bookmarks.empty()) {
-                    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
-
-                    // Add each bookmark to the menu
-                    int id = IDM_BOOKMARK_FIRST;
-                    for (const auto& bookmark : bookmarks) {
-                        // Only add if we haven't exceeded the maximum number of bookmarks
-                        if (id <= IDM_BOOKMARK_LAST) {
-                            AppendMenuW(hMenu, MF_STRING, id, bookmark->name().c_str());
-                            id++;
+            // Find the name of the menu so we don't need position-dependent logic.
+            std::wstring popupName{};
+            {
+                HMENU hMainMenu = GetMenu(hwnd);
+                int count = GetMenuItemCount(hMainMenu);
+                TCHAR buf[128];
+                for (int i = 0; i < count; ++i) {
+                    if (GetSubMenu(hMainMenu, i) == hPopup) {
+                        if (GetMenuString(hMainMenu, i, buf, ARRAYSIZE(buf), MF_BYPOSITION)) {
+                            // buf now contains something like "&File"
+                            popupName = buf;
                         }
+                        break;
                     }
                 }
-            } else {
-                InitPopupMenus(1 << uMenu, (HMENU)wParam, hwndActive);
             }
+
+            auto hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
+
+            InitPopupMenu(popupName, (HMENU)wParam, hwndActive);
 
             break;
         }
@@ -734,66 +725,8 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             /*** FALL THROUGH ***/
 
         default:
-
         DoDefault:
-
-            if (wMsg == wHelpMessage) {
-                if (GET_WM_COMMAND_ID(wParam, lParam) == MSGF_MENU) {
-                    // Get outta menu mode if help for a menu item
-
-                    if (uMenuID && hMenu) {
-                        UINT m = uMenuID;  // save
-                        HMENU hM = hMenu;
-                        UINT mf = uMenuFlags;
-
-                        SendMessage(hwnd, WM_CANCELMODE, 0, 0L);
-
-                        uMenuID = m;  // restore
-                        hMenu = hM;
-                        uMenuFlags = mf;
-                    }
-
-                    if (!(uMenuFlags & MF_POPUP)) {
-                        //
-                        // According to winhelp: GetSystemMenu, uMenuID >= 0x7000
-                        // means system menu items!
-                        //
-                        // This should not be nec since MF_SYSMENU is set!
-                        //
-                        if (uMenuFlags & MF_SYSMENU || uMenuID >= 0xf000) {
-                        } else {
-                            int iExt;
-
-                            iExt = uMenuID / 100 - 1;
-
-                            if (IDM_SECURITY == iExt) {
-                                WAITACLEDIT();
-
-                                if (lpfnAcledit) {
-                                    (*lpfnAcledit)(hwndFrame, FMEVENT_HELPMENUITEM, uMenuID % 100);
-                                }
-
-                                return 0L;
-                            }
-
-                            iExt -= IDM_EXTENSIONS;
-
-                            if (0 <= iExt && iExt < iNumExtensions) {
-                                extensions[iExt].ExtProc(hwndFrame, FMEVENT_HELPMENUITEM, uMenuID % 100);
-
-                                return 0L;
-                            }
-                        }
-                    }
-
-                } else if (GET_WM_COMMAND_ID(wParam, lParam) == MSGF_DIALOGBOX) {
-                    // let dialog box deal with it
-                    PostMessage(GetRealParent((HWND)lParam), wHelpMessage, 0, 0L);
-                }
-
-            } else {
-                return DefFrameProc(hwnd, hwndMDIClient, wMsg, wParam, lParam);
-            }
+            return DefFrameProc(hwnd, hwndMDIClient, wMsg, wParam, lParam);
     }
 
     return 0L;

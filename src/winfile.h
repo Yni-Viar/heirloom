@@ -229,7 +229,7 @@ typedef struct _SELINFO* PSELINFO;
 //
 //--------------------------------------------------------------------------
 
-BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive);
+BOOL InitPopupMenu(const std::wstring& popupName, HMENU hMenu, HWND hwndActive);
 LRESULT CALLBACK MessageFilter(int nCode, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
 

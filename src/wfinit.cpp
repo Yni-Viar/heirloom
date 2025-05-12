@@ -96,13 +96,10 @@ void InitExtensions() {
     HMODULE hMod;
     FM_EXT_PROC fp;
     HMENU hMenu;
-    int iMenuBase;
     HMENU hMenuFrame;
     int iMenuOffset = 0;
 
     hMenuFrame = GetMenu(hwndFrame);
-
-    iMenuBase = MapIDMToMenuPos(IDM_EXTENSIONS);
 
     GetPrivateProfileString(kAddons, NULL, kEmptyString, szBuf, COUNTOF(szBuf), szTheINIFile);
 
@@ -150,10 +147,6 @@ void InitExtensions() {
 
                     if (hMenu) {
                         BiasMenu(hMenu, bias);
-
-                        InsertMenuW(
-                            hMenuFrame, iMenuBase + iMenuOffset, MF_BYPOSITION | MF_POPUP, (UINT_PTR)hMenu,
-                            lsW.szMenuName);
                         iMenuOffset++;
                     }
 
@@ -288,57 +281,6 @@ void InitMenus() {
     // Redraw the menu bar since it's already displayed
     //
     DrawMenuBar(hwndFrame);
-}
-
-// maps all IDM_* values, even those of submenus, into a top level menu position;
-// File menu is position 0 except when maximized in which it is position 1;
-// when the security menu is missing (due to not loading acledit.dll),
-// the menus to the right of security are shifted left by one.
-UINT MapIDMToMenuPos(UINT idm) {
-    UINT pos;
-
-    if (idm < 100) {
-        // idm values < 100 are just the top level menu IDM_ value (e.g., IDM_FILE)
-        pos = idm;
-    } else {
-        // these are the built in or extension menu IDM_ values; IDM_OPEN is 101 and thus pos will be 0 (IDM_FILE)
-        pos = idm / 100 - 1;
-    }
-
-    // if maximized, menu position shifted one to the right
-    HWND hwndActive;
-    hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
-    if (hwndActive && GetWindowLongPtr(hwndActive, GWL_STYLE) & WS_MAXIMIZE)
-        pos++;
-
-    // if pos >= IDM_EXTENSIONS, subtract one if security menu missing
-    if (pos >= IDM_EXTENSIONS && bSecMenuDeleted) {
-        pos--;
-    }
-
-    return pos;
-}
-
-// opposite of the above, but only works for top level menu positions
-UINT MapMenuPosToIDM(UINT pos) {
-    UINT idm = pos;
-
-    // if maximized, idm is one position to the left
-    HWND hwndActive;
-    hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
-    if (hwndActive && GetWindowLongPtr(hwndActive, GWL_STYLE) & WS_MAXIMIZE)
-        idm--;
-
-    // if pos >= IDM_SECURITY, add one if security menu missing
-    if (idm >= IDM_SECURITY && bSecMenuDeleted) {
-        idm++;
-    }
-
-    if (idm >= IDM_EXTENSIONS + (UINT)iNumExtensions) {
-        idm += MAX_EXTENSIONS - (UINT)iNumExtensions;
-    }
-
-    return idm;
 }
 
 /*--------------------------------------------------------------------------*/

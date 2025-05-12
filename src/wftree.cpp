@@ -331,13 +331,6 @@ TreeWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 bMDIFrameSysMenu = FALSE;
             }
 
-            if (uMenuFlags & MF_POPUP) {
-                // NormalHelp with MF_POPUP case; fix up ids to workaround some bugs in MenuHelp
-                int idm = MapMenuPosToIDM(uMenuID);
-                dwMenuIDs[MHPOP_CURRENT] = MH_POPUP + idm;
-                dwMenuIDs[MHPOP_CURRENT + 1] = uMenuID;
-            }
-
             MenuHelp((WORD)uMsg, wParam, lParam, GetMenu(hwndFrame), hAppInstance, hwndStatus, dwMenuIDs);
             break;
 

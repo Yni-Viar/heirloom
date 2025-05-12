@@ -13,8 +13,6 @@ BOOL CreateSavedWindows(LPCWSTR pszInitialDir);
 void InitExtensions();
 int GetDriveOffset(DRIVE drive);
 void InitMenus();
-UINT MapIDMToMenuPos(UINT idm);
-UINT MapMenuPosToIDM(UINT pos);
 void LoadFailMessage();
 UINT FillDocType(PPDOCBUCKET ppDoc, LPCWSTR pszSection, LPCWSTR pszDefault);
 BOOL CheckDirExists(LPWSTR szDir);
