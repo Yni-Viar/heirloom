@@ -244,14 +244,9 @@ LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam
 
 #define DRIVE_INFO_NAME_HEADER 4
 
-#define DO_LISTOFFILES 1L
-
-#define WS_MDISTYLE \
-    (WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_CAPTION | WS_THICKFRAME | WS_MAXIMIZEBOX)
 #define WS_DIRSTYLE                                                                                   \
     (WS_CHILD | LBS_SORT | LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_EXTENDEDSEL | LBS_NOINTEGRALHEIGHT | \
      LBS_WANTKEYBOARDINPUT)
-#define WS_SEARCHSTYLE (WS_DIRSTYLE | LBS_HASSTRINGS | WS_VSCROLL)
 
 //
 // Extra Window Word Offsets
@@ -440,7 +435,6 @@ LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam
 #define ERR_USER 0xF000
 
 /* Child Window IDs */
-#define IDCW_DRIVES 1
 #define IDCW_DIR 2
 #define IDCW_TREELISTBOX 3  // list in tree control
 #define IDCW_TREECONTROL 5
@@ -457,11 +451,7 @@ LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam
 #define BM_IND_RO 3
 #define BM_IND_DIRUP 4
 #define BM_IND_CLOSE 5
-#define BM_IND_CLOSEPLUS 6
 #define BM_IND_OPEN 7
-#define BM_IND_OPENPLUS 8
-#define BM_IND_OPENMINUS 9
-#define BM_IND_CLOSEMINUS 10
 #define BM_IND_CLOSEDFS 11
 #define BM_IND_OPENDFS 12
 #define BM_IND_CLOSEREPARSE 15
@@ -512,16 +502,6 @@ typedef struct _DRIVE_INFO {
 
 #define SC_SPLIT 100
 
-// These errors aren't in shellapi.h as yet. till such time...
-/* error values for ShellExecute() beyond the regular WinExec() codes */
-#define SE_ERR_SHARE 26
-#define SE_ERR_ASSOCINCOMPLETE 27
-#define SE_ERR_DDETIMEOUT 28
-#define SE_ERR_DDEFAIL 29
-#define SE_ERR_DDEBUSY 30
-#define SE_ERR_NOASSOC 31
-
-#define NONE 0
 #define DRIVEBAR_FLAG 2
 
 #ifdef _GLOBALS
