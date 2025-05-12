@@ -653,8 +653,6 @@ Extern HMENU hMenu;
 Extern UINT uMenuFlags;
 Extern BOOL bMDIFrameSysMenu;
 
-Extern ATOM atomDirListBox;
-
 Extern PPDOCBUCKET ppDocBucket;
 Extern PPDOCBUCKET ppProgBucket;
 
@@ -864,9 +862,6 @@ Extern int iNumExtensions EQ(0);
 Extern EXTENSION extensions[MAX_EXTENSIONS];
 
 Extern HHOOK hhkMsgFilter EQ(NULL);
-
-Extern DWORD nLastDriveInd EQ(0);
-Extern DWORD fFormatFlags EQ(0);
 
 Extern BOOL bDeveloperModeAvailable EQ(FALSE);
 
