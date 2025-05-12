@@ -25,7 +25,7 @@
 #include "wfsearch.h"
 #include "wfgoto.h"
 #include "stringconstants.h"
-
+#include "bookmark.h"
 #include <shlobj.h>
 #include <commctrl.h>
 #include <ole2.h>
@@ -737,6 +737,24 @@ BOOL AppCommandProc(DWORD id) {
 
     hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
 
+    // Handle bookmark menu items
+    if (id >= IDM_BOOKMARK_FIRST && id <= IDM_BOOKMARK_LAST) {
+        // Get all bookmarks
+        auto bookmarks = BookmarkList::instance().read();
+
+        // Find the bookmark that corresponds to this menu item
+        int index = id - IDM_BOOKMARK_FIRST;
+        if (index >= 0 && index < static_cast<int>(bookmarks.size())) {
+            // Get the path from the bookmark
+            const std::wstring& bookmarkPath = bookmarks[index]->path();
+
+            // Navigate to the bookmark path (similar to the Goto Directory functionality)
+            SetCurrentPathOfWindow(const_cast<LPWSTR>(bookmarkPath.c_str()));
+        }
+
+        return TRUE;
+    }
+
     switch (id) {
         case IDM_SPLIT:
             SendMessage(hwndActive, WM_SYSCOMMAND, SC_SPLIT, 0L);
@@ -988,6 +1006,28 @@ BOOL AppCommandProc(DWORD id) {
 
             DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(SELECTDLG), hwndFrame, SelectDlgProc);
             break;
+
+        case IDM_ADDBOOKMARK: {
+            BOOL bDir;
+            LPWSTR szDir;
+
+            // Get the current active directory path similar to IDM_RUN
+            szDir = GetSelection(1 | 4 | 16, &bDir);
+            if (!bDir && szDir)
+                StripFilespec(szDir);
+
+            // Create and show the Add Bookmark dialog
+            EditBookmarkDialog dlg(szDir, szDir, true);
+            dlg.showDialog(hwndFrame);
+
+            LocalFree(szDir);
+        } break;
+
+        case IDM_MANAGEBOOKMARKS: {
+            // Create and show the Manage Bookmarks dialog
+            ManageBookmarksDialog dlg;
+            dlg.showDialog(hwndFrame);
+        } break;
 
         case IDM_MOVE:
         case IDM_COPY:

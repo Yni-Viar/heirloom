@@ -784,6 +784,7 @@ BOOL InitFileManager(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow) {
         I_Space(i);
     }
 
+    // This also initializes COM.
     if (OleInitialize(0) != NOERROR)
         return FALSE;
 

@@ -19,6 +19,7 @@
 #include "wfinit.h"
 #include "wfsearch.h"
 #include "stringconstants.h"
+#include "bookmark.h"
 #include <commctrl.h>
 #include <shlobj.h>
 
@@ -541,6 +542,7 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             HWND hwndActive;
             UINT uMenu;
             int index;
+            UINT menuPosition = LOWORD(lParam);  // Get the menu position directly
 
             hwndActive = (HWND)SendMessage(hwndMDIClient, WM_MDIGETACTIVE, 0, 0L);
             uMenu = MapMenuPosToIDM((UINT)LOWORD(lParam));
@@ -548,7 +550,35 @@ FrameWndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam) {
             if ((uMenu >= IDM_EXTENSIONS) && (uMenu < ((UINT)iNumExtensions + IDM_EXTENSIONS))) {
                 index = uMenu - IDM_EXTENSIONS;
                 (extensions[index].ExtProc)(hwndFrame, FMEVENT_INITMENU, (LPARAM)(HMENU)wParam);
+            } else if (menuPosition == 5) {  // Check for the Bookmarks menu position directly
+                // Special handling for Bookmarks menu
+                HMENU hMenu = (HMENU)wParam;
 
+                // First, remove any existing bookmark entries (keep only "Add Bookmark..." and "Manage Bookmarks..."
+                // items)
+                int count = GetMenuItemCount(hMenu);
+                for (int i = count - 1; i > 1;
+                     i--) {  // Skip 0 and 1 which are "Add Bookmark..." and "Manage Bookmarks..."
+                    DeleteMenu(hMenu, i, MF_BYPOSITION);
+                }
+
+                // Get the list of bookmarks
+                auto bookmarks = BookmarkList::instance().read();
+
+                // If there are bookmarks, add a separator after "Manage Bookmarks..."
+                if (!bookmarks.empty()) {
+                    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+
+                    // Add each bookmark to the menu
+                    int id = IDM_BOOKMARK_FIRST;
+                    for (const auto& bookmark : bookmarks) {
+                        // Only add if we haven't exceeded the maximum number of bookmarks
+                        if (id <= IDM_BOOKMARK_LAST) {
+                            AppendMenuW(hMenu, MF_STRING, id, bookmark->name().c_str());
+                            id++;
+                        }
+                    }
+                }
             } else {
                 InitPopupMenus(1 << uMenu, (HMENU)wParam, hwndActive);
             }

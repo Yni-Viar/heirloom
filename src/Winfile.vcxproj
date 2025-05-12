@@ -197,6 +197,7 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   </PropertyGroup>
   <ItemGroup>
+    <ClInclude Include="bookmark.h" />
     <ClInclude Include="gitbash.h" />
     <ClInclude Include="lfn.h" />
     <ClInclude Include="BagOValues.h" />
@@ -253,6 +254,7 @@
     <None Include="suggest.db" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="bookmark.cpp" />
     <ClCompile Include="gitbash.cpp" />
     <ClCompile Include="lfn.cpp" />
     <ClCompile Include="lfnmisc.cpp" />

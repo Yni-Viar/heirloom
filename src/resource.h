@@ -133,29 +133,36 @@
 // No longer exists but the logic uses it to convert between IDM and menu positions.
 #define IDM_SECURITY 5
 
-#define IDM_EXTENSIONS 6
+#define IDM_BOOKMARKS 7
+#define IDM_ADDBOOKMARK 701
+#define IDM_MANAGEBOOKMARKS 702
+#define IDM_BOOKMARK_FIRST 50000
+#define IDM_BOOKMARK_LAST 50999
+// NOTE: IDM_BOOKMARK_FIRST through IDM_BOOKMARK_LAST are reserved for dynamic bookmark entries
+
+#define IDM_EXTENSIONS 8
 // iExt 0, command ids 700-799
 // iExt 1, command ids 800-899
 // etc.
 // iExt 9, command ids 1600-1699
 
 // NOTE: IDM_WINDOW is IDM_EXTENSIONS (6) + MAX_EXTENSIONS (10)
-#define IDM_WINDOW 16
-#define IDM_CASCADE 1701
-#define IDM_TILE 1702
+#define IDM_WINDOW 18
+#define IDM_CASCADE 1801
+#define IDM_TILE 1802
 
-#define IDM_TILEHORIZONTALLY 1703
-#define IDM_REFRESH 1704
-#define IDM_NEWWINDOW 1706
-#define IDM_CHILDSTART 1707
+#define IDM_TILEHORIZONTALLY 1803
+#define IDM_REFRESH 1804
+#define IDM_NEWWINDOW 1806
+#define IDM_CHILDSTART 1807
 
-#define IDM_HELP 17
-#define IDM_HELPINDEX 1801
+#define IDM_HELP 19
+#define IDM_HELPINDEX 1901
 #define IDM_HELPKEYS 0x001E
 #define IDM_HELPCOMMANDS 0x0020
 #define IDM_HELPPROCS 0x0021
-#define IDM_HELPHELP 1802
-#define IDM_ABOUT 1803
+#define IDM_HELPHELP 1902
+#define IDM_ABOUT 1903
 
 #define IDM_DRIVELISTJUMP 2000 /* for defining an accelerator */
 
@@ -524,3 +531,16 @@
 #define IDR_PNG_ICON_15 2215
 #define IDR_PNG_ICON_16 2216
 #define IDR_PNG_ICON_17 2217
+
+// Add Bookmark dialog
+#define IDD_BOOKMARK_EDIT 2300
+#define IDC_BOOKMARK_TARGET_LABEL 2301
+#define IDC_BOOKMARK_TARGET 2302
+#define IDC_BOOKMARK_NAME_LABEL 2303
+#define IDC_BOOKMARK_NAME 2304
+
+// Edit Bookmarks dialog
+#define IDD_BOOKMARKS_MANAGE 2400
+#define IDC_BOOKMARKS_LIST 2401
+#define IDC_BOOKMARK_EDIT 2402
+#define IDC_BOOKMARK_DELETE 2403

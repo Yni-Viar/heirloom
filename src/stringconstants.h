@@ -50,8 +50,8 @@ constexpr WCHAR kSaveCharset[] = L"Charset";
 constexpr WCHAR kAddons[] = L"AddOns";
 
 constexpr WCHAR kDefPrograms[] = L"EXE COM BAT PIF";
-constexpr WCHAR kRoamINIPath[] = L"\\Microsoft\\Winfile";
-constexpr WCHAR kBaseINIFile[] = L"WINFILE.INI";
+constexpr WCHAR kRoamINIPath[] = L"\\Heirloom File Manager";
+constexpr WCHAR kBaseINIFile[] = L"heirloom.ini";
 constexpr WCHAR kPrevious[] = L"Previous";
 constexpr WCHAR kSettings[] = L"Settings";
 constexpr WCHAR kInternational[] = L"Intl";
