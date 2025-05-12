@@ -15,6 +15,7 @@
 #include "wfchgnot.h"
 #include "wfcomman.h"
 #include "wfutil.h"
+#include "wfdirrd.h"
 #include <commctrl.h>
 #include <shlobj.h>
 

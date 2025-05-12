@@ -15,7 +15,7 @@
 #include "wfchgnot.h"
 #include "wfutil.h"
 #include "wfdir.h"
-#include "wfdir.h"
+#include "wfdirrd.h"
 
 typedef enum {
     EDIRABORT_NULL = 0,

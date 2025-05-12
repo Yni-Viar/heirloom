@@ -20,6 +20,7 @@
 #include "wfchgnot.h"
 #include "wfcomman.h"
 #include "wfutil.h"
+#include "wfdirrd.h"
 
 #include <ole2.h>
 #include <shlobj.h>

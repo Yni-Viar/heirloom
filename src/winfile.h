@@ -248,17 +248,6 @@ typedef struct _SELINFO* PSELINFO;
 //
 //--------------------------------------------------------------------------
 
-// WFDIRRD.C
-
-BOOL InitDirRead();
-void DestroyDirRead();
-LPXDTALINK CreateDTABlock(HWND hwnd, LPWSTR pPath, DWORD dwAttribs, BOOL bDontSteal);
-void FreeDTA(HWND hwnd);
-void DirReadDestroyWindow(HWND hwndDir);
-LPXDTALINK DirReadDone(HWND hwndDir, LPXDTALINK lpStart, int iError);
-void BuildDocumentString();
-void BuildDocumentStringWorker();
-
 // WFDIRSRC.C
 
 HCURSOR GetMoveCopyCursor();
