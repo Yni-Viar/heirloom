@@ -281,17 +281,6 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK GotoDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
-// LFN.C
-
-DWORD WFCopy(LPWSTR, LPWSTR);
-DWORD WFRemove(LPWSTR pszFile);
-DWORD WFMove(LPWSTR pszFrom, LPWSTR pszTo, PBOOL pbErrorOnDest, BOOL bSilent);
-DWORD WFCopyIfSymlink(LPWSTR pszFrom, LPWSTR pszTo, DWORD dwFlags, DWORD dwNotification);
-DWORD DecodeReparsePoint(LPCWSTR szMyFile, LPWSTR szDest, DWORD cwcDest);
-DWORD WFHardLink(LPWSTR pszFrom, LPWSTR pszTo);
-DWORD WFSymbolicLink(LPWSTR pszFrom, LPWSTR pszTo, DWORD dwFlags);
-DWORD WFJunction(LPCWSTR LinkDirectory, LPCWSTR LinkTarget);
-
 // TREECTL.C
 
 void wfYield();

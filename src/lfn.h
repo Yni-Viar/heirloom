@@ -51,3 +51,12 @@ BOOL WFIsDir(LPWSTR);
 BOOL LFNMergePath(LPWSTR, LPWSTR);
 
 BOOL IsLFNSelected();
+
+DWORD WFCopy(LPWSTR, LPWSTR);
+DWORD WFRemove(LPWSTR pszFile);
+DWORD WFMove(LPWSTR pszFrom, LPWSTR pszTo, PBOOL pbErrorOnDest, BOOL bSilent);
+DWORD WFCopyIfSymlink(LPWSTR pszFrom, LPWSTR pszTo, DWORD dwFlags, DWORD dwNotification);
+DWORD DecodeReparsePoint(LPCWSTR szMyFile, LPWSTR szDest, DWORD cwcDest);
+DWORD WFHardLink(LPWSTR pszFrom, LPWSTR pszTo);
+DWORD WFSymbolicLink(LPWSTR pszFrom, LPWSTR pszTo, DWORD dwFlags);
+DWORD WFJunction(LPCWSTR LinkDirectory, LPCWSTR LinkTarget);
