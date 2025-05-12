@@ -253,24 +253,6 @@ typedef struct _SELINFO* PSELINFO;
 BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive);
 LRESULT CALLBACK MessageFilter(int nCode, WPARAM wParam, LPARAM lParam);
 
-// WFUTIL.C
-
-void GetAllDirectories(LPWSTR rgszDirs[]);
-BOOL GetDriveDirectory(int iDrive, LPWSTR pszDir);
-void GetSelectedDirectory(DRIVE drive, LPWSTR pszDir);
-void SaveDirectory(LPWSTR pszDir);
-int GetSelectedDrive();
-void GetTextStuff(HDC hdc);
-int GetHeightFromPointsString(LPCWSTR szPoints);
-int GetDrive(HWND hwnd, POINT pt);
-void CheckSlashes(LPWSTR);
-BOOL IsCDRomDrive(DRIVE drive);
-BOOL IsRamDrive(DRIVE drive);
-void CleanupMessages();
-HWND GetRealParent(HWND hwnd);
-LPWSTR GetFullPathInSystemDirectory(LPCWSTR FileName);
-HMODULE LoadSystemLibrary(LPCWSTR FileName);
-
 // WFDRIVES.C
 
 BOOL CheckDrive(HWND hwnd, DRIVE drive, DWORD dwFunc);

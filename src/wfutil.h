@@ -39,3 +39,19 @@ BOOL TypeAheadString(WCHAR ch, LPWSTR szT);
 
 void SaveHistoryDir(HWND hwnd, LPWSTR szDir);
 BOOL GetPrevHistoryDir(BOOL forward, HWND* phwnd, LPWSTR szDir);
+
+void GetAllDirectories(LPWSTR rgszDirs[]);
+BOOL GetDriveDirectory(int iDrive, LPWSTR pszDir);
+void GetSelectedDirectory(DRIVE drive, LPWSTR pszDir);
+void SaveDirectory(LPWSTR pszDir);
+int GetSelectedDrive();
+void GetTextStuff(HDC hdc);
+int GetHeightFromPointsString(LPCWSTR szPoints);
+int GetDrive(HWND hwnd, POINT pt);
+void CheckSlashes(LPWSTR);
+BOOL IsCDRomDrive(DRIVE drive);
+BOOL IsRamDrive(DRIVE drive);
+void CleanupMessages();
+HWND GetRealParent(HWND hwnd);
+LPWSTR GetFullPathInSystemDirectory(LPCWSTR FileName);
+HMODULE LoadSystemLibrary(LPCWSTR FileName);
