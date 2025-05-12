@@ -24,5 +24,5 @@ After saving in Visual Studio, it will trash `resource.h`. Restore it using git.
 - Download the artifact zip from GitHub Actions.
 - Set $sha1 to the hash of the code signing certificate, then: `& $signtool sign /v /tr http://timestamp.sectigo.com /fd SHA256 /td SHA256 /sha1 $sha1 winfile.exe` (for each build). Paste the password when prompted.
 - Verify digital signatures in the file properties.
-- Rename Arm64 and x64 folders to `winfile-arch-X.X.X` and zip them (from the inside, just the files).
+- Rename Arm64 and x64 folders to `heirloom-arch-X.X.X` and zip them (from the inside, just the files).
 - Create release on GitHub and drag the two zips in.
