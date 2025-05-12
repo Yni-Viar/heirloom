@@ -17,7 +17,7 @@ LPWSTR GetNextFile(LPWSTR pCurSel, LPWSTR szFile, int size);
 
 void SetWindowDirectory();
 void SetDlgDirectory(HWND hDlg, LPWSTR pszPath);
-void WritePrivateProfileBool(LPWSTR szKey, BOOL bParam);
+void WritePrivateProfileBool(LPCWSTR szKey, BOOL bParam);
 BOOL IsWild(LPWSTR lpszPath);
 UINT AddBackslash(LPWSTR lpszPath);
 void StripBackslash(LPWSTR lpszPath);
@@ -25,7 +25,7 @@ void StripFilespec(LPWSTR lpszPath);
 void StripPath(LPWSTR lpszPath);
 LPWSTR GetExtension(LPWSTR pszFile);
 int MyMessageBox(HWND hWnd, DWORD idTitle, DWORD idMessage, DWORD dwStyle);
-DWORD ExecProgram(LPWSTR, LPWSTR, LPWSTR, BOOL, BOOL);
+DWORD ExecProgram(LPCWSTR, LPCWSTR, LPCWSTR, BOOL, BOOL);
 BOOL IsNTFSDrive(DRIVE);
 BOOL IsCasePreservedDrive(DRIVE);
 

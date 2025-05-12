@@ -982,7 +982,7 @@ void SetDlgDirectory(HWND hDlg, LPWSTR pszPath) {
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
-void WritePrivateProfileBool(LPWSTR szKey, BOOL bParam) {
+void WritePrivateProfileBool(LPCWSTR szKey, BOOL bParam) {
     WCHAR szBool[6];
 
     wsprintf(szBool, SZ_PERCENTD, bParam);
@@ -1215,12 +1215,12 @@ int MyMessageBox(HWND hwnd, DWORD idTitle, DWORD idMessage, DWORD wStyle) {
 //  there is no extension.  even if it's already quoted!)
 
 DWORD
-ExecProgram(LPWSTR lpPath, LPWSTR lpParms, LPWSTR lpDir, BOOL bLoadIt, BOOL bRunAs) {
+ExecProgram(LPCWSTR lpPath, LPCWSTR lpParms, LPCWSTR lpDir, BOOL bLoadIt, BOOL bRunAs) {
     DWORD_PTR ret;
     int iCurCount;
     int i;
     HCURSOR hCursor;
-    LPWSTR lpszTitle;
+    LPCWSTR lpszTitle;
 
     ret = 0;
 

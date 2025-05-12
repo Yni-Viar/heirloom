@@ -14,7 +14,6 @@
 static DWORD pdwOrders[] = { IDS_ORDERB, IDS_ORDERKB, IDS_ORDERMB, IDS_ORDERGB, IDS_ORDERTB };
 
 static WCHAR szFormat[] = L"%s%02d";
-extern WCHAR szInternational[];
 
 //
 // atoi with decimal comma separators

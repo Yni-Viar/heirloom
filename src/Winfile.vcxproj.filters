@@ -46,7 +46,6 @@
     <ClInclude Include="BagOValues.h" />
     <ClInclude Include="mpr.h" />
     <ClInclude Include="numfmt.h" />
-    <ClInclude Include="spinlock.h" />
     <ClInclude Include="suggest.h" />
     <ClInclude Include="treectl.h" />
     <ClInclude Include="wfcopy.h" />
@@ -68,6 +67,20 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="wfdragsrc.h" />
     <ClInclude Include="gitbash.h" />
+    <ClInclude Include="wfchgnot.h" />
+    <ClInclude Include="wfcomman.h" />
+    <ClInclude Include="wfdos.h" />
+    <ClInclude Include="wfpng.h" />
+    <ClInclude Include="wfrecyclebin.h" />
+    <ClInclude Include="wfdir.h" />
+    <ClInclude Include="wfdirrd.h" />
+    <ClInclude Include="wfdirsrc.h" />
+    <ClInclude Include="wfdrives.h" />
+    <ClInclude Include="wfgoto.h" />
+    <ClInclude Include="wfinit.h" />
+    <ClInclude Include="wfsearch.h" />
+    <ClInclude Include="wftree.h" />
+    <ClInclude Include="wfutil.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res.rc" />

@@ -56,7 +56,7 @@ BOOL WFSetAttr(LPWSTR lpFile, DWORD dwAttr);
 
 void AppendToPath(LPWSTR, LPCWSTR);
 UINT RemoveLast(LPWSTR pFile);
-void Notify(HWND, WORD, LPWSTR, LPWSTR);
+void Notify(HWND, WORD, LPCWSTR, LPCWSTR);
 
 LPWSTR FindFileName(LPWSTR pPath);
 
@@ -68,6 +68,6 @@ BOOL IsDirectory(LPWSTR pPath);
 BOOL IsTheDiskReallyThere(HWND hwnd, LPWSTR pPath, DWORD wFunc, BOOL bModal);
 BOOL QualifyPath(LPWSTR);
 int CheckMultiple(LPWSTR pInput);
-void SetDlgItemPath(HWND hDlg, int id, LPWSTR pszPath);
+void SetDlgItemPath(HWND hDlg, int id, LPCWSTR pszPath);
 
 void DialogEnterFileStuff(HWND hwnd);

@@ -728,7 +728,7 @@ typedef struct {
     BOOL bNoAccess;
 } PARAM_REPLACEDLG, FAR* LPPARAM_REPLACEDLG;
 
-void SetDlgItemPath(HWND hDlg, int id, LPWSTR pszPath) {
+void SetDlgItemPath(HWND hDlg, int id, LPCWSTR pszPath) {
     RECT rc;
     HDC hdc;
     HFONT hFont;
@@ -1489,7 +1489,7 @@ void DialogEnterFileStuff(HWND hwnd) {
 // used for both the drag drop status dialogs and the manual user
 // entry dialogs so be careful what you change
 
-void Notify(HWND hDlg, WORD idMessage, LPWSTR szFrom, LPWSTR szTo) {
+void Notify(HWND hDlg, WORD idMessage, LPCWSTR szFrom, LPCWSTR szTo) {
     WCHAR szTemp[40];
 
     if (idMessage) {
