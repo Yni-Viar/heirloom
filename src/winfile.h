@@ -281,13 +281,6 @@ INT_PTR CALLBACK PrefDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
 INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK GotoDirDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam);
 
-// TREECTL.C
-
-void wfYield();
-void InvalidateAllNetTypes();
-void GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, int nBuf);
-BOOL RectTreeItem(HWND hwndLB, int iItem, BOOL bFocusOn);
-
 //--------------------------------------------------------------------------
 //
 //  Defines

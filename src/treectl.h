@@ -32,3 +32,8 @@ typedef DNODE* PDNODE;
 
 void GetTreePath(PDNODE pNode, LPWSTR szDest);
 void SetNodeAttribs(PDNODE pNode, LPWSTR szPath);
+
+void wfYield();
+void InvalidateAllNetTypes();
+void GetTreeUNCName(HWND hwndTree, LPWSTR szBuf, int nBuf);
+BOOL RectTreeItem(HWND hwndLB, int iItem, BOOL bFocusOn);
