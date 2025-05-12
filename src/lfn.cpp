@@ -389,9 +389,7 @@ WFCopyIfSymlink(LPWSTR pszFrom, LPWSTR pszTo, DWORD dwFlags, DWORD dwNotificatio
         if (CreateSymbolicLink == NULL) {
             dwRet = ERROR_NOT_SUPPORTED;
         } else {
-            CreateSymbolicLink(
-                pszTo, szReparseDest,
-                dwFlags | (bDeveloperModeAvailable ? SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE : 0));
+            CreateSymbolicLink(pszTo, szReparseDest, dwFlags | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE);
             dwRet = GetLastError();
             if (ERROR_SUCCESS == dwRet) {
                 ChangeFileSystem(dwNotification, pszTo, NULL);
@@ -480,9 +478,7 @@ WFSymbolicLink(LPWSTR pszFrom, LPWSTR pszTo, DWORD dwFlags) {
     Notify(hdlgProgress, IDS_COPYINGMSG, pszFrom, pszTo);
     if (CreateSymbolicLink == NULL) {
         dwRet = ERROR_NOT_SUPPORTED;
-    } else if (CreateSymbolicLink(
-                   pszTo, pszFrom,
-                   dwFlags | (bDeveloperModeAvailable ? SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE : 0))) {
+    } else if (CreateSymbolicLink(pszTo, pszFrom, dwFlags | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE)) {
         ChangeFileSystem(dwFlags == SYMBOLIC_LINK_FLAG_DIRECTORY ? FSC_SYMLINKD : FSC_CREATE, pszTo, NULL);
         dwRet = ERROR_SUCCESS;
     } else {

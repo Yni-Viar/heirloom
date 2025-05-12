@@ -835,8 +835,6 @@ Extern EXTENSION extensions[MAX_EXTENSIONS];
 
 Extern HHOOK hhkMsgFilter EQ(NULL);
 
-Extern BOOL bDeveloperModeAvailable EQ(FALSE);
-
 // this value is an index into dwMenuIDs and used to workaround a bug
 #define MHPOP_CURRENT 2
 
