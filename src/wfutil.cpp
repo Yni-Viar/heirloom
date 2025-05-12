@@ -14,6 +14,7 @@
 #include "wfdos.h"
 #include "wfutil.h"
 #include "wftree.h"
+#include "wfdrives.h"
 #include <commctrl.h>
 #include <stdlib.h>
 

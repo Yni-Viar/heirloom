@@ -19,6 +19,7 @@
 #include "wfdir.h"
 #include "wfdirsrc.h"
 #include "wftree.h"
+#include "wfdrives.h"
 
 BOOL* pbConfirmAll;
 BOOL* pbConfirmReadOnlyAll;

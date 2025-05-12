@@ -18,6 +18,7 @@
 #include "wfdir.h"
 #include "wftree.h"
 #include "wfinit.h"
+#include "wfdrives.h"
 
 #include <commctrl.h>
 

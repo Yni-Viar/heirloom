@@ -253,12 +253,6 @@ typedef struct _SELINFO* PSELINFO;
 BOOL InitPopupMenus(UINT uMenus, HMENU hMenu, HWND hwndActive);
 LRESULT CALLBACK MessageFilter(int nCode, WPARAM wParam, LPARAM lParam);
 
-// WFDRIVES.C
-
-BOOL CheckDrive(HWND hwnd, DRIVE drive, DWORD dwFunc);
-void NewTree(DRIVE drive, HWND hWnd);
-void GetDriveRect(DRIVEIND driveInd, PRECT prc);
-
 // Wnd Procs
 
 LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
