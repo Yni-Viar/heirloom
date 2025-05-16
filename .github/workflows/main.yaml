@@ -1,68 +1,83 @@
-name: Heirloom File Manager
+name: Heirloom
 on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        platform: [ARM64, x64]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 
+      - name: Build
         shell: pwsh
         run: |
           Set-StrictMode -Version Latest
           $global:ErrorActionPreference = "Stop"
           $global:ProgressPreference = "SilentlyContinue"
 
-          Write-Host "Checking for vswhere.exe"
-          $vswhere = Join-Path "$env:ProgramFiles (x86)" "Microsoft Visual Studio\Installer\vswhere.exe"
-          if (-not (Test-Path $vswhere))
-          {
-              throw "Could not find vswhere.exe"
-          }
-          Write-Host "vswhere: $vswhere"
-
-          Write-Host "Checking for msbuild.exe"
-          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
+          # vswhere is slow, check this hardcoded path first.
+          $msbuild = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
           if (-not (Test-Path $msbuild))
           {
-              throw "Could not find msbuild.exe"
+            Write-Host "Checking for vswhere.exe"
+            $vswhere = Join-Path "$env:ProgramFiles (x86)" "Microsoft Visual Studio\Installer\vswhere.exe"
+            if (-not (Test-Path $vswhere))
+            {
+                throw "Could not find vswhere.exe"
+            }
+            Write-Host "vswhere: $vswhere"
+
+            Write-Host "Checking for msbuild.exe"
+            $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
+            if (-not (Test-Path $msbuild))
+            {
+                throw "Could not find msbuild.exe"
+            }
           }
           Write-Host "msbuild: $msbuild"
 
-          Push-Location winfile
+          Push-Location src
 
-          Write-Host "Building for ARM64"
-          & $msbuild winfile.vcxproj /p:Configuration=Release /p:Platform=ARM64
+          #
+          # Winfile
+          #
+
+          Write-Host "Winfile: Building for ${{ matrix.platform }}"
+          & $msbuild winfile.sln /p:Configuration=Release /p:Platform=${{ matrix.platform }} /verbosity:quiet /nologo
           if ($LASTEXITCODE -ne 0)
           {
-              throw "Failed to build for ARM64"
+              throw "Winfile: Failed to build for ${{ matrix.platform }}"
           }
 
-          Write-Host "Building for x64"
-          & $msbuild winfile.vcxproj /p:Configuration=Release /p:Platform=x64
+          #
+          # Progman
+          #
+
+          Write-Host "Progman: Building for ${{ matrix.platform }}"
+          & $msbuild progman.sln /p:Configuration=Release /p:Platform=${{ matrix.platform }} /verbosity:quiet /nologo
           if ($LASTEXITCODE -ne 0)
           {
-              throw "Failed to build for x64"
+              throw "Progman: Failed to build for ${{ matrix.platform }}"
           }
 
           Pop-Location
 
-          Write-Host "Creating zip"
+          Write-Host "Creating artifacts directory"
           New-Item -ItemType Directory -Path . -Name stage
-          New-Item -ItemType Directory -Path stage -Name Arm64
-          New-Item -ItemType Directory -Path stage -Name x64
-          Copy-Item LICENSE stage\Arm64\LICENSE.txt
-          Copy-Item LICENSE stage\x64\LICENSE.txt
-          Copy-Item winfile\ARM64\Release\winfile.exe stage\Arm64\winfile.exe
-          Copy-Item winfile\x64\Release\winfile.exe stage\x64\winfile.exe
+          New-Item -ItemType Directory -Path stage -Name ${{ matrix.platform }}
 
-          Compress-Archive -Path stage\* -DestinationPath winfile.zip
+          Copy-Item src\winfile\LICENSE stage\${{ matrix.platform }}\LICENSE-winfile.txt
+          Copy-Item src\winfile\${{ matrix.platform }}\Release\winfile.exe stage\${{ matrix.platform }}\winfile.exe
+
+          Copy-Item src\progman\LICENSE stage\${{ matrix.platform }}\LICENSE.txt
+          Copy-Item src\progman\${{ matrix.platform }}\Release\progman.exe stage\${{ matrix.platform }}\progman.exe
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: winfile
-          path: winfile.zip
+          name: winfile-${{ matrix.platform }}
+          path: stage/${{ matrix.platform }}
