@@ -249,6 +249,9 @@ BEGIN
     MENUITEM    "Tile &Horizontally",   IDM_TILEHORIZONTALLY
     MENUITEM    "&Tile Vertically\tShift+F4",      IDM_TILE
     MENUITEM    "&Refresh\tF5",         IDM_REFRESH
+    MENUITEM    SEPARATOR
+    MENUITEM    "&Back\tAlt+Left",      IDM_HISTORYBACK
+    MENUITEM    "&Forward\tAlt+Right",  IDM_HISTORYFWD
     END
     POPUP       "&Help"
     BEGIN
@@ -647,6 +650,8 @@ BEGIN
     MH_MYITEMS+IDM_TILEHORIZONTALLY,    "Tiles windows horizontally"
     MH_MYITEMS+IDM_TILE,        "Tiles windows vertically"
     MH_MYITEMS+IDM_REFRESH,     "Updates the contents of a window"
+    MH_MYITEMS+IDM_HISTORYBACK, "Go back to the previous directory in history"
+    MH_MYITEMS+IDM_HISTORYFWD,  "Go forward to the next directory in history"
 
     MH_MYITEMS+IDM_ABOUT,       "Displays information about Heirloom File Manager"
 END

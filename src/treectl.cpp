@@ -20,6 +20,7 @@
 #include "wfutil.h"
 #include "wfdir.h"
 #include "wftree.h"
+#include "wfcomman.h"
 #include "stringconstants.h"
 #include <commctrl.h>
 #include <winnls.h>
@@ -1951,6 +1952,18 @@ TreeControlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     UnregisterDropWindow(hwnd, pDropTarget);
             }
             FreeAllTreeData(hwndLB);
+            break;
+
+        case WM_XBUTTONDOWN:
+            // Handle mouse side buttons for history navigation
+            // XBUTTON1 (back) and XBUTTON2 (forward)
+            if (HIWORD(wParam) == XBUTTON1) {
+                AppCommandProc(IDM_HISTORYBACK);
+                return TRUE;
+            } else if (HIWORD(wParam) == XBUTTON2) {
+                AppCommandProc(IDM_HISTORYFWD);
+                return TRUE;
+            }
             break;
 
         case WM_CREATE:

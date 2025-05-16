@@ -508,6 +508,18 @@ LRESULT CALLBACK DirListBoxWndProc(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM l
 
         case WM_RBUTTONDOWN:
             break;
+
+        case WM_XBUTTONDOWN:
+            // Handle mouse side buttons for history navigation
+            // XBUTTON1 (back) and XBUTTON2 (forward)
+            if (HIWORD(wParam) == XBUTTON1) {
+                AppCommandProc(IDM_HISTORYBACK);
+                return TRUE;
+            } else if (HIWORD(wParam) == XBUTTON2) {
+                AppCommandProc(IDM_HISTORYFWD);
+                return TRUE;
+            }
+            break;
     }
 
     // Call the original window procedure
