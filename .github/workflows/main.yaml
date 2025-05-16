@@ -32,7 +32,7 @@ jobs:
           }
           Write-Host "msbuild: $msbuild"
 
-          Push-Location src
+          Push-Location winfile
 
           Write-Host "Building for ARM64"
           & $msbuild winfile.vcxproj /p:Configuration=Release /p:Platform=ARM64
@@ -56,8 +56,8 @@ jobs:
           New-Item -ItemType Directory -Path stage -Name x64
           Copy-Item LICENSE stage\Arm64\LICENSE.txt
           Copy-Item LICENSE stage\x64\LICENSE.txt
-          Copy-Item src\ARM64\Release\winfile.exe stage\Arm64\winfile.exe
-          Copy-Item src\x64\Release\winfile.exe stage\x64\winfile.exe
+          Copy-Item winfile\ARM64\Release\winfile.exe stage\Arm64\winfile.exe
+          Copy-Item winfile\x64\Release\winfile.exe stage\x64\winfile.exe
 
           Compress-Archive -Path stage\* -DestinationPath winfile.zip
 

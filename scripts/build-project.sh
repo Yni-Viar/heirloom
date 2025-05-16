@@ -1,9 +1,19 @@
 #!/bin/bash
 set -euo pipefail
 
-# Change to the src directory.
+# Check if project name is provided as first argument
+if [ $# -eq 0 ]; then
+    echo "Error: Project name must be provided as the first argument"
+    echo "Usage: $0 <project_name>"
+    exit 1
+fi
+
+PROJECT_NAME="$1"
+echo "Building $PROJECT_NAME..."
+
+# Change to the project directory.
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-cd ../src
+cd "../$PROJECT_NAME"
 
 # Use vswhere to locate msbuild.exe
 vswhere="/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
@@ -35,7 +45,7 @@ rm -rf Win32 x64 ARM64
 
 # Build the project
 set +e
-"$MSBUILD" winfile.vcxproj --p:Configuration=Debug --p:Platform=$PLATFORM --verbosity:quiet --nologo 2>&1
+"$MSBUILD" "$PROJECT_NAME.vcxproj" --p:Configuration=Debug --p:Platform=$PLATFORM --verbosity:quiet --nologo 2>&1
 MSBUILD_EXIT_CODE=$?
 
 if [ $MSBUILD_EXIT_CODE -ne 0 ]; then
