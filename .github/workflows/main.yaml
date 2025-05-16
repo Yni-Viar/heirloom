@@ -57,7 +57,7 @@ jobs:
           New-Item -ItemType Directory -Path stage -Name ${{ matrix.platform }}
 
           Copy-Item src\${{ matrix.project }}\LICENSE stage\${{ matrix.platform }}\LICENSE-${{ matrix.project }}.txt
-          Copy-Item src\${{ matrix.project }}\${{ matrix.platform }}\Release\${{ matrix.project }}.exe stage\${{ matrix.platform }}\${{ matrix.project }}.exe
+          Copy-Item src\${{ matrix.platform }}\Release\${{ matrix.project }}.exe stage\${{ matrix.platform }}\${{ matrix.project }}.exe
 
       - name: Upload
         uses: actions/upload-artifact@v4
