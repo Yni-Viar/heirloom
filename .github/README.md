@@ -18,4 +18,5 @@ It also removes old features that are irrelevant today.
 
 Free and open source under the [MIT](../LICENSE) license.
 
-&copy; Microsoft Corporation. All rights reserved.
+File Manager &copy; Microsoft Corporation<br>
+Program Manager &copy; Brian Luft
