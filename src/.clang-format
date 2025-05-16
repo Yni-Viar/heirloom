@@ -6,3 +6,4 @@ AlignAfterOpenBracket: AlwaysBreak
 AlignOperands: false
 Cpp11BracedListStyle: false
 PenaltyReturnTypeOnItsOwnLine: 10000
+ForEachMacros: [TEST_CLASS, TEST_METHOD]

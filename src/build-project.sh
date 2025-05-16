@@ -13,7 +13,7 @@ echo "Building $PROJECT_NAME..."
 
 # Change to the project directory.
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-cd "../$PROJECT_NAME"
+cd "$PROJECT_NAME"
 
 # Use vswhere to locate msbuild.exe
 vswhere="/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"

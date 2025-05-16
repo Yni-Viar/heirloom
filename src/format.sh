@@ -10,9 +10,8 @@ if ! command -v clang-format &> /dev/null; then
     exit 1
 fi
 
-# Change to repository root directory.
+# Change to src directory.
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-cd ..
 
 # Format a project's source files
 format_project() {
@@ -22,4 +21,6 @@ format_project() {
 }
 
 format_project "winfile"
+format_project "libprogman"
+format_project "libprogman_tests"
 format_project "progman"
