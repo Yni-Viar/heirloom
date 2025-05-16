@@ -4,11 +4,25 @@ globs:
 alwaysApply: true
 ---
 # Heirloom apps
-- C++20
+- This is two different apps: winfile and progman.
+- C++ 20
+- Vanilla Win32
 - We only support Windows 10 and above. Don't support older systems.
-- We only support Win32 Unicode. Don't support ANSI. Use WCHAR over TCHAR, LPWSTR over LPTSTR, L"" over TEXT("").
+- We only support Unicode. Don't support ANSI. Use WCHAR over TCHAR, LPWSTR over LPTSTR, L"" over TEXT("").
+- Do not run the apps. I will run them myself in the debugger for testing.
 
 ## File Manager
-- This is a modernized derivative of the classic Windows File Manager codebase.
+- Directory: src/winfile/
+- Always run the build with `bash src/build-winfile.sh` after making changes.
+- This is the classic Windows File Manager codebase.
 - When creating new source files, OMIT the file-level comment header.
-- Always run the build with `bash scripts/build-winfile.sh` after making changes.
+
+## Program Manager 
+- Directories: src/progman/, src/libprogman/, src/libprogman_tests
+- Always run the build with `bash src/build-progman.sh` after making changes.
+- Prefer the C++ Standard Library like std::wstring over old fashioned C like WCHAR* or LPWSTR.
+- Use smart pointer classes. Avoid "new".
+- Only use old fashioned C conventions when interfacing with Win32 API.
+- Never use Hungarian notation.
+- Member variable names have trailing underscores: fooBar_
+- All functions use camelCase: fooBar()
