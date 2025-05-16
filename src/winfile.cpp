@@ -44,6 +44,7 @@
 // prototypes
 //
 BOOL EnablePropertiesMenu(HWND hwnd, LPWSTR pszSel);
+std::wstring EscapeMenuItemText(const std::wstring& text);
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR pszCmdLineA, int nCmdShow) {
     MSG msg;
@@ -320,7 +321,9 @@ BOOL InitPopupMenu(const std::wstring& popupName, HMENU hMenu, HWND hwndActive) 
             for (const auto& bookmark : bookmarks) {
                 // Only add if we haven't exceeded the maximum number of bookmarks
                 if (id <= IDM_BOOKMARK_LAST) {
-                    AppendMenuW(hMenu, MF_STRING, id, bookmark->name().c_str());
+                    // Escape any ampersands in the bookmark name
+                    std::wstring escapedName = EscapeMenuItemText(bookmark->name());
+                    AppendMenuW(hMenu, MF_STRING, id, escapedName.c_str());
                     id++;
                 }
             }
@@ -873,4 +876,20 @@ BOOL EnablePropertiesMenu(HWND hwndActive, LPWSTR pSel) {
     }
 
     return (FALSE);
+}
+
+// Helper function to escape ampersands in menu item text
+std::wstring EscapeMenuItemText(const std::wstring& text) {
+    std::wstring escaped;
+    escaped.reserve(text.length() * 2);  // Reserve space for potential full doubling
+
+    for (wchar_t c : text) {
+        if (c == L'&') {
+            escaped += L"&&";  // Double the ampersand to escape it
+        } else {
+            escaped += c;
+        }
+    }
+
+    return escaped;
 }
