@@ -7,6 +7,7 @@ jobs:
     strategy:
       matrix:
         platform: [ARM64, x64]
+        project: [winfile, progman]
 
     steps:
       - name: Checkout
@@ -27,7 +28,7 @@ jobs:
             $vswhere = Join-Path "$env:ProgramFiles (x86)" "Microsoft Visual Studio\Installer\vswhere.exe"
             if (-not (Test-Path $vswhere))
             {
-                throw "Could not find vswhere.exe"
+              throw "Could not find vswhere.exe"
             }
             Write-Host "vswhere: $vswhere"
 
@@ -35,33 +36,18 @@ jobs:
             $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
             if (-not (Test-Path $msbuild))
             {
-                throw "Could not find msbuild.exe"
+              throw "Could not find msbuild.exe"
             }
           }
           Write-Host "msbuild: $msbuild"
 
           Push-Location src
 
-          #
-          # Winfile
-          #
-
-          Write-Host "Winfile: Building for ${{ matrix.platform }}"
-          & $msbuild winfile.sln /p:Configuration=Release /p:Platform=${{ matrix.platform }} /verbosity:quiet /nologo
+          Write-Host "${{ matrix.project }}: Building for ${{ matrix.platform }}"
+          & $msbuild ${{ matrix.project }}.sln /p:Configuration=Release /p:Platform=${{ matrix.platform }} /verbosity:quiet /nologo
           if ($LASTEXITCODE -ne 0)
           {
-              throw "Winfile: Failed to build for ${{ matrix.platform }}"
-          }
-
-          #
-          # Progman
-          #
-
-          Write-Host "Progman: Building for ${{ matrix.platform }}"
-          & $msbuild progman.sln /p:Configuration=Release /p:Platform=${{ matrix.platform }} /verbosity:quiet /nologo
-          if ($LASTEXITCODE -ne 0)
-          {
-              throw "Progman: Failed to build for ${{ matrix.platform }}"
+            throw "${{ matrix.project }}: Failed to build for ${{ matrix.platform }}"
           }
 
           Pop-Location
@@ -70,14 +56,11 @@ jobs:
           New-Item -ItemType Directory -Path . -Name stage
           New-Item -ItemType Directory -Path stage -Name ${{ matrix.platform }}
 
-          Copy-Item src\winfile\LICENSE stage\${{ matrix.platform }}\LICENSE-winfile.txt
-          Copy-Item src\winfile\${{ matrix.platform }}\Release\winfile.exe stage\${{ matrix.platform }}\winfile.exe
-
-          Copy-Item src\progman\LICENSE stage\${{ matrix.platform }}\LICENSE.txt
-          Copy-Item src\progman\${{ matrix.platform }}\Release\progman.exe stage\${{ matrix.platform }}\progman.exe
+          Copy-Item src\${{ matrix.project }}\LICENSE stage\${{ matrix.platform }}\LICENSE-${{ matrix.project }}.txt
+          Copy-Item src\${{ matrix.project }}\${{ matrix.platform }}\Release\${{ matrix.project }}.exe stage\${{ matrix.platform }}\${{ matrix.project }}.exe
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: winfile-${{ matrix.platform }}
+          name: ${{ matrix.project }}-${{ matrix.platform }}
           path: stage/${{ matrix.platform }}
