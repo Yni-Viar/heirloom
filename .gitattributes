@@ -20,3 +20,5 @@ LICENSE text eol=crlf
 *.yaml text eol=lf
 *.sh text eol=lf
 
+# Vendored files
+/src/wil/* linguist-documentation
