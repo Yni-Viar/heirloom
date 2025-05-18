@@ -13,6 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        shell: bash
+        run: |
+          src/install-deps.sh
+
       - name: Build
         shell: pwsh
         run: |
