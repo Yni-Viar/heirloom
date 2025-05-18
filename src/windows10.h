@@ -15,12 +15,13 @@
 #undef NTDDI_VERSION
 #endif
 
-#define WIN32_LEAN_AND_MEAN
-
 #include <WinSDKVer.h>
 #define _WIN32_WINNT 0x0A00
 #define WINVER 0x0A00
 #define NTDDI_VERSION NTDDI_WIN10
 #include <SDKDDKVer.h>
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 
 #include <windows.h>

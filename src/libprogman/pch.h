@@ -2,21 +2,21 @@
 
 // This is the precompiled header.
 
+// Windows API
 #include "windows10.h"
+#include <shellapi.h>
+#include <ShlObj.h>
 
 // C++ Standard Library
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
-// Windows API
-#include <ShlObj.h>
-#include <propkey.h>
-#include <propvarutil.h>
-#include <shellapi.h>
-
-// WIL -- must come after Windows API includes
-#include <wil/resource.h>
+// WIL
 #include <wil/com.h>
+#include <wil/resource.h>
+
+// Immer
+#include <immer/array_transient.hpp>
+#include <immer/array.hpp>
