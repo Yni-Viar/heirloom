@@ -37,7 +37,6 @@ case "$ARCH" in
 esac
 
 # Build the solution
-./clean.sh
 
 set +e
 "$MSBUILD" "$SOLUTION" --p:Configuration=Debug --p:Platform=$PLATFORM --verbosity:quiet --nologo 2>&1

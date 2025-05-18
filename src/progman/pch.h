@@ -4,5 +4,7 @@
 
 #include "windows10.h"
 
-#include <stdexcept>  // std::runtime_error
-#include <string>     // std::string, std::wstring
+#include <stdexcept>
+#include <string>
+#include <wil/com.h>
+#include <wil/resource.h>

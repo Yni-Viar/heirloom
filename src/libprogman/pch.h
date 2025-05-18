@@ -4,7 +4,18 @@
 
 #include "windows10.h"
 
+// C++ Standard Library
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <string>
+
+// Windows API
+#include <ShlObj.h>
+#include <propkey.h>
+#include <propvarutil.h>
+#include <shellapi.h>
+
+// WIL -- must come after Windows API includes
 #include <wil/resource.h>
+#include <wil/com.h>
