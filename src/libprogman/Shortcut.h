@@ -7,7 +7,8 @@ namespace libprogram {
 // Represents a .lnk file.
 class Shortcut {
    public:
-    Shortcut();
+    // Constructor with dependency injection
+    Shortcut(IShellLink* shellLink, IPersistFile* persistFile);
     ~Shortcut();
 
     // Creates a new .lnk file.
@@ -30,8 +31,9 @@ class Shortcut {
 
    private:
     std::wstring lnkFilePath_;
-    wil::com_ptr_nothrow<IShellLink> shellLink_;
-    wil::com_ptr_nothrow<IPersistFile> persistFile_;
+    // Non-owning pointers - these are managed by the caller
+    IShellLink* shellLink_ = nullptr;
+    IPersistFile* persistFile_ = nullptr;
 };
 
 }  // namespace libprogram

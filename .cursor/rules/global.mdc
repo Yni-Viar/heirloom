@@ -26,4 +26,5 @@ alwaysApply: true
 - Never use Hungarian notation.
 - Member variable names have trailing underscores: fooBar_
 - All functions use camelCase: fooBar()
-- Use wil (Windows Implementation Library) classes for Win32 RAII.
+- Use exceptions for error handling. Convert error codes to exceptions ASAP.
+- Use wil (Windows Implementation Library) classes for Win32 RAII. Use THROW_IF_FAILED() to handle HRESULTs. Use throwing wrappers.

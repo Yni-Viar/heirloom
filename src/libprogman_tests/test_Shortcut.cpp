@@ -35,6 +35,17 @@ TEST_CLASS (test_Shortcut) {
     std::wstring targetPath_;
     std::wstring lnkPath_;
 
+    // Helper function to create COM objects for Shortcut
+    std::pair<wil::com_ptr_nothrow<IShellLink>, wil::com_ptr_nothrow<IPersistFile>> createShortcutDependencies() {
+        wil::com_ptr_nothrow<IShellLink> shellLink;
+        wil::com_ptr_nothrow<IPersistFile> persistFile;
+
+        THROW_IF_FAILED(CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink)));
+        THROW_IF_FAILED(shellLink.query_to(&persistFile));
+
+        return { std::move(shellLink), std::move(persistFile) };
+    }
+
    public:
     test_Shortcut() {
         // Get temp directory for test files
@@ -75,7 +86,8 @@ TEST_CLASS (test_Shortcut) {
     }
 
     TEST_METHOD (TestInitNew) {
-        Shortcut shortcut;
+        auto [shellLink, persistFile] = createShortcutDependencies();
+        Shortcut shortcut(shellLink.get(), persistFile.get());
         shortcut.initNew(lnkPath_, targetPath_);
 
         // Verify the shortcut file was created
@@ -85,12 +97,14 @@ TEST_CLASS (test_Shortcut) {
     TEST_METHOD (TestInitOpen) {
         // First create a shortcut
         {
-            Shortcut shortcut;
+            auto [shellLink, persistFile] = createShortcutDependencies();
+            Shortcut shortcut(shellLink.get(), persistFile.get());
             shortcut.initNew(lnkPath_, targetPath_);
         }
 
         // Then try to open it
-        Shortcut shortcut;
+        auto [shellLink, persistFile] = createShortcutDependencies();
+        Shortcut shortcut(shellLink.get(), persistFile.get());
         shortcut.initOpen(lnkPath_);
 
         // If we get here without exceptions, the test passed
@@ -98,7 +112,8 @@ TEST_CLASS (test_Shortcut) {
 
     TEST_METHOD (TestGetDisplayName) {
         // Create a shortcut first
-        Shortcut shortcut;
+        auto [shellLink, persistFile] = createShortcutDependencies();
+        Shortcut shortcut(shellLink.get(), persistFile.get());
         shortcut.initNew(lnkPath_, targetPath_);
 
         std::wstring displayName = shortcut.getDisplayName();
@@ -109,7 +124,8 @@ TEST_CLASS (test_Shortcut) {
 
     TEST_METHOD (TestLoadIcon) {
         // Create a shortcut first
-        Shortcut shortcut;
+        auto [shellLink, persistFile] = createShortcutDependencies();
+        Shortcut shortcut(shellLink.get(), persistFile.get());
         shortcut.initNew(lnkPath_, targetPath_);
 
         wil::unique_hicon icon = shortcut.loadIcon();

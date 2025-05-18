@@ -3,11 +3,9 @@
 
 namespace libprogram {
 
-Shortcut::Shortcut() {
-    // Create the shell link object
-    THROW_IF_FAILED(CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink_)));
-    // Get the IPersistFile interface
-    THROW_IF_FAILED(shellLink_.query_to(&persistFile_));
+Shortcut::Shortcut(IShellLink* shellLink, IPersistFile* persistFile)
+    : shellLink_(shellLink), persistFile_(persistFile) {
+    // No AddRef needed since we're not taking ownership
 }
 
 Shortcut::~Shortcut() = default;
