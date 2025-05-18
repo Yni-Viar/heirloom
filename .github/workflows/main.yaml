@@ -43,7 +43,6 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          ls -lR
           src/install-deps.sh
 
       - name: Build
