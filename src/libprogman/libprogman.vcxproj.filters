@@ -18,10 +18,13 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\Error.cpp">
+    <ClCompile Include="Error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\string_util.cpp">
+    <ClCompile Include="string_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shortcut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,10 +35,13 @@
     <ClInclude Include="windows10.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\Error.h">
+    <ClInclude Include="Error.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\string_util.h">
+    <ClInclude Include="string_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shortcut.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

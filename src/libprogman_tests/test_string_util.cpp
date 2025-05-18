@@ -4,7 +4,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-namespace libprogmantests {
+namespace libprogman_tests {
 
 TEST_CLASS (test_string_util) {
    public:
@@ -17,4 +17,4 @@ TEST_CLASS (test_string_util) {
     }
 };
 
-}  // namespace libprogmantests
+}  // namespace libprogman_tests
