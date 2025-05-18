@@ -9,6 +9,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 // Windows API
 #include <ShlObj.h>

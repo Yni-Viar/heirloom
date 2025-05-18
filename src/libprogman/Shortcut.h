@@ -17,8 +17,8 @@ class Shortcut {
     // Opens an existing .lnk file.
     void initOpen(std::wstring lnkFilePath);
 
-    // Loads the icon.
-    wil::unique_hicon loadIcon();
+    // Gets the icon.
+    wil::shared_hicon getIcon();
 
     // Shows the shell properties window.
     void showPropertiesWindow();
@@ -30,7 +30,12 @@ class Shortcut {
     void launch();
 
    private:
+    // Loads the icon for the shortcut
+    void loadIcon();
+
     std::wstring lnkFilePath_;
+    wil::shared_hicon icon_;
+
     // Non-owning pointers - these are managed by the caller
     IShellLink* shellLink_ = nullptr;
     IPersistFile* persistFile_ = nullptr;

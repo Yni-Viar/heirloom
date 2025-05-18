@@ -24,6 +24,9 @@ void Shortcut::initNew(std::wstring lnkFilePath, std::wstring targetPath) {
 
     // Save the shortcut file
     THROW_IF_FAILED(persistFile_->Save(lnkFilePath_.c_str(), TRUE));
+
+    // Load the icon immediately
+    loadIcon();
 }
 
 void Shortcut::initOpen(std::wstring lnkFilePath) {
@@ -31,10 +34,13 @@ void Shortcut::initOpen(std::wstring lnkFilePath) {
 
     // Load the shortcut file
     THROW_IF_FAILED(persistFile_->Load(lnkFilePath_.c_str(), STGM_READ));
+
+    // Load the icon immediately
+    loadIcon();
 }
 
-wil::unique_hicon Shortcut::loadIcon() {
-    wil::unique_hicon hIcon;
+void Shortcut::loadIcon() {
+    HICON hIcon = nullptr;
     int iconIndex = 0;
 
     // Get the icon location
@@ -65,7 +71,12 @@ wil::unique_hicon Shortcut::loadIcon() {
         }
     }
 
-    return hIcon;
+    // Store the icon in our shared_hicon member
+    icon_.reset(hIcon);
+}
+
+wil::shared_hicon Shortcut::getIcon() {
+    return icon_;
 }
 
 void Shortcut::showPropertiesWindow() {

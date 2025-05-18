@@ -128,7 +128,7 @@ TEST_CLASS (test_Shortcut) {
         Shortcut shortcut(shellLink.get(), persistFile.get());
         shortcut.initNew(lnkPath_, targetPath_);
 
-        wil::unique_hicon icon = shortcut.loadIcon();
+        wil::shared_hicon icon = shortcut.getIcon();
 
         // Verify the icon handle is not null
         Assert::IsNotNull(icon.get(), L"Icon should not be null");
