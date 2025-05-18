@@ -3,7 +3,7 @@
 #include "libprogman/pch.h"
 #include "libprogman/core/string_util.h"
 
-namespace progman {
+namespace libprogman {
 
 class Error : public std::runtime_error {
    public:
@@ -14,4 +14,4 @@ class Error : public std::runtime_error {
     std::wstring message_;
 };
 
-}  // namespace progman
+}  // namespace libprogman

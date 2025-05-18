@@ -1,7 +1,7 @@
 #include "libprogman/pch.h"
 #include "libprogman/core/string_util.h"
 
-namespace progman {
+namespace libprogman {
 
 std::wstring utf8ToWide(const std::string& str) {
     if (str.empty()) {
@@ -41,4 +41,4 @@ std::string wideToUtf8(const std::wstring& wstr) {
     return result;
 }
 
-}  // namespace progman
+}  // namespace libprogman
