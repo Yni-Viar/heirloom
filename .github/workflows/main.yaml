@@ -85,8 +85,8 @@ jobs:
           Pop-Location
 
           Write-Host "Creating artifacts directory"
-          New-Item -ItemType Directory -Path . -Name stage
-          New-Item -ItemType Directory -Path stage -Name ${{ matrix.platform }}
+          New-Item -ItemType Directory -Path . -Name stage | Out-Null
+          New-Item -ItemType Directory -Path stage -Name ${{ matrix.platform }} | Out-Null
 
           Copy-Item src\${{ matrix.project }}\LICENSE stage\${{ matrix.platform }}\LICENSE-${{ matrix.project }}.txt
           Copy-Item src\${{ matrix.platform }}\Release\${{ matrix.project }}.exe stage\${{ matrix.platform }}\${{ matrix.project }}.exe
@@ -103,8 +103,33 @@ jobs:
     needs: build
     if: always()
     steps:
-      - name: Delete dependencies
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: combined-artifacts
+          pattern: '*-*'
+          merge-multiple: false
+
+      - name: Create combined release package
+        shell: bash
+        run: |
+          mkdir -p heirloom-x64 heirloom-arm64
+          cp -r combined-artifacts/*-ARM64/* heirloom-arm64/
+          cp -r combined-artifacts/*-x64/* heirloom-x64/
+          ls -la heirloom-x64
+          ls -la heirloom-arm64
+
+      - name: Delete intermediate artifacts
         uses: geekyeggo/delete-artifact@v5
         with:
           failOnError: false
-          name: deps
+          useGlob: true
+          name: '*'
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: |
+            heirloom-x64/
+            heirloom-arm64/
