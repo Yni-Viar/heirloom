@@ -2,8 +2,29 @@ name: Heirloom
 on: [push, workflow_dispatch]
 
 jobs:
+  download:
+    name: Download deps
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download dependencies
+        shell: bash
+        run: |
+          chmod +x src/install-deps.sh
+          DOWNLOAD_ONLY=1 src/install-deps.sh
+
+      - name: Upload dependencies
+        uses: actions/upload-artifact@v4
+        with:
+          name: deps
+          path: src/downloads/
+
   build:
+    name: Build
     runs-on: windows-latest
+    needs: download
     strategy:
       matrix:
         platform: [ARM64, x64]
@@ -13,9 +34,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: deps
+          path: src/downloads/
+
       - name: Install dependencies
         shell: bash
         run: |
+          ls -lR
           src/install-deps.sh
 
       - name: Build
