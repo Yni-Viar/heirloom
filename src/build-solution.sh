@@ -8,36 +8,27 @@ if [ -z "${SOLUTION:-}" ]; then
     exit 1
 fi
 
+echo "Building $SOLUTION..."
+
 # Change to the src directory.
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 # Use vswhere to locate msbuild.exe
-vswhere="/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
-if [ ! -f "$vswhere" ]; then
+VSWHERE="/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
+if [ ! -f "$VSWHERE" ]; then
     echo "Could not find vswhere.exe!"
     exit 1
 fi
 
-MSBUILD=$("$vswhere" -latest -requires Microsoft.Component.MSBuild -find "MSBuild/**/Bin/MSBuild.exe" | head -n 1)
+MSBUILD=$("$VSWHERE" -latest -requires Microsoft.Component.MSBuild -find "MSBuild/**/Bin/MSBuild.exe" | head -n 1)
 if [ ! -f "$MSBUILD" ]; then
     echo "Could not find msbuild.exe!"
     exit 1
 fi
 
-# Detect the native architecture: x64 or ARM64?
-# 
-# Don't use $PROCESSOR_ARCHITECTURE directly; that reports the architecture of bash.exe which is always x64 even in the
-# supposedly arm64 build of Git for Windows.
-#
-# Instead, invoke PowerShell and check it there, because powershell.exe is always the correct architecture.
-ARCH=$(powershell.exe -NoProfile -Command "[System.Environment]::GetEnvironmentVariable('PROCESSOR_ARCHITECTURE', 'Machine')")
-case "$ARCH" in
-    "ARM64") PLATFORM="ARM64" ;;
-    *) PLATFORM="x64" ;;  # Default to x64 for all other values
-esac
+PLATFORM=$(./get-native-arch.sh)
 
 # Build the solution
-
 set +e
 "$MSBUILD" "$SOLUTION" --p:Configuration=Debug --p:Platform=$PLATFORM --verbosity:quiet --nologo 2>&1
 MSBUILD_EXIT_CODE=$?

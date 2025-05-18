@@ -1,0 +1,45 @@
+#!/bin/bash
+# Required variable: PROJECT
+# Assumes the project is already built.
+set -euo pipefail
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+
+# Check PROJECT
+if [ -z "${PROJECT:-}" ]; then
+    echo "PROJECT is not set!"
+    exit 1
+fi
+
+PLATFORM=$(./get-native-arch.sh)
+
+VSWHERE="/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
+if [ ! -f "$VSWHERE" ]; then
+    echo "Could not find vswhere.exe!"
+    exit 1
+fi
+
+VSPATH=$("$VSWHERE" -all -property installationPath)
+
+if [[ "$PLATFORM" == "ARM64" ]]; then
+    VSTEST="$VSPATH\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.arm64.exe"
+else
+    VSTEST="$VSPATH\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.exe"
+fi
+
+if [ ! -f "$VSTEST" ]; then
+    echo "Could not find vstest.console.exe!"
+    exit 1
+fi
+
+set +e
+echo "Testing $PROJECT..."
+"$VSTEST" "$PLATFORM\\Debug\\$PROJECT.dll"
+VSTEST_EXIT_CODE=$?
+
+if [ $VSTEST_EXIT_CODE -ne 0 ]; then
+    echo "Test failed!"
+    exit $VSTEST_EXIT_CODE
+fi
+
+echo "Test succeeded!"
+exit 0
