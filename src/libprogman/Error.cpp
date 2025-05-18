@@ -1,5 +1,5 @@
 #include "libprogman/pch.h"
-#include "libprogman/core/Error.h"
+#include "libprogman/Error.h"
 
 namespace libprogman {
 

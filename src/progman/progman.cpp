@@ -1,7 +1,7 @@
 #include "progman/pch.h"
 #include "progman/progman.h"
 #include "progman/resource.h"
-#include "progman/ui/ProgramManagerWindow.h"
+#include "progman/ProgramManagerWindow.h"
 
 namespace progman {
 

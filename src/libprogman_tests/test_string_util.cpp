@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
-#include "libprogman/core/string_util.h"
+#include "libprogman/string_util.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

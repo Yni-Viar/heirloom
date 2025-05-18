@@ -1,7 +1,7 @@
 #pragma once
 
 #include "libprogman/pch.h"
-#include "libprogman/core/string_util.h"
+#include "libprogman/string_util.h"
 
 namespace libprogman {
 
