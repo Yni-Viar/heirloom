@@ -1,3 +1,7 @@
+# Getting started
+- Run `src/install-deps.sh` to download the required third party dependency files.
+- Build with `src/build-*.sh` or one of the Visual Studio solutions.
+
 # Editing dialogs
 We have `res_dummy.rc` which can be opened in Visual Studio, while `res.rc` doesn't open properly.
 Copy your dialog from `res.rc` into `res_dummy.rc`, edit it there, and copy it back.
