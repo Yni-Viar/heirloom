@@ -16,7 +16,6 @@ void ProgramManagerWindow::registerWindowClass() {
     // Check if class already exists
     WNDCLASSW wndClass;
     if (GetClassInfoW(hInstance_, kClassName, &wndClass)) {
-        OutputDebugStringW(L"Window class already registered");
         return;
     }
 
@@ -95,8 +94,6 @@ void ProgramManagerWindow::createMdiClient() {
 }
 
 void ProgramManagerWindow::show(int nCmdShow) {
-    OutputDebugStringW((L"Showing window with command: " + std::to_wstring(nCmdShow)).c_str());
-
     // Force window to be shown with SW_SHOWNORMAL if nCmdShow is 0
     if (nCmdShow == 0) {
         nCmdShow = SW_SHOWNORMAL;
@@ -107,8 +104,6 @@ void ProgramManagerWindow::show(int nCmdShow) {
 
     // Additional call to force visibility
     SetForegroundWindow(hwnd_);
-
-    OutputDebugStringW(L"Window should be visible now");
 }
 
 LRESULT CALLBACK ProgramManagerWindow::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
