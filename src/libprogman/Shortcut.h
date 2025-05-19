@@ -2,43 +2,27 @@
 
 #include "libprogman/pch.h"
 
-namespace libprogram {
+namespace libprogman {
 
 // Represents a .lnk file.
 class Shortcut {
    public:
-    // Constructor with dependency injection
-    Shortcut(IShellLink* shellLink, IPersistFile* persistFile);
-    ~Shortcut();
-
-    // Creates a new .lnk file.
-    void initNew(std::wstring lnkFilePath, std::wstring targetPath);
-
-    // Opens an existing .lnk file.
-    void initOpen(std::wstring lnkFilePath);
-
-    // Gets the icon.
-    wil::shared_hicon getIcon();
-
-    // Shows the shell properties window.
-    void showPropertiesWindow();
-
-    // Gets the display name (lnk path with no directory or file extension).
-    std::wstring getDisplayName();
-
-    // Launches the shortcut.
-    void launch();
+    Shortcut(
+        std::filesystem::path path,
+        wil::shared_hicon icon,
+        std::filesystem::file_time_type lastWriteTime) noexcept;
+    const std::filesystem::path& path() const noexcept;
+    const std::wstring& name() const noexcept;
+    wil::shared_hicon icon() const noexcept;
+    std::filesystem::file_time_type lastWriteTime() const noexcept;
+    void showPropertiesWindow() const;
+    void launch() const;
 
    private:
-    // Loads the icon for the shortcut
-    void loadIcon();
-
-    std::wstring lnkFilePath_;
+    std::wstring name_;
+    std::filesystem::path path_;
     wil::shared_hicon icon_;
-
-    // Non-owning pointers - these are managed by the caller
-    IShellLink* shellLink_ = nullptr;
-    IPersistFile* persistFile_ = nullptr;
+    std::filesystem::file_time_type lastWriteTime_;
 };
 
-}  // namespace libprogram
+}  // namespace libprogman

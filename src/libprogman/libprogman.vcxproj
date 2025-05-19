@@ -27,6 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="com_util.cpp" />
     <ClCompile Include="Error.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -37,12 +38,19 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Shortcut.cpp" />
+    <ClCompile Include="ShortcutFactory.cpp" />
+    <ClCompile Include="ShortcutFolder.cpp" />
+    <ClCompile Include="ShortcutManager.cpp" />
     <ClCompile Include="string_util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="com_util.h" />
     <ClInclude Include="Error.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Shortcut.h" />
+    <ClInclude Include="ShortcutFactory.h" />
+    <ClInclude Include="ShortcutFolder.h" />
+    <ClInclude Include="ShortcutManager.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="windows10.h" />
   </ItemGroup>
