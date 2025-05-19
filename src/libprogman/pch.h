@@ -9,12 +9,16 @@
 
 // C++ Standard Library
 #include <algorithm>
+#include <atomic>
 #include <filesystem>
+#include <functional>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
+#include <thread>
 #include <unordered_set>
+#include <vector>
 
 // WIL
 #include <wil/com.h>

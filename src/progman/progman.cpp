@@ -1,12 +1,13 @@
 #include "progman/pch.h"
-#include "progman/resource.h"
-#include "progman/ProgramManagerWindow.h"
+#include "libprogman/com_util.h"
+#include "libprogman/FolderWatcher.h"
 #include "libprogman/ShortcutFactory.h"
 #include "libprogman/ShortcutManager.h"
-#include "libprogman/com_util.h"
 #include "libprogman/string_util.h"
+#include "progman/ProgramManagerWindow.h"
+#include "progman/resource.h"
 
-static std::filesystem::path getShortcutsRootPath() {
+static std::filesystem::path createShortcutsFolder() {
     // It's "%APPDATA%\Heirloom Program Manager\Shortcuts\".
 
     // Get the user's app data directory
@@ -29,17 +30,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR,
         // Initialize COM
         auto com = wil::CoInitializeEx(COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-        // Create libprogman objects
+        // Create DI graph
+        auto shortcutsPath = createShortcutsFolder();
+
         auto shortcutFactory = std::make_unique<libprogman::ShortcutFactory>();
-        auto shortcutManager =
-            std::make_unique<libprogman::ShortcutManager>(getShortcutsRootPath(), shortcutFactory.get());
 
-        // Create progman objects
+        auto shortcutManager = std::make_unique<libprogman::ShortcutManager>(shortcutsPath, shortcutFactory.get());
+
         auto programManagerWindow = std::make_unique<progman::ProgramManagerWindow>();
-
-        // Start the UI
         programManagerWindow->create();
         programManagerWindow->show(nCmdShow);
+
+        auto folderWatcher = std::make_unique<libprogman::FolderWatcher>(
+            shortcutsPath, [&shortcutManager]() { shortcutManager->refresh(); },
+            [](std::wstring errorMsg) {
+                MessageBox(nullptr, errorMsg.c_str(), L"Program Manager", MB_OK | MB_ICONERROR);
+            });
 
         // Message pump
         auto accelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_PROGMAN));

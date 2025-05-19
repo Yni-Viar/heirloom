@@ -33,8 +33,10 @@ class ShortcutManager {
     // Deletes a folder. Throws Error(kFolderNotFound) if the folder is not found.
     void deleteFolder(ShortcutFolder* folder);
 
-   private:
+    // Loads changes from disk.
     void refresh();
+
+   private:
     std::shared_ptr<ShortcutFolder> refreshFolder(std::filesystem::path folderPath) const;
     std::shared_ptr<Shortcut> refreshShortcut(
         std::filesystem::path shortcutPath,
@@ -42,8 +44,9 @@ class ShortcutManager {
         const ShortcutFolder* existingFolder) const;
 
     std::wstring rootPath_;
-    immer::map<std::wstring, std::shared_ptr<ShortcutFolder>> folders_;
+    immer::map<std::wstring, std::shared_ptr<ShortcutFolder>> folders_;  // Only updated in refresh()
     ShortcutFactory* shortcutFactory_;
+    std::mutex refreshMutex_;
 };
 
 }  // namespace libprogman

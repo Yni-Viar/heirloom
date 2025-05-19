@@ -95,6 +95,8 @@ void ShortcutManager::deleteFolder(ShortcutFolder* folder) {
 }
 
 void ShortcutManager::refresh() {
+    std::lock_guard<std::mutex> lock(refreshMutex_);
+
     immer::map_transient<std::wstring, std::shared_ptr<ShortcutFolder>> folders;
 
     // Walk rootPath_'s subfolders. Ignore files.

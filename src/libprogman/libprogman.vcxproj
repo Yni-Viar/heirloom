@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClCompile Include="com_util.cpp" />
     <ClCompile Include="Error.cpp" />
+    <ClCompile Include="FolderWatcher.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -46,6 +47,7 @@
   <ItemGroup>
     <ClInclude Include="com_util.h" />
     <ClInclude Include="Error.h" />
+    <ClInclude Include="FolderWatcher.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Shortcut.h" />
     <ClInclude Include="ShortcutFactory.h" />

@@ -33,7 +33,8 @@ fi
 
 set +e
 echo "Testing $PROJECT..."
-"$VSTEST" "$PLATFORM\\Debug\\$PROJECT.dll"
+cd "$PLATFORM/Debug"
+"$VSTEST" /Diag:test_$PROJECT.log "$PROJECT.dll"
 VSTEST_EXIT_CODE=$?
 
 if [ $VSTEST_EXIT_CODE -ne 0 ]; then

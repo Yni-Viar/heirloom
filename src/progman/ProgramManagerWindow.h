@@ -9,7 +9,7 @@ class ProgramManagerWindow {
     void create();
     void show(int cmdShow);
 
-    HWND getHwnd() const { return hwnd_; }
+    HWND hwnd() const { return hwnd_; }
 
    private:
     static LRESULT CALLBACK windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
