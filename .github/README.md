@@ -14,9 +14,9 @@ This derivative of the [classic Windows File Manager (microsoft/winfile)](https:
 
 It also removes old features that are irrelevant today.
 
-## License
+## Licenses
 
-Free and open source under the [MIT](../LICENSE) license.
+These apps are free and open source.
 
-File Manager &copy; Microsoft Corporation<br>
-Program Manager &copy; Brian Luft
+Heirloom File Manager &copy; Microsoft Corporation ([License](../src/winfile/LICENSE))<br>
+Heirloom Program Manager &copy; Brian Luft ([License](../src/progman/LICENSE))
