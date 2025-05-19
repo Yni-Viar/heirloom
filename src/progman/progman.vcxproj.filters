@@ -18,17 +18,14 @@
     <ClCompile Include="progman.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ui\ProgramManagerWindow.cpp">
+    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="ProgramManagerWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ui\ProgramManagerWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -38,12 +35,18 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="progman.h">
+    <ClInclude Include="ProgramManagerWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\progman.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\folder.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\app.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

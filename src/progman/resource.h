@@ -4,7 +4,8 @@
 //
 #define IDI_PROGMAN 101
 #define IDC_PROGMAN 102
-#define IDR_MAINMENU 104
+#define IDR_MAINMENU 103
+#define IDI_FOLDER 104
 #define IDM_FILE_EXIT 32771
 
 // Next default values for new objects

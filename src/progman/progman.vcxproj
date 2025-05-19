@@ -245,13 +245,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="progman.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ProgramManagerWindow.h" />
     <ClInclude Include="windows10.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="resources\progman.ico" />
+    <Image Include="resources\app.ico" />
+    <Image Include="resources\folder.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="progman.rc" />
