@@ -286,8 +286,10 @@ Makefile.depends
 *.exe
 tags
 
+# Heirloom stuff
 obj/
-src/tmp/
-src/wil/
-src/downloads/
-src/immer/
+/src/tmp/
+/src/wil/
+/src/downloads/
+/src/immer/
+/.vscode/settings.json
