@@ -6,7 +6,7 @@ namespace progman {
 
 class ProgramManagerWindow {
    public:
-    void create();
+    ProgramManagerWindow(HINSTANCE hInstance);
     void show(int cmdShow);
 
     HWND hwnd() const { return hwnd_; }

@@ -6,13 +6,24 @@ namespace progman {
 
 constexpr WCHAR kClassName[] = L"ProgmanWindowClass";
 
-void ProgramManagerWindow::registerWindowClass() {
-    hInstance_ = GetModuleHandle(nullptr);
-    if (!hInstance_) {
-        MessageBoxW(nullptr, L"Failed to get module handle", L"Error", MB_OK | MB_ICONERROR);
+ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance) : hInstance_(hInstance) {
+    registerWindowClass();
+
+    hwnd_ = CreateWindowW(
+        kClassName, L"Program Manager", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr,
+        hInstance_, this);
+
+    if (!hwnd_) {
+        DWORD error = GetLastError();
+        std::wstring errorMsg = L"Failed to create Program Manager window. Error code: " + std::to_wstring(error);
+        MessageBoxW(nullptr, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
         return;
     }
 
+    createMdiClient();
+}
+
+void ProgramManagerWindow::registerWindowClass() {
     // Check if class already exists
     WNDCLASSW wndClass;
     if (GetClassInfoW(hInstance_, kClassName, &wndClass)) {
@@ -48,29 +59,6 @@ void ProgramManagerWindow::registerWindowClass() {
         std::wstring errorMsg = L"Failed to register window class. Error code: " + std::to_wstring(error);
         MessageBoxW(nullptr, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
     }
-}
-
-void ProgramManagerWindow::create() {
-    registerWindowClass();
-
-    if (!hInstance_) {
-        return;
-    }
-
-    // Create a simple window first - just basic styles
-    hwnd_ = CreateWindowW(
-        kClassName, L"Program Manager", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr,
-        hInstance_, this);
-
-    if (!hwnd_) {
-        DWORD error = GetLastError();
-        std::wstring errorMsg = L"Failed to create Program Manager window. Error code: " + std::to_wstring(error);
-        MessageBoxW(nullptr, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
-        return;
-    }
-
-    // Create MDI client after basic window is working
-    createMdiClient();
 }
 
 void ProgramManagerWindow::createMdiClient() {
