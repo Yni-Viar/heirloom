@@ -35,9 +35,9 @@ ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance, libprogman::Shor
     registerWindowClass();
 
     // Create the main frame window with explicit MDI frame styles
-    hwnd_ = CreateWindowW(
-        kClassName, L"Program Manager", WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, CW_USEDEFAULT,
-        CW_USEDEFAULT, 800, 600, nullptr, nullptr, hInstance_, this);
+    hwnd_ = CreateWindowExW(
+        WS_EX_COMPOSITED, kClassName, L"Program Manager", WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+        CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, hInstance_, this);
 
     if (!hwnd_) {
         DWORD error = GetLastError();
