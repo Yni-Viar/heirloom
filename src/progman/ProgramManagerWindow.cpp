@@ -231,10 +231,6 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                 case ID_WINDOW_TILE:
                     SendMessageW(mdiClient_, WM_MDITILE, MDITILE_HORIZONTAL, 0);
                     return 0;
-
-                case ID_WINDOW_ARRANGE:
-                    SendMessageW(mdiClient_, WM_MDIICONARRANGE, 0, 0);
-                    return 0;
             }
             break;
 
