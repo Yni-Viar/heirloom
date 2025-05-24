@@ -1,12 +1,14 @@
 #include "progman/pch.h"
 #include "progman/resource.h"
 #include "progman/ProgramManagerWindow.h"
+#include "libprogman/window_data.h"
 
 namespace progman {
 
 constexpr WCHAR kClassName[] = L"ProgmanWindowClass";
 
-ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance) : hInstance_(hInstance) {
+ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance, libprogman::ShortcutManager* shortcutManager)
+    : hInstance_(hInstance), shortcutManager_(shortcutManager) {
     registerWindowClass();
 
     hwnd_ = CreateWindowW(
@@ -15,12 +17,15 @@ ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance) : hInstance_(hIn
 
     if (!hwnd_) {
         DWORD error = GetLastError();
-        std::wstring errorMsg = L"Failed to create Program Manager window. Error code: " + std::to_wstring(error);
-        MessageBoxW(nullptr, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
-        return;
+        std::string errorMsg = "Failed to create Program Manager window. Error code: " + std::to_string(error);
+        throw std::runtime_error(errorMsg);
     }
 
     createMdiClient();
+
+    // Load the initial folder windows
+    shortcutManager_->refresh();
+    syncFolderWindows();
 }
 
 void ProgramManagerWindow::registerWindowClass() {
@@ -56,8 +61,8 @@ void ProgramManagerWindow::registerWindowClass() {
 
     if (!RegisterClassExW(&windowClass_)) {
         DWORD error = GetLastError();
-        std::wstring errorMsg = L"Failed to register window class. Error code: " + std::to_wstring(error);
-        MessageBoxW(nullptr, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
+        std::string errorMsg = "Failed to register window class. Error code: " + std::to_string(error);
+        throw std::runtime_error(errorMsg);
     }
 }
 
@@ -72,7 +77,8 @@ void ProgramManagerWindow::createMdiClient() {
 
     if (!mdiClient_) {
         DWORD error = GetLastError();
-        MessageBoxW(nullptr, L"Failed to create MDI client window", L"Error", MB_OK | MB_ICONERROR);
+        std::string errorMsg = "Failed to create MDI client window. Error code: " + std::to_string(error);
+        throw std::runtime_error(errorMsg);
     }
 
     // Resize the MDI client to fill the main window
@@ -101,10 +107,10 @@ LRESULT CALLBACK ProgramManagerWindow::windowProc(HWND hwnd, UINT uMsg, WPARAM w
         CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
         pThis = reinterpret_cast<ProgramManagerWindow*>(pCreate->lpCreateParams);
         if (pThis) {
-            SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pThis));
+            libprogman::setWindowData(hwnd, pThis);
         }
     } else {
-        pThis = reinterpret_cast<ProgramManagerWindow*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+        pThis = libprogman::getWindowData<ProgramManagerWindow>(hwnd);
     }
 
     if (pThis) {
@@ -128,8 +134,7 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
         case WM_COMMAND:
             // Handle menu commands
             switch (LOWORD(wParam)) {
-                case IDM_FILE_EXIT:
-                    // Handle File > Exit
+                case ID_FILE_EXIT:
                     DestroyWindow(hwnd);
                     return 0;
             }
@@ -142,6 +147,48 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
 
     // For a standard window (not a frame window)
     return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+}
+
+void ProgramManagerWindow::refresh() {
+    // Refresh the shortcuts from disk.
+    shortcutManager_->refresh();
+
+    // Sync the FolderWindows with the updated data
+    syncFolderWindows();
+}
+
+void ProgramManagerWindow::syncFolderWindows() {
+    auto currentFolders = shortcutManager_->folders();
+
+    // First pass: Update existing windows or mark them for removal
+    std::vector<std::wstring> foldersToRemove;
+
+    for (auto& [folderName, folderWindow] : folderWindows_) {
+        auto folder = currentFolders.find(folderName);
+        if (folder != nullptr) {
+            // Folder still exists, update it
+            folderWindow->setFolder(*folder);
+        } else {
+            // Folder no longer exists, mark for removal
+            folderWindow->close();
+            foldersToRemove.push_back(folderName);
+        }
+    }
+
+    // Remove windows for folders that no longer exist
+    for (const auto& folderName : foldersToRemove) {
+        folderWindows_.erase(folderName);
+    }
+
+    // Second pass: Create windows for new folders
+    for (const auto& [folderName, folder] : currentFolders) {
+        if (folderWindows_.find(folderName) == folderWindows_.end()) {
+            // New folder, create a window for it
+            auto folderWindow = std::make_unique<FolderWindow>(hInstance_, mdiClient_, folder);
+            folderWindow->show();
+            folderWindows_[folderName] = std::move(folderWindow);
+        }
+    }
 }
 
 }  // namespace progman

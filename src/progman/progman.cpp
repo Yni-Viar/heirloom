@@ -37,10 +37,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR,
 
         auto shortcutManager = std::make_unique<libprogman::ShortcutManager>(shortcutsPath, shortcutFactory.get());
 
-        auto programManagerWindow = std::make_unique<progman::ProgramManagerWindow>(hInstance);
+        auto programManagerWindow = std::make_unique<progman::ProgramManagerWindow>(hInstance, shortcutManager.get());
 
         auto folderWatcher = std::make_unique<libprogman::FolderWatcher>(
-            shortcutsPath, [&shortcutManager]() { shortcutManager->refresh(); },
+            shortcutsPath, [&programManagerWindow]() { programManagerWindow->refresh(); },
             [](std::wstring errorMsg) {
                 MessageBox(nullptr, errorMsg.c_str(), L"Program Manager", MB_OK | MB_ICONERROR);
             });

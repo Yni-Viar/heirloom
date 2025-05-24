@@ -24,6 +24,9 @@
     <ClCompile Include="ProgramManagerWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FolderWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -38,11 +41,11 @@
     <ClInclude Include="ProgramManagerWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FolderWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="resources\progman.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="resources\folder.ico">
       <Filter>Resource Files</Filter>
     </Image>

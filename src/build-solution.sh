@@ -30,7 +30,7 @@ PLATFORM=$(./get-native-arch.sh)
 
 # Build the solution
 set +e
-"$MSBUILD" "$SOLUTION" --p:Configuration=Debug --p:Platform=$PLATFORM --verbosity:quiet --nologo 2>&1
+"$MSBUILD" "$SOLUTION" --p:Configuration=Debug --p:Platform=$PLATFORM --verbosity:minimal --nologo 2>&1
 MSBUILD_EXIT_CODE=$?
 
 if [ $MSBUILD_EXIT_CODE -ne 0 ]; then

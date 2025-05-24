@@ -8,7 +8,7 @@ Shortcut::Shortcut(
     wil::shared_hicon icon,
     std::filesystem::file_time_type lastWriteTime) noexcept
     : path_(std::move(path)), icon_(std::move(icon)), lastWriteTime_(lastWriteTime) {
-    name_ = path_.filename().wstring();
+    name_ = path_.stem().wstring();
 }
 
 const std::filesystem::path& Shortcut::path() const noexcept {

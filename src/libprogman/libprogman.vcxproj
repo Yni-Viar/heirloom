@@ -43,6 +43,7 @@
     <ClCompile Include="ShortcutFolder.cpp" />
     <ClCompile Include="ShortcutManager.cpp" />
     <ClCompile Include="string_util.cpp" />
+    <ClCompile Include="window_data.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="com_util.h" />
@@ -55,6 +56,7 @@
     <ClInclude Include="ShortcutManager.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="windows10.h" />
+    <ClInclude Include="window_data.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -144,7 +146,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>libprogman/pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderOutputFile>$(IntDir)libprogman.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
@@ -164,7 +166,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>libprogman/pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderOutputFile>$(IntDir)libprogman.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
@@ -184,7 +186,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>libprogman/pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderOutputFile>$(IntDir)libprogman.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
@@ -204,7 +206,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>libprogman/pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderOutputFile>$(IntDir)libprogman.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
@@ -224,7 +226,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>libprogman/pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderOutputFile>$(IntDir)libprogman.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
@@ -244,7 +246,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>libprogman/pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderOutputFile>$(IntDir)libprogman.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>

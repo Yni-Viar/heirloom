@@ -15,7 +15,7 @@ static int ThrowingMultiByteToWideChar(
     if (result <= 0) {
         DWORD error = GetLastError();
         std::wostringstream errorMsg;
-        errorMsg << L"Unicode conversion failed. MultiByteToWideChar failed with error code " << error;
+        errorMsg << L"Unicode conversion failed. MultiByteToWideChar failed with error code " << std::to_wstring(error);
         throw Error(ErrorCode::kUnicodeConversionFailed, errorMsg.str());
     }
     return result;
