@@ -1,3 +1,5 @@
+#pragma once
+
 #include "progman/pch.h"
 #include "libprogman/ShortcutFolder.h"
 

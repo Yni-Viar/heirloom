@@ -1,3 +1,5 @@
+#pragma once
+
 #include "libprogman/pch.h"
 
 namespace libprogman {

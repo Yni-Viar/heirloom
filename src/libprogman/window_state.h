@@ -1,3 +1,5 @@
+#pragma onc
+
 #include "libprogman/pch.h"
 
 namespace libprogman {
