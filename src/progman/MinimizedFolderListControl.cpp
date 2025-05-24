@@ -209,7 +209,7 @@ int MinimizedFolderListControl::autoSize(HWND mdiClient) const {
     int mdiWidth = mdiRect.right - mdiRect.left;
     int mdiHeight = mdiRect.bottom - mdiRect.top;
 
-    // Calculate required height based on item count
+    // Check if we have any items
     int itemCount = ListView_GetItemCount(listView_);
     if (itemCount == 0) {
         // Hide if no items
@@ -217,14 +217,8 @@ int MinimizedFolderListControl::autoSize(HWND mdiClient) const {
         return 0;
     }
 
-    // Get DPI-scaled values
-    int iconSize = getDpiScaledValue(window_, BASE_ICON_SIZE);
-    int padding = getDpiScaledValue(window_, BASE_PADDING);
-
-    // Calculate how many icons can fit per row
-    int itemsPerRow = std::max(1, mdiWidth / (iconSize + padding * 2));
-    int rows = (itemCount + itemsPerRow - 1) / itemsPerRow;  // Ceiling division
-    int requiredHeight = rows * (iconSize + padding * 3);
+    // Use a fixed height, scaled by DPI
+    int requiredHeight = getDpiScaledValue(window_, 64);
 
     // Position flush against left, bottom, and right edges
     int yPos = mdiHeight - requiredHeight;
