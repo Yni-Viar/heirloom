@@ -24,6 +24,13 @@ ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance, libprogman::Shor
 
     createMdiClient();
 
+    // Create the minimized folder list control, passing the MDI client as the parent
+    minimizedFolderList_ = std::make_unique<MinimizedFolderListControl>(
+        hInstance_, mdiClient_, [this](std::wstring folderName) { restoreMinimizedFolder(folderName); });
+
+    // Position the control
+    minimizedFolderList_->autoSize(mdiClient_);
+
     // Load the initial folder windows
     shortcutManager_->refresh();
     syncFolderWindows();
@@ -149,6 +156,11 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                 RECT rcClient;
                 GetClientRect(hwnd, &rcClient);
                 MoveWindow(mdiClient_, 0, 0, rcClient.right, rcClient.bottom, TRUE);
+
+                // Resize the minimized folder list
+                if (minimizedFolderList_) {
+                    minimizedFolderList_->autoSize(mdiClient_);
+                }
             }
             return 0;
 
@@ -219,9 +231,31 @@ void ProgramManagerWindow::syncFolderWindows() {
         if (folderWindows_.find(folderName) == folderWindows_.end()) {
             // New folder, create a window for it
             auto folderWindow = std::make_unique<FolderWindow>(hInstance_, mdiClient_, folder);
+            // Set the minimize callback
+            folderWindow->setOnMinimizeCallback([this](const std::wstring& name) {
+                // Add to minimized list
+                minimizedFolderList_->addMinimizedFolder(name);
+                // Update the layout
+                minimizedFolderList_->autoSize(mdiClient_);
+            });
             folderWindow->show();
             folderWindows_[folderName] = std::move(folderWindow);
         }
+    }
+}
+
+void ProgramManagerWindow::restoreMinimizedFolder(const std::wstring& folderName) {
+    auto it = folderWindows_.find(folderName);
+    if (it != folderWindows_.end()) {
+        // Show the window
+        it->second->show();
+
+        // Make it the active MDI window
+        HWND folderHwnd = it->second->window_;
+        SendMessage(mdiClient_, WM_MDIACTIVATE, reinterpret_cast<WPARAM>(folderHwnd), 0);
+
+        // Update the minimized folder list layout
+        minimizedFolderList_->autoSize(mdiClient_);
     }
 }
 

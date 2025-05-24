@@ -151,6 +151,14 @@ void FolderWindow::refreshListView() {
     }
 }
 
+void FolderWindow::setOnMinimizeCallback(std::function<void(const std::wstring&)> callback) {
+    onMinimizeCallback_ = std::move(callback);
+}
+
+std::wstring FolderWindow::getName() const {
+    return folder_ ? folder_->name() : L"";
+}
+
 LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
         case WM_SIZE: {
@@ -163,6 +171,19 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
             // Continue with default handling for MDI child window
             break;
         }
+
+        case WM_SYSCOMMAND:
+            // Completely intercept the minimize command
+            if ((wParam & 0xFFF0) == SC_MINIMIZE) {
+                // Call our minimize callback if set
+                if (onMinimizeCallback_ && folder_) {
+                    onMinimizeCallback_(folder_->name());
+                }
+                // Don't let the window actually minimize, just hide it
+                ShowWindow(hwnd, SW_HIDE);
+                return 0;  // Handled, don't pass to default proc
+            }
+            break;
 
         case WM_NOTIFY: {
             NMHDR* nmhdr = reinterpret_cast<NMHDR*>(lParam);

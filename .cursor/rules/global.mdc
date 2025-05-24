@@ -11,7 +11,7 @@ alwaysApply: true
 - We only support Unicode. Don't support ANSI. Use WCHAR over TCHAR, LPWSTR over LPTSTR, L"" over TEXT("").
 - Do not run the apps. I will run them myself in the debugger for testing.
 - Never use the pImpl pattern.
-- Use setWindowData/getWindowData in [window_data.h](mdc:src/progman/window_data.h) to associate a backing pointer with an HWND.
+- Use setWindowData/getWindowData in [window_data.h](mdc:src/libprogman/window_data.h) to associate a backing pointer with an HWND.
 
 ## File Manager (winfile)
 - Directory: src/winfile/

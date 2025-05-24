@@ -3,6 +3,7 @@
 #include "progman/pch.h"
 #include "libprogman/ShortcutManager.h"
 #include "progman/FolderWindow.h"
+#include "progman/MinimizedFolderListControl.h"
 
 namespace progman {
 
@@ -24,6 +25,7 @@ class ProgramManagerWindow {
     void registerWindowClass();
     void createMdiClient();
     void syncFolderWindows();
+    void restoreMinimizedFolder(const std::wstring& folderName);
 
     HWND hwnd_ = nullptr;
     HWND mdiClient_ = nullptr;
@@ -31,6 +33,7 @@ class ProgramManagerWindow {
     HINSTANCE hInstance_ = nullptr;
     libprogman::ShortcutManager* shortcutManager_ = nullptr;
     std::unordered_map<std::wstring, std::unique_ptr<FolderWindow>> folderWindows_;
+    std::unique_ptr<MinimizedFolderListControl> minimizedFolderList_;
 };
 
 }  // namespace progman
