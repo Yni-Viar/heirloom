@@ -110,10 +110,8 @@ MinimizedFolderListControl::MinimizedFolderListControl(
 
     // Create the container window
     window_ = CreateWindowEx(
-        0,                                                                          // Remove borders
-        L"MinimizedFolderListControl", L"", WS_CHILD | WS_VISIBLE, 0, 0, 100, 100,  // Initial size
-        parent,                                                                     // Pass the parent HWND directly
-        nullptr, instance, nullptr);
+        0, L"MinimizedFolderListControl", L"", WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, parent, nullptr, instance,
+        nullptr);
 
     if (!window_) {
         THROW_LAST_ERROR();

@@ -185,6 +185,16 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
             }
             break;
 
+        case WM_CLOSE:
+            // Intercept close command and treat it like minimize
+            // As with the old school Program Manager, the user can't destroy a group simply by closing it
+            if (onMinimizeCallback_ && folder_) {
+                onMinimizeCallback_(folder_->name());
+            }
+            // Don't let the window actually close, just hide it
+            ShowWindow(hwnd, SW_HIDE);
+            return 0;  // Handled, don't pass to default proc
+
         case WM_NOTIFY: {
             NMHDR* nmhdr = reinterpret_cast<NMHDR*>(lParam);
             if (nmhdr->hwndFrom == listView_) {
