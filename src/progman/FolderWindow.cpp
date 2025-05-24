@@ -106,7 +106,7 @@ void FolderWindow::createListView() {
 
     // Create ListView control
     listView_ = CreateWindowExW(
-        WS_EX_CLIENTEDGE, WC_LISTVIEWW, L"", WS_CHILD | WS_VISIBLE | LVS_ICON | LVS_AUTOARRANGE | LVS_SINGLESEL, 0, 0,
+        0, WC_LISTVIEWW, L"", WS_CHILD | WS_VISIBLE | LVS_ICON | LVS_AUTOARRANGE | LVS_SINGLESEL, 0, 0,
         clientRect.right, clientRect.bottom, window_, nullptr, GetModuleHandleW(nullptr), nullptr);
 
     if (!listView_) {
