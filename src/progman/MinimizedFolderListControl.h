@@ -6,6 +6,7 @@ namespace progman {
 class MinimizedFolderListControl {
    public:
     MinimizedFolderListControl(HINSTANCE instance, HWND parent, std::function<void(std::wstring)> onRestore);
+    ~MinimizedFolderListControl();
     MinimizedFolderListControl(const MinimizedFolderListControl&) = delete;
     MinimizedFolderListControl& operator=(const MinimizedFolderListControl&) = delete;
     MinimizedFolderListControl(MinimizedFolderListControl&&) = delete;

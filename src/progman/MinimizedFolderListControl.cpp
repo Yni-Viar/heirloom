@@ -134,6 +134,9 @@ MinimizedFolderListControl::MinimizedFolderListControl(
         THROW_LAST_ERROR();
     }
 
+    // Enable alphabetical sorting
+    ListView_SetExtendedListViewStyle(listView_, LVS_EX_AUTOSIZECOLUMNS);
+
     // Set up the image list with folder icon with DPI scaling
     int iconSize = getDpiScaledValue(window_, BASE_ICON_SIZE);
     HIMAGELIST imageList = ImageList_Create(iconSize, iconSize, ILC_COLOR32 | ILC_MASK, 1, 1);
@@ -165,14 +168,29 @@ HWND MinimizedFolderListControl::hwnd() const {
 void MinimizedFolderListControl::addMinimizedFolder(std::wstring name) {
     // Insert item with error checking
     LVITEM item = {};
-    item.mask = LVIF_TEXT | LVIF_IMAGE;
-    item.iItem = ListView_GetItemCount(listView_);
+    item.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM;
+    item.iItem = 0;  // Insert at the beginning, sorting will reposition it
     item.iSubItem = 0;
     item.pszText = const_cast<LPWSTR>(name.c_str());
     item.cchTextMax = static_cast<int>(name.length());
     item.iImage = 0;  // Index of the folder icon in the image list
 
+    // Store the name string as item data - this memory needs to persist
+    wchar_t* itemText = _wcsdup(name.c_str());
+    item.lParam = reinterpret_cast<LPARAM>(itemText);
+
     ListView_InsertItem(listView_, &item);
+
+    // Sort the items alphabetically
+    ListView_SortItems(
+        listView_,
+        [](LPARAM lParam1, LPARAM lParam2, LPARAM /*lParamSort*/) -> int {
+            const wchar_t* text1 = reinterpret_cast<const wchar_t*>(lParam1);
+            const wchar_t* text2 = reinterpret_cast<const wchar_t*>(lParam2);
+
+            return _wcsicmp(text1, text2);
+        },
+        0);
 
     // Force layout update
     RECT clientRect;
@@ -216,6 +234,21 @@ int MinimizedFolderListControl::autoSize(HWND mdiClient) const {
     SetWindowPos(listView_, nullptr, 0, 0, mdiWidth, requiredHeight, SWP_NOZORDER);
 
     return requiredHeight;
+}
+
+// Add destructor to cleanup allocated memory for item text
+MinimizedFolderListControl::~MinimizedFolderListControl() {
+    // Free memory allocated for item text
+    int itemCount = ListView_GetItemCount(listView_);
+    for (int i = 0; i < itemCount; i++) {
+        LVITEM item = {};
+        item.mask = LVIF_PARAM;
+        item.iItem = i;
+
+        if (ListView_GetItem(listView_, &item) && item.lParam) {
+            free(reinterpret_cast<void*>(item.lParam));
+        }
+    }
 }
 
 }  // namespace progman
