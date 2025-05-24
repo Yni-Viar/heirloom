@@ -248,6 +248,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="test_window_state.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

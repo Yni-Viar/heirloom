@@ -5,6 +5,7 @@
 // Windows API
 #include "windows10.h"
 #include <commctrl.h>
+#include <shlobj.h>
 
 // C++ Standard Library
 #include <stdexcept>

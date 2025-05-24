@@ -44,6 +44,7 @@
     <ClCompile Include="ShortcutManager.cpp" />
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="window_data.cpp" />
+    <ClCompile Include="window_state.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="com_util.h" />
@@ -57,6 +58,7 @@
     <ClInclude Include="string_util.h" />
     <ClInclude Include="windows10.h" />
     <ClInclude Include="window_data.h" />
+    <ClInclude Include="window_state.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

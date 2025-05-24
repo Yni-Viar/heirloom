@@ -4,10 +4,31 @@
 #include "progman/NewFolderDialog.h"
 #include "libprogman/window_data.h"
 #include "libprogman/string_util.h"
+#include "libprogman/window_state.h"
 
 namespace progman {
 
 constexpr WCHAR kClassName[] = L"ProgmanWindowClass";
+
+// Get the path to the window state INI file
+std::filesystem::path getWindowStateFilePath() {
+    WCHAR appDataPath[MAX_PATH] = { 0 };
+    if (FAILED(SHGetFolderPathW(nullptr, CSIDL_APPDATA, nullptr, 0, appDataPath))) {
+        throw std::runtime_error("Failed to get APPDATA folder path");
+    }
+
+    std::filesystem::path path(appDataPath);
+    path /= L"Heirloom Program Manager";
+
+    // Create the directory if it doesn't exist
+    std::error_code ec;
+    std::filesystem::create_directories(path, ec);
+    if (ec) {
+        throw std::runtime_error("Failed to create settings directory");
+    }
+
+    return path / L"window.ini";
+}
 
 ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance, libprogman::ShortcutManager* shortcutManager)
     : hInstance_(hInstance), shortcutManager_(shortcutManager) {
@@ -36,6 +57,8 @@ ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance, libprogman::Shor
     // Load the initial folder windows
     shortcutManager_->refresh();
     syncFolderWindows();
+
+    // Window state is now restored in the show() method
 }
 
 void ProgramManagerWindow::registerWindowClass() {
@@ -118,12 +141,25 @@ void ProgramManagerWindow::createMdiClient() {
 }
 
 void ProgramManagerWindow::show(int nCmdShow) {
-    // Force window to be shown with SW_SHOWNORMAL if nCmdShow is 0
-    if (nCmdShow == 0) {
-        nCmdShow = SW_SHOWNORMAL;
+    // First, try to restore the saved window state
+    bool stateRestored = false;
+    try {
+        libprogman::restoreWindowState(hwnd_, getWindowStateFilePath());
+        stateRestored = true;
+    } catch (const std::exception& e) {
+        // Just log the error - this is not critical
+        OutputDebugStringA(e.what());
     }
 
-    ShowWindow(hwnd_, nCmdShow);
+    // Only use the provided nCmdShow if we couldn't restore the saved state
+    if (!stateRestored) {
+        // Force window to be shown with SW_SHOWNORMAL if nCmdShow is 0
+        if (nCmdShow == 0) {
+            nCmdShow = SW_SHOWNORMAL;
+        }
+        ShowWindow(hwnd_, nCmdShow);
+    }
+
     UpdateWindow(hwnd_);
 
     // Additional call to force visibility
@@ -214,6 +250,13 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
         }
 
         case WM_DESTROY:
+            // Save the window state before destroying
+            try {
+                libprogman::saveWindowState(hwnd, getWindowStateFilePath());
+            } catch (const std::exception& e) {
+                // Just log or ignore - this is not critical
+                OutputDebugStringA(e.what());
+            }
             PostQuitMessage(0);
             return 0;
     }

@@ -27,6 +27,9 @@
     <ClCompile Include="test_window_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_window_state.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
