@@ -11,9 +11,10 @@ ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance, libprogman::Shor
     : hInstance_(hInstance), shortcutManager_(shortcutManager) {
     registerWindowClass();
 
+    // Create the main frame window with explicit MDI frame styles
     hwnd_ = CreateWindowW(
-        kClassName, L"Program Manager", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr,
-        hInstance_, this);
+        kClassName, L"Program Manager", WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, CW_USEDEFAULT,
+        CW_USEDEFAULT, 800, 600, nullptr, nullptr, hInstance_, this);
 
     if (!hwnd_) {
         DWORD error = GetLastError();
@@ -68,12 +69,32 @@ void ProgramManagerWindow::registerWindowClass() {
 
 void ProgramManagerWindow::createMdiClient() {
     CLIENTCREATESTRUCT ccs{};
-    ccs.hWindowMenu = nullptr;
+
+    // Get the main window's menu
+    HMENU hMainMenu = GetMenu(hwnd_);
+
+    // Find the Window menu directly by position (usually after File menu)
+    int windowMenuPos = -1;
+    int menuCount = GetMenuItemCount(hMainMenu);
+    for (int i = 0; i < menuCount; i++) {
+        WCHAR buffer[256] = { 0 };
+        GetMenuStringW(hMainMenu, i, buffer, _countof(buffer), MF_BYPOSITION);
+
+        if (wcscmp(buffer, L"&Window") == 0) {
+            windowMenuPos = i;
+            break;
+        }
+    }
+
+    if (windowMenuPos >= 0) {
+        ccs.hWindowMenu = GetSubMenu(hMainMenu, windowMenuPos);
+    }
+
     ccs.idFirstChild = 1;
 
     // Create a standard MDI client
-    mdiClient_ =
-        CreateWindowW(L"MDICLIENT", nullptr, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd_, nullptr, hInstance_, &ccs);
+    mdiClient_ = CreateWindowW(
+        L"MDICLIENT", nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, 0, 0, 0, 0, hwnd_, nullptr, hInstance_, &ccs);
 
     if (!mdiClient_) {
         DWORD error = GetLastError();
@@ -137,6 +158,19 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                 case ID_FILE_EXIT:
                     DestroyWindow(hwnd);
                     return 0;
+
+                // Handle Window menu commands
+                case ID_WINDOW_CASCADE:
+                    SendMessageW(mdiClient_, WM_MDICASCADE, 0, 0);
+                    return 0;
+
+                case ID_WINDOW_TILE:
+                    SendMessageW(mdiClient_, WM_MDITILE, MDITILE_HORIZONTAL, 0);
+                    return 0;
+
+                case ID_WINDOW_ARRANGE:
+                    SendMessageW(mdiClient_, WM_MDIICONARRANGE, 0, 0);
+                    return 0;
             }
             break;
 
@@ -145,8 +179,8 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
             return 0;
     }
 
-    // For a standard window (not a frame window)
-    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+    // Use DefFrameProc instead of DefWindowProc for proper MDI handling
+    return DefFrameProcW(hwnd, mdiClient_, uMsg, wParam, lParam);
 }
 
 void ProgramManagerWindow::refresh() {

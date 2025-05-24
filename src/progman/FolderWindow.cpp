@@ -39,7 +39,7 @@ FolderWindow::FolderWindow(HINSTANCE instance, HWND mdiClient, std::shared_ptr<l
     WNDCLASSEXW wcex = {};
     if (!GetClassInfoExW(GetModuleHandleW(nullptr), kFolderWindowClass, &wcex)) {
         wcex.cbSize = sizeof(WNDCLASSEXW);
-        wcex.style = CS_HREDRAW | CS_VREDRAW;
+        wcex.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
         wcex.lpfnWndProc = FolderWindowProc;
         wcex.hInstance = GetModuleHandleW(nullptr);
         wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
@@ -57,8 +57,10 @@ FolderWindow::FolderWindow(HINSTANCE instance, HWND mdiClient, std::shared_ptr<l
     mcs.szClass = kFolderWindowClass;
     mcs.szTitle = folder_->name().c_str();
     mcs.hOwner = instance;
-    mcs.x = mcs.y = mcs.cx = mcs.cy = CW_USEDEFAULT;
-    mcs.style = WS_VISIBLE | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
+    mcs.x = mcs.y = CW_USEDEFAULT;
+    mcs.cx = mcs.cy = CW_USEDEFAULT;
+    // Make sure we include the system menu and all window styles for proper MDI behavior
+    mcs.style = WS_VISIBLE | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
     mcs.lParam = reinterpret_cast<LPARAM>(this);
 
     // Send the MDI create message directly
@@ -158,7 +160,8 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
             if (listView_) {
                 MoveWindow(listView_, 0, 0, clientRect.right, clientRect.bottom, TRUE);
             }
-            return 0;
+            // Continue with default handling for MDI child window
+            break;
         }
 
         case WM_NOTIFY: {
