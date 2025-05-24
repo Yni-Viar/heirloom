@@ -3,6 +3,7 @@
 #include "progman/FolderWindow.h"
 #include "libprogman/string_util.h"
 #include "libprogman/window_data.h"
+#include "libprogman/window_state.h"
 
 namespace progman {
 
@@ -30,6 +31,58 @@ LRESULT CALLBACK FolderWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
     }
 
     return DefMDIChildProcW(hwnd, message, wParam, lParam);
+}
+
+// Helper function to get the ini file path
+std::optional<std::filesystem::path> FolderWindow::getIniFilePath() const {
+    if (!folder_ || folder_->path().empty()) {
+        return std::nullopt;
+    }
+    return folder_->path() / L"window.ini";
+}
+
+// Helper function to save window state
+void FolderWindow::saveWindowState(HWND hwnd) {
+    auto iniFilePath = getIniFilePath();
+    if (iniFilePath) {
+        libprogman::saveWindowState(hwnd, *iniFilePath);
+        // Also save whether the window is minimized to the list
+        libprogman::saveWindowMinimizedState(*iniFilePath, isMinimized_);
+    }
+}
+
+// Helper function to restore window state
+void FolderWindow::restoreWindowState(HWND hwnd) {
+    auto iniFilePath = getIniFilePath();
+    if (iniFilePath) {
+        libprogman::restoreWindowState(hwnd, *iniFilePath);
+    }
+}
+
+// Public method to save window state
+void FolderWindow::saveState() {
+    if (window_) {
+        saveWindowState(window_);
+    }
+}
+
+// Set minimized state
+void FolderWindow::setMinimized(bool minimized) {
+    isMinimized_ = minimized;
+}
+
+// Get current minimized state
+bool FolderWindow::isMinimized() const {
+    return isMinimized_;
+}
+
+// Check if the window was minimized on save
+bool FolderWindow::wasMinimizedOnSave() const {
+    auto iniFilePath = getIniFilePath();
+    if (iniFilePath) {
+        return libprogman::getWindowMinimizedState(*iniFilePath);
+    }
+    return false;
 }
 
 // Constructor
@@ -75,6 +128,9 @@ FolderWindow::FolderWindow(HINSTANCE instance, HWND mdiClient, std::shared_ptr<l
 
     // Populate the ListView with shortcuts
     refreshListView();
+
+    // Restore window position if available
+    restoreWindowState(window_);
 }
 
 void FolderWindow::setFolder(std::shared_ptr<libprogman::ShortcutFolder> folder) {
@@ -90,10 +146,15 @@ void FolderWindow::setFolder(std::shared_ptr<libprogman::ShortcutFolder> folder)
 void FolderWindow::show() {
     ShowWindow(window_, SW_SHOW);
     UpdateWindow(window_);
+    // When showing the window, it's no longer minimized to the list
+    isMinimized_ = false;
 }
 
 void FolderWindow::close() {
     if (window_) {
+        // Save window position before closing
+        saveWindowState(window_);
+
         SendMessageW(GetParent(window_), WM_MDIDESTROY, reinterpret_cast<WPARAM>(window_), 0);
         window_ = nullptr;
         listView_ = nullptr;
@@ -204,6 +265,12 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
         case WM_SYSCOMMAND:
             // Completely intercept the minimize command
             if ((wParam & 0xFFF0) == SC_MINIMIZE) {
+                // Save window position before minimizing
+                saveWindowState(hwnd);
+
+                // Mark as minimized to the list
+                isMinimized_ = true;
+
                 // Call our minimize callback if set
                 if (onMinimizeCallback_ && folder_) {
                     onMinimizeCallback_(folder_->name());
@@ -215,6 +282,12 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
             break;
 
         case WM_CLOSE:
+            // Save window position before closing
+            saveWindowState(hwnd);
+
+            // Mark as minimized to the list since we're hiding it
+            isMinimized_ = true;
+
             // Intercept close command and treat it like minimize
             // As with the old school Program Manager, the user can't destroy a group simply by closing it
             if (onMinimizeCallback_ && folder_) {

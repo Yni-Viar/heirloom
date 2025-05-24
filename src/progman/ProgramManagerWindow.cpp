@@ -252,6 +252,12 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
         case WM_DESTROY:
             // Save the window state before destroying
             try {
+                // First save all folder window states
+                for (const auto& [folderName, folderWindow] : folderWindows_) {
+                    folderWindow->saveState();
+                }
+
+                // Then save the main window state
                 libprogman::saveWindowState(hwnd, getWindowStateFilePath());
             } catch (const std::exception& e) {
                 // Just log or ignore - this is not critical
@@ -308,7 +314,20 @@ void ProgramManagerWindow::syncFolderWindows() {
                 // Update the layout
                 minimizedFolderList_->autoSize(mdiClient_);
             });
-            folderWindow->show();
+
+            // Check if this window was minimized when last saved
+            bool wasMinimized = folderWindow->wasMinimizedOnSave();
+            if (wasMinimized) {
+                // If it was minimized, don't show it, but add it to the minimized list
+                folderWindow->setMinimized(true);
+                minimizedFolderList_->addMinimizedFolder(folderName);
+                minimizedFolderList_->autoSize(mdiClient_);
+                ShowWindow(folderWindow->window_, SW_HIDE);
+            } else {
+                // Otherwise, show it normally
+                folderWindow->show();
+            }
+
             folderWindows_[folderName] = std::move(folderWindow);
         }
     }

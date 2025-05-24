@@ -14,6 +14,7 @@ constexpr std::wstring_view kKeyNormalLeft = L"NormalLeft";
 constexpr std::wstring_view kKeyNormalTop = L"NormalTop";
 constexpr std::wstring_view kKeyNormalRight = L"NormalRight";
 constexpr std::wstring_view kKeyNormalBottom = L"NormalBottom";
+constexpr std::wstring_view kKeyIsMinimizedToList = L"IsMinimizedToList";
 
 void saveWindowState(HWND hwnd, std::filesystem::path iniFilePath) {
     WINDOWPLACEMENT wp = {};
@@ -94,6 +95,24 @@ void restoreWindowState(HWND hwnd, std::filesystem::path iniFilePath) {
     if (!SetWindowPlacement(hwnd, &wp)) {
         THROW_LAST_ERROR();
     }
+}
+
+// Save whether a window is minimized to the MinimizedFolderListControl
+void saveWindowMinimizedState(std::filesystem::path iniFilePath, bool isMinimized) {
+    // Write minimized state to the INI file
+    WritePrivateProfileString(
+        kSectionName.data(), kKeyIsMinimizedToList.data(), isMinimized ? L"1" : L"0", iniFilePath.c_str());
+}
+
+// Get whether a window was minimized to the MinimizedFolderListControl
+bool getWindowMinimizedState(std::filesystem::path iniFilePath) {
+    // Check if the INI file exists
+    if (!std::filesystem::exists(iniFilePath)) {
+        return false;
+    }
+
+    // Read the minimized state from the INI file
+    return GetPrivateProfileInt(kSectionName.data(), kKeyIsMinimizedToList.data(), 0, iniFilePath.c_str()) == 1;
 }
 
 }  // namespace libprogman

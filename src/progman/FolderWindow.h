@@ -26,6 +26,14 @@ class FolderWindow {
     bool hasSelectedItem() const;
     libprogman::Shortcut* getSelectedShortcut() const;
 
+    // Public method to save window state
+    void saveState();
+
+    // Methods to handle minimized state
+    void setMinimized(bool minimized);
+    bool isMinimized() const;
+    bool wasMinimizedOnSave() const;
+
     LRESULT handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    private:
@@ -33,9 +41,16 @@ class FolderWindow {
     HWND listView_ = nullptr;
     std::shared_ptr<libprogman::ShortcutFolder> folder_;
     std::function<void(const std::wstring&)> onMinimizeCallback_;
+    bool isMinimized_ = false;
 
     void createListView();
     void refreshListView();
+
+    // Helper functions for window state
+    void saveWindowState(HWND hwnd);
+    void restoreWindowState(HWND hwnd);
+    std::optional<std::filesystem::path> getIniFilePath() const;
+
     friend LRESULT CALLBACK FolderWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
     friend class ProgramManagerWindow;  // Allow ProgramManagerWindow to access window_
 };
