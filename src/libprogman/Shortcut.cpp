@@ -46,4 +46,14 @@ void Shortcut::launch() const {
     THROW_IF_FAILED(ShellExecuteExW(&sei) ? S_OK : HRESULT_FROM_WIN32(GetLastError()));
 }
 
+void Shortcut::deleteFile() const {
+    try {
+        std::filesystem::remove(path_);
+    } catch (const std::filesystem::filesystem_error& e) {
+        // Convert filesystem error to an exception with a user-friendly message
+        std::string errorMsg = "Failed to delete shortcut: " + std::string(e.what());
+        throw std::runtime_error(errorMsg);
+    }
+}
+
 }  // namespace libprogman

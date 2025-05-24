@@ -2,6 +2,7 @@
 
 #include "progman/pch.h"
 #include "libprogman/ShortcutFolder.h"
+#include "libprogman/ShortcutManager.h"
 
 namespace progman {
 
@@ -21,6 +22,12 @@ class FolderWindow {
     void setOnMinimizeCallback(std::function<void(const std::wstring&)> callback);
     std::wstring getName() const;
 
+    // New methods for handling item selection
+    bool hasSelectedItem() const;
+    libprogman::Shortcut* getSelectedShortcut() const;
+
+    LRESULT handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+
    private:
     HWND window_ = nullptr;
     HWND listView_ = nullptr;
@@ -29,7 +36,6 @@ class FolderWindow {
 
     void createListView();
     void refreshListView();
-    LRESULT handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
     friend LRESULT CALLBACK FolderWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
     friend class ProgramManagerWindow;  // Allow ProgramManagerWindow to access window_
 };

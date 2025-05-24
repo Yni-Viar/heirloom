@@ -3,6 +3,7 @@
 #include "progman/ProgramManagerWindow.h"
 #include "progman/NewFolderDialog.h"
 #include "libprogman/window_data.h"
+#include "libprogman/string_util.h"
 
 namespace progman {
 
@@ -182,6 +183,10 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                 }
                     return 0;
 
+                case ID_FILE_DELETE:
+                    handleDeleteCommand();
+                    return 0;
+
                 // Handle Window menu commands
                 case ID_WINDOW_CASCADE:
                     SendMessageW(mdiClient_, WM_MDICASCADE, 0, 0);
@@ -196,6 +201,17 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                     return 0;
             }
             break;
+
+        case WM_INITMENUPOPUP: {
+            // Update the File menu item states when it's about to be shown
+            HMENU hMenu = reinterpret_cast<HMENU>(wParam);
+            if (HIWORD(lParam) == 0) {  // This is the File menu
+                FolderWindow* activeFolder = getActiveFolderWindow();
+                // Enable delete only if there's an active folder window
+                EnableMenuItem(hMenu, ID_FILE_DELETE, activeFolder ? MF_ENABLED : MF_GRAYED);
+            }
+            break;
+        }
 
         case WM_DESTROY:
             PostQuitMessage(0);
@@ -267,6 +283,65 @@ void ProgramManagerWindow::restoreMinimizedFolder(const std::wstring& folderName
 
         // Update the minimized folder list layout
         minimizedFolderList_->autoSize(mdiClient_);
+    }
+}
+
+FolderWindow* ProgramManagerWindow::getActiveFolderWindow() const {
+    HWND activeChildWindow = reinterpret_cast<HWND>(SendMessageW(mdiClient_, WM_MDIGETACTIVE, 0, 0));
+    if (!activeChildWindow) {
+        return nullptr;
+    }
+
+    // Find the FolderWindow instance corresponding to this HWND
+    for (const auto& [folderName, folderWindow] : folderWindows_) {
+        if (folderWindow->window_ == activeChildWindow) {
+            return folderWindow.get();
+        }
+    }
+
+    return nullptr;
+}
+
+void ProgramManagerWindow::handleDeleteCommand() {
+    FolderWindow* activeFolder = getActiveFolderWindow();
+    if (!activeFolder) {
+        return;
+    }
+
+    if (activeFolder->hasSelectedItem()) {
+        // There's a selected shortcut to delete
+        libprogman::Shortcut* shortcut = activeFolder->getSelectedShortcut();
+        if (!shortcut) {
+            return;
+        }
+
+        // Confirm with the user
+        std::wstring message = L"Are you sure you want to delete the shortcut \"" + shortcut->name() + L"\"?";
+        if (MessageBoxW(hwnd_, message.c_str(), L"Confirm Delete", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+            // Delete the shortcut
+            shortcut->deleteFile();
+            // The filesystem watcher will pick up the change and update the UI
+        }
+    } else {
+        // No item selected, delete the folder itself
+        std::wstring folderName = activeFolder->getName();
+
+        // Get the folder object
+        try {
+            auto folderPtr = shortcutManager_->folder(folderName);
+
+            // Confirm with the user
+            std::wstring message = L"Are you sure you want to delete the folder \"" + folderName + L"\"?";
+            if (MessageBoxW(hwnd_, message.c_str(), L"Confirm Delete", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+                // Delete the folder
+                shortcutManager_->deleteFolder(folderPtr.get());
+                // The filesystem watcher will pick up the change and update the UI
+            }
+        } catch (const std::exception& e) {
+            // Show error message if the folder couldn't be found
+            std::wstring errorMsg = L"Error deleting folder: " + libprogman::utf8ToWide(e.what());
+            MessageBoxW(hwnd_, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
+        }
     }
 }
 

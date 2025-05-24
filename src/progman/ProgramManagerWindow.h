@@ -19,6 +19,10 @@ class ProgramManagerWindow {
     void refresh();
     HWND hwnd() const { return hwnd_; }
 
+    // New methods for deletion functionality
+    FolderWindow* getActiveFolderWindow() const;
+    void handleDeleteCommand();
+
    private:
     static LRESULT CALLBACK windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

@@ -159,6 +159,35 @@ std::wstring FolderWindow::getName() const {
     return folder_ ? folder_->name() : L"";
 }
 
+bool FolderWindow::hasSelectedItem() const {
+    if (!listView_) {
+        return false;
+    }
+
+    // Get the selected item
+    return ListView_GetSelectedCount(listView_) > 0;
+}
+
+libprogman::Shortcut* FolderWindow::getSelectedShortcut() const {
+    if (!listView_) {
+        return nullptr;
+    }
+
+    // Get the selected item
+    int selectedIndex = ListView_GetNextItem(listView_, -1, LVNI_SELECTED);
+    if (selectedIndex == -1) {
+        return nullptr;
+    }
+
+    // Get the shortcut associated with the selected item
+    LVITEMW lvItem = {};
+    lvItem.mask = LVIF_PARAM;
+    lvItem.iItem = selectedIndex;
+    ListView_GetItem(listView_, &lvItem);
+
+    return reinterpret_cast<libprogman::Shortcut*>(lvItem.lParam);
+}
+
 LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
         case WM_SIZE: {

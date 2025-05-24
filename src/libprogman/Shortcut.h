@@ -17,6 +17,7 @@ class Shortcut {
     std::filesystem::file_time_type lastWriteTime() const noexcept;
     void showPropertiesWindow() const;
     void launch() const;
+    void deleteFile() const;
 
    private:
     std::wstring name_;
