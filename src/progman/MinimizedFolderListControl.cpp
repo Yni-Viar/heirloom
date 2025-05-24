@@ -2,7 +2,6 @@
 #include "progman/MinimizedFolderListControl.h"
 #include "progman/resource.h"
 #include "libprogman/window_data.h"
-#include <commctrl.h>
 
 namespace progman {
 
