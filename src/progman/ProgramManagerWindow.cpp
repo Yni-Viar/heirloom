@@ -1,6 +1,7 @@
 #include "progman/pch.h"
 #include "progman/resource.h"
 #include "progman/ProgramManagerWindow.h"
+#include "progman/NewFolderDialog.h"
 #include "libprogman/window_data.h"
 
 namespace progman {
@@ -169,6 +170,16 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
             switch (LOWORD(wParam)) {
                 case ID_FILE_EXIT:
                     DestroyWindow(hwnd);
+                    return 0;
+
+                case ID_FILE_NEWFOLDER: {
+                    // Show the new folder dialog
+                    NewFolderDialog dialog(hwnd, hInstance_, shortcutManager_);
+                    if (dialog.show()) {
+                        // Refresh the UI if a folder was created
+                        refresh();
+                    }
+                }
                     return 0;
 
                 // Handle Window menu commands
