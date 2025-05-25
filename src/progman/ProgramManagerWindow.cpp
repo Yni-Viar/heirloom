@@ -502,6 +502,17 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                 FolderWindow* activeFolder = getActiveFolderWindow();
                 // Enable delete only if there's an active folder window
                 EnableMenuItem(hMenu, ID_FILE_DELETE, activeFolder ? MF_ENABLED : MF_GRAYED);
+
+                // Sort Window menu items alphabetically
+                int menuIndex = LOWORD(lParam);
+                HMENU mainMenu = GetMenu(hwnd);
+
+                // Check if this is the Window menu
+                WCHAR menuName[256] = { 0 };
+                if (GetMenuStringW(mainMenu, menuIndex, menuName, _countof(menuName), MF_BYPOSITION) &&
+                    wcscmp(menuName, L"&Window") == 0) {
+                    sortWindowMenu(hMenu);
+                }
             }
             break;
         }
@@ -677,6 +688,104 @@ void ProgramManagerWindow::handleDeleteCommand() {
             std::wstring errorMsg = L"Error deleting folder: " + libprogman::utf8ToWide(e.what());
             MessageBoxW(hwnd_, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
         }
+    }
+}
+
+void ProgramManagerWindow::sortWindowMenu(HMENU windowMenu) {
+    // Get the number of items in the Window menu
+    int itemCount = GetMenuItemCount(windowMenu);
+    if (itemCount <= 0) {
+        return;
+    }
+
+    // Find the position where the window list starts
+    // Typically, the standard Window menu commands (Cascade, Tile, etc.) come first,
+    // followed by a separator, then the window list
+    int firstWindowPos = -1;
+    for (int i = 0; i < itemCount; i++) {
+        UINT id = GetMenuItemID(windowMenu, i);
+        // Windows lists typically start after a separator
+        if (id == 0) {  // separator
+            // Make sure there's at least one item after the separator
+            if (i + 1 < itemCount) {
+                firstWindowPos = i + 1;
+                break;
+            }
+        }
+    }
+
+    // If we didn't find a start position, or there are no windows listed, return
+    if (firstWindowPos < 0 || firstWindowPos >= itemCount) {
+        return;
+    }
+
+    // Collect window menu items
+    struct WindowMenuItem {
+        std::wstring text;
+        UINT id;
+        UINT state;
+        bool isValid;
+    };
+    std::vector<WindowMenuItem> windowItems;
+
+    // Get all window menu items
+    for (int i = firstWindowPos; i < itemCount; i++) {
+        WCHAR buffer[256] = { 0 };
+        MENUITEMINFOW mii = { 0 };
+        mii.cbSize = sizeof(MENUITEMINFOW);
+        mii.fMask = MIIM_ID | MIIM_STATE | MIIM_STRING;
+        mii.dwTypeData = buffer;
+        mii.cch = _countof(buffer);
+
+        if (GetMenuItemInfoW(windowMenu, i, TRUE, &mii)) {
+            WindowMenuItem item;
+            item.text = buffer;
+            item.id = mii.wID;
+            item.state = mii.fState;
+            // Mark item as valid if it has a non-zero ID and non-empty text
+            item.isValid = (mii.wID != 0 && buffer[0] != L'\0');
+
+            // Only add valid window items
+            if (item.isValid) {
+                windowItems.push_back(item);
+            }
+        }
+    }
+
+    // If no valid items found, return
+    if (windowItems.empty()) {
+        return;
+    }
+
+    // Sort window items alphabetically
+    std::sort(windowItems.begin(), windowItems.end(), [](const WindowMenuItem& a, const WindowMenuItem& b) {
+        // Extract the folder name (after the space if present)
+        std::wstring nameA = a.text;
+        std::wstring nameB = b.text;
+
+        // Remove the numeric prefix (like "&1 ")
+        size_t spaceA = nameA.find(L' ');
+        size_t spaceB = nameB.find(L' ');
+
+        if (spaceA != std::wstring::npos && spaceA + 1 < nameA.length()) {
+            nameA = nameA.substr(spaceA + 1);
+        }
+
+        if (spaceB != std::wstring::npos && spaceB + 1 < nameB.length()) {
+            nameB = nameB.substr(spaceB + 1);
+        }
+
+        return nameA < nameB;
+    });
+
+    // Remove all window menu items
+    for (int i = itemCount - 1; i >= firstWindowPos; i--) {
+        RemoveMenu(windowMenu, i, MF_BYPOSITION);
+    }
+
+    // Add items back in sorted order
+    for (const auto& item : windowItems) {
+        AppendMenuW(windowMenu, MF_STRING | item.state, item.id, item.text.c_str());
     }
 }
 

@@ -35,6 +35,9 @@ class ProgramManagerWindow {
     void saveSplitterPosition() const;
     void loadSplitterPosition();
 
+    // Method to sort window menu items alphabetically
+    void sortWindowMenu(HMENU windowMenu);
+
     HWND hwnd_ = nullptr;
     HWND mdiClient_ = nullptr;
     WNDCLASSEXW windowClass_{};
