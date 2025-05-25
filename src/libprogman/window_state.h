@@ -6,7 +6,7 @@ namespace libprogman {
 
 void saveWindowState(HWND hwnd, std::filesystem::path iniFilePath);
 
-void restoreWindowState(HWND hwnd, std::filesystem::path iniFilePath);
+bool restoreWindowState(HWND hwnd, std::filesystem::path iniFilePath);
 
 // Save whether a window is minimized to the MinimizedFolderListControl
 void saveWindowMinimizedState(std::filesystem::path iniFilePath, bool isMinimized);

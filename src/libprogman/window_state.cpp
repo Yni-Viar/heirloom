@@ -57,10 +57,10 @@ void saveWindowState(HWND hwnd, std::filesystem::path iniFilePath) {
         iniFilePath.c_str());
 }
 
-void restoreWindowState(HWND hwnd, std::filesystem::path iniFilePath) {
+bool restoreWindowState(HWND hwnd, std::filesystem::path iniFilePath) {
     // Check if the INI file exists
     if (!std::filesystem::exists(iniFilePath)) {
-        return;
+        return false;
     }
 
     WINDOWPLACEMENT wp = {};
@@ -93,8 +93,10 @@ void restoreWindowState(HWND hwnd, std::filesystem::path iniFilePath) {
 
     // Apply the window placement
     if (!SetWindowPlacement(hwnd, &wp)) {
-        THROW_LAST_ERROR();
+        return false;
     }
+
+    return true;
 }
 
 // Save whether a window is minimized to the MinimizedFolderListControl

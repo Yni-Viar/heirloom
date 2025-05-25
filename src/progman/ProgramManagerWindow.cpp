@@ -195,8 +195,7 @@ void ProgramManagerWindow::show(int nCmdShow) {
     // First, try to restore the saved window state
     bool stateRestored = false;
     try {
-        libprogman::restoreWindowState(hwnd_, getWindowStateFilePath());
-        stateRestored = true;
+        stateRestored = libprogman::restoreWindowState(hwnd_, getWindowStateFilePath());
     } catch (const std::exception& e) {
         // Just log the error - this is not critical
         OutputDebugStringA(e.what());
