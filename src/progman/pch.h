@@ -6,6 +6,7 @@
 #include "windows10.h"
 #include <commctrl.h>
 #include <shlobj.h>
+#include <windowsx.h>
 
 // C++ Standard Library
 #include <stdexcept>

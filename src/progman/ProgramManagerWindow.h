@@ -31,6 +31,10 @@ class ProgramManagerWindow {
     void syncFolderWindows();
     void restoreMinimizedFolder(const std::wstring& folderName);
 
+    // Methods to save/load splitter position
+    void saveSplitterPosition() const;
+    void loadSplitterPosition();
+
     HWND hwnd_ = nullptr;
     HWND mdiClient_ = nullptr;
     WNDCLASSEXW windowClass_{};

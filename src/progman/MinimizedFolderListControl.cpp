@@ -16,6 +16,9 @@ int getDpiScaledValue(HWND hwnd, int value) {
 // Base values at 96 DPI
 constexpr int BASE_ICON_SIZE = 32;
 constexpr int BASE_PADDING = 8;
+constexpr int BASE_SPLITTER_HEIGHT = 8;
+constexpr int BASE_MIN_CONTROL_HEIGHT = 64;
+constexpr int DEFAULT_HEIGHT = 64;  // Default height in pixels at 96 DPI
 
 LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     auto* control = libprogman::getWindowData<MinimizedFolderListControl>(hwnd);
@@ -37,8 +40,156 @@ LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM 
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
+
+            // Paint the splitter if needed
+            control->paintSplitter(hdc);
+
             EndPaint(hwnd, &ps);
             return 0;
+        }
+        case WM_MOUSEMOVE: {
+            // Extract mouse coordinates
+            int y = GET_Y_LPARAM(lParam);
+
+            // Start tracking mouse if not already doing so
+            if (!control->isTrackingMouse_) {
+                control->initMouseTracking();
+            }
+
+            // Handle dragging
+            if (control->isDragging_) {
+                // Get the MDI client window
+                HWND mdiClient = GetParent(hwnd);
+                if (!mdiClient)
+                    break;
+
+                // Get current mouse position in screen coordinates
+                POINT ptCurrent = { 0, y };
+                ClientToScreen(hwnd, &ptCurrent);
+
+                // Calculate delta from the fixed start position in screen coordinates
+                int deltaY = ptCurrent.y - control->dragStartScreen_.y;
+
+                // Calculate new height (drag up = bigger, drag down = smaller)
+                int newHeight = control->initialHeight_ - deltaY;
+
+                // Get MDI client rect
+                RECT mdiRect;
+                GetClientRect(mdiClient, &mdiRect);
+                int mdiHeight = mdiRect.bottom - mdiRect.top;
+
+                // Enforce minimum and maximum constraints
+                int minHeight = getDpiScaledValue(hwnd, BASE_MIN_CONTROL_HEIGHT);
+                int maxHeight = mdiHeight / 2;  // Maximum 50% of MDI client
+
+                int constrainedHeight = newHeight;
+                if (constrainedHeight < minHeight) {
+                    constrainedHeight = minHeight;
+                } else if (constrainedHeight > maxHeight) {
+                    constrainedHeight = maxHeight;
+                }
+
+                // Only update if height actually changed to reduce flickering
+                if (control->controlHeight_ != constrainedHeight) {
+                    // Store the new height
+                    control->controlHeight_ = constrainedHeight;
+
+                    // Get MDI dimensions
+                    RECT mdiRect;
+                    GetClientRect(mdiClient, &mdiRect);
+                    int mdiWidth = mdiRect.right - mdiRect.left;
+                    int mdiHeight = mdiRect.bottom - mdiRect.top;
+
+                    // Position at the bottom of the MDI client
+                    int yPos = mdiHeight - constrainedHeight;
+
+                    // Update control position directly without going through autoSize()
+                    SetWindowPos(hwnd, HWND_BOTTOM, 0, yPos, mdiWidth, constrainedHeight, SWP_SHOWWINDOW);
+
+                    // Update the ListView position
+                    SetWindowPos(
+                        control->listView_, nullptr, 0, control->splitterHeight_, mdiWidth,
+                        constrainedHeight - control->splitterHeight_, SWP_NOZORDER);
+                }
+
+                return 0;
+            }
+            // Check for hover state
+            else if (ListView_GetItemCount(control->listView_) > 0) {
+                bool inSplitter = control->isPointInSplitter(y);
+
+                // Update cursor and hover state if changed
+                if (inSplitter != control->isSplitterHover_) {
+                    control->isSplitterHover_ = inSplitter;
+
+                    // Change cursor if in splitter area
+                    if (inSplitter) {
+                        SetCursor(LoadCursor(nullptr, IDC_SIZENS));
+                    } else {
+                        SetCursor(LoadCursor(nullptr, IDC_ARROW));
+                    }
+
+                    // Force repaint to update splitter appearance
+                    InvalidateRect(hwnd, nullptr, FALSE);
+                }
+            }
+            break;
+        }
+        case WM_LBUTTONDOWN: {
+            // Only handle when we have items
+            if (ListView_GetItemCount(control->listView_) == 0) {
+                break;
+            }
+
+            // Check if click is in splitter area
+            int y = GET_Y_LPARAM(lParam);
+            if (control->isPointInSplitter(y)) {
+                // Start dragging
+                control->isDragging_ = true;
+                control->dragStartY_ = y;
+                control->initialHeight_ = control->controlHeight_;
+
+                // Store the initial position in screen coordinates
+                POINT ptStart = { 0, y };
+                ClientToScreen(hwnd, &ptStart);
+                control->dragStartScreen_ = ptStart;
+
+                // Capture mouse
+                SetCapture(hwnd);
+
+                // Update cursor
+                SetCursor(LoadCursor(nullptr, IDC_SIZENS));
+
+                // Update splitter appearance
+                InvalidateRect(hwnd, nullptr, FALSE);
+
+                return 0;
+            }
+            break;
+        }
+        case WM_LBUTTONUP: {
+            // End dragging if we were dragging
+            if (control->isDragging_) {
+                control->isDragging_ = false;
+                ReleaseCapture();
+
+                // Update splitter appearance
+                InvalidateRect(hwnd, nullptr, FALSE);
+
+                return 0;
+            }
+            break;
+        }
+        case WM_MOUSELEAVE: {
+            // Reset hover state
+            if (control->isSplitterHover_) {
+                control->isSplitterHover_ = false;
+                control->isTrackingMouse_ = false;
+
+                // Update splitter appearance
+                InvalidateRect(hwnd, nullptr, FALSE);
+            }
+            break;
         }
         case WM_NOTIFY: {
             LPNMHDR nmhdr = reinterpret_cast<LPNMHDR>(lParam);
@@ -78,6 +229,9 @@ LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM 
                 if (oldImageList) {
                     ImageList_Destroy(oldImageList);
                 }
+
+                // Update splitter height based on new DPI
+                control->splitterHeight_ = getDpiScaledValue(hwnd, BASE_SPLITTER_HEIGHT);
 
                 // Force a layout update
                 if (HWND parent = GetParent(control->window_)) {
@@ -158,6 +312,30 @@ MinimizedFolderListControl::MinimizedFolderListControl(
 
     // Make sure no scrollbars are shown
     ListView_SetExtendedListViewStyle(listView_, LVS_EX_AUTOSIZECOLUMNS);
+
+    // Initialize splitter height with DPI scaling
+    splitterHeight_ = getDpiScaledValue(window_, BASE_SPLITTER_HEIGHT);
+
+    // Initialize with default height
+    controlHeight_ = getDpiScaledValue(window_, DEFAULT_HEIGHT);
+}
+
+// Set the splitter position and update the layout
+void MinimizedFolderListControl::setSplitterPosition(int height) {
+    // Only accept valid heights
+    if (height <= 0) {
+        return;
+    }
+
+    controlHeight_ = height;
+
+    // Update layout if window exists
+    if (window_) {
+        HWND parent = GetParent(window_);
+        if (parent) {
+            autoSize(parent);
+        }
+    }
 }
 
 HWND MinimizedFolderListControl::hwnd() const {
@@ -197,7 +375,7 @@ void MinimizedFolderListControl::addMinimizedFolder(std::wstring name) {
     SetWindowPos(listView_, nullptr, 0, 0, clientRect.right, clientRect.bottom, SWP_NOZORDER);
 }
 
-int MinimizedFolderListControl::autoSize(HWND mdiClient) const {
+int MinimizedFolderListControl::autoSize(HWND mdiClient) {
     if (!mdiClient || !window_) {
         return 0;
     }
@@ -216,17 +394,74 @@ int MinimizedFolderListControl::autoSize(HWND mdiClient) const {
         return 0;
     }
 
-    // Use a fixed height, scaled by DPI
-    int requiredHeight = getDpiScaledValue(window_, 64);
+    // Use the stored control height or initialize it if not set
+    if (controlHeight_ <= 0) {
+        controlHeight_ = getDpiScaledValue(window_, BASE_MIN_CONTROL_HEIGHT);
+    }
 
     // Position flush against left, bottom, and right edges
-    int yPos = mdiHeight - requiredHeight;
-    SetWindowPos(window_, HWND_BOTTOM, 0, yPos, mdiWidth, requiredHeight, SWP_SHOWWINDOW);
+    int yPos = mdiHeight - controlHeight_;
+    SetWindowPos(window_, HWND_BOTTOM, 0, yPos, mdiWidth, controlHeight_, SWP_SHOWWINDOW);
 
-    // Size the ListView to fill the entire container
-    SetWindowPos(listView_, nullptr, 0, 0, mdiWidth, requiredHeight, SWP_NOZORDER);
+    // Position the ListView below the splitter
+    SetWindowPos(listView_, nullptr, 0, splitterHeight_, mdiWidth, controlHeight_ - splitterHeight_, SWP_NOZORDER);
 
-    return requiredHeight;
+    return controlHeight_;
+}
+
+// Initialize mouse tracking for hover effects
+void MinimizedFolderListControl::initMouseTracking() {
+    if (!isTrackingMouse_ && window_) {
+        TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT) };
+        tme.dwFlags = TME_LEAVE;
+        tme.hwndTrack = window_;
+
+        if (TrackMouseEvent(&tme)) {
+            isTrackingMouse_ = true;
+        }
+    }
+}
+
+// Check if a point is within the splitter area
+bool MinimizedFolderListControl::isPointInSplitter(int y) const {
+    // The splitter is at the top of the control with height splitterHeight_
+    return (y >= 0 && y <= splitterHeight_);
+}
+
+// Handle splitter painting
+void MinimizedFolderListControl::paintSplitter(HDC hdc) {
+    // Only paint the splitter if we have items
+    if (ListView_GetItemCount(listView_) == 0) {
+        return;
+    }
+
+    RECT rect;
+    GetClientRect(window_, &rect);
+    rect.bottom = splitterHeight_;
+
+    // Determine the color based on state
+    COLORREF splitterColor;
+
+    if (isDragging_) {
+        // Darker when being dragged
+        splitterColor =
+            RGB(std::max(0, GetRValue(GetSysColor(COLOR_APPWORKSPACE)) - 30),
+                std::max(0, GetGValue(GetSysColor(COLOR_APPWORKSPACE)) - 30),
+                std::max(0, GetBValue(GetSysColor(COLOR_APPWORKSPACE)) - 30));
+    } else if (isSplitterHover_) {
+        // Lighter when hovered
+        splitterColor =
+            RGB(std::min(255, GetRValue(GetSysColor(COLOR_APPWORKSPACE)) + 20),
+                std::min(255, GetGValue(GetSysColor(COLOR_APPWORKSPACE)) + 20),
+                std::min(255, GetBValue(GetSysColor(COLOR_APPWORKSPACE)) + 20));
+    } else {
+        // Same as background when not interacting
+        splitterColor = GetSysColor(COLOR_APPWORKSPACE);
+    }
+
+    HBRUSH brush = CreateSolidBrush(splitterColor);
+    FillRect(hdc, &rect, brush);
+    DeleteObject(brush);
 }
 
 // Add destructor to cleanup allocated memory for item text

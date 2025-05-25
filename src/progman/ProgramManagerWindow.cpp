@@ -10,6 +10,10 @@ namespace progman {
 
 constexpr WCHAR kClassName[] = L"ProgmanWindowClass";
 
+// Section and key names for INI file
+constexpr WCHAR INI_SPLITTER_SECTION[] = L"MinimizedIconSplitter";
+constexpr WCHAR INI_SPLITTER_HEIGHT_KEY[] = L"Height";
+
 // Get the path to the window state INI file
 std::filesystem::path getWindowStateFilePath() {
     WCHAR appDataPath[MAX_PATH] = { 0 };
@@ -58,7 +62,54 @@ ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance, libprogman::Shor
     shortcutManager_->refresh();
     syncFolderWindows();
 
-    // Window state is now restored in the show() method
+    // Load saved splitter position
+    loadSplitterPosition();
+}
+
+// Load the splitter position from INI file
+void ProgramManagerWindow::loadSplitterPosition() {
+    try {
+        auto iniPath = getWindowStateFilePath();
+        auto iniPathStr = iniPath.wstring();
+
+        // Read the height from INI file
+        WCHAR buffer[16] = { 0 };
+        GetPrivateProfileStringW(
+            INI_SPLITTER_SECTION, INI_SPLITTER_HEIGHT_KEY, L"", buffer, _countof(buffer), iniPathStr.c_str());
+
+        // Parse the height value
+        if (buffer[0] != L'\0') {
+            int height = _wtoi(buffer);
+            if (height > 0 && minimizedFolderList_) {
+                minimizedFolderList_->setSplitterPosition(height);
+            }
+        }
+    } catch (const std::exception&) {
+        // Silently ignore errors - this is not critical
+    }
+}
+
+// Save the splitter position to INI file
+void ProgramManagerWindow::saveSplitterPosition() const {
+    if (!minimizedFolderList_) {
+        return;
+    }
+
+    try {
+        int height = minimizedFolderList_->getSplitterPosition();
+        if (height <= 0) {
+            return;
+        }
+
+        auto iniPath = getWindowStateFilePath();
+        auto iniPathStr = iniPath.wstring();
+
+        // Save the height to INI file
+        WritePrivateProfileStringW(
+            INI_SPLITTER_SECTION, INI_SPLITTER_HEIGHT_KEY, std::to_wstring(height).c_str(), iniPathStr.c_str());
+    } catch (const std::exception&) {
+        // Silently ignore errors - this is not critical
+    }
 }
 
 void ProgramManagerWindow::registerWindowClass() {
@@ -252,6 +303,9 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                 for (const auto& [folderName, folderWindow] : folderWindows_) {
                     folderWindow->saveState();
                 }
+
+                // Save the splitter position
+                saveSplitterPosition();
 
                 // Then save the main window state
                 libprogman::saveWindowState(hwnd, getWindowStateFilePath());

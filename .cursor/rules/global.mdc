@@ -32,4 +32,5 @@ alwaysApply: true
 - Use exceptions for error handling. Convert error codes to exceptions ASAP.
 - Use wil (Windows Implementation Library) classes for Win32 RAII. Use THROW_IF_FAILED() to handle HRESULTs. Use throwing wrappers.
 - Use an immutable style for data classes.
-- Add system includes to the project precompiled header: src/progman/pch.h or src/libprogman/pch.h
+- Add system #includes to the project precompiled header: src/progman/pch.h or src/libprogman/pch.h
+- Use std::min/std::max as we define NOMINMAX for windows.h
