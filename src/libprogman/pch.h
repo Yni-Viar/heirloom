@@ -14,6 +14,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -30,4 +31,6 @@
 #pragma warning(disable : 4267)  // conversion from 'size_t' to 'immer::detail::rbts::count_t', possible loss of data
 #include <immer/map_transient.hpp>
 #include <immer/map.hpp>
+#include <immer/vector_transient.hpp>
+#include <immer/vector.hpp>
 #pragma warning(pop)

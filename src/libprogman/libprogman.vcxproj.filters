@@ -48,6 +48,9 @@
     <ClCompile Include="window_state.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InstalledAppList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -84,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="window_state.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InstalledAppList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

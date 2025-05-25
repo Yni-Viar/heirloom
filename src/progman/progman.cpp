@@ -1,5 +1,6 @@
 #include "progman/pch.h"
 #include "libprogman/com_util.h"
+#include "libprogman/InstalledAppList.h"
 #include "libprogman/FolderWatcher.h"
 #include "libprogman/ShortcutFactory.h"
 #include "libprogman/ShortcutManager.h"
@@ -25,6 +26,28 @@ static std::filesystem::path createShortcutsFolder() {
     return shortcutsPath;
 }
 
+static immer::vector<std::filesystem::path> getInstalledAppsFolders() {
+    // Get the absolute paths:
+    // - %PROGRAMDATA%\Microsoft\Windows\Start Menu\Programs
+    // - %APPDATA%\Microsoft\Windows\Start Menu\Programs
+
+    immer::vector<std::filesystem::path> folders;
+
+    // Get %PROGRAMDATA%\Microsoft\Windows\Start Menu\Programs
+    PWSTR commonProgramsPath = nullptr;
+    THROW_IF_FAILED(SHGetKnownFolderPath(FOLDERID_CommonPrograms, KF_FLAG_CREATE, nullptr, &commonProgramsPath));
+    folders = folders.push_back(std::filesystem::path(commonProgramsPath));
+    CoTaskMemFree(commonProgramsPath);
+
+    // Get %APPDATA%\Microsoft\Windows\Start Menu\Programs
+    PWSTR userProgramsPath = nullptr;
+    THROW_IF_FAILED(SHGetKnownFolderPath(FOLDERID_Programs, KF_FLAG_CREATE, nullptr, &userProgramsPath));
+    folders = folders.push_back(std::filesystem::path(userProgramsPath));
+    CoTaskMemFree(userProgramsPath);
+
+    return folders;
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int nCmdShow) {
     try {
         // Initialize COM
@@ -33,7 +56,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR,
         // Create DI graph
         auto shortcutsPath = createShortcutsFolder();
 
+        auto installedAppsFolders = getInstalledAppsFolders();
+
         auto shortcutFactory = std::make_unique<libprogman::ShortcutFactory>();
+
+        auto installedAppList =
+            std::make_unique<libprogman::InstalledAppList>(shortcutFactory.get(), installedAppsFolders);
 
         auto shortcutManager = std::make_unique<libprogman::ShortcutManager>(shortcutsPath, shortcutFactory.get());
 
