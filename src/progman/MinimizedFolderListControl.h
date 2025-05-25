@@ -49,6 +49,8 @@ class MinimizedFolderListControl {
     void paintSplitter(HDC hdc);
 
     friend LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+    friend LRESULT CALLBACK
+    ListViewSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 };
 
 }  // namespace progman

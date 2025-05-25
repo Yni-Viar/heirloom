@@ -104,7 +104,9 @@ LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM 
                     int yPos = mdiHeight - constrainedHeight;
 
                     // Update control position directly without going through autoSize()
-                    SetWindowPos(hwnd, HWND_BOTTOM, 0, yPos, mdiWidth, constrainedHeight, SWP_SHOWWINDOW);
+                    // Always keep the window at the bottom of the z-order
+                    SetWindowPos(
+                        hwnd, HWND_BOTTOM, 0, yPos, mdiWidth, constrainedHeight, SWP_SHOWWINDOW | SWP_NOACTIVATE);
 
                     // Update the ListView position
                     SetWindowPos(
@@ -165,6 +167,9 @@ LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM 
 
                 return 0;
             }
+
+            // For any other click in the control, ensure it stays at the bottom of z-order
+            SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             break;
         }
         case WM_LBUTTONUP: {
@@ -210,6 +215,9 @@ LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM 
                 if (control) {
                     control->onRestore_(buffer);
                 }
+
+                // Ensure the control stays at the bottom of the z-order after processing
+                SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 return 0;
             }
             break;
@@ -240,9 +248,42 @@ LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM 
             }
             break;
         }
+        case WM_ACTIVATE: {
+            // If the window is being activated, force it back to the bottom
+            if (LOWORD(wParam) != WA_INACTIVE) {
+                SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+                // Return 0 to allow the message to be processed
+                return 0;
+            }
+            break;
+        }
     }
 
     return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+// Add a subclass procedure for the ListView to intercept messages
+LRESULT CALLBACK
+ListViewSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+    MinimizedFolderListControl* control = reinterpret_cast<MinimizedFolderListControl*>(dwRefData);
+
+    switch (uMsg) {
+        case WM_LBUTTONDOWN:
+        case WM_LBUTTONDBLCLK:
+            // Process the click but make sure parent window stays at bottom of z-order
+            if (control && control->window_) {
+                SetWindowPos(control->window_, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            }
+            break;
+
+        case WM_NCDESTROY:
+            // Remove the subclass when the window is destroyed
+            RemoveWindowSubclass(hwnd, ListViewSubclassProc, uIdSubclass);
+            return 0;
+    }
+
+    return DefSubclassProc(hwnd, uMsg, wParam, lParam);
 }
 
 MinimizedFolderListControl::MinimizedFolderListControl(
@@ -263,8 +304,8 @@ MinimizedFolderListControl::MinimizedFolderListControl(
 
     // Create the container window
     window_ = CreateWindowEx(
-        0, L"MinimizedFolderListControl", L"", WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, parent, nullptr, instance,
-        nullptr);
+        WS_EX_NOACTIVATE, L"MinimizedFolderListControl", L"", WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, parent, nullptr,
+        instance, nullptr);
 
     if (!window_) {
         THROW_LAST_ERROR();
@@ -278,14 +319,18 @@ MinimizedFolderListControl::MinimizedFolderListControl(
     icex.dwICC = ICC_LISTVIEW_CLASSES;
     InitCommonControlsEx(&icex);
 
-    // Create the ListView control
+    // Create the ListView control with WS_EX_NOACTIVATE to prevent it from activating
     listView_ = CreateWindowEx(
-        0, WC_LISTVIEW, L"", WS_CHILD | WS_VISIBLE | LVS_ICON | LVS_AUTOARRANGE | LVS_SINGLESEL | LVS_NOCOLUMNHEADER, 0,
-        0, 100, 100, window_, nullptr, instance, nullptr);
+        WS_EX_NOACTIVATE, WC_LISTVIEW, L"",
+        WS_CHILD | WS_VISIBLE | LVS_ICON | LVS_AUTOARRANGE | LVS_SINGLESEL | LVS_NOCOLUMNHEADER, 0, 0, 100, 100,
+        window_, nullptr, instance, nullptr);
 
     if (!listView_) {
         THROW_LAST_ERROR();
     }
+
+    // Set up subclass procedure for the ListView to keep the parent at the bottom of z-order
+    SetWindowSubclass(listView_, ListViewSubclassProc, 0, reinterpret_cast<DWORD_PTR>(this));
 
     // Enable alphabetical sorting
     ListView_SetExtendedListViewStyle(listView_, LVS_EX_AUTOSIZECOLUMNS);
@@ -373,6 +418,11 @@ void MinimizedFolderListControl::addMinimizedFolder(std::wstring name) {
     RECT clientRect;
     GetClientRect(window_, &clientRect);
     SetWindowPos(listView_, nullptr, 0, 0, clientRect.right, clientRect.bottom, SWP_NOZORDER);
+
+    // Ensure the control stays at the bottom of the z-order
+    if (HWND parent = GetParent(window_)) {
+        SetWindowPos(window_, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    }
 }
 
 int MinimizedFolderListControl::autoSize(HWND mdiClient) {
@@ -401,7 +451,9 @@ int MinimizedFolderListControl::autoSize(HWND mdiClient) {
 
     // Position flush against left, bottom, and right edges
     int yPos = mdiHeight - controlHeight_;
-    SetWindowPos(window_, HWND_BOTTOM, 0, yPos, mdiWidth, controlHeight_, SWP_SHOWWINDOW);
+
+    // Always ensure the window is at the bottom of the z-order
+    SetWindowPos(window_, HWND_BOTTOM, 0, yPos, mdiWidth, controlHeight_, SWP_SHOWWINDOW | SWP_NOACTIVATE);
 
     // Position the ListView below the splitter
     SetWindowPos(listView_, nullptr, 0, splitterHeight_, mdiWidth, controlHeight_ - splitterHeight_, SWP_NOZORDER);
