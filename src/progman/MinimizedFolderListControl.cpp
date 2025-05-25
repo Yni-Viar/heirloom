@@ -531,4 +531,45 @@ MinimizedFolderListControl::~MinimizedFolderListControl() {
     }
 }
 
+bool MinimizedFolderListControl::restoreMinimizedFolder(const std::wstring& folderName, bool maximize) {
+    // First check if the folder is in our list
+    int itemCount = ListView_GetItemCount(listView_);
+    bool found = false;
+    int foundIndex = -1;
+
+    for (int i = 0; i < itemCount; i++) {
+        LVITEM item = {};
+        item.mask = LVIF_TEXT;
+        item.iItem = i;
+        wchar_t buffer[MAX_PATH] = {};
+        item.pszText = buffer;
+        item.cchTextMax = MAX_PATH;
+
+        if (ListView_GetItem(listView_, &item)) {
+            if (folderName == buffer) {
+                found = true;
+                foundIndex = i;
+                break;
+            }
+        }
+    }
+
+    if (found && foundIndex >= 0) {
+        // Remove the item from the list
+        ListView_DeleteItem(listView_, foundIndex);
+
+        // Call the restore callback with the folder name
+        // The maximize flag will be handled by ProgramManagerWindow
+        if (onRestore_) {
+            onRestore_(folderName);
+        }
+
+        // Return true to indicate success
+        return true;
+    }
+
+    // Return false if the folder wasn't found in our list
+    return false;
+}
+
 }  // namespace progman

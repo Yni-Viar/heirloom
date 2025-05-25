@@ -10,6 +10,11 @@ namespace progman {
 
 constexpr WCHAR kClassName[] = L"ProgmanWindowClass";
 
+// Define a safe range for MDI child window menu IDs
+// WM_USER is 0x0400 (1024), we'll use WM_USER+1000 through WM_USER+1999 for MDI child windows
+constexpr UINT IDM_MDICHILDFIRST = WM_USER + 1000;
+constexpr UINT IDM_MDICHILDLAST = WM_USER + 1999;
+
 // Section and key names for INI file
 constexpr WCHAR INI_SPLITTER_SECTION[] = L"MinimizedIconSplitter";
 constexpr WCHAR INI_SPLITTER_HEIGHT_KEY[] = L"Height";
@@ -52,8 +57,11 @@ ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance, libprogman::Shor
     createMdiClient();
 
     // Create the minimized folder list control, passing the MDI client as the parent
-    minimizedFolderList_ = std::make_unique<MinimizedFolderListControl>(
-        hInstance_, mdiClient_, [this](std::wstring folderName) { restoreMinimizedFolder(folderName); });
+    minimizedFolderList_ =
+        std::make_unique<MinimizedFolderListControl>(hInstance_, mdiClient_, [this](std::wstring folderName) {
+            // Default to no maximization when restored from double-click
+            this->restoreMinimizedFolder(folderName, false);
+        });
 
     // Position the control
     minimizedFolderList_->autoSize(mdiClient_);
@@ -173,7 +181,8 @@ void ProgramManagerWindow::createMdiClient() {
         ccs.hWindowMenu = GetSubMenu(hMainMenu, windowMenuPos);
     }
 
-    ccs.idFirstChild = 1;
+    // Set the first child ID to our safe range
+    ccs.idFirstChild = IDM_MDICHILDFIRST;
 
     // Create a standard MDI client
     mdiClient_ = CreateWindowW(
@@ -237,6 +246,200 @@ LRESULT CALLBACK ProgramManagerWindow::windowProc(HWND hwnd, UINT uMsg, WPARAM w
 }
 
 LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    // Additional special handling for window menu activation
+    if (uMsg == WM_COMMAND) {
+        UINT cmdId = LOWORD(wParam);
+
+        // Check if this is one of our MDI child window menu commands
+        if (cmdId >= IDM_MDICHILDFIRST && cmdId <= IDM_MDICHILDLAST) {
+            // Find the window name from the menu text
+            HMENU mainMenu = GetMenu(hwnd);
+            int menuCount = GetMenuItemCount(mainMenu);
+
+            // Find Window menu
+            HMENU windowMenu = nullptr;
+            for (int i = 0; i < menuCount; i++) {
+                WCHAR buffer[256] = { 0 };
+                GetMenuStringW(mainMenu, i, buffer, _countof(buffer), MF_BYPOSITION);
+
+                if (wcscmp(buffer, L"&Window") == 0) {
+                    windowMenu = GetSubMenu(mainMenu, i);
+                    break;
+                }
+            }
+
+            if (!windowMenu) {
+                return DefFrameProcW(hwnd, mdiClient_, uMsg, wParam, lParam);
+            }
+
+            // Find the menu item for this command
+            int itemCount = GetMenuItemCount(windowMenu);
+            std::wstring targetFolderName;
+
+            for (int i = 0; i < itemCount; i++) {
+                if (GetMenuItemID(windowMenu, i) == cmdId) {
+                    WCHAR buffer[256] = { 0 };
+                    GetMenuStringW(windowMenu, i, buffer, _countof(buffer), MF_BYPOSITION);
+
+                    // Extract the window name (remove the &# prefix)
+                    std::wstring menuText = buffer;
+                    size_t spacePos = menuText.find(L' ');
+                    if (spacePos != std::wstring::npos && spacePos + 1 < menuText.length()) {
+                        targetFolderName = menuText.substr(spacePos + 1);
+                    }
+
+                    break;
+                }
+            }
+
+            if (targetFolderName.empty()) {
+                return DefFrameProcW(hwnd, mdiClient_, uMsg, wParam, lParam);
+            }
+
+            // Find the folder window with this name
+            auto it = folderWindows_.find(targetFolderName);
+            if (it != folderWindows_.end()) {
+                auto& folderWindow = it->second;
+                HWND targetWindow = folderWindow->window_;
+
+                // Check if the window is hidden (minimized)
+                bool isVisible = IsWindowVisible(targetWindow);
+
+                if (!isVisible) {
+                    // Check if there's an active window and if it's maximized
+                    HWND activeWindow = reinterpret_cast<HWND>(SendMessage(mdiClient_, WM_MDIGETACTIVE, 0, 0));
+                    bool isMaximized = false;
+
+                    if (activeWindow) {
+                        WINDOWPLACEMENT wp;
+                        wp.length = sizeof(WINDOWPLACEMENT);
+                        if (GetWindowPlacement(activeWindow, &wp)) {
+                            isMaximized = (wp.showCmd == SW_SHOWMAXIMIZED);
+                        }
+                    }
+
+                    // Try to restore via the minimized folder list
+                    if (minimizedFolderList_) {
+                        minimizedFolderList_->restoreMinimizedFolder(targetFolderName, isMaximized);
+                    }
+
+                    // Always show and activate the window directly too
+                    folderWindow->show();
+                    BringWindowToTop(targetWindow);
+                    SetFocus(targetWindow);
+                    SendMessage(mdiClient_, WM_MDIACTIVATE, reinterpret_cast<WPARAM>(targetWindow), 0);
+
+                    if (isMaximized) {
+                        SendMessage(mdiClient_, WM_MDIMAXIMIZE, reinterpret_cast<WPARAM>(targetWindow), 0);
+                    }
+
+                    // Don't process the default command - we've handled it
+                    return 0;
+                } else {
+                    // Window is already visible, just activate it
+                    BringWindowToTop(targetWindow);
+                    SetFocus(targetWindow);
+                    SendMessage(mdiClient_, WM_MDIACTIVATE, reinterpret_cast<WPARAM>(targetWindow), 0);
+                    return 0;
+                }
+            }
+        }
+        // Also check for the current range of IDs we're seeing
+        else if (cmdId >= 1 && cmdId <= 9) {
+            // Find the window name from the menu text
+            HMENU mainMenu = GetMenu(hwnd);
+            int menuCount = GetMenuItemCount(mainMenu);
+
+            // Find Window menu
+            HMENU windowMenu = nullptr;
+            for (int i = 0; i < menuCount; i++) {
+                WCHAR buffer[256] = { 0 };
+                GetMenuStringW(mainMenu, i, buffer, _countof(buffer), MF_BYPOSITION);
+
+                if (wcscmp(buffer, L"&Window") == 0) {
+                    windowMenu = GetSubMenu(mainMenu, i);
+                    break;
+                }
+            }
+
+            if (!windowMenu) {
+                return DefFrameProcW(hwnd, mdiClient_, uMsg, wParam, lParam);
+            }
+
+            // Find the menu item for this command
+            int itemCount = GetMenuItemCount(windowMenu);
+            std::wstring targetFolderName;
+
+            for (int i = 0; i < itemCount; i++) {
+                if (GetMenuItemID(windowMenu, i) == cmdId) {
+                    WCHAR buffer[256] = { 0 };
+                    GetMenuStringW(windowMenu, i, buffer, _countof(buffer), MF_BYPOSITION);
+
+                    // Extract the window name (remove the &# prefix)
+                    std::wstring menuText = buffer;
+                    size_t spacePos = menuText.find(L' ');
+                    if (spacePos != std::wstring::npos && spacePos + 1 < menuText.length()) {
+                        targetFolderName = menuText.substr(spacePos + 1);
+                    }
+
+                    break;
+                }
+            }
+
+            if (targetFolderName.empty()) {
+                return DefFrameProcW(hwnd, mdiClient_, uMsg, wParam, lParam);
+            }
+
+            // Find the folder window with this name
+            auto it = folderWindows_.find(targetFolderName);
+            if (it != folderWindows_.end()) {
+                auto& folderWindow = it->second;
+                HWND targetWindow = folderWindow->window_;
+
+                // Check if the window is hidden (minimized)
+                bool isVisible = IsWindowVisible(targetWindow);
+
+                if (!isVisible) {
+                    // Check if there's an active window and if it's maximized
+                    HWND activeWindow = reinterpret_cast<HWND>(SendMessage(mdiClient_, WM_MDIGETACTIVE, 0, 0));
+                    bool isMaximized = false;
+
+                    if (activeWindow) {
+                        WINDOWPLACEMENT wp;
+                        wp.length = sizeof(WINDOWPLACEMENT);
+                        if (GetWindowPlacement(activeWindow, &wp)) {
+                            isMaximized = (wp.showCmd == SW_SHOWMAXIMIZED);
+                        }
+                    }
+
+                    // Try to restore via the minimized folder list
+                    if (minimizedFolderList_) {
+                        minimizedFolderList_->restoreMinimizedFolder(targetFolderName, isMaximized);
+                    }
+
+                    // Always show and activate the window directly too
+                    folderWindow->show();
+                    BringWindowToTop(targetWindow);
+                    SetFocus(targetWindow);
+                    SendMessage(mdiClient_, WM_MDIACTIVATE, reinterpret_cast<WPARAM>(targetWindow), 0);
+
+                    if (isMaximized) {
+                        SendMessage(mdiClient_, WM_MDIMAXIMIZE, reinterpret_cast<WPARAM>(targetWindow), 0);
+                    }
+
+                    // Don't process the default command - we've handled it
+                    return 0;
+                } else {
+                    // Window is already visible, just activate it
+                    BringWindowToTop(targetWindow);
+                    SetFocus(targetWindow);
+                    SendMessage(mdiClient_, WM_MDIACTIVATE, reinterpret_cast<WPARAM>(targetWindow), 0);
+                    return 0;
+                }
+            }
+        }
+    }
+
     switch (uMsg) {
         case WM_SIZE:
             // Resize the MDI client window
@@ -252,7 +455,7 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
             }
             return 0;
 
-        case WM_COMMAND:
+        case WM_COMMAND: {
             // Handle menu commands
             switch (LOWORD(wParam)) {
                 case ID_FILE_EXIT:
@@ -281,13 +484,21 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                 case ID_WINDOW_TILE:
                     SendMessageW(mdiClient_, WM_MDITILE, MDITILE_HORIZONTAL, 0);
                     return 0;
+
+                default:
+                    // If the ID falls within our MDI child range, it will be handled in the main WM_COMMAND handler
+                    break;
             }
             break;
+        }
 
+        // Handle menu initialization
         case WM_INITMENUPOPUP: {
-            // Update the File menu item states when it's about to be shown
             HMENU hMenu = reinterpret_cast<HMENU>(wParam);
-            if (HIWORD(lParam) == 0) {  // This is the File menu
+            bool isSystemMenu = HIWORD(lParam) != 0;
+
+            // Update the File menu item states when it's about to be shown
+            if (!isSystemMenu) {  // This is not the system menu
                 FolderWindow* activeFolder = getActiveFolderWindow();
                 // Enable delete only if there's an active folder window
                 EnableMenuItem(hMenu, ID_FILE_DELETE, activeFolder ? MF_ENABLED : MF_GRAYED);
@@ -382,15 +593,28 @@ void ProgramManagerWindow::syncFolderWindows() {
     }
 }
 
-void ProgramManagerWindow::restoreMinimizedFolder(const std::wstring& folderName) {
+void ProgramManagerWindow::restoreMinimizedFolder(const std::wstring& folderName, bool maximize) {
     auto it = folderWindows_.find(folderName);
     if (it != folderWindows_.end()) {
+        // Get window handle
+        HWND folderHwnd = it->second->window_;
+
         // Show the window
         it->second->show();
 
+        // Ensure window is visible
+        BringWindowToTop(folderHwnd);
+
         // Make it the active MDI window
-        HWND folderHwnd = it->second->window_;
         SendMessage(mdiClient_, WM_MDIACTIVATE, reinterpret_cast<WPARAM>(folderHwnd), 0);
+
+        // Set focus to the window
+        SetFocus(folderHwnd);
+
+        // Maximize if requested
+        if (maximize) {
+            SendMessage(mdiClient_, WM_MDIMAXIMIZE, reinterpret_cast<WPARAM>(folderHwnd), 0);
+        }
 
         // Update the minimized folder list layout
         minimizedFolderList_->autoSize(mdiClient_);

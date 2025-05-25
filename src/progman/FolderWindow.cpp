@@ -146,6 +146,7 @@ void FolderWindow::setFolder(std::shared_ptr<libprogman::ShortcutFolder> folder)
 void FolderWindow::show() {
     ShowWindow(window_, SW_SHOW);
     UpdateWindow(window_);
+
     // When showing the window, it's no longer minimized to the list
     isMinimized_ = false;
 }

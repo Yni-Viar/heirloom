@@ -29,7 +29,7 @@ class ProgramManagerWindow {
     void registerWindowClass();
     void createMdiClient();
     void syncFolderWindows();
-    void restoreMinimizedFolder(const std::wstring& folderName);
+    void restoreMinimizedFolder(const std::wstring& folderName, bool maximize = false);
 
     // Methods to save/load splitter position
     void saveSplitterPosition() const;

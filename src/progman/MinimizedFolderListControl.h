@@ -18,6 +18,9 @@ class MinimizedFolderListControl {
     void addMinimizedFolder(std::wstring name);
     int autoSize(HWND mdiClient);
 
+    // Restore a minimized folder window
+    bool restoreMinimizedFolder(const std::wstring& folderName, bool maximize = false);
+
     // Getter/setter for splitter height
     int getSplitterPosition() const { return controlHeight_; }
     void setSplitterPosition(int height);
