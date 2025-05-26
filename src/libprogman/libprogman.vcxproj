@@ -51,6 +51,7 @@
   <ItemGroup>
     <ClInclude Include="cancel.h" />
     <ClInclude Include="com_util.h" />
+    <ClInclude Include="constants.h" />
     <ClInclude Include="Error.h" />
     <ClInclude Include="FolderWatcher.h" />
     <ClInclude Include="InstalledAppList.h" />
