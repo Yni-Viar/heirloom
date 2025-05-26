@@ -95,6 +95,15 @@ void ShortcutManager::deleteFolder(ShortcutFolder* folder) {
 }
 
 void ShortcutManager::refresh() {
+    refreshCore();
+
+    if (folders_.empty()) {
+        setupInitialShortcuts();
+        refreshCore();
+    }
+}
+
+void ShortcutManager::refreshCore() {
     std::lock_guard<std::mutex> lock(refreshMutex_);
 
     immer::map_transient<std::wstring, std::shared_ptr<ShortcutFolder>> folders;
@@ -109,6 +118,36 @@ void ShortcutManager::refresh() {
 
     // Cut over to the new map.
     folders_ = folders.persistent();
+}
+
+void ShortcutManager::setupInitialShortcuts() {
+    try {
+        // Create the Main folder
+        addFolder(L"Main");
+        
+        // Paths to check
+        std::filesystem::path edgePath = L"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+        std::filesystem::path calcPath = L"C:\\Windows\\System32\\calc.exe";
+        
+        auto mainFolder = folder(L"Main");
+        
+        // Add Edge shortcut if it exists
+        if (std::filesystem::exists(edgePath)) {
+            shortcutFactory_->create(
+                mainFolder->path() / L"Edge.lnk",
+                edgePath.wstring());
+        }
+        
+        // Add Calculator shortcut if it exists
+        if (std::filesystem::exists(calcPath)) {
+            shortcutFactory_->create(
+                mainFolder->path() / L"Calculator.lnk",
+                calcPath.wstring());
+        }
+    }
+    catch (const std::exception&) {
+        // Ignore any errors during initial setup
+    }
 }
 
 std::shared_ptr<ShortcutFolder> ShortcutManager::refreshFolder(std::filesystem::path folderPath) const {

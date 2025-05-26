@@ -37,6 +37,8 @@ class ShortcutManager {
     void refresh();
 
    private:
+    void refreshCore();
+    void setupInitialShortcuts();
     std::shared_ptr<ShortcutFolder> refreshFolder(std::filesystem::path folderPath) const;
     std::shared_ptr<Shortcut> refreshShortcut(
         std::filesystem::path shortcutPath,
