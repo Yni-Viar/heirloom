@@ -215,8 +215,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 11,4,0,0
- PRODUCTVERSION 11,4,0,0
+ FILEVERSION 12,0,0,0
+ PRODUCTVERSION 12,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -233,12 +233,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Brian Luft"
             VALUE "FileDescription", "Heirloom Program Manager"
-            VALUE "FileVersion", "11.4.0.0"
+            VALUE "FileVersion", "12.0.0.0"
             VALUE "InternalName", "progman.exe"
             VALUE "LegalCopyright", "(C) 2025 Brian Luft"
             VALUE "OriginalFilename", "progman.exe"
             VALUE "ProductName", "Heirloom Program Manager"
-            VALUE "ProductVersion", "11.4.0.0"
+            VALUE "ProductVersion", "12.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
