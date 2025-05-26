@@ -2,7 +2,7 @@
 
 <h3 align="center">Lightly modernized classics for Windows</h3>
 
-<p align="center"><img src="screenshot.png" width=639></p>
+<p align="center"><img src="screenshot.png" width=659></p>
 
 ### Heirloom Program Manager
 An alternative to the Start menu for launching shortcuts with the mouse. This is a reimplementation of the classic Program Manager.
