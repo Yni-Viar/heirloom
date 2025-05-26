@@ -97,6 +97,19 @@ int getIconSizeForDpi(HWND hwnd) {
     return static_cast<int>(32 * scalingFactor);
 }
 
+// Comparison function for sorting ListView items by name
+static int CALLBACK CompareListViewItems(LPARAM lParam1, LPARAM lParam2, LPARAM /*lParamSort*/) {
+    libprogman::Shortcut* shortcut1 = reinterpret_cast<libprogman::Shortcut*>(lParam1);
+    libprogman::Shortcut* shortcut2 = reinterpret_cast<libprogman::Shortcut*>(lParam2);
+
+    if (!shortcut1 || !shortcut2) {
+        return 0;
+    }
+
+    // Compare by name (case-insensitive)
+    return _wcsicmp(shortcut1->name().c_str(), shortcut2->name().c_str());
+}
+
 // Constructor
 FolderWindow::FolderWindow(
     HINSTANCE instance,
@@ -236,6 +249,9 @@ void FolderWindow::refreshListView() {
 
         ListView_InsertItem(listView_, &lvItem);
     }
+
+    // Sort items by name
+    ListView_SortItems(listView_, CompareListViewItems, 0);
 }
 
 void FolderWindow::setOnMinimizeCallback(std::function<void(const std::wstring&)> callback) {
