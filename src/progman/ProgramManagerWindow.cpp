@@ -355,100 +355,6 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                 }
             }
         }
-        // Also check for the current range of IDs we're seeing
-        else if (cmdId >= 1 && cmdId <= 9) {
-            // Find the window name from the menu text
-            HMENU mainMenu = GetMenu(hwnd);
-            int menuCount = GetMenuItemCount(mainMenu);
-
-            // Find Window menu
-            HMENU windowMenu = nullptr;
-            for (int i = 0; i < menuCount; i++) {
-                WCHAR buffer[256] = { 0 };
-                GetMenuStringW(mainMenu, i, buffer, _countof(buffer), MF_BYPOSITION);
-
-                if (wcscmp(buffer, L"&Window") == 0) {
-                    windowMenu = GetSubMenu(mainMenu, i);
-                    break;
-                }
-            }
-
-            if (!windowMenu) {
-                return DefFrameProcW(hwnd, mdiClient_, uMsg, wParam, lParam);
-            }
-
-            // Find the menu item for this command
-            int itemCount = GetMenuItemCount(windowMenu);
-            std::wstring targetFolderName;
-
-            for (int i = 0; i < itemCount; i++) {
-                if (GetMenuItemID(windowMenu, i) == cmdId) {
-                    WCHAR buffer[256] = { 0 };
-                    GetMenuStringW(windowMenu, i, buffer, _countof(buffer), MF_BYPOSITION);
-
-                    // Extract the window name (remove the &# prefix)
-                    std::wstring menuText = buffer;
-                    size_t spacePos = menuText.find(L' ');
-                    if (spacePos != std::wstring::npos && spacePos + 1 < menuText.length()) {
-                        targetFolderName = menuText.substr(spacePos + 1);
-                    }
-
-                    break;
-                }
-            }
-
-            if (targetFolderName.empty()) {
-                return DefFrameProcW(hwnd, mdiClient_, uMsg, wParam, lParam);
-            }
-
-            // Find the folder window with this name
-            auto it = folderWindows_.find(targetFolderName);
-            if (it != folderWindows_.end()) {
-                auto& folderWindow = it->second;
-                HWND targetWindow = folderWindow->window_;
-
-                // Check if the window is hidden (minimized)
-                bool isVisible = IsWindowVisible(targetWindow);
-
-                if (!isVisible) {
-                    // Check if there's an active window and if it's maximized
-                    HWND activeWindow = reinterpret_cast<HWND>(SendMessage(mdiClient_, WM_MDIGETACTIVE, 0, 0));
-                    bool isMaximized = false;
-
-                    if (activeWindow) {
-                        WINDOWPLACEMENT wp;
-                        wp.length = sizeof(WINDOWPLACEMENT);
-                        if (GetWindowPlacement(activeWindow, &wp)) {
-                            isMaximized = (wp.showCmd == SW_SHOWMAXIMIZED);
-                        }
-                    }
-
-                    // Try to restore via the minimized folder list
-                    if (minimizedFolderList_) {
-                        minimizedFolderList_->restoreMinimizedFolder(targetFolderName, isMaximized);
-                    }
-
-                    // Always show and activate the window directly too
-                    folderWindow->show();
-                    BringWindowToTop(targetWindow);
-                    SetFocus(targetWindow);
-                    SendMessage(mdiClient_, WM_MDIACTIVATE, reinterpret_cast<WPARAM>(targetWindow), 0);
-
-                    if (isMaximized) {
-                        SendMessage(mdiClient_, WM_MDIMAXIMIZE, reinterpret_cast<WPARAM>(targetWindow), 0);
-                    }
-
-                    // Don't process the default command - we've handled it
-                    return 0;
-                } else {
-                    // Window is already visible, just activate it
-                    BringWindowToTop(targetWindow);
-                    SetFocus(targetWindow);
-                    SendMessage(mdiClient_, WM_MDIACTIVATE, reinterpret_cast<WPARAM>(targetWindow), 0);
-                    return 0;
-                }
-            }
-        }
     }
 
     switch (uMsg) {
@@ -476,12 +382,9 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                 case ID_FILE_NEWFOLDER: {
                     // Show the new folder dialog
                     NewFolderDialog dialog(hwnd, hInstance_, shortcutManager_);
-                    if (dialog.show()) {
-                        // Refresh the UI if a folder was created
-                        refresh();
-                    }
-                }
+                    dialog.show();
                     return 0;
+                }
 
                 case ID_FILE_NEWSHORTCUT: {
                     // 1. Find the currently focused FolderWindow
