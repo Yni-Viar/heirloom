@@ -71,9 +71,9 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "New &folder...",              ID_FILE_NEWFOLDER
-        MENUITEM "New &shortcut...",            ID_FILE_NEWSHORTCUT
+        MENUITEM "New &shortcut...\tCtrl+N",            ID_FILE_NEWSHORTCUT
         MENUITEM SEPARATOR
-        MENUITEM "&Delete",                     ID_FILE_DELETE
+        MENUITEM "&Delete\tDel",                ID_FILE_DELETE
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
     END
@@ -158,6 +158,17 @@ FONT 9, "Segoe UI", 400, 0, 0x0
 BEGIN
     LTEXT           "Finding installed applications...",IDC_FINDING_LABEL,7,7,101,8
     PUSHBUTTON      "Cancel",IDCANCEL,112,35,50,14
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDC_PROGMAN ACCELERATORS
+BEGIN
+    VK_DELETE,      ID_FILE_DELETE,         VIRTKEY, NOINVERT
+    "N",            ID_FILE_NEWSHORTCUT,    VIRTKEY, CONTROL, NOINVERT
 END
 
 #endif    // English (United States) resources

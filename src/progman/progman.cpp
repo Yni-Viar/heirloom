@@ -79,9 +79,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR,
 
         // Message pump
         auto accelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_PROGMAN));
+        HWND hwndFrame = programManagerWindow->hwnd();
+        HWND hwndMDIClient = programManagerWindow->getMdiClient();
+
         MSG msg{};
         while (GetMessage(&msg, nullptr, 0, 0)) {
-            if (!TranslateAccelerator(msg.hwnd, accelTable, &msg)) {
+            // For MDI applications, you need to first try the MDI system accelerators
+            // and then your application accelerators
+            if (!TranslateMDISysAccel(hwndMDIClient, &msg) && !TranslateAccelerator(hwndFrame, accelTable, &msg)) {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }

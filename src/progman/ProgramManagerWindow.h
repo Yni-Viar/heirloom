@@ -24,6 +24,7 @@ class ProgramManagerWindow {
     void show(int cmdShow);
     void refresh();
     HWND hwnd() const { return hwnd_; }
+    HWND getMdiClient() const { return mdiClient_; }
 
     FolderWindow* getActiveFolderWindow() const;
 
