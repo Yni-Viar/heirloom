@@ -12,6 +12,7 @@ echo "Building $SOLUTION..."
 
 # Change to the src directory.
 cd "$( dirname "${BASH_SOURCE[0]}" )"
+cd ../src
 
 # Use vswhere to locate msbuild.exe
 VSWHERE="/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
@@ -26,7 +27,7 @@ if [ ! -f "$MSBUILD" ]; then
     exit 1
 fi
 
-PLATFORM=$(./get-native-arch.sh)
+PLATFORM=$(../scripts/get-native-arch.sh)
 
 # Build the solution
 set +e

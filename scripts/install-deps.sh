@@ -19,6 +19,7 @@ function verify_sha256() {
 
 # Setup
 cd "$( dirname "${BASH_SOURCE[0]}" )"
+cd ../src
 rm -rf tmp
 mkdir -p tmp downloads
 cd tmp

@@ -3,6 +3,7 @@
 # Assumes the project is already built.
 set -euo pipefail
 cd "$( dirname "${BASH_SOURCE[0]}" )"
+cd ../src
 
 # Check PROJECT
 if [ -z "${PROJECT:-}" ]; then
@@ -10,7 +11,7 @@ if [ -z "${PROJECT:-}" ]; then
     exit 1
 fi
 
-PLATFORM=$(./get-native-arch.sh)
+PLATFORM=$(../scripts/get-native-arch.sh)
 
 VSWHERE="/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
 if [ ! -f "$VSWHERE" ]; then

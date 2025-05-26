@@ -12,8 +12,8 @@ jobs:
       - name: Download dependencies
         shell: bash
         run: |
-          chmod +x src/install-deps.sh
-          DOWNLOAD_ONLY=1 USE_MIRROR=1 src/install-deps.sh
+          chmod +x scripts/install-deps.sh
+          DOWNLOAD_ONLY=1 USE_MIRROR=1 scripts/install-deps.sh
 
       - name: Upload dependencies
         uses: actions/upload-artifact@v4
@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          src/install-deps.sh
+          scripts/install-deps.sh
 
       - name: Build
         shell: pwsh

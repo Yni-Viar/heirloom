@@ -3,6 +3,7 @@ set -eo pipefail
 
 # Change to src directory.
 cd "$( dirname "${BASH_SOURCE[0]}" )"
+cd ../src
 
 rm -rf \
     ../.vscode \
