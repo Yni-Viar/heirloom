@@ -191,7 +191,7 @@ BEGIN
     LTEXT           "Heirloom Program Manager",-1,42,7,161,8
     CONTROL         "<version>",IDC_VERSION_LABEL,"Static",SS_LEFTNOWORDWRAP,42,21,161,8
     LTEXT           "(c) 2025 Brian Luft",-1,42,35,161,8
-    LTEXT           "www.heirloomfilemanager.com",-1,42,49,161,8
+    LTEXT           "www.heirloomapps.com",-1,42,49,161,8
     DEFPUSHBUTTON   "OK",IDOK,154,70,50,14
 END
 
