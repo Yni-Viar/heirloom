@@ -5,6 +5,7 @@
 #include "progman/FindingAppsDialog.h"
 #include "progman/NewShortcutDialog.h"
 #include "progman/AboutDialog.h"
+#include "libprogman/constants.h"
 #include "libprogman/window_data.h"
 #include "libprogman/string_util.h"
 #include "libprogman/window_state.h"
@@ -17,9 +18,6 @@ constexpr WCHAR kClassName[] = L"ProgmanWindowClass";
 // WM_USER is 0x0400 (1024), we'll use WM_USER+1000 through WM_USER+1999 for MDI child windows
 constexpr UINT IDM_MDICHILDFIRST = WM_USER + 1000;
 constexpr UINT IDM_MDICHILDLAST = WM_USER + 1999;
-
-// Custom window messages
-constexpr UINT WM_SYNC_FOLDER_WINDOWS = WM_USER + 100;
 
 // Section and key names for INI file
 constexpr WCHAR INI_SPLITTER_SECTION[] = L"MinimizedIconSplitter";
@@ -375,7 +373,7 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
             }
             return 0;
 
-        case WM_SYNC_FOLDER_WINDOWS:
+        case libprogman::WM_SYNC_FOLDER_WINDOWS:
             syncFolderWindows();
             return 0;
 
@@ -516,7 +514,7 @@ void ProgramManagerWindow::refresh() {
     shortcutManager_->refresh();
 
     // Post a message to sync the folder windows on the UI thread
-    PostMessageW(hwnd_, WM_SYNC_FOLDER_WINDOWS, 0, 0);
+    PostMessageW(hwnd_, libprogman::WM_SYNC_FOLDER_WINDOWS, 0, 0);
 }
 
 void ProgramManagerWindow::syncFolderWindows() {
@@ -625,7 +623,7 @@ void ProgramManagerWindow::handleDeleteCommand() {
 
     // Send the delete message to the active folder window
     HWND folderHwnd = activeFolder->window_;
-    SendMessageW(folderHwnd, WM_FOLDERWINDOW_DELETE, 0, 0);
+    SendMessageW(folderHwnd, libprogman::WM_FOLDERWINDOW_DELETE, 0, 0);
 }
 
 void ProgramManagerWindow::handleRenameCommand() {
@@ -636,7 +634,7 @@ void ProgramManagerWindow::handleRenameCommand() {
 
     // Send the rename message to the active folder window
     HWND folderHwnd = activeFolder->window_;
-    SendMessageW(folderHwnd, WM_FOLDERWINDOW_RENAME, 0, 0);
+    SendMessageW(folderHwnd, libprogman::WM_FOLDERWINDOW_RENAME, 0, 0);
 }
 
 void ProgramManagerWindow::sortWindowMenu(HMENU windowMenu) {

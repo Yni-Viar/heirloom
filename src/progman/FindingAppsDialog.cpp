@@ -3,6 +3,7 @@
 #include "progman/resource.h"
 #include "libprogman/window_data.h"
 #include "libprogman/cancel.h"
+#include "libprogman/constants.h"
 
 namespace progman {
 
@@ -10,9 +11,6 @@ namespace progman {
 struct ErrorMessageData {
     std::wstring message;
 };
-
-// Custom message for displaying errors from the worker thread
-constexpr UINT WM_DISPLAY_ERROR = WM_APP + 1;
 
 // Dialog window procedure
 INT_PTR CALLBACK FindingAppsDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -51,7 +49,7 @@ INT_PTR CALLBACK FindingAppsDialogProc(HWND hDlg, UINT message, WPARAM wParam, L
             // Don't end the dialog here - let the worker thread end it
             // after the cancellation is processed
             return TRUE;
-        case WM_DISPLAY_ERROR: {
+        case libprogman::WM_DISPLAY_ERROR: {
             // Display error message sent from worker thread
             auto* errorData = reinterpret_cast<ErrorMessageData*>(wParam);
             MessageBoxW(hDlg, errorData->message.c_str(), L"Error", MB_ICONERROR | MB_OK);
@@ -140,7 +138,7 @@ DWORD FindingAppsDialog::executeLoadApps() {
         MultiByteToWideChar(CP_UTF8, 0, errorMsg.c_str(), -1, &errorData->message[0], size);
 
         // Send the error message to the UI thread
-        SendMessage(dialogHandle_, WM_DISPLAY_ERROR, reinterpret_cast<WPARAM>(errorData), 0);
+        SendMessage(dialogHandle_, libprogman::WM_DISPLAY_ERROR, reinterpret_cast<WPARAM>(errorData), 0);
 
         return 1;
     }

@@ -1,6 +1,7 @@
 #include "progman/pch.h"
 #include "progman/resource.h"
 #include "progman/FolderWindow.h"
+#include "libprogman/constants.h"
 #include "libprogman/string_util.h"
 #include "libprogman/window_data.h"
 #include "libprogman/window_state.h"
@@ -392,11 +393,11 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
             ShowWindow(hwnd, SW_HIDE);
             return 0;  // Handled, don't pass to default proc
 
-        case WM_FOLDERWINDOW_DELETE:
+        case libprogman::WM_FOLDERWINDOW_DELETE:
             handleDeleteCommand();
             return 0;
 
-        case WM_FOLDERWINDOW_RENAME:
+        case libprogman::WM_FOLDERWINDOW_RENAME:
             renameSelectedItem();
             return 0;
 
