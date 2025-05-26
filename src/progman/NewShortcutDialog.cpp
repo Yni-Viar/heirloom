@@ -51,6 +51,10 @@ INT_PTR CALLBACK NewShortcutDialog::dialogProc(HWND hwnd, UINT message, WPARAM w
                     case LVN_ITEMCHANGED:
                         dialog->selectApplicationRadio(hwnd);
                         return TRUE;
+                    case NM_DBLCLK:
+                        dialog->selectApplicationRadio(hwnd);
+                        dialog->handleOkButton(hwnd);
+                        return TRUE;
                 }
             }
             break;
