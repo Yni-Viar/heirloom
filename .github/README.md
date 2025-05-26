@@ -1,18 +1,19 @@
-<h1 align="center"><img src="icon_small.jpg" width=64><br>Heirloom File Manager</h1>
+<h1 align="center"><img src="progman.png" width=64>&nbsp;<img src="winfile.png" width=64><br>Heirloom apps</h1>
 
-<p align="center"><img src="screenshot.png" width=558></p>
+<h3 align="center">Lightly modernized classics for Windows</h3>
 
-A simple app for browsing, organizing, and manipulating files.
-It doesn't try to replace the modern File Explorer but offers a faster alternative for basic tasks.
+<p align="center"><img src="screenshot.png" width=639></p>
 
-This derivative of the [classic Windows File Manager (microsoft/winfile)](https://github.com/microsoft/winfile) adds the following features:
+### Heirloom Program Manager
+An alternative to the Start menu for launching shortcuts with the mouse. This is a reimplementation of the classic Program Manager.
+
+### Heirloom File Manager
+Browse, organize, and manipulate files. An alternative to File Explorer for basic tasks. This direct derivative of the [classic Windows File Manager](https://github.com/microsoft/winfile) adds the following features:
 
 - High-DPI screen support
 - Recycle Bin
 - Bookmarks
 - Drag-and-drop into external applications
-
-It also removes old features that are irrelevant today.
 
 ## Licenses
 
