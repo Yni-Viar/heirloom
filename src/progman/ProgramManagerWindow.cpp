@@ -18,6 +18,9 @@ constexpr WCHAR kClassName[] = L"ProgmanWindowClass";
 constexpr UINT IDM_MDICHILDFIRST = WM_USER + 1000;
 constexpr UINT IDM_MDICHILDLAST = WM_USER + 1999;
 
+// Custom window messages
+constexpr UINT WM_SYNC_FOLDER_WINDOWS = WM_USER + 100;
+
 // Section and key names for INI file
 constexpr WCHAR INI_SPLITTER_SECTION[] = L"MinimizedIconSplitter";
 constexpr WCHAR INI_SPLITTER_HEIGHT_KEY[] = L"Height";
@@ -372,6 +375,10 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
             }
             return 0;
 
+        case WM_SYNC_FOLDER_WINDOWS:
+            syncFolderWindows();
+            return 0;
+
         case WM_COMMAND: {
             // Handle menu commands
             switch (LOWORD(wParam)) {
@@ -504,8 +511,8 @@ void ProgramManagerWindow::refresh() {
     // Refresh the shortcuts from disk.
     shortcutManager_->refresh();
 
-    // Sync the FolderWindows with the updated data
-    syncFolderWindows();
+    // Post a message to sync the folder windows on the UI thread
+    PostMessageW(hwnd_, WM_SYNC_FOLDER_WINDOWS, 0, 0);
 }
 
 void ProgramManagerWindow::syncFolderWindows() {

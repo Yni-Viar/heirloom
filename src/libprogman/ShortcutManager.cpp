@@ -124,28 +124,23 @@ void ShortcutManager::setupInitialShortcuts() {
     try {
         // Create the Main folder
         addFolder(L"Main");
-        
+
         // Paths to check
         std::filesystem::path edgePath = L"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
         std::filesystem::path calcPath = L"C:\\Windows\\System32\\calc.exe";
-        
+
         auto mainFolder = folder(L"Main");
-        
+
         // Add Edge shortcut if it exists
         if (std::filesystem::exists(edgePath)) {
-            shortcutFactory_->create(
-                mainFolder->path() / L"Edge.lnk",
-                edgePath.wstring());
+            shortcutFactory_->create(mainFolder->path() / L"Edge.lnk", edgePath.wstring());
         }
-        
+
         // Add Calculator shortcut if it exists
         if (std::filesystem::exists(calcPath)) {
-            shortcutFactory_->create(
-                mainFolder->path() / L"Calculator.lnk",
-                calcPath.wstring());
+            shortcutFactory_->create(mainFolder->path() / L"Calculator.lnk", calcPath.wstring());
         }
-    }
-    catch (const std::exception&) {
+    } catch (const std::exception&) {
         // Ignore any errors during initial setup
     }
 }
