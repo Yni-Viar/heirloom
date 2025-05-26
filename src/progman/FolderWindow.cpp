@@ -85,6 +85,18 @@ bool FolderWindow::wasMinimizedOnSave() const {
     return false;
 }
 
+// Helper function to get the appropriate icon size based on DPI
+int getIconSizeForDpi(HWND hwnd) {
+    // Get the DPI for the window
+    UINT dpi = GetDpiForWindow(hwnd);
+
+    // Calculate scaling factor (96 is the baseline DPI)
+    double scalingFactor = static_cast<double>(dpi) / 96.0;
+
+    // Base icon size is 32x32, scale it based on DPI
+    return static_cast<int>(32 * scalingFactor);
+}
+
 // Constructor
 FolderWindow::FolderWindow(HINSTANCE instance, HWND mdiClient, std::shared_ptr<libprogman::ShortcutFolder> folder)
     : folder_(folder) {
@@ -178,11 +190,20 @@ void FolderWindow::createListView() {
     // Configure the ListView
     ListView_SetExtendedListViewStyle(listView_, LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
 
-    // Set system image list for large icons
-    HIMAGELIST hSystemImageList =
-        ImageList_Create(GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), ILC_COLOR32 | ILC_MASK, 30, 10);
+    // Get the appropriate icon size based on DPI
+    int iconSize = getIconSizeForDpi(window_);
 
-    ListView_SetImageList(listView_, hSystemImageList, LVSIL_NORMAL);
+    // Create appropriately sized image list for the current DPI scaling
+    HIMAGELIST hImageList = ImageList_Create(iconSize, iconSize, ILC_COLOR32 | ILC_MASK, 30, 10);
+    if (hImageList) {
+        // Set the image list to the ListView
+        ListView_SetImageList(listView_, hImageList, LVSIL_NORMAL);
+    } else {
+        // Fallback to old behavior if image list creation fails
+        HIMAGELIST hSystemImageList =
+            ImageList_Create(GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), ILC_COLOR32 | ILC_MASK, 30, 10);
+        ListView_SetImageList(listView_, hSystemImageList, LVSIL_NORMAL);
+    }
 }
 
 void FolderWindow::refreshListView() {

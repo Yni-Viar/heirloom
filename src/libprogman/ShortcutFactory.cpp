@@ -56,35 +56,110 @@ std::shared_ptr<Shortcut> ShortcutFactory::open(
     return std::make_shared<Shortcut>(wstrPath, icon, lastWriteTime);
 }
 
+// Gets the appropriate icon size based on current DPI scaling
+static int getScaledIconSize(HWND hwnd = nullptr) {
+    // Get the DPI for the window or primary monitor
+    UINT dpi = hwnd ? GetDpiForWindow(hwnd) : GetDpiForSystem();
+
+    // Calculate scaling factor (96 is the baseline DPI)
+    double scalingFactor = static_cast<double>(dpi) / 96.0;
+
+    // Base icon size is 32x32, scale it based on DPI
+    int scaledSize = static_cast<int>(32 * scalingFactor);
+
+    // Round to common icon sizes (16, 32, 48, 64, 128, 256)
+    if (scaledSize <= 16)
+        return 16;
+    if (scaledSize <= 32)
+        return 32;
+    if (scaledSize <= 48)
+        return 48;
+    if (scaledSize <= 64)
+        return 64;
+    if (scaledSize <= 128)
+        return 128;
+    return 256;
+}
+
 wil::shared_hicon ShortcutFactory::loadIcon(IShellLink* shellLink) {
     HICON hIcon = nullptr;
-    int iconIndex = 0;
+    int iconSize = getScaledIconSize();
 
-    // Get the icon location
-    std::wstring iconPath(MAX_PATH, L'\0');
-    HRESULT hr = shellLink->GetIconLocation(iconPath.data(), static_cast<int>(iconPath.size()), &iconIndex);
-    if (FAILED(hr)) {
-        // If no icon is specified in the shortcut, try to extract from the target
-        WCHAR targetPath[MAX_PATH] = { 0 };
-        WIN32_FIND_DATA findData = { 0 };
-        hr = shellLink->GetPath(targetPath, MAX_PATH, &findData, SLGP_RAWPATH);
-        if (SUCCEEDED(hr)) {
-            // Extract icon from target executable
-            ExtractIconExW(targetPath, 0, nullptr, &hIcon, 1);
-            if (!hIcon) {
-                // Use default icon if extraction failed
-                ExtractIconExW(L"shell32.dll", 0, nullptr, &hIcon, 1);
+    // First try to get the icon from the shortcut
+    WCHAR iconPath[MAX_PATH] = { 0 };
+    int iconIndex = 0;
+    HRESULT hr = shellLink->GetIconLocation(iconPath, MAX_PATH, &iconIndex);
+
+    if (SUCCEEDED(hr) && iconPath[0] != L'\0') {
+        // Try to load the icon at the appropriate size
+        hIcon = static_cast<HICON>(
+            LoadImage(nullptr, iconPath, IMAGE_ICON, iconSize, iconSize, LR_LOADFROMFILE | LR_LOADMAP3DCOLORS));
+
+        if (!hIcon) {
+            // If failed, try SHDefExtractIcon which can scale icons
+            hr = SHDefExtractIconW(iconPath, iconIndex, 0, &hIcon, nullptr, iconSize);
+
+            if (FAILED(hr) || !hIcon) {
+                // If that fails, fall back to ExtractIconEx
+                ExtractIconExW(iconPath, iconIndex, nullptr, &hIcon, 1);
             }
         }
-    } else {
-        // Use the icon specified in the shortcut
-        if (!iconPath.empty()) {
-            ExtractIconExW(iconPath.c_str(), iconIndex, nullptr, &hIcon, 1);
-        }
+    }
 
-        // Fallback to default icon
+    // If we still don't have an icon, try to get it from the target file
+    if (!hIcon) {
+        WCHAR targetPath[MAX_PATH] = { 0 };
+        WIN32_FIND_DATAW findData = { 0 };
+        hr = shellLink->GetPath(targetPath, MAX_PATH, &findData, SLGP_RAWPATH);
+
+        if (SUCCEEDED(hr) && targetPath[0] != L'\0') {
+            // Use SHGetFileInfo to get the icon with proper scaling
+            SHFILEINFOW sfi = { 0 };
+            DWORD_PTR result = SHGetFileInfoW(
+                targetPath, 0, &sfi, sizeof(sfi), SHGFI_ICON | SHGFI_LARGEICON | SHGFI_USEFILEATTRIBUTES);
+
+            if (result && sfi.hIcon) {
+                hIcon = sfi.hIcon;
+
+                // For better high-DPI handling, try to get a better size using IExtractIcon
+                wil::com_ptr<IShellItemImageFactory> psiif;
+                hr = SHCreateItemFromParsingName(targetPath, nullptr, IID_PPV_ARGS(&psiif));
+
+                if (SUCCEEDED(hr)) {
+                    HBITMAP hBitmap = nullptr;
+                    SIZE size = { iconSize, iconSize };
+
+                    // Try to get higher quality icon at the right size
+                    hr = psiif->GetImage(size, SIIGBF_ICONONLY, &hBitmap);
+                    if (SUCCEEDED(hr) && hBitmap) {
+                        // Convert HBITMAP to HICON
+                        ICONINFO iconInfo = { 0 };
+                        iconInfo.fIcon = TRUE;
+                        iconInfo.hbmMask = hBitmap;
+                        iconInfo.hbmColor = hBitmap;
+
+                        HICON hBetterIcon = CreateIconIndirect(&iconInfo);
+                        if (hBetterIcon) {
+                            DestroyIcon(hIcon);  // Destroy the previous icon
+                            hIcon = hBetterIcon;
+                        }
+
+                        // Clean up the bitmap
+                        DeleteObject(hBitmap);
+                    }
+                }
+            }
+        }
+    }
+
+    // If we still don't have an icon, use default icon from shell32.dll
+    if (!hIcon) {
+        // Load shell32.dll default icon with appropriate scaling
+        hIcon = static_cast<HICON>(LoadImage(nullptr, IDI_APPLICATION, IMAGE_ICON, iconSize, iconSize, LR_SHARED));
+
         if (!hIcon) {
-            ExtractIconExW(L"shell32.dll", 0, nullptr, &hIcon, 1);
+            // Last resort, try shell32.dll
+            SHDefExtractIconW(L"shell32.dll", 0, 0, &hIcon, nullptr, iconSize);
         }
     }
 
