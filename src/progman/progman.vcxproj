@@ -236,6 +236,7 @@
     <ClCompile Include="FolderWindow.cpp" />
     <ClCompile Include="MinimizedFolderListControl.cpp" />
     <ClCompile Include="NewFolderDialog.cpp" />
+    <ClCompile Include="NewShortcutDialog.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -252,6 +253,7 @@
     <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="MinimizedFolderListControl.h" />
     <ClInclude Include="NewFolderDialog.h" />
+    <ClInclude Include="NewShortcutDialog.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ProgramManagerWindow.h" />

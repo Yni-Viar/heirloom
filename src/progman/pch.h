@@ -7,6 +7,7 @@
 #include <commctrl.h>
 #include <shlobj.h>
 #include <windowsx.h>
+#include <commdlg.h>
 
 // C++ Standard Library
 #include <stdexcept>
