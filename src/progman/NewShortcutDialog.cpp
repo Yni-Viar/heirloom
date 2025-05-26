@@ -91,10 +91,32 @@ void NewShortcutDialog::initializeDialog(HWND hwnd) {
 
     // Initialize list view
     HWND listView = GetDlgItem(hwnd, IDC_APPLICATIONS_LIST);
-    ListView_SetView(listView, LVS_SMALLICON);
+    // Add LVS_NOCOLUMNHEADER style to hide column headers
+    LONG_PTR style = GetWindowLongPtr(listView, GWL_STYLE);
+    SetWindowLongPtr(listView, GWL_STYLE, style | LVS_NOCOLUMNHEADER);
+    ListView_SetView(listView, LVS_REPORT);
 
-    // Create image list for small icons
-    HIMAGELIST imageList = ImageList_Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, static_cast<int>(installedApps_.size()));
+    // Add a single column that takes the full width
+    RECT listRect;
+    GetClientRect(listView, &listRect);
+    LVCOLUMN column = { 0 };
+    column.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+    column.cx = listRect.right - listRect.left - GetSystemMetrics(SM_CXVSCROLL);
+    column.pszText = const_cast<LPWSTR>(L"Name");
+    column.iSubItem = 0;
+    ListView_InsertColumn(listView, 0, &column);
+
+    // Get DPI for the current window
+    int dpi = GetDpiForWindow(hwnd);
+    float dpiScale = static_cast<float>(dpi) / 96.0f;
+
+    // Scale icon size based on DPI
+    int iconSize = static_cast<int>(16 * dpiScale);
+
+    // Create image list with DPI-scaled icons
+    HIMAGELIST imageList =
+        ImageList_Create(iconSize, iconSize, ILC_COLOR32 | ILC_MASK, 0, static_cast<int>(installedApps_.size()));
+
     ListView_SetImageList(listView, imageList, LVSIL_SMALL);
 
     // Select Application radio by default
@@ -107,11 +129,32 @@ void NewShortcutDialog::initializeDialog(HWND hwnd) {
 void NewShortcutDialog::populateApplicationsList(HWND hwnd) {
     HWND listView = GetDlgItem(hwnd, IDC_APPLICATIONS_LIST);
 
+    // Get DPI for the current window
+    int dpi = GetDpiForWindow(hwnd);
+    float dpiScale = static_cast<float>(dpi) / 96.0f;
+
     // Add each app to the list
     int itemIndex = 0;
     for (const auto& app : installedApps_) {
-        // Add icon to image list
+        // Add icon to image list - using DPI-aware icon if possible
         wil::shared_hicon icon = app->icon();
+
+        // For high DPI, we'll extract the icon directly using a better size
+        if (dpiScale > 1.0f) {
+            // Try to extract a larger icon from the executable file
+            std::filesystem::path exePath = app->path();
+            if (std::filesystem::exists(exePath)) {
+                int scaledSize = static_cast<int>(32 * dpiScale);
+                HICON hIcon = nullptr;
+
+                // Use ExtractIconEx to get a better size icon
+                if (ExtractIconEx(exePath.c_str(), 0, &hIcon, nullptr, 1) > 0 && hIcon) {
+                    // Replace the icon with this higher resolution one
+                    icon.reset(hIcon);
+                }
+            }
+        }
+
         int imageIndex = ImageList_AddIcon(ListView_GetImageList(listView, LVSIL_SMALL), icon.get());
 
         // Add item to list view
@@ -126,6 +169,11 @@ void NewShortcutDialog::populateApplicationsList(HWND hwnd) {
 
         ListView_InsertItem(listView, &item);
     }
+
+    // Set full row select style and disable grid lines for a cleaner look
+    DWORD exStyle = ListView_GetExtendedListViewStyle(listView);
+    exStyle |= LVS_EX_FULLROWSELECT;
+    ListView_SetExtendedListViewStyle(listView, exStyle);
 }
 
 void NewShortcutDialog::handleOkButton(HWND hwnd) {

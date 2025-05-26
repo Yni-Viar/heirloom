@@ -127,8 +127,12 @@ std::shared_ptr<ShortcutFolder> ShortcutManager::refreshFolder(std::filesystem::
                 continue;
             }
 
-            auto shortcut = refreshShortcut(path, entry.last_write_time(), existingFolder);
-            shortcuts.insert({ shortcut->name(), shortcut });
+            try {
+                auto shortcut = refreshShortcut(path, entry.last_write_time(), existingFolder);
+                shortcuts.insert({ shortcut->name(), shortcut });
+            } catch (...) {
+                // Ignore the file entirely. Nothing we can do about it.
+            }
         }
     }
 

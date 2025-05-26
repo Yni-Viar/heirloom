@@ -65,7 +65,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR,
 
         auto shortcutManager = std::make_unique<libprogman::ShortcutManager>(shortcutsPath, shortcutFactory.get());
 
-        auto programManagerWindow = std::make_unique<progman::ProgramManagerWindow>(hInstance, shortcutManager.get());
+        auto programManagerWindow = std::make_unique<progman::ProgramManagerWindow>(
+            hInstance, shortcutManager.get(), shortcutFactory.get(), installedAppList.get());
 
         auto folderWatcher = std::make_unique<libprogman::FolderWatcher>(
             shortcutsPath, [&programManagerWindow]() { programManagerWindow->refresh(); },

@@ -2,6 +2,8 @@
 #include "progman/resource.h"
 #include "progman/ProgramManagerWindow.h"
 #include "progman/NewFolderDialog.h"
+#include "progman/FindingAppsDialog.h"
+#include "progman/NewShortcutDialog.h"
 #include "libprogman/window_data.h"
 #include "libprogman/string_util.h"
 #include "libprogman/window_state.h"
@@ -39,8 +41,15 @@ std::filesystem::path getWindowStateFilePath() {
     return path / L"window.ini";
 }
 
-ProgramManagerWindow::ProgramManagerWindow(HINSTANCE hInstance, libprogman::ShortcutManager* shortcutManager)
-    : hInstance_(hInstance), shortcutManager_(shortcutManager) {
+ProgramManagerWindow::ProgramManagerWindow(
+    HINSTANCE hInstance,
+    libprogman::ShortcutManager* shortcutManager,
+    libprogman::ShortcutFactory* shortcutFactory,
+    libprogman::InstalledAppList* installedAppList)
+    : hInstance_(hInstance),
+      shortcutManager_(shortcutManager),
+      shortcutFactory_(shortcutFactory),
+      installedAppList_(installedAppList) {
     registerWindowClass();
 
     // Create the main frame window with explicit MDI frame styles
@@ -471,6 +480,44 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                     }
                 }
                     return 0;
+
+                case ID_FILE_NEWSHORTCUT: {
+                    // 1. Find the currently focused FolderWindow
+                    FolderWindow* activeFolder = getActiveFolderWindow();
+                    if (!activeFolder) {
+                        return 0;
+                    }
+
+                    // 2. Show FindingAppsDialog to load installed apps
+                    FindingAppsDialog findingAppsDialog(hInstance_, installedAppList_);
+                    int result = findingAppsDialog.showDialog(hwnd);
+                    if (result != IDOK) {
+                        return 0;
+                    }
+
+                    // 3. Get the list of installed apps
+                    auto installedApps = findingAppsDialog.apps();
+
+                    // Get the folder path from the folder name
+                    std::wstring folderName = activeFolder->getName();
+                    try {
+                        auto folderPtr = shortcutManager_->folder(folderName);
+                        if (!folderPtr) {
+                            return 0;
+                        }
+
+                        // 4. Show NewShortcutDialog
+                        NewShortcutDialog newShortcutDialog(
+                            hwnd, hInstance_, folderPtr->path(), installedApps, shortcutFactory_);
+                        newShortcutDialog.showDialog();
+                    } catch (const std::exception& e) {
+                        // Show error message if the folder couldn't be found
+                        std::wstring errorMsg = L"Error accessing folder: " + libprogman::utf8ToWide(e.what());
+                        MessageBoxW(hwnd, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
+                    }
+
+                    return 0;
+                }
 
                 case ID_FILE_DELETE:
                     handleDeleteCommand();

@@ -86,11 +86,20 @@ immer::vector<std::shared_ptr<Shortcut>> InstalledAppList::apps(CancellationToke
         }
     }
 
-    // Update the persistent vector
+    // Sort the apps alphabetically by name
     cancel.throwIfCancellationRequested();
-    apps_ = newAppsTransient.persistent();
+    std::vector<std::shared_ptr<Shortcut>> sortedAppsVector(newAppsTransient.begin(), newAppsTransient.end());
 
-    return apps_;
+    std::sort(
+        sortedAppsVector.begin(), sortedAppsVector.end(),
+        [](const std::shared_ptr<Shortcut>& a, const std::shared_ptr<Shortcut>& b) { return a->name() < b->name(); });
+
+    immer::vector_transient<std::shared_ptr<Shortcut>> sortedAppsTransient;
+    for (const auto& app : sortedAppsVector) {
+        sortedAppsTransient.push_back(app);
+    }
+
+    return sortedAppsTransient.persistent();
 }
 
 }  // namespace libprogman
