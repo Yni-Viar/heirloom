@@ -632,7 +632,7 @@ void ProgramManagerWindow::syncFolderWindows() {
     for (const auto& [folderName, folder] : currentFolders) {
         if (folderWindows_.find(folderName) == folderWindows_.end()) {
             // New folder, create a window for it
-            auto folderWindow = std::make_unique<FolderWindow>(hInstance_, mdiClient_, folder);
+            auto folderWindow = std::make_unique<FolderWindow>(hInstance_, mdiClient_, folder, shortcutManager_);
             // Set the minimize callback
             folderWindow->setOnMinimizeCallback([this](const std::wstring& name) {
                 // Add to minimized list
@@ -709,41 +709,9 @@ void ProgramManagerWindow::handleDeleteCommand() {
         return;
     }
 
-    if (activeFolder->hasSelectedItem()) {
-        // There's a selected shortcut to delete
-        libprogman::Shortcut* shortcut = activeFolder->getSelectedShortcut();
-        if (!shortcut) {
-            return;
-        }
-
-        // Confirm with the user
-        std::wstring message = L"Are you sure you want to delete the shortcut \"" + shortcut->name() + L"\"?";
-        if (MessageBoxW(hwnd_, message.c_str(), L"Confirm Delete", MB_YESNO | MB_ICONQUESTION) == IDYES) {
-            // Delete the shortcut
-            shortcut->deleteFile();
-            // The filesystem watcher will pick up the change and update the UI
-        }
-    } else {
-        // No item selected, delete the folder itself
-        std::wstring folderName = activeFolder->getName();
-
-        // Get the folder object
-        try {
-            auto folderPtr = shortcutManager_->folder(folderName);
-
-            // Confirm with the user
-            std::wstring message = L"Are you sure you want to delete the folder \"" + folderName + L"\"?";
-            if (MessageBoxW(hwnd_, message.c_str(), L"Confirm Delete", MB_YESNO | MB_ICONQUESTION) == IDYES) {
-                // Delete the folder
-                shortcutManager_->deleteFolder(folderPtr.get());
-                // The filesystem watcher will pick up the change and update the UI
-            }
-        } catch (const std::exception& e) {
-            // Show error message if the folder couldn't be found
-            std::wstring errorMsg = L"Error deleting folder: " + libprogman::utf8ToWide(e.what());
-            MessageBoxW(hwnd_, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
-        }
-    }
+    // Send the delete message to the active folder window
+    HWND folderHwnd = activeFolder->window_;
+    SendMessageW(folderHwnd, WM_FOLDERWINDOW_DELETE, 0, 0);
 }
 
 void ProgramManagerWindow::sortWindowMenu(HMENU windowMenu) {

@@ -118,22 +118,26 @@ std::shared_ptr<ShortcutFolder> ShortcutManager::refreshFolder(std::filesystem::
     const auto* existingFolder = folderOrNull(folderPath.filename().wstring()).get();
 
     // Walk folderPath's files. Ignore directories.
-    for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
-        if (entry.is_regular_file()) {
-            const auto& path = entry.path();
+    try {
+        for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
+            if (entry.is_regular_file()) {
+                const auto& path = entry.path();
 
-            // Verify .lnk file extension; ignore otherwise.
-            if (path.extension() != ".lnk") {
-                continue;
-            }
+                // Verify .lnk file extension; ignore otherwise.
+                if (path.extension() != ".lnk") {
+                    continue;
+                }
 
-            try {
-                auto shortcut = refreshShortcut(path, entry.last_write_time(), existingFolder);
-                shortcuts.insert({ shortcut->name(), shortcut });
-            } catch (...) {
-                // Ignore the file entirely. Nothing we can do about it.
+                try {
+                    auto shortcut = refreshShortcut(path, entry.last_write_time(), existingFolder);
+                    shortcuts.insert({ shortcut->name(), shortcut });
+                } catch (...) {
+                    // Ignore the file entirely. Nothing we can do about it.
+                }
             }
         }
+    } catch (...) {
+        // Ignore. Nothing we can do about it.
     }
 
     // Create a new ShortcutFolder object.

@@ -89,6 +89,19 @@ BEGIN
     END
 END
 
+IDR_SHORTCUT_MENU MENU
+BEGIN
+    POPUP "Shortcut"
+    BEGIN
+        MENUITEM "&Open",                       IDM_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "Re&name",                     IDM_RENAME
+        MENUITEM "&Delete",                     IDM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties",                 IDM_PROPERTIES
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -191,6 +204,7 @@ IDC_PROGMAN ACCELERATORS
 BEGIN
     VK_DELETE,      ID_FILE_DELETE,         VIRTKEY, NOINVERT
     "N",            ID_FILE_NEWSHORTCUT,    VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          IDM_RENAME,             VIRTKEY, NOINVERT
 END
 
 

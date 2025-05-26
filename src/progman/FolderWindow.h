@@ -8,9 +8,16 @@ namespace progman {
 
 class ProgramManagerWindow;  // Forward declaration
 
+// Define a custom message for delete command
+const UINT WM_FOLDERWINDOW_DELETE = WM_USER + 100;
+
 class FolderWindow {
    public:
-    FolderWindow(HINSTANCE instance, HWND mdiClient, std::shared_ptr<libprogman::ShortcutFolder> folder);
+    FolderWindow(
+        HINSTANCE instance,
+        HWND mdiClient,
+        std::shared_ptr<libprogman::ShortcutFolder> folder,
+        libprogman::ShortcutManager* shortcutManager);
     FolderWindow(const FolderWindow&) = delete;
     FolderWindow& operator=(const FolderWindow&) = delete;
     FolderWindow(FolderWindow&&) = delete;
@@ -25,6 +32,7 @@ class FolderWindow {
     // New methods for handling item selection
     bool hasSelectedItem() const;
     libprogman::Shortcut* getSelectedShortcut() const;
+    void renameSelectedItem();
 
     // Public method to save window state
     void saveState();
@@ -34,12 +42,17 @@ class FolderWindow {
     bool isMinimized() const;
     bool wasMinimizedOnSave() const;
 
+    // Handles delete command for the selected shortcut or folder
+    void handleDeleteCommand();
+
     LRESULT handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    private:
+    HINSTANCE instance_ = nullptr;
     HWND window_ = nullptr;
     HWND listView_ = nullptr;
     std::shared_ptr<libprogman::ShortcutFolder> folder_;
+    libprogman::ShortcutManager* shortcutManager_ = nullptr;
     std::function<void(const std::wstring&)> onMinimizeCallback_;
     bool isMinimized_ = false;
 

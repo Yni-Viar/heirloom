@@ -98,19 +98,23 @@ int getIconSizeForDpi(HWND hwnd) {
 }
 
 // Constructor
-FolderWindow::FolderWindow(HINSTANCE instance, HWND mdiClient, std::shared_ptr<libprogman::ShortcutFolder> folder)
-    : folder_(folder) {
+FolderWindow::FolderWindow(
+    HINSTANCE instance,
+    HWND mdiClient,
+    std::shared_ptr<libprogman::ShortcutFolder> folder,
+    libprogman::ShortcutManager* shortcutManager)
+    : instance_(instance), folder_(folder), shortcutManager_(shortcutManager) {
     // Register window class if needed
     WNDCLASSEXW wcex = {};
-    if (!GetClassInfoExW(GetModuleHandleW(nullptr), kFolderWindowClass, &wcex)) {
+    if (!GetClassInfoExW(instance_, kFolderWindowClass, &wcex)) {
         wcex.cbSize = sizeof(WNDCLASSEXW);
         wcex.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
         wcex.lpfnWndProc = FolderWindowProc;
-        wcex.hInstance = GetModuleHandleW(nullptr);
+        wcex.hInstance = instance_;
         wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
         wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
         wcex.lpszClassName = kFolderWindowClass;
-        wcex.hIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_FOLDER));
+        wcex.hIcon = LoadIconW(instance_, MAKEINTRESOURCEW(IDI_FOLDER));
 
         if (!RegisterClassExW(&wcex)) {
             THROW_LAST_ERROR();
@@ -121,7 +125,7 @@ FolderWindow::FolderWindow(HINSTANCE instance, HWND mdiClient, std::shared_ptr<l
     MDICREATESTRUCTW mcs = {};
     mcs.szClass = kFolderWindowClass;
     mcs.szTitle = folder_->name().c_str();
-    mcs.hOwner = instance;
+    mcs.hOwner = instance_;
     mcs.x = mcs.y = CW_USEDEFAULT;
     mcs.cx = mcs.cy = CW_USEDEFAULT;
     // Make sure we include the system menu and all window styles for proper MDI behavior
@@ -180,8 +184,8 @@ void FolderWindow::createListView() {
 
     // Create ListView control
     listView_ = CreateWindowExW(
-        0, WC_LISTVIEWW, L"", WS_CHILD | WS_VISIBLE | LVS_ICON | LVS_AUTOARRANGE | LVS_SINGLESEL, 0, 0,
-        clientRect.right, clientRect.bottom, window_, nullptr, GetModuleHandleW(nullptr), nullptr);
+        0, WC_LISTVIEWW, L"", WS_CHILD | WS_VISIBLE | LVS_ICON | LVS_AUTOARRANGE | LVS_SINGLESEL | LVS_EDITLABELS, 0, 0,
+        clientRect.right, clientRect.bottom, window_, nullptr, instance_, nullptr);
 
     if (!listView_) {
         THROW_LAST_ERROR();
@@ -271,6 +275,59 @@ libprogman::Shortcut* FolderWindow::getSelectedShortcut() const {
     return reinterpret_cast<libprogman::Shortcut*>(lvItem.lParam);
 }
 
+void FolderWindow::renameSelectedItem() {
+    if (!listView_) {
+        return;
+    }
+
+    int selectedIndex = ListView_GetNextItem(listView_, -1, LVNI_SELECTED);
+    if (selectedIndex != -1) {
+        // Start editing the label
+        ListView_EditLabel(listView_, selectedIndex);
+    }
+}
+
+void FolderWindow::handleDeleteCommand() {
+    if (hasSelectedItem()) {
+        // There's a selected shortcut to delete
+        libprogman::Shortcut* shortcut = getSelectedShortcut();
+        if (!shortcut) {
+            return;
+        }
+
+        // Confirm with the user
+        std::wstring message = L"Are you sure you want to delete the shortcut \"" + shortcut->name() + L"\"?";
+        if (MessageBoxW(window_, message.c_str(), L"Confirm Delete", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+            // Delete the shortcut
+            shortcut->deleteFile();
+            // The filesystem watcher will pick up the change and update the UI
+        }
+    } else {
+        // No item selected, delete the folder itself
+        std::wstring folderName = getName();
+
+        // Get the folder object
+        try {
+            auto folderPtr = shortcutManager_->folder(folderName);
+            if (!folderPtr) {
+                return;
+            }
+
+            // Confirm with the user
+            std::wstring message = L"Are you sure you want to delete the folder \"" + folderName + L"\"?";
+            if (MessageBoxW(window_, message.c_str(), L"Confirm Delete", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+                // Delete the folder
+                shortcutManager_->deleteFolder(folderPtr.get());
+                // The filesystem watcher will pick up the change and update the UI
+            }
+        } catch (const std::exception& e) {
+            // Show error message if the folder couldn't be found
+            std::wstring errorMsg = L"Error deleting folder: " + libprogman::utf8ToWide(e.what());
+            MessageBoxW(window_, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
+        }
+    }
+}
+
 LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
         case WM_SIZE: {
@@ -319,6 +376,10 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
             ShowWindow(hwnd, SW_HIDE);
             return 0;  // Handled, don't pass to default proc
 
+        case WM_FOLDERWINDOW_DELETE:
+            handleDeleteCommand();
+            return 0;
+
         case WM_NOTIFY: {
             NMHDR* nmhdr = reinterpret_cast<NMHDR*>(lParam);
             if (nmhdr->hwndFrom == listView_) {
@@ -363,32 +424,104 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
                                 POINT pt = nmia->ptAction;
                                 ClientToScreen(listView_, &pt);
 
-                                HMENU hMenu = CreatePopupMenu();
-                                AppendMenuW(hMenu, MF_STRING, 1, L"&Open");
-                                AppendMenuW(hMenu, MF_SEPARATOR, 0, nullptr);
-                                AppendMenuW(hMenu, MF_STRING, 2, L"&Properties");
+                                // Load menu from resources
+                                HMENU hMenuResource = LoadMenuW(instance_, MAKEINTRESOURCEW(IDR_SHORTCUT_MENU));
+                                HMENU hMenu = GetSubMenu(hMenuResource, 0);
 
+                                // Show the context menu
                                 int cmd = TrackPopupMenu(
                                     hMenu, TPM_RETURNCMD | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, nullptr);
 
-                                DestroyMenu(hMenu);
+                                DestroyMenu(hMenuResource);
 
-                                if (cmd == 1) {
-                                    shortcut->launch();
-                                } else if (cmd == 2) {
-                                    shortcut->showPropertiesWindow();
+                                // Handle the selected command
+                                switch (cmd) {
+                                    case IDM_OPEN:
+                                        shortcut->launch();
+                                        break;
+                                    case IDM_RENAME:
+                                        renameSelectedItem();
+                                        break;
+                                    case IDM_PROPERTIES:
+                                        shortcut->showPropertiesWindow();
+                                        break;
+                                    case IDM_DELETE:
+                                        handleDeleteCommand();
+                                        break;
                                 }
                             }
                         }
                         return 0;
+                    }
+
+                    case LVN_ENDLABELEDIT: {
+                        // Handle end of label editing
+                        NMLVDISPINFOW* pDispInfo = reinterpret_cast<NMLVDISPINFOW*>(lParam);
+                        if (pDispInfo->item.pszText) {  // If not null, user confirmed the edit
+                            // Get the shortcut associated with the edited item
+                            libprogman::Shortcut* shortcut =
+                                reinterpret_cast<libprogman::Shortcut*>(pDispInfo->item.lParam);
+                            if (shortcut) {
+                                // Get the old path
+                                std::filesystem::path oldPath = shortcut->path();
+                                // Get the directory path
+                                std::filesystem::path dirPath = oldPath.parent_path();
+                                // Get the file extension
+                                std::wstring extension = oldPath.extension().wstring();
+
+                                // Create new path with new filename (preserve original extension)
+                                std::filesystem::path newPath =
+                                    dirPath / (std::wstring(pDispInfo->item.pszText) + extension);
+
+                                try {
+                                    // Rename the file
+                                    std::filesystem::rename(oldPath, newPath);
+                                    return TRUE;  // Accept the new name
+                                } catch (const std::exception&) {
+                                    // Renaming failed
+                                    return FALSE;  // Reject the new name
+                                }
+                            }
+                        }
+                        return FALSE;  // Reject the new name if no text provided
+                    }
+
+                    case LVN_KEYDOWN: {
+                        // Handle keyboard events from the list view
+                        NMLVKEYDOWN* pnkd = reinterpret_cast<NMLVKEYDOWN*>(lParam);
+                        if (pnkd->wVKey == VK_F2) {
+                            renameSelectedItem();
+                            return 0;
+                        }
+                        break;
                     }
                 }
             }
             break;
         }
 
+        case WM_KEYDOWN:
+            // Handle key events for the window
+            if (wParam == VK_F2) {
+                renameSelectedItem();
+                return 0;
+            }
+            break;
+
         case WM_DESTROY:
             return 0;
+
+        case WM_COMMAND:
+            // Handle commands from menus or accelerators
+            switch (LOWORD(wParam)) {
+                case IDM_RENAME:
+                    renameSelectedItem();
+                    return 0;
+                case IDM_DELETE:
+                    handleDeleteCommand();
+                    return 0;
+            }
+            break;
     }
 
     return DefMDIChildProcW(hwnd, message, wParam, lParam);
