@@ -340,6 +340,15 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
                         return 0;
                     }
 
+                    case NM_RETURN: {
+                        // Handle Enter key press on a shortcut
+                        libprogman::Shortcut* shortcut = getSelectedShortcut();
+                        if (shortcut) {
+                            shortcut->launch();
+                        }
+                        return 0;
+                    }
+
                     case NM_RCLICK: {
                         // Handle right-click on a shortcut (for context menu)
                         NMITEMACTIVATE* nmia = reinterpret_cast<NMITEMACTIVATE*>(lParam);
