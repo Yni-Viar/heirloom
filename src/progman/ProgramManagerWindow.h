@@ -36,6 +36,7 @@ class ProgramManagerWindow {
     void syncFolderWindows();
     void restoreMinimizedFolder(const std::wstring& folderName, bool maximize = false);
     void handleDeleteCommand();
+    void handleRenameCommand();
 
     // Methods to save/load splitter position
     void saveSplitterPosition() const;

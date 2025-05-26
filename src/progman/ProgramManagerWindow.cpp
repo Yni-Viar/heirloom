@@ -435,6 +435,10 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                     handleDeleteCommand();
                     return 0;
 
+                case IDM_RENAME:
+                    handleRenameCommand();
+                    return 0;
+
                 case ID_HELP_ABOUT: {
                     AboutDialog aboutDialog(hwnd, hInstance_);
                     aboutDialog.showDialog();
@@ -622,6 +626,17 @@ void ProgramManagerWindow::handleDeleteCommand() {
     // Send the delete message to the active folder window
     HWND folderHwnd = activeFolder->window_;
     SendMessageW(folderHwnd, WM_FOLDERWINDOW_DELETE, 0, 0);
+}
+
+void ProgramManagerWindow::handleRenameCommand() {
+    FolderWindow* activeFolder = getActiveFolderWindow();
+    if (!activeFolder) {
+        return;
+    }
+
+    // Send the rename message to the active folder window
+    HWND folderHwnd = activeFolder->window_;
+    SendMessageW(folderHwnd, WM_FOLDERWINDOW_RENAME, 0, 0);
 }
 
 void ProgramManagerWindow::sortWindowMenu(HMENU windowMenu) {

@@ -396,6 +396,10 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
             handleDeleteCommand();
             return 0;
 
+        case WM_FOLDERWINDOW_RENAME:
+            renameSelectedItem();
+            return 0;
+
         case WM_NOTIFY: {
             NMHDR* nmhdr = reinterpret_cast<NMHDR*>(lParam);
             if (nmhdr->hwndFrom == listView_) {

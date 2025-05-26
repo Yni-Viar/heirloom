@@ -73,6 +73,7 @@ BEGIN
         MENUITEM "New &shortcut...\tCtrl+N",    ID_FILE_NEWSHORTCUT
         MENUITEM "New &folder...",              ID_FILE_NEWFOLDER
         MENUITEM SEPARATOR
+        MENUITEM "Re&name",                     IDM_RENAME
         MENUITEM "&Delete\tCtrl+D",             ID_FILE_DELETE
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT

@@ -10,6 +10,7 @@ class ProgramManagerWindow;  // Forward declaration
 
 // Define a custom message for delete command
 const UINT WM_FOLDERWINDOW_DELETE = WM_USER + 100;
+const UINT WM_FOLDERWINDOW_RENAME = WM_USER + 101;
 
 class FolderWindow {
    public:
