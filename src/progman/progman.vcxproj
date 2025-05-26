@@ -232,6 +232,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FindingAppsDialog.cpp" />
     <ClCompile Include="FolderWindow.cpp" />
     <ClCompile Include="MinimizedFolderListControl.cpp" />
     <ClCompile Include="NewFolderDialog.cpp" />
@@ -247,6 +248,7 @@
     <ClCompile Include="ProgramManagerWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FindingAppsDialog.h" />
     <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="MinimizedFolderListControl.h" />
     <ClInclude Include="NewFolderDialog.h" />

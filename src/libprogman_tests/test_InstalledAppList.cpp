@@ -2,6 +2,7 @@
 #include "libprogman/InstalledAppList.h"
 #include "libprogman/ShortcutFactory.h"
 #include "libprogman/Shortcut.h"
+#include "libprogman/cancel.h"
 #include "CppUnitTest.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -17,7 +18,8 @@ TEST_CLASS (InstalledAppListTests) {
         InstalledAppList appList(&factory, folders);
 
         // Initial call to apps() should return an empty vector
-        auto apps = appList.apps();
+        CancellationToken token;
+        auto apps = appList.apps(token);
         Assert::IsTrue(apps.size() == 0);
     }
 
@@ -37,7 +39,8 @@ TEST_CLASS (InstalledAppListTests) {
         InstalledAppList appList(&factory, folders);
 
         // Get the apps
-        auto apps = appList.apps();
+        CancellationToken token;
+        auto apps = appList.apps(token);
 
         // Validate that our shortcut was found
         Assert::IsTrue(apps.size() == 1);
@@ -63,7 +66,8 @@ TEST_CLASS (InstalledAppListTests) {
         InstalledAppList appList(&factory, folders);
 
         // Get the apps
-        auto firstApps = appList.apps();
+        CancellationToken token1;
+        auto firstApps = appList.apps(token1);
         Assert::IsTrue(firstApps.size() == 1);
 
         // Sleep to ensure the file time will be different
@@ -74,7 +78,8 @@ TEST_CLASS (InstalledAppListTests) {
         factory.create(lnkPath, newTargetPath);
 
         // Get the apps again
-        auto updatedApps = appList.apps();
+        CancellationToken token2;
+        auto updatedApps = appList.apps(token2);
 
         // Validate that our shortcut was updated
         Assert::IsTrue(updatedApps.size() == 1);
@@ -104,7 +109,8 @@ TEST_CLASS (InstalledAppListTests) {
         InstalledAppList appList(&factory, folders);
 
         // Get the apps
-        auto apps = appList.apps();
+        CancellationToken token;
+        auto apps = appList.apps(token);
 
         // Validate that both shortcuts were found
         Assert::IsTrue(apps.size() == 2);
@@ -138,7 +144,8 @@ TEST_CLASS (InstalledAppListTests) {
         InstalledAppList appList(&factory, folders);
 
         // Get the apps - should not throw and should find the shortcut in the valid folder
-        auto apps = appList.apps();
+        CancellationToken token;
+        auto apps = appList.apps(token);
         Assert::IsTrue(apps.size() == 1);
         Assert::IsTrue(apps[0]->path() == lnkPath);
 

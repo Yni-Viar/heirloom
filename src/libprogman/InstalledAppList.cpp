@@ -7,7 +7,7 @@ namespace libprogman {
 InstalledAppList::InstalledAppList(ShortcutFactory* shortcutFactory, immer::vector<std::filesystem::path> foldersToScan)
     : shortcutFactory_(shortcutFactory), foldersToScan_(std::move(foldersToScan)), apps_() {}
 
-immer::vector<std::shared_ptr<Shortcut>> InstalledAppList::apps() {
+immer::vector<std::shared_ptr<Shortcut>> InstalledAppList::apps(CancellationToken cancel) {
     std::lock_guard<std::mutex> lock(mutex_);
 
     // Keep track of file paths we've processed in this pass
@@ -19,6 +19,8 @@ immer::vector<std::shared_ptr<Shortcut>> InstalledAppList::apps() {
 
     // Scan folders for shortcuts
     for (const auto& folder : foldersToScan_) {
+        cancel.throwIfCancellationRequested();
+
         try {
             std::filesystem::path folderPath = folder;
 
@@ -31,6 +33,8 @@ immer::vector<std::shared_ptr<Shortcut>> InstalledAppList::apps() {
                 if (!entry.is_regular_file() || entry.path().extension() != L".lnk") {
                     continue;
                 }
+
+                cancel.throwIfCancellationRequested();
 
                 const auto& filePath = entry.path();
                 const auto lastWriteTime = std::filesystem::last_write_time(filePath);
@@ -71,6 +75,8 @@ immer::vector<std::shared_ptr<Shortcut>> InstalledAppList::apps() {
     // Add existing shortcuts that weren't found in the scan
     // (they might be from other directories we're not scanning now)
     for (size_t i = 0; i < apps_.size(); ++i) {
+        cancel.throwIfCancellationRequested();
+
         auto shortcut = apps_[i];
         const auto& path = shortcut->path();
 
@@ -81,6 +87,7 @@ immer::vector<std::shared_ptr<Shortcut>> InstalledAppList::apps() {
     }
 
     // Update the persistent vector
+    cancel.throwIfCancellationRequested();
     apps_ = newAppsTransient.persistent();
 
     return apps_;

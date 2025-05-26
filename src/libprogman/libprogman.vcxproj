@@ -27,6 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cancel.cpp" />
     <ClCompile Include="com_util.cpp" />
     <ClCompile Include="Error.cpp" />
     <ClCompile Include="FolderWatcher.cpp" />
@@ -48,6 +49,7 @@
     <ClCompile Include="window_state.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cancel.h" />
     <ClInclude Include="com_util.h" />
     <ClInclude Include="Error.h" />
     <ClInclude Include="FolderWatcher.h" />

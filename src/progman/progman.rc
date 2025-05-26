@@ -19,6 +19,7 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -100,6 +101,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 64
     END
+
+    IDD_NEW_SHORTCUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 305
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 155
+    END
+
+    IDD_FINDING_APPS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 165
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 50
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -120,6 +137,29 @@ BEGIN
     EDITTEXT        IDC_NAME_EDIT,7,21,133,12,ES_AUTOHSCROLL
 END
 
+IDD_NEW_SHORTCUT DIALOGEX 20, 20, 312, 162
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "New Shortcut"
+FONT 9, "Segoe UI", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,140,140,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,196,140,50,14
+    CONTROL         "&Application:",IDC_INSTALLED_APPLICATION_RADIO,"Button",BS_AUTORADIOBUTTON,14,7,54,10
+    CONTROL         "",IDC_APPLICATIONS_LIST,"SysListView32",LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,77,7,224,98
+    CONTROL         "&File or folder:",IDC_PATH_RADIO,"Button",BS_AUTORADIOBUTTON,14,112,59,10
+    EDITTEXT        IDC_PATH_EDIT,77,112,224,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Browse...",IDC_BROWSE,252,140,50,14
+END
+
+IDD_FINDING_APPS DIALOGEX 20, 20, 172, 57
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Please Wait"
+FONT 9, "Segoe UI", 400, 0, 0x0
+BEGIN
+    LTEXT           "Finding installed applications...",IDC_FINDING_LABEL,7,7,101,8
+    PUSHBUTTON      "Cancel",IDCANCEL,112,35,50,14
+END
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -134,3 +174,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
