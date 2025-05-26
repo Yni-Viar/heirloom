@@ -71,7 +71,7 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "New &folder...",              ID_FILE_NEWFOLDER
-        MENUITEM "New &shortcut...\tCtrl+N",            ID_FILE_NEWSHORTCUT
+        MENUITEM "New &shortcut...\tCtrl+N",    ID_FILE_NEWSHORTCUT
         MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_FILE_DELETE
         MENUITEM SEPARATOR
@@ -82,6 +82,10 @@ BEGIN
         MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
         MENUITEM "&Tile",                       ID_WINDOW_TILE
         MENUITEM SEPARATOR
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About Heirloom Program Manager", ID_HELP_ABOUT
     END
 END
 
@@ -117,6 +121,10 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 50
     END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -145,7 +153,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,140,140,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,196,140,50,14
     CONTROL         "&Application:",IDC_INSTALLED_APPLICATION_RADIO,"Button",BS_AUTORADIOBUTTON,14,7,54,10
-    CONTROL         "",IDC_APPLICATIONS_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,77,7,224,98
+    CONTROL         "",IDC_APPLICATIONS_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,77,7,224,98
     CONTROL         "&File or folder:",IDC_PATH_RADIO,"Button",BS_AUTORADIOBUTTON,14,112,59,10
     EDITTEXT        IDC_PATH_EDIT,77,112,224,12,ES_AUTOHSCROLL
     PUSHBUTTON      "&Browse...",IDC_BROWSE,252,140,50,14
@@ -160,6 +168,20 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,112,35,50,14
 END
 
+IDD_ABOUT DIALOGEX 20, 20, 214, 92
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Heirloom Program Manager"
+FONT 9, "Segoe UI", 400, 0, 0x0
+BEGIN
+    ICON            IDI_PROGMAN,-1,7,7,20,20
+    LTEXT           "Heirloom Program Manager",-1,42,7,161,8
+    CONTROL         "<version>",IDC_VERSION_LABEL,"Static",SS_LEFTNOWORDWRAP,42,21,161,8
+    LTEXT           "(c) 2025 Brian Luft",-1,42,35,161,8
+    LTEXT           "www.heirloomfilemanager.com",-1,42,49,161,8
+    DEFPUSHBUTTON   "OK",IDOK,154,70,50,14
+END
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Accelerator
@@ -169,6 +191,45 @@ IDC_PROGMAN ACCELERATORS
 BEGIN
     VK_DELETE,      ID_FILE_DELETE,         VIRTKEY, NOINVERT
     "N",            ID_FILE_NEWSHORTCUT,    VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 11,4,0,0
+ PRODUCTVERSION 11,4,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Brian Luft"
+            VALUE "FileDescription", "Heirloom Program Manager"
+            VALUE "FileVersion", "11.4.0.0"
+            VALUE "InternalName", "progman.exe"
+            VALUE "LegalCopyright", "(C) 2025 Brian Luft"
+            VALUE "OriginalFilename", "progman.exe"
+            VALUE "ProductName", "Heirloom Program Manager"
+            VALUE "ProductVersion", "11.4.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
 END
 
 #endif    // English (United States) resources

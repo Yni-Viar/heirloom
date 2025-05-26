@@ -4,6 +4,7 @@
 #include "progman/NewFolderDialog.h"
 #include "progman/FindingAppsDialog.h"
 #include "progman/NewShortcutDialog.h"
+#include "progman/AboutDialog.h"
 #include "libprogman/window_data.h"
 #include "libprogman/string_util.h"
 #include "libprogman/window_state.h"
@@ -54,8 +55,9 @@ ProgramManagerWindow::ProgramManagerWindow(
 
     // Create the main frame window with explicit MDI frame styles
     hwnd_ = CreateWindowExW(
-        WS_EX_COMPOSITED, kClassName, L"Program Manager", WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-        CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, hInstance_, this);
+        WS_EX_COMPOSITED, kClassName, L"Heirloom Program Manager",
+        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr,
+        nullptr, hInstance_, this);
 
     if (!hwnd_) {
         DWORD error = GetLastError();
@@ -522,6 +524,12 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                 case ID_FILE_DELETE:
                     handleDeleteCommand();
                     return 0;
+
+                case ID_HELP_ABOUT: {
+                    AboutDialog aboutDialog(hwnd, hInstance_);
+                    aboutDialog.showDialog();
+                    return 0;
+                }
 
                 // Handle Window menu commands
                 case ID_WINDOW_CASCADE:
