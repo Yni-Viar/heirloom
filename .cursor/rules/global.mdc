@@ -13,13 +13,15 @@ alwaysApply: true
 - Never use the pImpl pattern.
 
 ## File Manager (winfile)
-- Directory: src/winfile/
+- Codebase documentation: `context/winfile-overview.md`. Important: Keep this updated as you modify the codebase!
+- Directory: `src/winfile/`
 - Always run the build with `bash src/build-winfile.sh` after making changes.
 - This is the classic Windows File Manager codebase.
 - When creating new source files, OMIT the file-level comment header.
 
 ## Program Manager (progman)
-- Directories: src/progman/, src/libprogman/, src/libprogman_tests
+- Codebase documentation: `context/program-overview.md`. Important: Keep this updated as you modify the codebase!
+- Directories: `src/progman/`, `src/libprogman/`, `src/libprogman_tests`
 - Always run the build and tests with `bash src/build-progman.sh` after making changes.
 - Prefer the C++ Standard Library like std::wstring over old fashioned C like WCHAR* or LPWSTR.
 - Use smart pointer classes. Avoid "new".

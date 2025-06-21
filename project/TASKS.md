@@ -1,4 +1,11 @@
-- [x] Review all the code in `src/progman` and `src/libprogman` and write a high-level design document in `context/progman-overview.md`. This is for your own benefit for future tasks. Include details that will help you remember the structure of this app, the components, their relationships, and their responsibilities. Maintain a bullet list of features.
-  - *🤖 Analyzed the complete progman codebase architecture including UI layer (progman/) and business logic layer (libprogman/). Created comprehensive design document covering components, data models, services, threading model, error handling, and technical details. Key insights: MDI-based UI with dependency injection, immutable data structures for thread safety, folder/shortcut management with single-level hierarchy, and real-time filesystem monitoring.*
-- [x] Do the same thing for `src/winfile` in `context/winfile-overview.md`.
-  - *🤖 Analyzed the complete winfile codebase architecture including window management, file system navigation, operations, and UI layers. Created comprehensive design document covering the monolithic MDI architecture, key components (tree control, directory listing, drive management, search, copy/move operations), data structures (XDTA, DNODE, DRIVE_INFO), and technical details. Key insights: Traditional Win32 programming with global state management, direct API usage, background threading for operations, and extensive file system integration with drag-drop and shell support.*
+# Improve interactions with minimized folder icons (progman)
+- [ ] When the bar is focused, F2 should start editing the name of the selected minimized folder.
+- [ ] When the bar is focused, Ctrl+D (existing delete hotkey) should delete the selected minimized folder instead of the selected shortcut in the most recently focused (but not currently focused) shown folder window.
+- [ ] When right-clicking on a minimized folder, a context menu should appear:
+    - [ ] "Open" - Same as double-clicking the icon
+    - [ ] Separator
+    - [ ] "Rename" - Same as pressing F2 to edit the name
+    - [ ] "Delete" - Same as pressing Ctrl+D to delete the folder
+
+# Add drag and drop support (progman)
+- [ ] Accept drags of arbitrary files and folders to shortcut folder windows. If a .lnk shortcut is dragged in, then simply copy that shortcut into the shortcut folder. If anything else is dragged in, then create a new shortcut to that target file or folder.
