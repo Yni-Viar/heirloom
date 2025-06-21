@@ -1,0 +1,2 @@
+- [ ] Review all the code in `src/progman` and `src/libprogman` and write a high-level design document in `context/progman-overview.md`. This is for your own benefit for future tasks. Include details that will help you remember the structure of this app, the components, their relationships, and their responsibilities. Maintain a bullet list of features.
+- [ ] Do the same thing for `src/winfile` in `context/winfile-overview.md`.
