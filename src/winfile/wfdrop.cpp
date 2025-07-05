@@ -646,6 +646,10 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
     BOOL fTree;
     LPWSTR szFiles = NULL;
     WCHAR szDest[MAXPATHLEN];
+    WCHAR szSrc[MAXPATHLEN];
+    LPWSTR pszNextFile = NULL;
+    WCHAR szFirstFile[MAXPATHLEN];
+    BOOL bSameLocation = FALSE;
 
     hwndLB = GetDlgItem(This->m_hWnd, IDCW_LISTBOX);
     fTree = FALSE;
@@ -677,10 +681,17 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
         if (This->m_iItemSelected != -1) {
             SendMessage(hwndLB, LB_GETTEXT, This->m_iItemSelected, (LPARAM)(LPWSTR)&lpxdta);
 
-            AddBackslash(szDest);
-            lstrcat(szDest, MemGetFileName(lpxdta));
+            // Bug fix 1: Only treat the selected item as a drop target if it's a directory
+            if (lpxdta->dwAttrs & FILE_ATTRIBUTE_DIRECTORY) {
+                AddBackslash(szDest);
+                lstrcat(szDest, MemGetFileName(lpxdta));
+            }
+            // If it's a file, we just drop to the containing folder (szDest already set above)
         }
     }
+
+    // Store the destination folder path for comparison
+    lstrcpy(szSrc, szDest);
 
     AddBackslash(szDest);
     lstrcat(szDest, kStarDotStar);  // put files in this dir
@@ -694,9 +705,27 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
     }
 
     if (szFiles != NULL) {
-        SetFocus(This->m_hWnd);
+        // Bug fix 2: Check if source and destination are the same
+        // Extract the first file from the source list to check its directory
+        pszNextFile = GetNextFile(szFiles, szFirstFile, COUNTOF(szFirstFile));
+        if (pszNextFile != NULL) {
+            // Get the directory of the first source file
+            LPWSTR pszFileName = FindFileName(szFirstFile);
+            if (pszFileName > szFirstFile) {
+                *(pszFileName - 1) = L'\0';  // Remove the trailing backslash
 
-        DMMoveCopyHelper(szFiles, szDest, dwEffect == DROPEFFECT_COPY);
+                // Compare source and destination directories
+                if (lstrcmpi(szFirstFile, szSrc) == 0) {
+                    bSameLocation = TRUE;
+                }
+            }
+        }
+
+        if (!bSameLocation) {
+            SetFocus(This->m_hWnd);
+            DMMoveCopyHelper(szFiles, szDest, dwEffect == DROPEFFECT_COPY);
+        }
+        // If same location, silently ignore the drop (no prompt, no action)
 
         LocalFree((HLOCAL)szFiles);
     }
