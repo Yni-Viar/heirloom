@@ -102,16 +102,18 @@ The application uses constructor dependency injection with the DI graph construc
 ### Drag and Drop Support
 - **Drop Target Support** - Accept files and folders from Windows Explorer
   - Automatically creates shortcuts for files and folders
-  - Copies existing `.lnk` files to the folder
+  - Copies existing `.lnk` files to the folder (always copy from external sources)
+  - Moves `.lnk` files between folder windows (internal move operations)
   - Prevents duplicate shortcuts by generating unique names
-- **Drag Source Support** - Drag shortcuts from folder windows
+- **Drag Source Support** - Drag shortcuts between folder windows only
   - Move shortcuts between folder windows (DROPEFFECT_MOVE)
-  - Copy shortcuts to external applications (DROPEFFECT_COPY)
+  - External drag operations are not supported to simplify the implementation
   - Automatic source file cleanup for move operations
 - **Implementation** - Uses Windows OLE drag and drop APIs
-  - `DropTarget` class implements `IDropTarget` interface
-  - `DragSource` class implements `IDropSource` interface
-  - `DataObject` class implements `IDataObject` interface for CF_HDROP format
+  - `DropTarget` class implements `IDropTarget` interface with internal/external drag detection
+  - `DragSource` class implements `IDropSource` interface for internal-only operations
+  - `DataObject` class implements `IDataObject` interface with custom clipboard format for internal identification
+  - Custom clipboard format "ProgmanInternalDrag" distinguishes internal from external drag sources
   - Requires OLE initialization via `OleInitialize()` before registering drop targets
   - Handles `LVN_BEGINDRAG` notification to initiate drag operations
 

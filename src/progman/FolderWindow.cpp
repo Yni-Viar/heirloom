@@ -10,6 +10,16 @@ namespace progman {
 
 constexpr WCHAR kFolderWindowClass[] = L"ProgmanFolderWindowClass";
 
+// Add a custom clipboard format for internal drag operations
+static UINT g_InternalDragFormat = 0;
+
+// Initialize the custom clipboard format
+void initializeInternalDragFormat() {
+    if (g_InternalDragFormat == 0) {
+        g_InternalDragFormat = RegisterClipboardFormatW(L"ProgmanInternalDrag");
+    }
+}
+
 // Window procedure for the folder window
 LRESULT CALLBACK FolderWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     FolderWindow* pThis = nullptr;
@@ -592,6 +602,9 @@ void FolderWindow::setupDragAndDrop() {
     // Initialize OLE for drag and drop support
     OleInitialize(nullptr);
 
+    // Initialize our custom clipboard format
+    initializeInternalDragFormat();
+
     if (listView_) {
         // Create the drop target
         dropTarget_ = std::make_shared<DropTarget>(this);
@@ -713,10 +726,14 @@ STDMETHODIMP DropTarget::DragEnter(IDataObject* pDataObj, DWORD grfKeyState, POI
     }
 
     if (canAcceptDrop(pDataObj)) {
-        // Check if the source supports move operations (i.e., it's from another folder window)
-        if (*pdwEffect & DROPEFFECT_MOVE) {
+        // Check if this is an internal drag (from our application)
+        bool isInternalDrag = isInternalDragSource(pDataObj);
+
+        if (isInternalDrag) {
+            // Internal drag - allow move operations
             *pdwEffect = DROPEFFECT_MOVE;
         } else {
+            // External drag - only allow copy operations
             *pdwEffect = DROPEFFECT_COPY;
         }
     } else {
@@ -731,13 +748,8 @@ STDMETHODIMP DropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect
         return E_POINTER;
     }
 
-    // Preserve the effect determined in DragEnter
-    // If move is available, use move; otherwise use copy
-    if (*pdwEffect & DROPEFFECT_MOVE) {
-        *pdwEffect = DROPEFFECT_MOVE;
-    } else {
-        *pdwEffect = DROPEFFECT_COPY;
-    }
+    // The effect was already determined in DragEnter - preserve it
+    // No need to change anything here
 
     return S_OK;
 }
@@ -818,6 +830,16 @@ bool DropTarget::canAcceptDrop(IDataObject* pDataObj) {
     return pDataObj->QueryGetData(&formatEtc) == S_OK;
 }
 
+bool DropTarget::isInternalDragSource(IDataObject* pDataObj) {
+    if (!pDataObj) {
+        return false;
+    }
+
+    // Check if the data object contains our custom format
+    FORMATETC formatEtc = { g_InternalDragFormat, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+    return pDataObj->QueryGetData(&formatEtc) == S_OK;
+}
+
 // FolderWindow drag source methods
 void FolderWindow::startDrag(int itemIndex) {
     if (!listView_ || !dragSource_) {
@@ -838,9 +860,8 @@ void FolderWindow::startDrag(int itemIndex) {
     // Create a data object with the shortcut path
     auto dataObject = std::make_shared<DataObject>(shortcut->path().wstring());
 
-    // Determine the allowed effects
-    // Move within the same application, copy to external applications
-    DWORD allowedEffects = DROPEFFECT_MOVE | DROPEFFECT_COPY;
+    // Only allow move operations (only dragging within our application)
+    DWORD allowedEffects = DROPEFFECT_MOVE;
     DWORD effect = DROPEFFECT_NONE;
 
     // Perform the drag operation
@@ -855,7 +876,6 @@ void FolderWindow::startDrag(int itemIndex) {
                 refreshListView();
             }
         }
-        // For DROPEFFECT_COPY, we don't need to do anything as the original stays
     }
 }
 
@@ -953,6 +973,30 @@ STDMETHODIMP DataObject::GetData(FORMATETC* pformatetcIn, STGMEDIUM* pmedium) {
 
     ZeroMemory(pmedium, sizeof(STGMEDIUM));
 
+    // Handle our custom internal drag format
+    if (pformatetcIn->cfFormat == g_InternalDragFormat) {
+        // Just provide a simple marker - the presence of this format indicates internal drag
+        HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, sizeof(DWORD));
+        if (!hGlobal) {
+            return E_OUTOFMEMORY;
+        }
+
+        void* pData = GlobalLock(hGlobal);
+        if (!pData) {
+            GlobalFree(hGlobal);
+            return E_OUTOFMEMORY;
+        }
+
+        *static_cast<DWORD*>(pData) = 0x12345678;  // Simple marker value
+        GlobalUnlock(hGlobal);
+
+        pmedium->tymed = TYMED_HGLOBAL;
+        pmedium->hGlobal = hGlobal;
+        pmedium->pUnkForRelease = nullptr;
+
+        return S_OK;
+    }
+
     // Handle CF_HDROP format for file paths
     if (pformatetcIn->cfFormat == CF_HDROP) {
         // Calculate the size needed for the DROPFILES structure
@@ -1004,6 +1048,12 @@ STDMETHODIMP DataObject::GetDataHere(FORMATETC* pformatetc, STGMEDIUM* pmedium) 
 STDMETHODIMP DataObject::QueryGetData(FORMATETC* pformatetc) {
     if (!pformatetc) {
         return E_POINTER;
+    }
+
+    // We support our custom internal drag format
+    if (pformatetc->cfFormat == g_InternalDragFormat && pformatetc->tymed & TYMED_HGLOBAL &&
+        pformatetc->dwAspect == DVASPECT_CONTENT) {
+        return S_OK;
     }
 
     // We support CF_HDROP format

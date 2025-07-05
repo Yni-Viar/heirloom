@@ -115,6 +115,7 @@ class DropTarget : public IDropTarget {
 
     std::vector<std::wstring> extractFilePaths(IDataObject* pDataObj);
     bool canAcceptDrop(IDataObject* pDataObj);
+    bool isInternalDragSource(IDataObject* pDataObj);
 };
 
 // DragSource class to handle drag and drop operations
