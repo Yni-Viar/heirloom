@@ -720,7 +720,15 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
         }
 
         // Compare source and destination directories
-        if (lstrcmpi(szSrc, szDestDir) == 0) {
+        // Normalize both paths by removing trailing backslashes
+        WCHAR szSrcNormalized[MAXPATHLEN];
+        lstrcpy(szSrcNormalized, szSrc);
+        int srcLen = lstrlen(szSrcNormalized);
+        if (srcLen > 0 && szSrcNormalized[srcLen - 1] == L'\\') {
+            szSrcNormalized[srcLen - 1] = L'\0';
+        }
+
+        if (lstrcmpi(szSrcNormalized, szDestDir) == 0) {
             bSameLocation = TRUE;
         }
 
@@ -730,12 +738,13 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
             szDebugMsg,
             L"Drop Debug Information:\n\n"
             L"Source Directory: %s\n"
+            L"Source Normalized: %s\n"
             L"Destination Directory: %s\n"
             L"Original Destination: %s\n"
             L"Same Location: %s\n"
             L"Effect: %s\n"
             L"Selected Item: %d",
-            szSrc, szDestDir, szDest, bSameLocation ? L"TRUE" : L"FALSE",
+            szSrc, szSrcNormalized, szDestDir, szDest, bSameLocation ? L"TRUE" : L"FALSE",
             dwEffect == DROPEFFECT_COPY ? L"COPY" : L"MOVE", This->m_iItemSelected);
 
         MessageBox(This->m_hWnd, szDebugMsg, L"Drop Debug", MB_OK | MB_ICONINFORMATION);
