@@ -12,7 +12,7 @@ class OperationCanceledException : public std::exception {
 class CancellationToken {
    public:
     CancellationToken();
-    explicit CancellationToken(std::shared_ptr<bool> cancelRequested);
+    explicit CancellationToken(std::shared_ptr<std::atomic<bool>> cancelRequested);
     ~CancellationToken() = default;
 
     // Checks if cancellation has been requested
@@ -22,7 +22,7 @@ class CancellationToken {
     void throwIfCancellationRequested() const;
 
    private:
-    std::shared_ptr<bool> cancelRequested_;
+    std::shared_ptr<std::atomic<bool>> cancelRequested_;
     bool isValid_;
 };
 
@@ -41,7 +41,7 @@ class CancellationTokenSource {
     bool isCancellationRequested() const;
 
    private:
-    std::shared_ptr<bool> cancelRequested_;
+    std::shared_ptr<std::atomic<bool>> cancelRequested_;
 };
 
 }  // namespace libheirloom

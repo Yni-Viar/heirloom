@@ -6,6 +6,7 @@
 #include "windows10.h"
 
 // C++ Standard Library
+#include <atomic>
 #include <memory>
 #include <stdexcept>
 #include <string>
