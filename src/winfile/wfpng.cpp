@@ -111,7 +111,7 @@ static BOOL EnsureScaledForDpi(PNG_BITMAP* png, UINT dpiTarget) {
     }
 
     // ----- compute new size -----
-    //  16× master  →  (dpi / 96)× baseline
+    //  16x master  ->  (dpi / 96)x baseline
     //  baseline = master / 16
     UINT cxNew = (png->origCX * dpiTarget) / (96 * 16);
     UINT cyNew = (png->origCY * dpiTarget) / (96 * 16);
