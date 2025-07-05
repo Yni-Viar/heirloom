@@ -100,12 +100,20 @@ The application uses constructor dependency injection with the DI graph construc
 - Show shortcut properties
 
 ### Drag and Drop Support
-- Drag files and folders from Windows Explorer to folder windows
-- Automatically creates shortcuts for files and folders
-- Copies existing `.lnk` files to the folder
-- Prevents duplicate shortcuts by generating unique names
-- Uses Windows OLE drag and drop APIs for native integration
-- Requires OLE initialization via `OleInitialize()` before registering drop targets
+- **Drop Target Support** - Accept files and folders from Windows Explorer
+  - Automatically creates shortcuts for files and folders
+  - Copies existing `.lnk` files to the folder
+  - Prevents duplicate shortcuts by generating unique names
+- **Drag Source Support** - Drag shortcuts from folder windows
+  - Move shortcuts between folder windows (DROPEFFECT_MOVE)
+  - Copy shortcuts to external applications (DROPEFFECT_COPY)
+  - Automatic source file cleanup for move operations
+- **Implementation** - Uses Windows OLE drag and drop APIs
+  - `DropTarget` class implements `IDropTarget` interface
+  - `DragSource` class implements `IDropSource` interface
+  - `DataObject` class implements `IDataObject` interface for CF_HDROP format
+  - Requires OLE initialization via `OleInitialize()` before registering drop targets
+  - Handles `LVN_BEGINDRAG` notification to initiate drag operations
 
 ### Application Discovery
 - Scans system and user Start Menu folders

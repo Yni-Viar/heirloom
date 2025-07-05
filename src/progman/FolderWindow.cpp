@@ -415,6 +415,15 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
             NMHDR* nmhdr = reinterpret_cast<NMHDR*>(lParam);
             if (nmhdr->hwndFrom == listView_) {
                 switch (nmhdr->code) {
+                    case LVN_BEGINDRAG: {
+                        // Handle the start of a drag operation
+                        NMLISTVIEW* pnmlv = reinterpret_cast<NMLISTVIEW*>(lParam);
+                        if (pnmlv->iItem != -1) {
+                            startDrag(pnmlv->iItem);
+                        }
+                        return 0;
+                    }
+
                     case NM_DBLCLK: {
                         // Handle double-click on a shortcut
                         NMITEMACTIVATE* nmia = reinterpret_cast<NMITEMACTIVATE*>(lParam);
@@ -589,6 +598,9 @@ void FolderWindow::setupDragAndDrop() {
 
         // Register the ListView as a drop target
         RegisterDragDrop(listView_, dropTarget_.get());
+
+        // Create the drag source
+        dragSource_ = std::make_shared<DragSource>();
     }
 }
 
@@ -598,6 +610,9 @@ void FolderWindow::cleanupDragAndDrop() {
         RevokeDragDrop(listView_);
         dropTarget_.reset();
     }
+
+    // Clean up drag source
+    dragSource_.reset();
 }
 
 void FolderWindow::handleFileDrop(const std::vector<std::wstring>& filePaths) {
@@ -698,7 +713,12 @@ STDMETHODIMP DropTarget::DragEnter(IDataObject* pDataObj, DWORD grfKeyState, POI
     }
 
     if (canAcceptDrop(pDataObj)) {
-        *pdwEffect = DROPEFFECT_COPY;
+        // Check if the source supports move operations (i.e., it's from another folder window)
+        if (*pdwEffect & DROPEFFECT_MOVE) {
+            *pdwEffect = DROPEFFECT_MOVE;
+        } else {
+            *pdwEffect = DROPEFFECT_COPY;
+        }
     } else {
         *pdwEffect = DROPEFFECT_NONE;
     }
@@ -711,8 +731,14 @@ STDMETHODIMP DropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect
         return E_POINTER;
     }
 
-    // For now, always allow copy
-    *pdwEffect = DROPEFFECT_COPY;
+    // Preserve the effect determined in DragEnter
+    // If move is available, use move; otherwise use copy
+    if (*pdwEffect & DROPEFFECT_MOVE) {
+        *pdwEffect = DROPEFFECT_MOVE;
+    } else {
+        *pdwEffect = DROPEFFECT_COPY;
+    }
+
     return S_OK;
 }
 
@@ -725,13 +751,27 @@ STDMETHODIMP DropTarget::Drop(IDataObject* pDataObj, DWORD grfKeyState, POINTL p
         return E_POINTER;
     }
 
+    DWORD originalEffect = *pdwEffect;
     *pdwEffect = DROPEFFECT_NONE;
 
     if (canAcceptDrop(pDataObj)) {
         auto filePaths = extractFilePaths(pDataObj);
         if (!filePaths.empty()) {
             folderWindow_->handleFileDrop(filePaths);
-            *pdwEffect = DROPEFFECT_COPY;
+
+            // If this was a move operation, delete the source files
+            if (originalEffect & DROPEFFECT_MOVE) {
+                for (const auto& filePath : filePaths) {
+                    try {
+                        std::filesystem::remove(filePath);
+                    } catch (const std::exception&) {
+                        // Ignore delete errors - the file might have already been moved
+                    }
+                }
+                *pdwEffect = DROPEFFECT_MOVE;
+            } else {
+                *pdwEffect = DROPEFFECT_COPY;
+            }
         }
     }
 
@@ -776,6 +816,233 @@ bool DropTarget::canAcceptDrop(IDataObject* pDataObj) {
     // Check if the data object contains file paths
     FORMATETC formatEtc = { CF_HDROP, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
     return pDataObj->QueryGetData(&formatEtc) == S_OK;
+}
+
+// FolderWindow drag source methods
+void FolderWindow::startDrag(int itemIndex) {
+    if (!listView_ || !dragSource_) {
+        return;
+    }
+
+    // Get the shortcut associated with the item
+    LVITEMW lvItem = {};
+    lvItem.mask = LVIF_PARAM;
+    lvItem.iItem = itemIndex;
+    ListView_GetItem(listView_, &lvItem);
+
+    libprogman::Shortcut* shortcut = reinterpret_cast<libprogman::Shortcut*>(lvItem.lParam);
+    if (!shortcut) {
+        return;
+    }
+
+    // Create a data object with the shortcut path
+    auto dataObject = std::make_shared<DataObject>(shortcut->path().wstring());
+
+    // Determine the allowed effects
+    // Move within the same application, copy to external applications
+    DWORD allowedEffects = DROPEFFECT_MOVE | DROPEFFECT_COPY;
+    DWORD effect = DROPEFFECT_NONE;
+
+    // Perform the drag operation
+    HRESULT hr = DoDragDrop(dataObject.get(), dragSource_.get(), allowedEffects, &effect);
+
+    if (SUCCEEDED(hr)) {
+        if (effect == DROPEFFECT_MOVE) {
+            // The shortcut was moved to another folder window
+            // The target will handle the actual move operation
+            // We need to check if the file still exists, and if not, refresh the view
+            if (!std::filesystem::exists(shortcut->path())) {
+                refreshListView();
+            }
+        }
+        // For DROPEFFECT_COPY, we don't need to do anything as the original stays
+    }
+}
+
+bool FolderWindow::shouldStartDrag(POINT currentPoint) const {
+    int deltaX = abs(currentPoint.x - dragStartPoint_.x);
+    int deltaY = abs(currentPoint.y - dragStartPoint_.y);
+
+    return deltaX > GetSystemMetrics(SM_CXDRAG) || deltaY > GetSystemMetrics(SM_CYDRAG);
+}
+
+// DragSource implementation
+DragSource::DragSource() : refCount_(1) {}
+
+STDMETHODIMP DragSource::QueryInterface(REFIID riid, void** ppvObject) {
+    if (!ppvObject) {
+        return E_POINTER;
+    }
+
+    *ppvObject = nullptr;
+
+    if (riid == IID_IUnknown || riid == IID_IDropSource) {
+        *ppvObject = static_cast<IDropSource*>(this);
+        AddRef();
+        return S_OK;
+    }
+
+    return E_NOINTERFACE;
+}
+
+STDMETHODIMP_(ULONG) DragSource::AddRef() {
+    return InterlockedIncrement(&refCount_);
+}
+
+STDMETHODIMP_(ULONG) DragSource::Release() {
+    ULONG count = InterlockedDecrement(&refCount_);
+    if (count == 0) {
+        delete this;
+    }
+    return count;
+}
+
+STDMETHODIMP DragSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState) {
+    if (fEscapePressed) {
+        return DRAGDROP_S_CANCEL;
+    }
+
+    // Check if the mouse button is still pressed
+    if (!(grfKeyState & MK_LBUTTON)) {
+        return DRAGDROP_S_DROP;
+    }
+
+    return S_OK;
+}
+
+STDMETHODIMP DragSource::GiveFeedback(DWORD dwEffect) {
+    // Use default cursor feedback
+    return DRAGDROP_S_USEDEFAULTCURSORS;
+}
+
+// DataObject implementation
+DataObject::DataObject(const std::wstring& shortcutPath) : refCount_(1), shortcutPath_(shortcutPath) {}
+
+STDMETHODIMP DataObject::QueryInterface(REFIID riid, void** ppvObject) {
+    if (!ppvObject) {
+        return E_POINTER;
+    }
+
+    *ppvObject = nullptr;
+
+    if (riid == IID_IUnknown || riid == IID_IDataObject) {
+        *ppvObject = static_cast<IDataObject*>(this);
+        AddRef();
+        return S_OK;
+    }
+
+    return E_NOINTERFACE;
+}
+
+STDMETHODIMP_(ULONG) DataObject::AddRef() {
+    return InterlockedIncrement(&refCount_);
+}
+
+STDMETHODIMP_(ULONG) DataObject::Release() {
+    ULONG count = InterlockedDecrement(&refCount_);
+    if (count == 0) {
+        delete this;
+    }
+    return count;
+}
+
+STDMETHODIMP DataObject::GetData(FORMATETC* pformatetcIn, STGMEDIUM* pmedium) {
+    if (!pformatetcIn || !pmedium) {
+        return E_POINTER;
+    }
+
+    ZeroMemory(pmedium, sizeof(STGMEDIUM));
+
+    // Handle CF_HDROP format for file paths
+    if (pformatetcIn->cfFormat == CF_HDROP) {
+        // Calculate the size needed for the DROPFILES structure
+        size_t pathLength = shortcutPath_.length() + 1;                           // +1 for null terminator
+        size_t totalSize = sizeof(DROPFILES) + (pathLength + 1) * sizeof(WCHAR);  // +1 for double null terminator
+
+        // Allocate global memory
+        HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, totalSize);
+        if (!hGlobal) {
+            return E_OUTOFMEMORY;
+        }
+
+        // Lock the memory and set up the DROPFILES structure
+        void* pData = GlobalLock(hGlobal);
+        if (!pData) {
+            GlobalFree(hGlobal);
+            return E_OUTOFMEMORY;
+        }
+
+        DROPFILES* pDropFiles = static_cast<DROPFILES*>(pData);
+        pDropFiles->pFiles = sizeof(DROPFILES);
+        pDropFiles->fWide = TRUE;
+        pDropFiles->pt.x = 0;
+        pDropFiles->pt.y = 0;
+        pDropFiles->fNC = FALSE;
+
+        // Copy the file path
+        WCHAR* pPath = reinterpret_cast<WCHAR*>(static_cast<char*>(pData) + sizeof(DROPFILES));
+        wcscpy_s(pPath, pathLength, shortcutPath_.c_str());
+        pPath[pathLength] = L'\0';  // Double null terminator
+
+        GlobalUnlock(hGlobal);
+
+        // Set up the storage medium
+        pmedium->tymed = TYMED_HGLOBAL;
+        pmedium->hGlobal = hGlobal;
+        pmedium->pUnkForRelease = nullptr;
+
+        return S_OK;
+    }
+
+    return DV_E_FORMATETC;
+}
+
+STDMETHODIMP DataObject::GetDataHere(FORMATETC* pformatetc, STGMEDIUM* pmedium) {
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP DataObject::QueryGetData(FORMATETC* pformatetc) {
+    if (!pformatetc) {
+        return E_POINTER;
+    }
+
+    // We support CF_HDROP format
+    if (pformatetc->cfFormat == CF_HDROP && pformatetc->tymed & TYMED_HGLOBAL &&
+        pformatetc->dwAspect == DVASPECT_CONTENT) {
+        return S_OK;
+    }
+
+    return DV_E_FORMATETC;
+}
+
+STDMETHODIMP DataObject::GetCanonicalFormatEtc(FORMATETC* pformatectIn, FORMATETC* pformatetcOut) {
+    if (!pformatetcOut) {
+        return E_POINTER;
+    }
+
+    *pformatetcOut = *pformatectIn;
+    pformatetcOut->ptd = nullptr;
+    return DATA_S_SAMEFORMATETC;
+}
+
+STDMETHODIMP DataObject::SetData(FORMATETC* pformatetc, STGMEDIUM* pmedium, BOOL fRelease) {
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP DataObject::EnumFormatEtc(DWORD dwDirection, IEnumFORMATETC** ppenumFormatEtc) {
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP DataObject::DAdvise(FORMATETC* pformatetc, DWORD advf, IAdviseSink* pAdvSink, DWORD* pdwConnection) {
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP DataObject::DUnadvise(DWORD dwConnection) {
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP DataObject::EnumDAdvise(IEnumSTATDATA** ppenumAdvise) {
+    return E_NOTIMPL;
 }
 
 }  // namespace progman

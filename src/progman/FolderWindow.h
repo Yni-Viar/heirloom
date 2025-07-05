@@ -11,6 +11,12 @@ class ProgramManagerWindow;  // Forward declaration
 // Forward declaration of DropTarget class
 class DropTarget;
 
+// Forward declaration of DragSource class
+class DragSource;
+
+// Forward declaration of DataObject class
+class DataObject;
+
 class FolderWindow {
    public:
     FolderWindow(
@@ -63,11 +69,20 @@ class FolderWindow {
 
     // Drag and drop support
     std::shared_ptr<DropTarget> dropTarget_;
+    std::shared_ptr<DragSource> dragSource_;
+
+    // Drag source tracking
+    bool isDragging_ = false;
+    POINT dragStartPoint_ = {};
 
     void createListView();
     void refreshListView();
     void setupDragAndDrop();
     void cleanupDragAndDrop();
+
+    // Drag source methods
+    void startDrag(int itemIndex);
+    bool shouldStartDrag(POINT currentPoint) const;
 
     // Helper functions for window state
     void saveWindowState(HWND hwnd);
@@ -100,6 +115,50 @@ class DropTarget : public IDropTarget {
 
     std::vector<std::wstring> extractFilePaths(IDataObject* pDataObj);
     bool canAcceptDrop(IDataObject* pDataObj);
+};
+
+// DragSource class to handle drag and drop operations
+class DragSource : public IDropSource {
+   public:
+    DragSource();
+
+    // IUnknown interface
+    STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override;
+    STDMETHODIMP_(ULONG) AddRef() override;
+    STDMETHODIMP_(ULONG) Release() override;
+
+    // IDropSource interface
+    STDMETHODIMP QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState) override;
+    STDMETHODIMP GiveFeedback(DWORD dwEffect) override;
+
+   private:
+    ULONG refCount_;
+};
+
+// DataObject class to hold the shortcut data during drag operations
+class DataObject : public IDataObject {
+   public:
+    DataObject(const std::wstring& shortcutPath);
+
+    // IUnknown interface
+    STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override;
+    STDMETHODIMP_(ULONG) AddRef() override;
+    STDMETHODIMP_(ULONG) Release() override;
+
+    // IDataObject interface
+    STDMETHODIMP GetData(FORMATETC* pformatetcIn, STGMEDIUM* pmedium) override;
+    STDMETHODIMP GetDataHere(FORMATETC* pformatetc, STGMEDIUM* pmedium) override;
+    STDMETHODIMP QueryGetData(FORMATETC* pformatetc) override;
+    STDMETHODIMP GetCanonicalFormatEtc(FORMATETC* pformatectIn, FORMATETC* pformatetcOut) override;
+    STDMETHODIMP SetData(FORMATETC* pformatetc, STGMEDIUM* pmedium, BOOL fRelease) override;
+    STDMETHODIMP EnumFormatEtc(DWORD dwDirection, IEnumFORMATETC** ppenumFormatEtc) override;
+    STDMETHODIMP DAdvise(FORMATETC* pformatetc, DWORD advf, IAdviseSink* pAdvSink, DWORD* pdwConnection) override;
+    STDMETHODIMP DUnadvise(DWORD dwConnection) override;
+    STDMETHODIMP EnumDAdvise(IEnumSTATDATA** ppenumAdvise) override;
+
+   private:
+    ULONG refCount_;
+    std::wstring shortcutPath_;
 };
 
 }  // namespace progman
