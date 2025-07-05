@@ -10,3 +10,5 @@
 
 - [x] Remove the logging to `debug.log` now that the problem is fixed. Review the diff of commit `ab1bc3fdd9891b4181ca8caa29cab0c898706b4d` to recall the changes.
     - *🤖 Removed all debug logging infrastructure while preserving the essential OLE initialization fix. Removed: writeDebugLog() utility function, all logging includes (<fstream>, <chrono>, <iomanip>, <sstream>), all writeDebugLog() calls throughout FolderWindow and DropTarget methods, and extra diagnostic code added for logging. Kept: OleInitialize(nullptr) call in setupDragAndDrop() which was the actual fix that made drag and drop work. The code is now clean and production-ready.*
+
+- [ ] Bug fix: After renaming a minimized folder, a second copy of the folder icon appears. This is likely because we have a filesystem watcher that detects the rename as a new folder, meanwhile the rename operation itself is probably trying to update the existing icon. We want the filesystem watcher to take care of it; the rename operation should rename the folder but do nothing else, allowing the filesystem rename to automatically become reflected in the UI via the filesystem watcher.
