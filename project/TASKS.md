@@ -19,3 +19,5 @@
     
 - [x] Bug fix: When I drag a `.lnk` file from an external application to a folder window, we are moving the `.lnk`. The requirement was to _copy_ the `.lnk`. Only move between our own folder windows, otherwise always copy.
     - *🤖 Added custom clipboard format "ProgmanInternalDrag" to distinguish between internal and external drag sources. Modified DropTarget::DragEnter to check for this custom format - internal drags use DROPEFFECT_MOVE while external drags use DROPEFFECT_COPY. This ensures .lnk files from external sources are copied instead of moved, while maintaining move semantics between folder windows.*
+
+- [ ] Bug fix: When I drag a non-lnk file from an external application, the file itself gets moved into our appdata folder (!!) and then we create a shortcut back to the original location which no longer exists. It's totally broken. Make sure we do NOT copy or move a non-lnk file that is dragged in from an external application; leave it in place and make a shortcut to the drag source.
