@@ -153,6 +153,10 @@ Frame Window (FrameWndProc) - hwndFrame
 - **Extension Support** - Plugin architecture for third-party enhancements
 - **Print Support** - Directory listings and file information printing
 
+### Help Menu
+- **About** - Shows application information dialog
+- **Visit Website** - Opens `https://heirloomapps.com` in the default browser using ShellExecute
+
 ## Technical Details
 
 ### Programming Model

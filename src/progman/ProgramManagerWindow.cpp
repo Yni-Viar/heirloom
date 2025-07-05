@@ -461,6 +461,12 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
                     return 0;
                 }
 
+                case ID_HELP_VISIT_WEBSITE: {
+                    // Open the website in the default browser
+                    ShellExecuteW(hwnd, L"open", L"https://heirloomapps.com", nullptr, nullptr, SW_SHOWNORMAL);
+                    return 0;
+                }
+
                 // Handle Window menu commands
                 case ID_WINDOW_CASCADE:
                     SendMessageW(mdiClient_, WM_MDICASCADE, 0, 0);

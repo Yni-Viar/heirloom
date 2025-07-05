@@ -84,6 +84,10 @@ The application uses constructor dependency injection with the DI graph construc
 - **`NewShortcutDialog`** - Create shortcut from installed apps dialog
 - **`FindingAppsDialog`** - Progress dialog for app discovery
 
+#### Help Menu
+- **About** - Shows application information dialog
+- **Visit Website** - Opens `https://heirloomapps.com` in the default browser using ShellExecute
+
 ## Key Features
 
 ### Folder Management

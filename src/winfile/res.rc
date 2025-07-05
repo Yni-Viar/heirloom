@@ -255,6 +255,8 @@ BEGIN
     END
     POPUP       "&Help"
     BEGIN
+    MENUITEM    "Visit &Website",                 IDM_VISIT_WEBSITE
+    MENUITEM    SEPARATOR
     MENUITEM    "&About Heirloom File Manager",   IDM_ABOUT
     END
 

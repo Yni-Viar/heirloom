@@ -1500,6 +1500,11 @@ BOOL AppCommandProc(DWORD id) {
             DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(ABOUTDLG), hwndFrame, AboutDlgProc);
             break;
 
+        case IDM_VISIT_WEBSITE:
+            // Open the website in the default browser
+            ShellExecuteW(hwndFrame, L"open", L"https://heirloomapps.com", nullptr, nullptr, SW_SHOWNORMAL);
+            break;
+
         default: {
             int i;
 

@@ -86,6 +86,8 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
+        MENUITEM "Visit &Website", ID_HELP_VISIT_WEBSITE
+        MENUITEM SEPARATOR
         MENUITEM "&About Heirloom Program Manager", ID_HELP_ABOUT
     END
 END

@@ -154,6 +154,7 @@
 #define IDM_HELPPROCS 0x0021
 #define IDM_HELPHELP 1902
 #define IDM_ABOUT 1903
+#define IDM_VISIT_WEBSITE 1904
 
 #define IDM_DRIVELISTJUMP 2000 /* for defining an accelerator */
 
