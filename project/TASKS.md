@@ -1,0 +1,1 @@
+- [ ] To both progman and winfile, add a command to the Help menu: "Visit Website". It opens `https://heirloomapps.com` in the user's default browser.
