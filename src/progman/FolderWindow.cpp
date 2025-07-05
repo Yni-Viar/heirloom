@@ -11,7 +11,7 @@ namespace progman {
 constexpr WCHAR kFolderWindowClass[] = L"ProgmanFolderWindowClass";
 
 // Add a custom clipboard format for internal drag operations
-static UINT g_InternalDragFormat = 0;
+static CLIPFORMAT g_InternalDragFormat = 0;
 
 // Initialize the custom clipboard format
 void initializeInternalDragFormat() {
