@@ -2,7 +2,7 @@
 #include "progman/FindingAppsDialog.h"
 #include "progman/resource.h"
 #include "libprogman/window_data.h"
-#include "libprogman/cancel.h"
+#include "libheirloom/cancel.h"
 #include "libprogman/constants.h"
 
 namespace progman {
@@ -119,7 +119,7 @@ DWORD FindingAppsDialog::executeLoadApps() {
         // Signal success by ending the dialog
         PostMessage(dialogHandle_, WM_COMMAND, IDOK, 0);
         return 0;
-    } catch (const libprogman::OperationCanceledException&) {
+    } catch (const libheirloom::OperationCanceledException&) {
         // Operation was canceled by user, close the dialog with IDCANCEL
         // Use IDABORT as a special value to tell the dialog proc to end with IDCANCEL
         PostMessage(dialogHandle_, WM_COMMAND, IDABORT, 0);

@@ -7,7 +7,7 @@ namespace libprogman {
 InstalledAppList::InstalledAppList(ShortcutFactory* shortcutFactory, immer::vector<std::filesystem::path> foldersToScan)
     : shortcutFactory_(shortcutFactory), foldersToScan_(std::move(foldersToScan)), apps_() {}
 
-immer::vector<std::shared_ptr<Shortcut>> InstalledAppList::apps(CancellationToken cancel) {
+immer::vector<std::shared_ptr<Shortcut>> InstalledAppList::apps(libheirloom::CancellationToken cancel) {
     std::lock_guard<std::mutex> lock(mutex_);
 
     // Keep track of file paths we've processed in this pass

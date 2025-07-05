@@ -2,7 +2,7 @@
 
 #include "libprogman/pch.h"
 #include "libprogman/ShortcutFactory.h"
-#include "libprogman/cancel.h"
+#include "libheirloom/cancel.h"
 
 namespace libprogman {
 
@@ -16,7 +16,7 @@ class InstalledAppList {
     // Updates apps_ to account for newly installed/updated applications and then returns the complete list.
     // Last write time is used to decide whether a .lnk file we've loaded previously needs to be reloaded.
     // Holds the mutex the whole time.
-    immer::vector<std::shared_ptr<Shortcut>> apps(CancellationToken cancel);
+    immer::vector<std::shared_ptr<Shortcut>> apps(libheirloom::CancellationToken cancel);
 
    private:
     ShortcutFactory* shortcutFactory_;

@@ -3,7 +3,7 @@
 #include "progman/pch.h"
 #include "libprogman/InstalledAppList.h"
 #include "libprogman/Shortcut.h"
-#include "libprogman/cancel.h"
+#include "libheirloom/cancel.h"
 
 namespace progman {
 
@@ -42,7 +42,7 @@ class FindingAppsDialog {
     immer::vector<std::shared_ptr<libprogman::Shortcut>> apps_;
 
     // Cancellation support
-    libprogman::CancellationTokenSource cancellationSource_;
+    libheirloom::CancellationTokenSource cancellationSource_;
 
     // Thread handle for the worker thread
     HANDLE threadHandle_;

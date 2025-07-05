@@ -1,8 +1,8 @@
 #pragma once
 
-#include "libprogman/pch.h"
+#include "libheirloom/pch.h"
 
-namespace libprogman {
+namespace libheirloom {
 
 class OperationCanceledException : public std::exception {
    public:
@@ -44,4 +44,4 @@ class CancellationTokenSource {
     std::shared_ptr<bool> cancelRequested_;
 };
 
-}  // namespace libprogman
+}  // namespace libheirloom

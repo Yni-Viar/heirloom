@@ -1,6 +1,7 @@
 {
   "dependencies": [
+    "immer",
     "wil",
-    "immer"
+    "libzip"
   ]
 }

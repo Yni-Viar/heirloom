@@ -17,10 +17,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Set up vcpkg
         shell: bash
-        run: |
-          scripts/init.sh
+        run: scripts/vcpkg.sh integrate install
 
       - name: Build
         shell: pwsh

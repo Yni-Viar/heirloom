@@ -9,6 +9,9 @@ rm -rf \
     ../.vscode \
     ARM64 \
     x64 \
+    libheirloom/*.vcxproj.user \
+    libheirloom/ARM64 \
+    libheirloom/x64 \
     libprogman_tests/*.vcxproj.user \
     libprogman_tests/ARM64 \
     libprogman_tests/x64 \

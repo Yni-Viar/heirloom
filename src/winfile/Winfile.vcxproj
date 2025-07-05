@@ -197,6 +197,12 @@
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>  
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)' == 'ARM64'">
+    <VcpkgTriplet>arm64-windows</VcpkgTriplet>
+  </PropertyGroup>  
   <ItemGroup>
     <ClInclude Include="bookmark.h" />
     <ClInclude Include="gitbash.h" />

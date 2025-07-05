@@ -1,7 +1,7 @@
-#include "libprogman/pch.h"
-#include "libprogman/cancel.h"
+#include "libheirloom/pch.h"
+#include "libheirloom/cancel.h"
 
-namespace libprogman {
+namespace libheirloom {
 
 // OperationCanceledException implementation
 OperationCanceledException::OperationCanceledException() : std::exception("The operation was canceled.") {}
@@ -40,4 +40,4 @@ void CancellationToken::throwIfCancellationRequested() const {
     }
 }
 
-}  // namespace libprogman
+}  // namespace libheirloom

@@ -2,11 +2,12 @@
 #include "libprogman/InstalledAppList.h"
 #include "libprogman/ShortcutFactory.h"
 #include "libprogman/Shortcut.h"
-#include "libprogman/cancel.h"
+#include "libheirloom/cancel.h"
 #include "CppUnitTest.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace libprogman;
+using namespace libheirloom;
 
 namespace libprogman_tests {
 
