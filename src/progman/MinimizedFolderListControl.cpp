@@ -230,11 +230,13 @@ LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM 
                     // Get the new folder name
                     std::wstring newName = pDispInfo->item.pszText;
 
-                    // Call the rename callback
+                    // Call the rename callback - this will trigger filesystem rename
                     if (control && control->onRename_) {
                         control->onRename_(oldName, newName);
-                        return TRUE;  // Accept the new name
                     }
+
+                    // Return FALSE to reject ListView update - let filesystem watcher handle UI update
+                    return FALSE;
                 }
                 return FALSE;  // Reject the new name if no callback or no text provided
             }

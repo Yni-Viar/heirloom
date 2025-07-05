@@ -76,6 +76,7 @@ The application uses constructor dependency injection with the DI graph construc
   - F2 key to rename selected minimized folder
   - Ctrl+D key to delete selected minimized folder
   - Right-click context menu with Open, Rename, Delete options
+  - Prevents duplicate folder icons during rename by deferring UI updates to filesystem watcher
 
 #### Dialog Windows
 - **`AboutDialog`** - Application about dialog
