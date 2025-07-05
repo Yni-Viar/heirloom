@@ -34,6 +34,9 @@ class MinimizedFolderListControl {
     // Set callback for folder delete
     void setOnDeleteCallback(std::function<void(const std::wstring&)> callback) { onDelete_ = std::move(callback); }
 
+    // Set callback for focus and selection changes
+    void setOnFocusChangeCallback(std::function<void()> callback) { onFocusChange_ = std::move(callback); }
+
     // Check if a minimized folder is selected and the control has focus
     bool hasSelectedItemAndFocus() const;
 
@@ -49,6 +52,7 @@ class MinimizedFolderListControl {
     std::function<void(std::wstring)> onRestore_;
     std::function<void(const std::wstring&, const std::wstring&)> onRename_;
     std::function<void(const std::wstring&)> onDelete_;
+    std::function<void()> onFocusChange_;
 
     // Splitter-related members
     int controlHeight_ = 0;

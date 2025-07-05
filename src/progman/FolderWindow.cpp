@@ -265,6 +265,10 @@ void FolderWindow::setOnMinimizeCallback(std::function<void(const std::wstring&)
     onMinimizeCallback_ = std::move(callback);
 }
 
+void FolderWindow::setOnFocusChangeCallback(std::function<void()> callback) {
+    onFocusChangeCallback_ = std::move(callback);
+}
+
 std::wstring FolderWindow::getName() const {
     return folder_ ? folder_->name() : L"";
 }
@@ -522,6 +526,19 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
                         }
                         break;
                     }
+
+                    case LVN_ITEMCHANGED: {
+                        // Handle selection changes in the ListView
+                        NMLISTVIEW* pnmlv = reinterpret_cast<NMLISTVIEW*>(lParam);
+                        // Only handle state changes for selection
+                        if (pnmlv->uChanged & LVIF_STATE) {
+                            // Notify the main window of selection changes
+                            if (onFocusChangeCallback_) {
+                                onFocusChangeCallback_();
+                            }
+                        }
+                        break;
+                    }
                 }
             }
             break;
@@ -532,6 +549,14 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
             if (wParam == VK_F2) {
                 renameSelectedItem();
                 return 0;
+            }
+            break;
+
+        case WM_SETFOCUS:
+        case WM_KILLFOCUS:
+            // Notify the main window of focus changes
+            if (onFocusChangeCallback_) {
+                onFocusChangeCallback_();
             }
             break;
 

@@ -119,6 +119,22 @@ The application uses constructor dependency injection with the DI graph construc
 - Keyboard shortcuts and accelerators
 - Context menus for operations
 - Minimized folder list with restore functionality
+- Dynamic menu state management with context-sensitive command enabling
+
+### Menu State Management
+- **Dynamic Command Enabling** - Menu commands are enabled/disabled based on current application state
+  - "New shortcut" - Enabled only when a folder window is focused and active
+  - "Rename" - Enabled only when a shortcut icon or minimized folder icon is selected
+  - "Delete" - Enabled when a folder window is focused or a minimized folder icon is selected
+  - "Cascade" and "Tile" - Enabled only when there is at least one restored window
+- **Real-time Updates** - Menu states update automatically when:
+  - Folder windows are created, minimized, restored, or closed
+  - Selection changes in folder windows or the minimized folder list
+  - Focus changes between folder windows and the minimized folder list
+- **Implementation** - Uses callback system to notify main window of state changes
+  - `FolderWindow` notifies on focus and selection changes
+  - `MinimizedFolderListControl` notifies on focus and selection changes
+  - `ProgramManagerWindow::updateMenuStates()` centralizes all menu state logic
 
 ### Filesystem Integration
 - Real-time monitoring of shortcuts folder

@@ -83,6 +83,8 @@ ProgramManagerWindow::ProgramManagerWindow(
     minimizedFolderList_->setOnDeleteCallback(
         [this](const std::wstring& folderName) { this->deleteMinimizedFolder(folderName); });
 
+    minimizedFolderList_->setOnFocusChangeCallback([this]() { updateMenuStates(); });
+
     // Position the control
     minimizedFolderList_->autoSize(mdiClient_);
 
@@ -92,6 +94,9 @@ ProgramManagerWindow::ProgramManagerWindow(
 
     // Load saved splitter position
     loadSplitterPosition();
+
+    // Set initial menu states
+    updateMenuStates();
 }
 
 // Load the splitter position from INI file
@@ -385,6 +390,11 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
             syncFolderWindows();
             return 0;
 
+        case WM_MDIACTIVATE:
+            // Update menu states when MDI child activation changes
+            updateMenuStates();
+            break;
+
         case WM_COMMAND: {
             // Handle menu commands
             switch (LOWORD(wParam)) {
@@ -472,11 +482,9 @@ LRESULT ProgramManagerWindow::handleMessage(HWND hwnd, UINT uMsg, WPARAM wParam,
             HMENU hMenu = reinterpret_cast<HMENU>(wParam);
             bool isSystemMenu = HIWORD(lParam) != 0;
 
-            // Update the File menu item states when it's about to be shown
+            // Update menu states when any menu is about to be shown
             if (!isSystemMenu) {  // This is not the system menu
-                FolderWindow* activeFolder = getActiveFolderWindow();
-                // Enable delete only if there's an active folder window
-                EnableMenuItem(hMenu, ID_FILE_DELETE, activeFolder ? MF_ENABLED : MF_GRAYED);
+                updateMenuStates();
 
                 // Sort Window menu items alphabetically
                 int menuIndex = LOWORD(lParam);
@@ -563,6 +571,14 @@ void ProgramManagerWindow::syncFolderWindows() {
                 minimizedFolderList_->addMinimizedFolder(name);
                 // Update the layout
                 minimizedFolderList_->autoSize(mdiClient_);
+                // Update menu states after minimizing a window
+                updateMenuStates();
+            });
+
+            // Set the focus change callback
+            folderWindow->setOnFocusChangeCallback([this]() {
+                // Update menu states when focus or selection changes
+                updateMenuStates();
             });
 
             // Check if this window was minimized when last saved
@@ -581,6 +597,9 @@ void ProgramManagerWindow::syncFolderWindows() {
             folderWindows_[folderName] = std::move(folderWindow);
         }
     }
+
+    // Update menu states after any window changes
+    updateMenuStates();
 }
 
 void ProgramManagerWindow::restoreMinimizedFolder(const std::wstring& folderName, bool maximize) {
@@ -608,6 +627,9 @@ void ProgramManagerWindow::restoreMinimizedFolder(const std::wstring& folderName
 
         // Update the minimized folder list layout
         minimizedFolderList_->autoSize(mdiClient_);
+
+        // Update menu states after restoring a window
+        updateMenuStates();
     }
 }
 
@@ -811,6 +833,52 @@ void ProgramManagerWindow::sortWindowMenu(HMENU windowMenu) {
     for (const auto& item : windowItems) {
         AppendMenuW(windowMenu, MF_STRING | item.state, item.id, item.text.c_str());
     }
+}
+
+void ProgramManagerWindow::updateMenuStates() {
+    HMENU hMenu = GetMenu(hwnd_);
+    if (!hMenu) {
+        return;
+    }
+
+    // Get the current application state
+    FolderWindow* activeFolder = getActiveFolderWindow();
+    bool hasActiveFolderWindow = (activeFolder != nullptr);
+    bool hasSelectedShortcut = hasActiveFolderWindow && activeFolder->hasSelectedItem();
+    bool minimizedBarHasFocus = minimizedFolderList_ && minimizedFolderList_->hasSelectedItemAndFocus();
+    bool hasSelectedMinimizedFolder = minimizedBarHasFocus && !minimizedFolderList_->getSelectedFolderName().empty();
+
+    // Count restored windows (visible MDI child windows)
+    int restoredWindowCount = 0;
+    for (const auto& [folderName, folderWindow] : folderWindows_) {
+        if (IsWindowVisible(folderWindow->window_)) {
+            restoredWindowCount++;
+        }
+    }
+
+    // Update "New shortcut" command (ID_FILE_NEWSHORTCUT)
+    // Enable only when there is a focused, restored window
+    UINT newShortcutState = (hasActiveFolderWindow && !minimizedBarHasFocus) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(hMenu, ID_FILE_NEWSHORTCUT, newShortcutState);
+
+    // Update "Rename" command (IDM_RENAME)
+    // Enable only when there is a shortcut icon or a minimized folder icon currently selected
+    UINT renameState = (hasSelectedShortcut || hasSelectedMinimizedFolder) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(hMenu, IDM_RENAME, renameState);
+
+    // Update "Delete" command (ID_FILE_DELETE)
+    // Enable only when there is a focused, restored window or a focused, selected minimized folder icon
+    UINT deleteState = (hasActiveFolderWindow || hasSelectedMinimizedFolder) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(hMenu, ID_FILE_DELETE, deleteState);
+
+    // Update "Cascade" and "Tile" commands (ID_WINDOW_CASCADE, ID_WINDOW_TILE)
+    // Enable only when there is at least one restored window
+    UINT windowCommandState = (restoredWindowCount > 0) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(hMenu, ID_WINDOW_CASCADE, windowCommandState);
+    EnableMenuItem(hMenu, ID_WINDOW_TILE, windowCommandState);
+
+    // Force the menu bar to redraw
+    DrawMenuBar(hwnd_);
 }
 
 }  // namespace progman

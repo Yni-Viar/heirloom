@@ -47,6 +47,9 @@ class ProgramManagerWindow {
     // Method to sort window menu items alphabetically
     void sortWindowMenu(HMENU windowMenu);
 
+    // Method to update menu states based on current application state
+    void updateMenuStates();
+
     HWND hwnd_ = nullptr;
     HWND mdiClient_ = nullptr;
     WNDCLASSEXW windowClass_{};

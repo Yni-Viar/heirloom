@@ -239,6 +239,16 @@ LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM 
                     return FALSE;
                 }
                 return FALSE;  // Reject the new name if no callback or no text provided
+            } else if (nmhdr->code == LVN_ITEMCHANGED) {
+                // Handle selection changes in the ListView
+                NMLISTVIEW* pnmlv = reinterpret_cast<NMLISTVIEW*>(lParam);
+                // Only handle state changes for selection
+                if (pnmlv->uChanged & LVIF_STATE) {
+                    // Notify the main window of selection changes
+                    if (control && control->onFocusChange_) {
+                        control->onFocusChange_();
+                    }
+                }
             }
             break;
         }
@@ -394,6 +404,14 @@ ListViewSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PT
             }
             break;
         }
+
+        case WM_SETFOCUS:
+        case WM_KILLFOCUS:
+            // Notify the main window of focus changes
+            if (control && control->onFocusChange_) {
+                control->onFocusChange_();
+            }
+            break;
 
         case WM_NCDESTROY:
             // Remove the subclass when the window is destroyed

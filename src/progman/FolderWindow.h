@@ -27,6 +27,7 @@ class FolderWindow {
     void show();
     void close();
     void setOnMinimizeCallback(std::function<void(const std::wstring&)> callback);
+    void setOnFocusChangeCallback(std::function<void()> callback);
     std::wstring getName() const;
 
     // New methods for handling item selection
@@ -57,6 +58,7 @@ class FolderWindow {
     std::shared_ptr<libprogman::ShortcutFolder> folder_;
     libprogman::ShortcutManager* shortcutManager_ = nullptr;
     std::function<void(const std::wstring&)> onMinimizeCallback_;
+    std::function<void()> onFocusChangeCallback_;
     bool isMinimized_ = false;
 
     // Drag and drop support
