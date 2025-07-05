@@ -545,6 +545,10 @@ void ProgramManagerWindow::syncFolderWindows() {
 
     // Remove windows for folders that no longer exist
     for (const auto& folderName : foldersToRemove) {
+        // Also remove from minimized folder list if it's there
+        if (minimizedFolderList_) {
+            minimizedFolderList_->removeMinimizedFolder(folderName);
+        }
         folderWindows_.erase(folderName);
     }
 

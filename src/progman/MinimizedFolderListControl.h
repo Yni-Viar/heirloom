@@ -16,6 +16,7 @@ class MinimizedFolderListControl {
 
     HWND hwnd() const;
     void addMinimizedFolder(std::wstring name);
+    void removeMinimizedFolder(const std::wstring& name);
     int autoSize(HWND mdiClient);
 
     // Restore a minimized folder window

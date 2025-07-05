@@ -543,6 +543,39 @@ void MinimizedFolderListControl::addMinimizedFolder(std::wstring name) {
     }
 }
 
+void MinimizedFolderListControl::removeMinimizedFolder(const std::wstring& name) {
+    if (!listView_) {
+        return;
+    }
+
+    // Find the item with the matching name
+    int itemCount = ListView_GetItemCount(listView_);
+    for (int i = 0; i < itemCount; i++) {
+        LVITEM item = {};
+        item.mask = LVIF_TEXT | LVIF_PARAM;
+        item.iItem = i;
+        wchar_t buffer[MAX_PATH] = {};
+        item.pszText = buffer;
+        item.cchTextMax = MAX_PATH;
+
+        if (ListView_GetItem(listView_, &item)) {
+            if (name == buffer) {
+                // Free the allocated memory for this item
+                if (item.lParam) {
+                    free(reinterpret_cast<void*>(item.lParam));
+                }
+
+                // Remove the item from the ListView
+                ListView_DeleteItem(listView_, i);
+
+                // Update the layout
+                autoSize(GetParent(window_));
+                break;
+            }
+        }
+    }
+}
+
 int MinimizedFolderListControl::autoSize(HWND mdiClient) {
     if (!mdiClient || !window_) {
         return 0;
