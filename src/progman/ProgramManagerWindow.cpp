@@ -856,9 +856,27 @@ void ProgramManagerWindow::updateMenuStates() {
         }
     }
 
+    // Check if we have a visible, focused folder window
+    bool hasVisibleFocusedFolderWindow = false;
+    if (hasActiveFolderWindow && IsWindowVisible(activeFolder->window_)) {
+        // Check if the active folder window or its child controls have focus
+        HWND focusedWindow = GetFocus();
+        if (focusedWindow) {
+            // Check if the focused window is the folder window itself or one of its children
+            HWND parent = focusedWindow;
+            while (parent) {
+                if (parent == activeFolder->window_) {
+                    hasVisibleFocusedFolderWindow = true;
+                    break;
+                }
+                parent = GetParent(parent);
+            }
+        }
+    }
+
     // Update "New shortcut" command (ID_FILE_NEWSHORTCUT)
-    // Enable only when there is a focused, restored window
-    UINT newShortcutState = (hasActiveFolderWindow && !minimizedBarHasFocus) ? MF_ENABLED : MF_GRAYED;
+    // Enable only when there is a visible, focused folder window
+    UINT newShortcutState = hasVisibleFocusedFolderWindow ? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(hMenu, ID_FILE_NEWSHORTCUT, newShortcutState);
 
     // Update "Rename" command (IDM_RENAME)
@@ -867,8 +885,8 @@ void ProgramManagerWindow::updateMenuStates() {
     EnableMenuItem(hMenu, IDM_RENAME, renameState);
 
     // Update "Delete" command (ID_FILE_DELETE)
-    // Enable only when there is a focused, restored window or a focused, selected minimized folder icon
-    UINT deleteState = (hasActiveFolderWindow || hasSelectedMinimizedFolder) ? MF_ENABLED : MF_GRAYED;
+    // Enable only when there is a visible, focused folder window or a focused, selected minimized folder icon
+    UINT deleteState = (hasVisibleFocusedFolderWindow || hasSelectedMinimizedFolder) ? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(hMenu, ID_FILE_DELETE, deleteState);
 
     // Update "Cascade" and "Tile" commands (ID_WINDOW_CASCADE, ID_WINDOW_TILE)
