@@ -80,9 +80,8 @@ ProgramManagerWindow::ProgramManagerWindow(
         this->renameMinimizedFolder(oldName, newName);
     });
 
-    minimizedFolderList_->setOnDeleteCallback([this](const std::wstring& folderName) {
-        this->deleteMinimizedFolder(folderName);
-    });
+    minimizedFolderList_->setOnDeleteCallback(
+        [this](const std::wstring& folderName) { this->deleteMinimizedFolder(folderName); });
 
     // Position the control
     minimizedFolderList_->autoSize(mdiClient_);
@@ -619,10 +618,10 @@ void ProgramManagerWindow::renameMinimizedFolder(const std::wstring& oldName, co
         // Rename the folder directory
         std::filesystem::path oldPath = folderPtr->path();
         std::filesystem::path newPath = oldPath.parent_path() / newName;
-        
+
         // Rename the directory
         std::filesystem::rename(oldPath, newPath);
-        
+
         // The filesystem watcher will pick up the change and update the UI
     } catch (const std::exception& e) {
         // Show error message if the rename failed
@@ -641,7 +640,7 @@ void ProgramManagerWindow::deleteMinimizedFolder(const std::wstring& folderName)
 
         // Delete the folder
         shortcutManager_->deleteFolder(folderPtr.get());
-        
+
         // The filesystem watcher will pick up the change and update the UI
     } catch (const std::exception& e) {
         // Show error message if the deletion failed
@@ -667,6 +666,22 @@ FolderWindow* ProgramManagerWindow::getActiveFolderWindow() const {
 }
 
 void ProgramManagerWindow::handleDeleteCommand() {
+    // First check if a minimized folder is selected and has focus
+    if (minimizedFolderList_ && minimizedFolderList_->hasSelectedItemAndFocus()) {
+        std::wstring selectedFolderName = minimizedFolderList_->getSelectedFolderName();
+        if (!selectedFolderName.empty()) {
+            // Confirm and delete the selected minimized folder
+            std::wstring message = L"Are you sure you want to delete the folder \"" + selectedFolderName + L"\"?";
+            if (MessageBoxW(hwnd_, message.c_str(), L"Confirm Delete", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+                deleteMinimizedFolder(selectedFolderName);
+                // Remove the item from the minimized list
+                // (The filesystem watcher will handle updating the UI)
+            }
+            return;
+        }
+    }
+
+    // Fall back to the active folder window behavior
     FolderWindow* activeFolder = getActiveFolderWindow();
     if (!activeFolder) {
         return;
@@ -678,6 +693,14 @@ void ProgramManagerWindow::handleDeleteCommand() {
 }
 
 void ProgramManagerWindow::handleRenameCommand() {
+    // First check if a minimized folder is selected and has focus
+    if (minimizedFolderList_ && minimizedFolderList_->hasSelectedItemAndFocus()) {
+        // Start editing the selected minimized folder
+        minimizedFolderList_->startEditingSelectedFolder();
+        return;
+    }
+
+    // Fall back to the active folder window behavior
     FolderWindow* activeFolder = getActiveFolderWindow();
     if (!activeFolder) {
         return;

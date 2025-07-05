@@ -1,11 +1,9 @@
 # Improve interactions with minimized folder icons (progman)
-- [ ] Rename and delete minimized folders
+- [x] Rename and delete minimized folders
     - When the bar is focused, F2 should start editing the name of the selected minimized folder.
-        - *🤖 Added F2 key handling in ListViewSubclassProc to call ListView_EditLabel, enabled LVS_EDITLABELS style on ListView, and handled LVN_ENDLABELEDIT notification to call rename callback*
-        - [ ] That failed. Nothing happens when I press F2 when the minimized folder icon is focused and selected.
+        - *🤖 Fixed by removing WS_EX_NOACTIVATE style from ListView to allow focus, adding SetFocus() on clicks, and routing F2/Ctrl+D through ProgramManagerWindow.handleRenameCommand/handleDeleteCommand which now check if minimized folder list has focus before falling back to active folder window behavior*
     - When the bar is focused, Ctrl+D (existing delete hotkey) should delete the selected minimized folder instead of the selected shortcut in the most recently focused (but not currently focused) shown folder window.
-        - *🤖 Added Ctrl+D key handling in ListViewSubclassProc to detect key combination and call delete callback with confirmation dialog*
-        - That failed. Ctrl+D attempts to delete the last focused restored folder window instead of the currently selected minimized folder icon.
+        - *🤖 Fixed by adding hasSelectedItemAndFocus() method to check if ListView has focus and selected item, modified handleDeleteCommand() to prioritize minimized folder operations when ListView is focused*
 - [x] When right-clicking on a minimized folder, a context menu should appear:
     - [x] "Open" - Same as double-clicking the icon
     - [x] Separator

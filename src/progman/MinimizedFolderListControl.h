@@ -31,9 +31,16 @@ class MinimizedFolderListControl {
     }
 
     // Set callback for folder delete
-    void setOnDeleteCallback(std::function<void(const std::wstring&)> callback) {
-        onDelete_ = std::move(callback);
-    }
+    void setOnDeleteCallback(std::function<void(const std::wstring&)> callback) { onDelete_ = std::move(callback); }
+
+    // Check if a minimized folder is selected and the control has focus
+    bool hasSelectedItemAndFocus() const;
+
+    // Get the name of the selected minimized folder
+    std::wstring getSelectedFolderName() const;
+
+    // Start editing the selected folder name
+    void startEditingSelectedFolder();
 
    private:
     HWND window_ = nullptr;

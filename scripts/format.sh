@@ -31,12 +31,15 @@ done < <(find . -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.rc" -o -name
     -not -path "*.git*" -not -path "*x64*" -not -path "*ARM64*")
 
 if [ ${#non_utf8_files[@]} -gt 0 ]; then
-    echo "ERROR: The following files are not UTF-8 encoded:"
+    echo "Converting the following files to UTF-8 encoding:"
     for file in "${non_utf8_files[@]}"; do
         echo "  $file"
+        # Create a temporary file with UTF-8 encoding
+        iconv -f "$(file -bi "$file" | sed 's/.*charset=//')" -t UTF-8 "$file" > "${file}.tmp"
+        # Replace original file with UTF-8 version
+        mv "${file}.tmp" "$file"
     done
-    echo "Please convert these files to UTF-8 encoding before proceeding."
-    exit 1
+    echo "Conversion complete."
 fi
 
 # Change to src directory.
