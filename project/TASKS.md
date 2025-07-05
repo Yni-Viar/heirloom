@@ -13,3 +13,7 @@
 
 - [x] Add shortcut drag _source_ support. When dragging a shortcut from one folder window to another, move the shortcut. When dragging a shortcut to an external application, copy the shortcut.
     - *🤖 Implemented drag source support by adding DragSource class (implements IDropSource interface) and DataObject class (implements IDataObject interface) to FolderWindow. Added LVN_BEGINDRAG notification handling to initiate drag operations when user drags a shortcut. The DragSource supports both move operations (DROPEFFECT_MOVE) between folder windows and copy operations (DROPEFFECT_COPY) to external applications. Updated DropTarget to handle move operations by detecting DROPEFFECT_MOVE and automatically deleting source files after successful moves. The DataObject provides CF_HDROP format for compatibility with Windows shell drag and drop. Users can now drag shortcuts between folder windows (moves the shortcut) or to external applications like Explorer (copies the shortcut).*
+
+- [ ] Changed requirement for drag source: eliminate support for dragging into external applications. It's kinda broken and I just want to remove it. Only include support for dragging into another folder window within our app.
+    
+- [ ] Bug fix: When I drag a `.lnk` file from an external application to a folder window, we are moving the `.lnk`. The requirement was to _copy_ the `.lnk`. Only move between our own folder windows, otherwise always copy.
