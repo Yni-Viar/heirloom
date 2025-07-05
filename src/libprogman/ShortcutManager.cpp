@@ -195,4 +195,8 @@ std::shared_ptr<Shortcut> ShortcutManager::refreshShortcut(
     return shortcutFactory_->open(shortcutPath, lastWriteTime);
 }
 
+ShortcutFactory* ShortcutManager::shortcutFactory() const noexcept {
+    return shortcutFactory_;
+}
+
 }  // namespace libprogman

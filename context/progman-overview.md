@@ -67,6 +67,7 @@ The application uses constructor dependency injection with the DI graph construc
   - Handles item selection, renaming, launching
   - Supports minimization to folder list
   - Saves/restores window state per folder
+  - Supports drag and drop of files and shortcuts
 
 - **`MinimizedFolderListControl`** - Shows minimized folders
   - List control for minimized folder windows
@@ -96,6 +97,14 @@ The application uses constructor dependency injection with the DI graph construc
 - Delete shortcuts via context menu or Delete key
 - Rename shortcuts via F2 key
 - Show shortcut properties
+
+### Drag and Drop Support
+- Drag files and folders from Windows Explorer to folder windows
+- Automatically creates shortcuts for files and folders
+- Copies existing `.lnk` files to the folder
+- Prevents duplicate shortcuts by generating unique names
+- Uses Windows OLE drag and drop APIs for native integration
+- Requires OLE initialization via `OleInitialize()` before registering drop targets
 
 ### Application Discovery
 - Scans system and user Start Menu folders

@@ -156,6 +156,9 @@ FolderWindow::FolderWindow(
     // Create ListView control
     createListView();
 
+    // Setup drag and drop support
+    setupDragAndDrop();
+
     // Populate the ListView with shortcuts
     refreshListView();
 
@@ -183,6 +186,9 @@ void FolderWindow::show() {
 
 void FolderWindow::close() {
     if (window_) {
+        // Clean up drag and drop support
+        cleanupDragAndDrop();
+
         // Save window position before closing
         saveWindowState(window_);
 
@@ -546,6 +552,205 @@ LRESULT FolderWindow::handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPAR
     }
 
     return DefMDIChildProcW(hwnd, message, wParam, lParam);
+}
+
+void FolderWindow::setupDragAndDrop() {
+    // Initialize OLE for drag and drop support
+    OleInitialize(nullptr);
+
+    if (listView_) {
+        // Create the drop target
+        dropTarget_ = std::make_shared<DropTarget>(this);
+
+        // Register the ListView as a drop target
+        RegisterDragDrop(listView_, dropTarget_.get());
+    }
+}
+
+void FolderWindow::cleanupDragAndDrop() {
+    if (listView_ && dropTarget_) {
+        // Unregister the ListView as a drop target
+        RevokeDragDrop(listView_);
+        dropTarget_.reset();
+    }
+}
+
+void FolderWindow::handleFileDrop(const std::vector<std::wstring>& filePaths) {
+    if (!folder_ || !shortcutManager_) {
+        return;
+    }
+
+    for (const auto& filePath : filePaths) {
+        std::filesystem::path sourcePath(filePath);
+
+        if (!std::filesystem::exists(sourcePath)) {
+            continue;
+        }
+
+        std::wstring fileName = sourcePath.filename().wstring();
+        std::wstring extension = sourcePath.extension().wstring();
+
+        if (_wcsicmp(extension.c_str(), L".lnk") == 0) {
+            // This is already a shortcut file - copy it to the folder
+            std::filesystem::path targetPath = folder_->path() / fileName;
+
+            try {
+                // Make sure we don't overwrite existing files
+                int counter = 1;
+                std::filesystem::path uniquePath = targetPath;
+                while (std::filesystem::exists(uniquePath)) {
+                    std::wstring baseName = sourcePath.stem().wstring();
+                    std::wstring newName = baseName + L" (" + std::to_wstring(counter) + L").lnk";
+                    uniquePath = folder_->path() / newName;
+                    counter++;
+                }
+
+                std::filesystem::copy_file(sourcePath, uniquePath);
+                // The filesystem watcher will pick up the change and update the UI
+            } catch (const std::exception&) {
+                // Ignore copy errors
+            }
+        } else {
+            // This is a regular file or folder - create a shortcut to it
+            std::wstring shortcutName = sourcePath.stem().wstring() + L".lnk";
+            std::filesystem::path targetPath = folder_->path() / shortcutName;
+
+            try {
+                // Make sure we don't overwrite existing files
+                int counter = 1;
+                std::filesystem::path uniquePath = targetPath;
+                while (std::filesystem::exists(uniquePath)) {
+                    std::wstring baseName = sourcePath.stem().wstring();
+                    std::wstring newName = baseName + L" (" + std::to_wstring(counter) + L").lnk";
+                    uniquePath = folder_->path() / newName;
+                    counter++;
+                }
+
+                // Create the shortcut using the ShortcutFactory
+                shortcutManager_->shortcutFactory()->create(uniquePath, sourcePath);
+                // The filesystem watcher will pick up the change and update the UI
+            } catch (const std::exception&) {
+                // Ignore creation errors
+            }
+        }
+    }
+}
+
+// DropTarget implementation
+DropTarget::DropTarget(FolderWindow* folderWindow) : folderWindow_(folderWindow), refCount_(1) {}
+
+STDMETHODIMP DropTarget::QueryInterface(REFIID riid, void** ppvObject) {
+    if (!ppvObject) {
+        return E_POINTER;
+    }
+
+    *ppvObject = nullptr;
+
+    if (riid == IID_IUnknown || riid == IID_IDropTarget) {
+        *ppvObject = static_cast<IDropTarget*>(this);
+        AddRef();
+        return S_OK;
+    }
+
+    return E_NOINTERFACE;
+}
+
+STDMETHODIMP_(ULONG) DropTarget::AddRef() {
+    return InterlockedIncrement(&refCount_);
+}
+
+STDMETHODIMP_(ULONG) DropTarget::Release() {
+    ULONG count = InterlockedDecrement(&refCount_);
+    if (count == 0) {
+        delete this;
+    }
+    return count;
+}
+
+STDMETHODIMP DropTarget::DragEnter(IDataObject* pDataObj, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) {
+    if (!pDataObj || !pdwEffect) {
+        return E_POINTER;
+    }
+
+    if (canAcceptDrop(pDataObj)) {
+        *pdwEffect = DROPEFFECT_COPY;
+    } else {
+        *pdwEffect = DROPEFFECT_NONE;
+    }
+
+    return S_OK;
+}
+
+STDMETHODIMP DropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) {
+    if (!pdwEffect) {
+        return E_POINTER;
+    }
+
+    // For now, always allow copy
+    *pdwEffect = DROPEFFECT_COPY;
+    return S_OK;
+}
+
+STDMETHODIMP DropTarget::DragLeave() {
+    return S_OK;
+}
+
+STDMETHODIMP DropTarget::Drop(IDataObject* pDataObj, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) {
+    if (!pDataObj || !pdwEffect) {
+        return E_POINTER;
+    }
+
+    *pdwEffect = DROPEFFECT_NONE;
+
+    if (canAcceptDrop(pDataObj)) {
+        auto filePaths = extractFilePaths(pDataObj);
+        if (!filePaths.empty()) {
+            folderWindow_->handleFileDrop(filePaths);
+            *pdwEffect = DROPEFFECT_COPY;
+        }
+    }
+
+    return S_OK;
+}
+
+std::vector<std::wstring> DropTarget::extractFilePaths(IDataObject* pDataObj) {
+    std::vector<std::wstring> filePaths;
+
+    // Get the file paths from the data object
+    FORMATETC formatEtc = { CF_HDROP, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+    STGMEDIUM stgMedium = { 0 };
+
+    HRESULT hr = pDataObj->GetData(&formatEtc, &stgMedium);
+    if (SUCCEEDED(hr)) {
+        HDROP hDrop = static_cast<HDROP>(stgMedium.hGlobal);
+        if (hDrop) {
+            UINT fileCount = DragQueryFileW(hDrop, 0xFFFFFFFF, nullptr, 0);
+            filePaths.reserve(fileCount);
+
+            for (UINT i = 0; i < fileCount; i++) {
+                UINT pathLength = DragQueryFileW(hDrop, i, nullptr, 0);
+                if (pathLength > 0) {
+                    std::wstring filePath(pathLength, L'\0');
+                    DragQueryFileW(hDrop, i, filePath.data(), pathLength + 1);
+                    filePaths.push_back(filePath);
+                }
+            }
+        }
+
+        ReleaseStgMedium(&stgMedium);
+    }
+
+    return filePaths;
+}
+
+bool DropTarget::canAcceptDrop(IDataObject* pDataObj) {
+    if (!pDataObj) {
+        return false;
+    }
+
+    // Check if the data object contains file paths
+    FORMATETC formatEtc = { CF_HDROP, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+    return pDataObj->QueryGetData(&formatEtc) == S_OK;
 }
 
 }  // namespace progman

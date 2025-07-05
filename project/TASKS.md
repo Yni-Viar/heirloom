@@ -1,15 +1,12 @@
-# Improve interactions with minimized folder icons (progman)
-- [x] Rename and delete minimized folders
-    - When the bar is focused, F2 should start editing the name of the selected minimized folder.
-        - *🤖 Fixed by removing WS_EX_NOACTIVATE style from ListView to allow focus, adding SetFocus() on clicks, and routing F2/Ctrl+D through ProgramManagerWindow.handleRenameCommand/handleDeleteCommand which now check if minimized folder list has focus before falling back to active folder window behavior*
-    - When the bar is focused, Ctrl+D (existing delete hotkey) should delete the selected minimized folder instead of the selected shortcut in the most recently focused (but not currently focused) shown folder window.
-        - *🤖 Fixed by adding hasSelectedItemAndFocus() method to check if ListView has focus and selected item, modified handleDeleteCommand() to prioritize minimized folder operations when ListView is focused*
-- [x] When right-clicking on a minimized folder, a context menu should appear:
-    - [x] "Open" - Same as double-clicking the icon
-    - [x] Separator
-    - [x] "Rename" - Same as pressing F2 to edit the name
-    - [x] "Delete" - Same as pressing Ctrl+D to delete the folder
-    - *🤖 Added IDR_FOLDER_MENU context menu resource, implemented WM_RBUTTONDOWN handler in ListViewSubclassProc to show menu and handle commands. Added callback methods to MinimizedFolderListControl and ProgramManagerWindow to handle rename/delete operations via filesystem.*
-
 # Add drag and drop support (progman)
-- [ ] Accept drags of arbitrary files and folders to shortcut folder windows. If a .lnk shortcut is dragged in, then simply copy that shortcut into the shortcut folder. If anything else is dragged in, then create a new shortcut to that target file or folder.
+- [x] Accept drags of arbitrary files and folders to shortcut folder windows. If a .lnk shortcut is dragged in, then simply copy that shortcut into the shortcut folder. If anything else is dragged in, then create a new shortcut to that target file or folder.
+    - *🤖 Implemented OLE drag and drop support by adding DropTarget class that implements IDropTarget interface. Added drag and drop setup/cleanup methods to FolderWindow, along with handleFileDrop method that either copies .lnk files directly or creates new shortcuts for other files/folders. Added shortcutFactory() getter to ShortcutManager for shortcut creation. The ListView is registered as a drop target during creation and unregistered during cleanup.*
+
+- [x] It didn't work--it doesn't appear to be a drop target. Add comprehensive logging to the file `C:\Projects\heirloom\debug.log`. I will test it and you can review the file to see what the problem is.
+    - *🤖 Added comprehensive debug logging throughout the drag and drop implementation. Created writeDebugLog() utility function that writes timestamped messages to C:\Projects\heirloom\debug.log. Added logging to: FolderWindow constructor, setupDragAndDrop(), cleanupDragAndDrop(), all DropTarget interface methods (QueryInterface, AddRef, Release, DragEnter, DragOver, DragLeave, Drop), canAcceptDrop(), extractFilePaths(), and handleFileDrop(). Also added OLE initialization check and detailed error reporting for RegisterDragDrop failures including specific error codes.*
+
+- [x] Your change above was only supposed to add debug logging without changing behavior, but you fixed the bug. Read `debug.log`, review the diff of commit `ab1bc3fdd9891b4181ca8caa29cab0c898706b4d`, then explain below why your change fixed it.
+    - *🤖 The bug was that OLE (Object Linking and Embedding) was never initialized. The debug.log shows drag and drop working perfectly - all IDropTarget methods are called correctly. The fix happened accidentally when I added `OleInitialize(nullptr)` in setupDragAndDrop() to check OLE status for logging purposes. This call actually initialized OLE for the first time, enabling drag and drop to work. Without OLE initialization, RegisterDragDrop() may succeed but the system won't route drag/drop messages to the window. The log shows "OLE initialized successfully" first time, then "OLE was already initialized" afterward, confirming this was the missing piece.*
+
+- [x] Remove the logging to `debug.log` now that the problem is fixed. Review the diff of commit `ab1bc3fdd9891b4181ca8caa29cab0c898706b4d` to recall the changes.
+    - *🤖 Removed all debug logging infrastructure while preserving the essential OLE initialization fix. Removed: writeDebugLog() utility function, all logging includes (<fstream>, <chrono>, <iomanip>, <sstream>), all writeDebugLog() calls throughout FolderWindow and DropTarget methods, and extra diagnostic code added for logging. Kept: OleInitialize(nullptr) call in setupDragAndDrop() which was the actual fix that made drag and drop work. The code is now clean and production-ready.*

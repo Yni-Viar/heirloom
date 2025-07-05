@@ -36,6 +36,9 @@ class ShortcutManager {
     // Loads changes from disk.
     void refresh();
 
+    // Gets the ShortcutFactory instance
+    ShortcutFactory* shortcutFactory() const noexcept;
+
    private:
     void refreshCore();
     void setupInitialShortcuts();

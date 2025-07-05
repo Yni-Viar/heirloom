@@ -293,3 +293,4 @@ obj/
 /src/downloads/
 /src/immer/
 /.vscode/settings.json
+*.log
