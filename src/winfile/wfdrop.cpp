@@ -647,8 +647,6 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
     LPWSTR szFiles = NULL;
     WCHAR szDest[MAXPATHLEN];
     WCHAR szSrc[MAXPATHLEN];
-    LPWSTR pszNextFile = NULL;
-    WCHAR szFirstFile[MAXPATHLEN];
     BOOL bSameLocation = FALSE;
 
     hwndLB = GetDlgItem(This->m_hWnd, IDCW_LISTBOX);
@@ -660,6 +658,9 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
         if (hwndLB == NULL)
             return;
     }
+
+    // Store the current directory as source for comparison
+    SendMessage(This->m_hWnd, FS_GETDIRECTORY, COUNTOF(szSrc), (LPARAM)szSrc);
 
     // if item selected, add path
     if (fTree) {
@@ -690,9 +691,6 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
         }
     }
 
-    // Store the destination folder path for comparison
-    lstrcpy(szSrc, szDest);
-
     AddBackslash(szDest);
     lstrcat(szDest, kStarDotStar);  // put files in this dir
 
@@ -706,19 +704,24 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
 
     if (szFiles != NULL) {
         // Bug fix 2: Check if source and destination are the same
-        // Extract the first file from the source list to check its directory
-        pszNextFile = GetNextFile(szFiles, szFirstFile, COUNTOF(szFirstFile));
-        if (pszNextFile != NULL) {
-            // Get the directory of the first source file
-            LPWSTR pszFileName = FindFileName(szFirstFile);
-            if (pszFileName > szFirstFile) {
-                *(pszFileName - 1) = L'\0';  // Remove the trailing backslash
+        // Compare the source directory (current window) with the destination directory
+        WCHAR szDestDir[MAXPATHLEN];
+        lstrcpy(szDestDir, szDest);
 
-                // Compare source and destination directories
-                if (lstrcmpi(szFirstFile, szSrc) == 0) {
-                    bSameLocation = TRUE;
-                }
+        // Remove the trailing \*.* pattern to get just the directory
+        LPWSTR pszPattern = wcsstr(szDestDir, kStarDotStar);
+        if (pszPattern) {
+            *pszPattern = L'\0';
+            // Remove trailing backslash
+            int len = lstrlen(szDestDir);
+            if (len > 0 && szDestDir[len - 1] == L'\\') {
+                szDestDir[len - 1] = L'\0';
             }
+        }
+
+        // Compare source and destination directories
+        if (lstrcmpi(szSrc, szDestDir) == 0) {
+            bSameLocation = TRUE;
         }
 
         if (!bSameLocation) {
