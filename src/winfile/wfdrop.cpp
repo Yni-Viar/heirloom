@@ -732,23 +732,6 @@ void DropData(WF_IDropTarget* This, IDataObject* pDataObject, DWORD dwEffect) {
             bSameLocation = TRUE;
         }
 
-        // Debug messagebox to show what's happening
-        WCHAR szDebugMsg[2048];
-        wsprintf(
-            szDebugMsg,
-            L"Drop Debug Information:\n\n"
-            L"Source Directory: %s\n"
-            L"Source Normalized: %s\n"
-            L"Destination Directory: %s\n"
-            L"Original Destination: %s\n"
-            L"Same Location: %s\n"
-            L"Effect: %s\n"
-            L"Selected Item: %d",
-            szSrc, szSrcNormalized, szDestDir, szDest, bSameLocation ? L"TRUE" : L"FALSE",
-            dwEffect == DROPEFFECT_COPY ? L"COPY" : L"MOVE", This->m_iItemSelected);
-
-        MessageBox(This->m_hWnd, szDebugMsg, L"Drop Debug", MB_OK | MB_ICONINFORMATION);
-
         if (!bSameLocation) {
             SetFocus(This->m_hWnd);
             DMMoveCopyHelper(szFiles, szDest, dwEffect == DROPEFFECT_COPY);
