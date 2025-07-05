@@ -116,6 +116,7 @@ The application uses constructor dependency injection with the DI graph construc
   - Custom clipboard format "ProgmanInternalDrag" distinguishes internal from external drag sources
   - Requires OLE initialization via `OleInitialize()` before registering drop targets
   - Handles `LVN_BEGINDRAG` notification to initiate drag operations
+  - `DragOver` method re-determines drag effects based on stored data object reference from `DragEnter` to ensure consistent behavior
 
 ### Application Discovery
 - Scans system and user Start Menu folders

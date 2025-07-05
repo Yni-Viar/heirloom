@@ -112,6 +112,7 @@ class DropTarget : public IDropTarget {
    private:
     FolderWindow* folderWindow_;
     ULONG refCount_;
+    IDataObject* currentDataObject_ = nullptr;  // Store data object from DragEnter for use in DragOver
 
     std::vector<std::wstring> extractFilePaths(IDataObject* pDataObj);
     bool canAcceptDrop(IDataObject* pDataObj);

@@ -740,6 +740,7 @@ STDMETHODIMP DropTarget::DragEnter(IDataObject* pDataObj, DWORD grfKeyState, POI
         *pdwEffect = DROPEFFECT_NONE;
     }
 
+    currentDataObject_ = pDataObj;
     return S_OK;
 }
 
@@ -748,13 +749,28 @@ STDMETHODIMP DropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect
         return E_POINTER;
     }
 
-    // The effect was already determined in DragEnter - preserve it
-    // No need to change anything here
+    // Re-determine the effect based on the data object from DragEnter
+    if (currentDataObject_ && canAcceptDrop(currentDataObject_)) {
+        // Check if this is an internal drag (from our application)
+        bool isInternalDrag = isInternalDragSource(currentDataObject_);
+
+        if (isInternalDrag) {
+            // Internal drag - allow move operations
+            *pdwEffect = DROPEFFECT_MOVE;
+        } else {
+            // External drag - only allow copy operations
+            *pdwEffect = DROPEFFECT_COPY;
+        }
+    } else {
+        *pdwEffect = DROPEFFECT_NONE;
+    }
 
     return S_OK;
 }
 
 STDMETHODIMP DropTarget::DragLeave() {
+    // Clear the stored data object reference
+    currentDataObject_ = nullptr;
     return S_OK;
 }
 
