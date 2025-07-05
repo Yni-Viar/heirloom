@@ -117,6 +117,7 @@ The application uses constructor dependency injection with the DI graph construc
   - Requires OLE initialization via `OleInitialize()` before registering drop targets
   - Handles `LVN_BEGINDRAG` notification to initiate drag operations
   - `DragOver` method re-determines drag effects based on stored data object reference from `DragEnter` to ensure consistent behavior
+  - `Drop` method checks internal vs external drag source to determine whether to delete source files (only internal drags delete sources)
 
 ### Application Discovery
 - Scans system and user Start Menu folders

@@ -779,7 +779,6 @@ STDMETHODIMP DropTarget::Drop(IDataObject* pDataObj, DWORD grfKeyState, POINTL p
         return E_POINTER;
     }
 
-    DWORD originalEffect = *pdwEffect;
     *pdwEffect = DROPEFFECT_NONE;
 
     if (canAcceptDrop(pDataObj)) {
@@ -787,8 +786,11 @@ STDMETHODIMP DropTarget::Drop(IDataObject* pDataObj, DWORD grfKeyState, POINTL p
         if (!filePaths.empty()) {
             folderWindow_->handleFileDrop(filePaths);
 
-            // If this was a move operation, delete the source files
-            if (originalEffect & DROPEFFECT_MOVE) {
+            // Determine if this is an internal drag (from our application)
+            bool isInternalDrag = isInternalDragSource(pDataObj);
+
+            if (isInternalDrag) {
+                // Internal drag - we can safely delete source files (move operation)
                 for (const auto& filePath : filePaths) {
                     try {
                         std::filesystem::remove(filePath);
@@ -798,6 +800,7 @@ STDMETHODIMP DropTarget::Drop(IDataObject* pDataObj, DWORD grfKeyState, POINTL p
                 }
                 *pdwEffect = DROPEFFECT_MOVE;
             } else {
+                // External drag - NEVER delete source files (copy operation)
                 *pdwEffect = DROPEFFECT_COPY;
             }
         }
