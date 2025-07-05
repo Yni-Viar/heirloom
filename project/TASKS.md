@@ -2,7 +2,7 @@
 
 Search the libzip docs in `context/libzip/` for guidance on library usage.
 
-- [ ] Prepare a dialog resource `IDM_ARCHIVE_PROGRESS` and a C++ class `ArchiveProgressDialog` for a zip/unzip operation progress dialog, following the example of `IDD_BOOKMARK_EDIT`.
+- [x] Prepare a dialog resource `IDM_ARCHIVE_PROGRESS` and a C++ class `ArchiveProgressDialog` for a zip/unzip operation progress dialog, following the example of `IDD_BOOKMARK_EDIT`.
     - Dialog resource
         - Title "Archive Progress"
         - Vertical stack
@@ -19,6 +19,7 @@ Search the libzip docs in `context/libzip/` for guidance on library usage.
         - When the window is shown, a 100ms interval timer on the UI thread starts will update the UI. It will update the archive file path, operation text, and operation file path labels from private string member variables protected with a mutex. Timer ends when the window closes. This timer provides the way that the worker thread's updates will make it to the UI.
         - When the callback ends, if cancellation was requested, dialog result `IDCANCEL`. If the callback succeeded, dialog result `IDOK`. If the callback threw an exception, we catch it and expose it from a getter in `ArchiveProgressDialog` then set dialog result to `IDABORT`. Regardless, close the dialog.
         - Member function for setting the private member variables: archive file path string, operation text ("Compressing file:" or "Extracting file:" e.g.), operation file path string. Take the mutex when setting these. This function will be called from a worker thread.
+    - 🤖 *Implemented dialog resource `IDD_ARCHIVE_PROGRESS` with IDs 2500-2505, created `ArchiveProgressDialog` class with full thread management, mutex-protected UI updates, cancellation support via libheirloom, and proper exception handling. Added project references to libheirloom and updated winfile documentation.*
 
 - [ ] New submenu "Zip Archive" right after "Hardlin&k..." in the File menu and context menu. This submenu is enabled if and only if the "Properties" command is enabled. Piggyback on the logic for Properties.
 

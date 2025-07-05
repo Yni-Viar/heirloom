@@ -107,6 +107,13 @@ Frame Window (FrameWndProc) - hwndFrame
 - **Data Transfer** - File path and data object marshaling
 - **Cross-Application** - Integration with Windows shell and other applications
 
+#### Archive Progress Dialog (`archiveprogress.cpp`)
+- **Progress Tracking** - Thread-safe progress dialog for zip/unzip operations
+- **Cancellation Support** - User-initiated operation cancellation using libheirloom CancellationToken
+- **Worker Thread Management** - Background operation execution with UI updates
+- **Exception Handling** - Proper error capture and reporting from background operations
+- **Timer-Based Updates** - 100ms interval UI refresh from worker thread data
+
 ## Key Data Structures
 
 ### File System Representation
@@ -152,6 +159,7 @@ Frame Window (FrameWndProc) - hwndFrame
 - **History Navigation** - Back/forward navigation with mouse button support
 - **Extension Support** - Plugin architecture for third-party enhancements
 - **Print Support** - Directory listings and file information printing
+- **Archive Progress Dialog** - Reusable progress dialog infrastructure for zip operations with cancellation support
 
 ### Help Menu
 - **About** - Shows application information dialog
@@ -220,6 +228,8 @@ Frame Window (FrameWndProc) - hwndFrame
 - **File System Drivers** - NTFS, FAT32, network file systems
 - **Graphics Subsystem** - GDI for custom drawing and PNG support
 - **COM/OLE** - Drag and drop operations and shell integration
+- **libheirloom** - Shared library providing cancellation token support for background operations
+- **libzip** - Library for ZIP archive creation and extraction
 
 ## Build System
 - **Visual Studio Projects** - Traditional `.vcxproj` files with custom build rules

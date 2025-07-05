@@ -4,6 +4,7 @@
     <Manifest Include="winfile.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="archiveprogress.cpp" />
     <ClCompile Include="lfn.cpp" />
     <ClCompile Include="lfnmisc.cpp" />
     <ClCompile Include="numfmt.cpp" />
@@ -43,6 +44,7 @@
     <ClCompile Include="bookmark.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="archiveprogress.h" />
     <ClInclude Include="lfn.h" />
     <ClInclude Include="BagOValues.h" />
     <ClInclude Include="mpr.h" />

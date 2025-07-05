@@ -54,7 +54,7 @@
     <ClCompile>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <DisableSpecificWarnings>4706;4152;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LFN;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -65,10 +65,11 @@
       <PreprocessorDefinitions>LFN;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;gdi32.lib;user32.lib;advapi32.lib;oleaut32.lib;ole32.lib;shell32.lib;shlwapi.lib;comctl32.lib;version.lib;windowscodecs.lib;msimg32.lib;mpr.lib;comdlg32.lib;zip.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;gdi32.lib;user32.lib;advapi32.lib;oleaut32.lib;ole32.lib;shell32.lib;shlwapi.lib;comctl32.lib;version.lib;windowscodecs.lib;msimg32.lib;mpr.lib;comdlg32.lib;zip.lib;libheirloom.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>15000000</StackReserveSize>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -204,6 +205,7 @@
     <VcpkgTriplet>arm64-windows</VcpkgTriplet>
   </PropertyGroup>  
   <ItemGroup>
+    <ClInclude Include="archiveprogress.h" />
     <ClInclude Include="bookmark.h" />
     <ClInclude Include="gitbash.h" />
     <ClInclude Include="lfn.h" />
@@ -261,6 +263,7 @@
     <None Include="suggest.db" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="archiveprogress.cpp" />
     <ClCompile Include="bookmark.cpp" />
     <ClCompile Include="gitbash.cpp" />
     <ClCompile Include="lfn.cpp" />
@@ -299,6 +302,11 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="winfile.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libheirloom\libheirloom.vcxproj">
+      <Project>{e91f1f9b-fa84-4994-82c7-41c9a78e6bee}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
