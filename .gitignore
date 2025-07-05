@@ -294,3 +294,4 @@ obj/
 /src/immer/
 /.vscode/settings.json
 *.log
+vcpkg_installed/
