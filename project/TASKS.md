@@ -2,8 +2,6 @@
 
 Search the libzip docs in `context/libzip/` for guidance on library usage.
 
-- [ ] libzip is installed via vcpkg in our manifest, but not linked into winfile yet. Update the winfile project library search path to include `$(SolutionDir)vcpkg_installed\$(Platform)-windows\lib`. Add static libraries zip, bz2, zlib to the winfile link libraries.
-
 - [ ] Prepare a dialog resource `IDM_ARCHIVE_PROGRESS` and a C++ class `ArchiveProgressDialog` for a zip/unzip operation progress dialog, following the example of `IDD_BOOKMARK_EDIT`.
     - Dialog resource
         - Title "Archive Progress"
