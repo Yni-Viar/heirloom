@@ -72,6 +72,9 @@ The application uses constructor dependency injection with the DI graph construc
   - List control for minimized folder windows
   - Supports splitter resize functionality
   - Double-click to restore folders
+  - F2 key to rename selected minimized folder
+  - Ctrl+D key to delete selected minimized folder
+  - Right-click context menu with Open, Rename, Delete options
 
 #### Dialog Windows
 - **`AboutDialog`** - Application about dialog

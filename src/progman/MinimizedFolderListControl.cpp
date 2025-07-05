@@ -219,6 +219,24 @@ LRESULT CALLBACK MinimizedFolderListControlProc(HWND hwnd, UINT message, WPARAM 
                 // Ensure the control stays at the bottom of the z-order after processing
                 SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 return 0;
+            } else if (nmhdr->code == LVN_ENDLABELEDIT) {
+                // Handle end of label editing for folder rename
+                NMLVDISPINFOW* pDispInfo = reinterpret_cast<NMLVDISPINFOW*>(lParam);
+                if (pDispInfo->item.pszText) {  // If not null, user confirmed the edit
+                    // Get the old folder name
+                    wchar_t oldName[MAX_PATH] = {};
+                    ListView_GetItemText(nmhdr->hwndFrom, pDispInfo->item.iItem, 0, oldName, MAX_PATH);
+                    
+                    // Get the new folder name
+                    std::wstring newName = pDispInfo->item.pszText;
+                    
+                    // Call the rename callback
+                    if (control && control->onRename_) {
+                        control->onRename_(oldName, newName);
+                        return TRUE;  // Accept the new name
+                    }
+                }
+                return FALSE;  // Reject the new name if no callback or no text provided
             }
             break;
         }
@@ -277,6 +295,98 @@ ListViewSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PT
             }
             break;
 
+        case WM_RBUTTONDOWN: {
+            // Handle right-click on a folder item
+            LVHITTESTINFO hit = {};
+            hit.pt.x = GET_X_LPARAM(lParam);
+            hit.pt.y = GET_Y_LPARAM(lParam);
+            
+            int item = ListView_HitTest(hwnd, &hit);
+            if (item != -1) {
+                // Select the item that was right-clicked
+                ListView_SetItemState(hwnd, item, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+                
+                // Get the folder name
+                wchar_t buffer[MAX_PATH] = {};
+                ListView_GetItemText(hwnd, item, 0, buffer, MAX_PATH);
+                
+                // Convert to screen coordinates
+                POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+                ClientToScreen(hwnd, &pt);
+                
+                // Load and show the context menu
+                HMENU hMenuResource = LoadMenuW(GetModuleHandle(nullptr), MAKEINTRESOURCEW(IDR_FOLDER_MENU));
+                HMENU hMenu = GetSubMenu(hMenuResource, 0);
+                
+                int cmd = TrackPopupMenu(hMenu, TPM_RETURNCMD | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, nullptr);
+                
+                DestroyMenu(hMenuResource);
+                
+                // Handle the selected command
+                switch (cmd) {
+                    case IDM_OPEN:
+                        // Restore the folder (same as double-click)
+                        if (control && control->onRestore_) {
+                            control->onRestore_(buffer);
+                        }
+                        // Remove the item from the list
+                        ListView_DeleteItem(hwnd, item);
+                        break;
+                    case IDM_RENAME:
+                        // Start editing the label
+                        ListView_EditLabel(hwnd, item);
+                        break;
+                    case IDM_DELETE:
+                        // Confirm and delete the folder
+                        if (control && control->onDelete_) {
+                            std::wstring message = L"Are you sure you want to delete the folder \"" + std::wstring(buffer) + L"\"?";
+                            if (MessageBoxW(hwnd, message.c_str(), L"Confirm Delete", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+                                control->onDelete_(buffer);
+                                // Remove the item from the list
+                                ListView_DeleteItem(hwnd, item);
+                            }
+                        }
+                        break;
+                }
+            }
+            
+            // Ensure the control stays at the bottom of z-order
+            if (control && control->window_) {
+                SetWindowPos(control->window_, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            }
+            return 0;
+        }
+
+        case WM_KEYDOWN: {
+            // Handle F2 and Ctrl+D keys
+            if (wParam == VK_F2) {
+                // Start editing the selected item
+                int selectedIndex = ListView_GetNextItem(hwnd, -1, LVNI_SELECTED);
+                if (selectedIndex != -1) {
+                    ListView_EditLabel(hwnd, selectedIndex);
+                }
+                return 0;
+            } else if (wParam == 'D' && (GetKeyState(VK_CONTROL) & 0x8000)) {
+                // Handle Ctrl+D for delete
+                int selectedIndex = ListView_GetNextItem(hwnd, -1, LVNI_SELECTED);
+                if (selectedIndex != -1 && control && control->onDelete_) {
+                    // Get the folder name
+                    wchar_t buffer[MAX_PATH] = {};
+                    ListView_GetItemText(hwnd, selectedIndex, 0, buffer, MAX_PATH);
+                    
+                    // Confirm and delete the folder
+                    std::wstring message = L"Are you sure you want to delete the folder \"" + std::wstring(buffer) + L"\"?";
+                    if (MessageBoxW(hwnd, message.c_str(), L"Confirm Delete", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+                        control->onDelete_(buffer);
+                        // Remove the item from the list
+                        ListView_DeleteItem(hwnd, selectedIndex);
+                    }
+                }
+                return 0;
+            }
+            break;
+        }
+
         case WM_NCDESTROY:
             // Remove the subclass when the window is destroyed
             RemoveWindowSubclass(hwnd, ListViewSubclassProc, uIdSubclass);
@@ -322,7 +432,7 @@ MinimizedFolderListControl::MinimizedFolderListControl(
     // Create the ListView control with WS_EX_NOACTIVATE to prevent it from activating
     listView_ = CreateWindowEx(
         WS_EX_NOACTIVATE, WC_LISTVIEW, L"",
-        WS_CHILD | WS_VISIBLE | LVS_ICON | LVS_AUTOARRANGE | LVS_SINGLESEL | LVS_NOCOLUMNHEADER, 0, 0, 100, 100,
+        WS_CHILD | WS_VISIBLE | LVS_ICON | LVS_AUTOARRANGE | LVS_SINGLESEL | LVS_NOCOLUMNHEADER | LVS_EDITLABELS, 0, 0, 100, 100,
         window_, nullptr, instance, nullptr);
 
     if (!listView_) {

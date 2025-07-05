@@ -103,6 +103,17 @@ BEGIN
     END
 END
 
+IDR_FOLDER_MENU MENU
+BEGIN
+    POPUP "Folder"
+    BEGIN
+        MENUITEM "&Open",                       IDM_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "Re&name",                     IDM_RENAME
+        MENUITEM "&Delete",                     IDM_DELETE
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -75,6 +75,15 @@ ProgramManagerWindow::ProgramManagerWindow(
             this->restoreMinimizedFolder(folderName, false);
         });
 
+    // Set up rename and delete callbacks
+    minimizedFolderList_->setOnRenameCallback([this](const std::wstring& oldName, const std::wstring& newName) {
+        this->renameMinimizedFolder(oldName, newName);
+    });
+
+    minimizedFolderList_->setOnDeleteCallback([this](const std::wstring& folderName) {
+        this->deleteMinimizedFolder(folderName);
+    });
+
     // Position the control
     minimizedFolderList_->autoSize(mdiClient_);
 
@@ -596,6 +605,48 @@ void ProgramManagerWindow::restoreMinimizedFolder(const std::wstring& folderName
 
         // Update the minimized folder list layout
         minimizedFolderList_->autoSize(mdiClient_);
+    }
+}
+
+void ProgramManagerWindow::renameMinimizedFolder(const std::wstring& oldName, const std::wstring& newName) {
+    try {
+        // Get the folder and rename it
+        auto folderPtr = shortcutManager_->folder(oldName);
+        if (!folderPtr) {
+            return;
+        }
+
+        // Rename the folder directory
+        std::filesystem::path oldPath = folderPtr->path();
+        std::filesystem::path newPath = oldPath.parent_path() / newName;
+        
+        // Rename the directory
+        std::filesystem::rename(oldPath, newPath);
+        
+        // The filesystem watcher will pick up the change and update the UI
+    } catch (const std::exception& e) {
+        // Show error message if the rename failed
+        std::wstring errorMsg = L"Error renaming folder: " + libprogman::utf8ToWide(e.what());
+        MessageBoxW(hwnd_, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
+    }
+}
+
+void ProgramManagerWindow::deleteMinimizedFolder(const std::wstring& folderName) {
+    try {
+        // Get the folder and delete it
+        auto folderPtr = shortcutManager_->folder(folderName);
+        if (!folderPtr) {
+            return;
+        }
+
+        // Delete the folder
+        shortcutManager_->deleteFolder(folderPtr.get());
+        
+        // The filesystem watcher will pick up the change and update the UI
+    } catch (const std::exception& e) {
+        // Show error message if the deletion failed
+        std::wstring errorMsg = L"Error deleting folder: " + libprogman::utf8ToWide(e.what());
+        MessageBoxW(hwnd_, errorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
     }
 }
 

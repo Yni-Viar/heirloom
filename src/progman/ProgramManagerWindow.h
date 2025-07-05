@@ -35,6 +35,8 @@ class ProgramManagerWindow {
     void createMdiClient();
     void syncFolderWindows();
     void restoreMinimizedFolder(const std::wstring& folderName, bool maximize = false);
+    void renameMinimizedFolder(const std::wstring& oldName, const std::wstring& newName);
+    void deleteMinimizedFolder(const std::wstring& folderName);
     void handleDeleteCommand();
     void handleRenameCommand();
 

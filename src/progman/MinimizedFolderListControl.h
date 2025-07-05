@@ -25,10 +25,22 @@ class MinimizedFolderListControl {
     int getSplitterPosition() const { return controlHeight_; }
     void setSplitterPosition(int height);
 
+    // Set callback for folder rename
+    void setOnRenameCallback(std::function<void(const std::wstring&, const std::wstring&)> callback) {
+        onRename_ = std::move(callback);
+    }
+
+    // Set callback for folder delete
+    void setOnDeleteCallback(std::function<void(const std::wstring&)> callback) {
+        onDelete_ = std::move(callback);
+    }
+
    private:
     HWND window_ = nullptr;
     HWND listView_ = nullptr;
     std::function<void(std::wstring)> onRestore_;
+    std::function<void(const std::wstring&, const std::wstring&)> onRename_;
+    std::function<void(const std::wstring&)> onDelete_;
 
     // Splitter-related members
     int controlHeight_ = 0;
