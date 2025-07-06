@@ -254,7 +254,7 @@ Frame Window (FrameWndProc) - hwndFrame
       - **Cancellation-Aware** - Exceptions during cancellation are filtered out to prevent spurious error messages
       - **Compression Cancellation** - Cancellation checks are performed before processing each file/folder during compression
     - **Cross-Platform Paths** - Proper UTF-8 path handling and Windows path conversion
-    - **Smart Naming** - "Add to Zip" command uses intelligent naming: when creating an archive from a single folder, the archive is named after the selected folder rather than the containing directory
+    - **Smart Naming** - "Add to Zip" command uses intelligent naming: when creating an archive from a single folder, the archive is named after the selected folder rather than the containing directory; when creating an archive from a single file, the archive is named after the file (without extension) rather than the containing directory
 - **libzip** - Library for ZIP archive creation and extraction
 
 ## Build System

@@ -1050,10 +1050,16 @@ BOOL AppCommandProc(DWORD id) {
                 selectedFiles.push_back(std::filesystem::path(szFile));
             }
 
-            // Special case: if the user selected a single folder, use that folder's name
+            // Special case: if the user selected a single folder or file, use that item's name
             std::wstring folderName;
-            if (selectedFiles.size() == 1 && std::filesystem::is_directory(selectedFiles[0])) {
-                folderName = selectedFiles[0].filename().wstring();
+            if (selectedFiles.size() == 1) {
+                if (std::filesystem::is_directory(selectedFiles[0])) {
+                    // Single folder selected - use the folder name
+                    folderName = selectedFiles[0].filename().wstring();
+                } else {
+                    // Single file selected - use the file name without extension
+                    folderName = selectedFiles[0].stem().wstring();
+                }
             } else {
                 // Get folder name from current directory
                 std::filesystem::path currentPath(szCurrentDir);
