@@ -21,16 +21,20 @@ Search the libzip docs in `context/libzip/` for guidance on library usage.
         - Member function for setting the private member variables: archive file path string, operation text ("Compressing file:" or "Extracting file:" e.g.), operation file path string. Take the mutex when setting these. This function will be called from a worker thread.
     - 🤖 *Implemented dialog resource `IDD_ARCHIVE_PROGRESS` with IDs 2500-2505, created `ArchiveProgressDialog` class with full thread management, mutex-protected UI updates, cancellation support via libheirloom, and proper exception handling. Added project references to libheirloom and updated winfile documentation.*
 
-- [ ] New submenu "Zip Archive" right after "Hardlin&k..." in the File menu and context menu. This submenu is enabled if and only if the "Properties" command is enabled. Piggyback on the logic for Properties.
+- [ ] New submenu "Zip Archive" right after "Hardlin&k..." in the File menu and context menu.
 
-    - Add commands. If there is an error, delete the partial zip output file and show a messagebox.
+    - Add commands. Enabled if and only if the user has some selection in the file list. If there is an error, delete the partial zip output file and show a messagebox. 
 
-        - [ ] Submenu command: "Add to Zip". Enabled if and only if the user has some selection in the file list. All selected files and folders are added to a new zip named after the folder. For instance, if the current folder is "Foo" then the filename is "Foo.zip". If "Foo.zip" already exists, then try "Foo (2).zip", then "Foo (3).zip", etc. until you find an unused filename. Use one `ArchiveProgressDialog` for the whole process. 
+        - [ ] Submenu command: "Add to Zip".  All selected files and folders are added to a new zip named after the folder. For instance, if the current folder is "Foo" then the filename is "Foo.zip". If "Foo.zip" already exists, then try "Foo (2).zip", then "Foo (3).zip", etc. until you find an unused filename. Use one `ArchiveProgressDialog` for the whole process. 
 
-        - [ ] Submenu command: "Add To...". Enabled if and only if the user has some selection in the file list. Show the save file dialog to choose the .zip file path. All selected files and folders are added to a zip written to that file. Use one `ArchiveProgressDialog` for the whole process.
+        - [ ] Submenu command: "Add To...". Show the save file dialog to choose the .zip file path. All selected files and folders are added to a zip written to that file. Use one `ArchiveProgressDialog` for the whole process.
 
-    - Extract commands. Whenever the extraction would overwrite a file, use `ConfirmDialog` to prompt. Check for other usages of this. If there is an error, stop and show a message box, and leave the partially extracted files in place
+    - Separator
 
-        - [ ] Submenu command: "Extract Here". Enabled if and only if the user has selected one or more `.zip` files, and no other file types are included in their selection. Each zip is extracted into its containing directory using one `ArchiveProgressDialog` for the whole process.
+    - Extract commands. Enabled if and only if the user has selected one or more `.zip` files, and no other file types are included in their selection. Whenever the extraction would overwrite a file, use `ConfirmDialog` to prompt. Check for other usages of this. If there is an error, stop and show a message box, and leave the partially extracted files in place
 
-        - [ ] Submenu command: "Extract To...". Enabled if and only if the user has selected one or more `.zip` files, and no other file types are included in their selection. Show the open file dialog in folder-selection mode to choose the destination folder. Then, each zip is extracted into that directory using one `ArchiveProgressDialog` for the whole process.
+        - [ ] Submenu command: "Extract Here". Each zip is extracted into its containing directory using one `ArchiveProgressDialog` for the whole process.
+
+        - [ ] Submenu command: "Extract to New Folder". A folder named after the zip is created in the containing folder, and the zip is extracted there. For instance, "C:\Temp\Foo.zip" is extracted to a new folder "C:\Temp\Foo\". If the folder already exists, that's ok, treat overwrites as described above.
+
+        - [ ] Submenu command: "Extract To...". Show the open file dialog in folder-selection mode to choose the destination folder. Then, each zip is extracted into that directory using one `ArchiveProgressDialog` for the whole process.
