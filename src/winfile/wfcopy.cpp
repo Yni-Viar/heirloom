@@ -2267,33 +2267,40 @@ WFMoveCopyDriverThread(LPVOID lpParameter) {
                 // to delete the directory
                 //
 
-                //
-                // Tuck away the attribs in case we fail.
-                //
-                dwAttr = GetFileAttributes(szSource);
-
-                WFSetAttr(szSource, FILE_ATTRIBUTE_NORMAL);
-
-                ret = RMDir(szSource);
-
-                if (ERROR_SHARING_VIOLATION == ret) {
+                if (pCopyInfo->dwFunc == FUNC_DELETE) {
+                    // For delete operations, send the entire directory to recycle bin
+                    // instead of permanently deleting it
+                    ret = MoveFileToRecycleBin(szSource);
+                } else {
+                    // For move operations, use the original logic
                     //
-                    // We could have been watching this with the notify system
+                    // Tuck away the attribs in case we fail.
                     //
+                    dwAttr = GetFileAttributes(szSource);
 
-                    //
-                    // Only do this for non-UNC
-                    //
-                    if (CHAR_COLON == szSource[1]) {
-                        NotifyPause(DRIVEID(szSource), (UINT)-1);
-                        ret = RMDir(szSource);
+                    WFSetAttr(szSource, FILE_ATTRIBUTE_NORMAL);
+
+                    ret = RMDir(szSource);
+
+                    if (ERROR_SHARING_VIOLATION == ret) {
+                        //
+                        // We could have been watching this with the notify system
+                        //
+
+                        //
+                        // Only do this for non-UNC
+                        //
+                        if (CHAR_COLON == szSource[1]) {
+                            NotifyPause(DRIVEID(szSource), (UINT)-1);
+                            ret = RMDir(szSource);
+                        }
                     }
+                    //
+                    // On failure, restore attributes
+                    //
+                    if (ret && INVALID_FILE_ATTRIBUTES != dwAttr)
+                        WFSetAttr(szSource, dwAttr);
                 }
-                //
-                // On failure, restore attributes
-                //
-                if (ret && INVALID_FILE_ATTRIBUTES != dwAttr)
-                    WFSetAttr(szSource, dwAttr);
 
                 break;
 
