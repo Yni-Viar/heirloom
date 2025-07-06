@@ -1,6 +1,9 @@
 #include "libwinfile/pch.h"
 #include "ZipArchive.h"
 #include "ArchiveStatus.h"
+#include <thread>
+#include <chrono>
+#include <atomic>
 
 namespace libwinfile {
 
@@ -14,6 +17,33 @@ std::string pathToUtf8(const std::filesystem::path& path) {
 // Convert UTF-8 string to std::filesystem::path
 std::filesystem::path utf8ToPath(const std::string& utf8String) {
     return std::filesystem::u8path(utf8String);
+}
+
+// Callback state for zip_close operations
+struct ZipCloseCallbackState {
+    ArchiveStatus* status;
+    std::wstring zipFilePath;
+    std::atomic<bool>* cancelRequested;
+
+    ZipCloseCallbackState(ArchiveStatus* s, const std::wstring& path, std::atomic<bool>* cancel)
+        : status(s), zipFilePath(path), cancelRequested(cancel) {}
+};
+
+// Progress callback for zip_close
+void zipProgressCallback(zip_t* /*archive*/, double progress, void* userData) {
+    ZipCloseCallbackState* state = static_cast<ZipCloseCallbackState*>(userData);
+    if (state && state->status) {
+        state->status->updateWithProgress(state->zipFilePath, L"Finalizing archive...", L"", progress);
+    }
+}
+
+// Cancel callback for zip_close
+int zipCancelCallback(zip_t* /*archive*/, void* userData) {
+    ZipCloseCallbackState* state = static_cast<ZipCloseCallbackState*>(userData);
+    if (state && state->cancelRequested) {
+        return state->cancelRequested->load() ? 1 : 0;
+    }
+    return 0;
 }
 
 // Recursively collect all files and directories from the given paths
@@ -107,7 +137,8 @@ void createZipArchive(
     const std::filesystem::path& zipFilePath,
     const std::vector<std::filesystem::path>& addFileOrFolderPaths,
     const std::filesystem::path& relativeToPath,
-    ArchiveStatus* status) {
+    ArchiveStatus* status,
+    const libheirloom::CancellationToken& cancellationToken) {
     if (!status) {
         throw std::invalid_argument("status parameter cannot be null");
     }
@@ -133,7 +164,45 @@ void createZipArchive(
 
         // Close archive (this writes the zip file)
         status->update(zipFilePath.wstring(), L"Finalizing archive...", L"");
-        if (zip_close(archive) < 0) {
+
+        // Set up callbacks for progress and cancellation during zip_close
+        std::atomic<bool> cancelRequested{ false };
+
+        // Check if cancellation token has a way to access the underlying atomic bool
+        // For now, we'll use a separate atomic bool and check cancellation before calling zip_close
+        if (cancellationToken.isCancellationRequested()) {
+            cancelRequested = true;
+        }
+
+        ZipCloseCallbackState callbackState(status, zipFilePath.wstring(), &cancelRequested);
+
+        // Register progress callback (precision 0.01 = 1% increments)
+        zip_register_progress_callback_with_state(archive, 0.01, zipProgressCallback, nullptr, &callbackState);
+
+        // Register cancel callback
+        zip_register_cancel_callback_with_state(archive, zipCancelCallback, nullptr, &callbackState);
+
+        // Start a thread to monitor cancellation token and update our atomic bool
+        std::thread cancellationMonitor([&cancelRequested, &cancellationToken]() {
+            while (!cancelRequested.load()) {
+                if (cancellationToken.isCancellationRequested()) {
+                    cancelRequested = true;
+                    break;
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+        });
+
+        // Close the archive
+        int closeResult = zip_close(archive);
+
+        // Stop the cancellation monitor
+        cancelRequested = true;
+        if (cancellationMonitor.joinable()) {
+            cancellationMonitor.join();
+        }
+
+        if (closeResult < 0) {
             throw std::runtime_error("Failed to close zip archive: " + std::string(zip_strerror(archive)));
         }
 

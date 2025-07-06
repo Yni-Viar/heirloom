@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <vector>
+#include "libheirloom/cancel.h"
 
 namespace libwinfile {
 
@@ -16,7 +17,8 @@ void createZipArchive(
     const std::filesystem::path& zipFilePath,
     const std::vector<std::filesystem::path>& addFileOrFolderPaths,
     const std::filesystem::path& relativeToPath,
-    ArchiveStatus* status);
+    ArchiveStatus* status,
+    const libheirloom::CancellationToken& cancellationToken = libheirloom::CancellationToken{});
 
 // Extracts the zip to the target folder.
 // Reports progress via status->update().

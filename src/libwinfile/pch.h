@@ -11,6 +11,9 @@
 #include <string>
 #include <fstream>
 #include <mutex>
+#include <thread>
+#include <chrono>
+#include <atomic>
 
 // libzip
 #include <zip.h>

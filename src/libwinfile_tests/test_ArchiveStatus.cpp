@@ -121,5 +121,100 @@ TEST_CLASS (ArchiveStatusTests) {
         Assert::AreEqual(std::wstring(L""), operationText);
         Assert::AreEqual(std::wstring(L""), operationFile);
     }
+
+    TEST_METHOD (TestUpdateWithProgress) {
+        // Test that updateWithProgress sets progress information
+        ArchiveStatus status;
+
+        status.updateWithProgress(L"test.zip", L"Finalizing archive...", L"", 0.5);
+
+        Assert::IsTrue(status.dirty());
+
+        std::wstring archivePath, operationText, operationFile;
+        double progress;
+        bool hasProgress;
+        status.readWithProgress(&archivePath, &operationText, &operationFile, &progress, &hasProgress);
+
+        Assert::AreEqual(std::wstring(L"test.zip"), archivePath);
+        Assert::AreEqual(std::wstring(L"Finalizing archive..."), operationText);
+        Assert::AreEqual(std::wstring(L""), operationFile);
+        Assert::AreEqual(0.5, progress);
+        Assert::IsTrue(hasProgress);
+        Assert::IsFalse(status.dirty());
+    }
+
+    TEST_METHOD (TestUpdateWithoutProgressClearsProgressFlag) {
+        // Test that regular update() clears the progress flag
+        ArchiveStatus status;
+
+        // First, set progress information
+        status.updateWithProgress(L"test.zip", L"Finalizing archive...", L"", 0.5);
+
+        // Then update without progress
+        status.update(L"test.zip", L"Compressing file:", L"test.txt");
+
+        std::wstring archivePath, operationText, operationFile;
+        double progress;
+        bool hasProgress;
+        status.readWithProgress(&archivePath, &operationText, &operationFile, &progress, &hasProgress);
+
+        Assert::AreEqual(std::wstring(L"test.zip"), archivePath);
+        Assert::AreEqual(std::wstring(L"Compressing file:"), operationText);
+        Assert::AreEqual(std::wstring(L"test.txt"), operationFile);
+        Assert::IsFalse(hasProgress);
+    }
+
+    TEST_METHOD (TestReadWithProgressNullPointers) {
+        // Test that readWithProgress handles null pointers gracefully
+        ArchiveStatus status;
+
+        status.updateWithProgress(L"test.zip", L"Finalizing archive...", L"", 0.75);
+
+        // Should not crash when called with null pointers
+        status.readWithProgress(nullptr, nullptr, nullptr, nullptr, nullptr);
+
+        // Should still clear the dirty flag
+        Assert::IsFalse(status.dirty());
+    }
+
+    TEST_METHOD (TestReadWithProgressPartialNullPointers) {
+        // Test that readWithProgress handles partial null pointers
+        ArchiveStatus status;
+
+        status.updateWithProgress(L"test.zip", L"Finalizing archive...", L"", 0.25);
+
+        double progress;
+        bool hasProgress;
+        status.readWithProgress(nullptr, nullptr, nullptr, &progress, &hasProgress);
+
+        Assert::AreEqual(0.25, progress);
+        Assert::IsTrue(hasProgress);
+        Assert::IsFalse(status.dirty());
+    }
+
+    TEST_METHOD (TestProgressValues) {
+        // Test various progress values
+        ArchiveStatus status;
+
+        // Test 0% progress
+        status.updateWithProgress(L"test.zip", L"Starting...", L"", 0.0);
+        double progress;
+        bool hasProgress;
+        status.readWithProgress(nullptr, nullptr, nullptr, &progress, &hasProgress);
+        Assert::AreEqual(0.0, progress);
+        Assert::IsTrue(hasProgress);
+
+        // Test 100% progress
+        status.updateWithProgress(L"test.zip", L"Finalizing...", L"", 1.0);
+        status.readWithProgress(nullptr, nullptr, nullptr, &progress, &hasProgress);
+        Assert::AreEqual(1.0, progress);
+        Assert::IsTrue(hasProgress);
+
+        // Test intermediate progress
+        status.updateWithProgress(L"test.zip", L"Processing...", L"", 0.33);
+        status.readWithProgress(nullptr, nullptr, nullptr, &progress, &hasProgress);
+        Assert::AreEqual(0.33, progress, 0.001);  // Allow small floating point tolerance
+        Assert::IsTrue(hasProgress);
+    }
 };
 }  // namespace libwinfile_tests

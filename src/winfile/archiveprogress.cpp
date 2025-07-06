@@ -125,12 +125,22 @@ void ArchiveProgressDialog::updateUIFromWorkerThread() {
     // Check if the status has been updated
     if (status_->dirty()) {
         std::wstring archiveFilePath, operationText, operationFilePath;
-        status_->read(&archiveFilePath, &operationText, &operationFilePath);
+        double progressPercentage;
+        bool hasProgressPercentage;
+        status_->readWithProgress(
+            &archiveFilePath, &operationText, &operationFilePath, &progressPercentage, &hasProgressPercentage);
 
         if (dialogHandle_) {
             // Update the labels with current values
             SetDlgItemTextW(dialogHandle_, IDC_ARCHIVE_PATH, archiveFilePath.c_str());
-            SetDlgItemTextW(dialogHandle_, IDC_OPERATION_LABEL, operationText.c_str());
+
+            // Include progress percentage in operation text if available
+            std::wstring displayText = operationText;
+            if (hasProgressPercentage) {
+                displayText += L" (" + std::to_wstring(static_cast<int>(progressPercentage * 100)) + L"%)";
+            }
+            SetDlgItemTextW(dialogHandle_, IDC_OPERATION_LABEL, displayText.c_str());
+
             SetDlgItemTextW(dialogHandle_, IDC_OPERATION_FILE, operationFilePath.c_str());
         }
     }

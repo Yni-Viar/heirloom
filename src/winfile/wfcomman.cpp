@@ -1093,7 +1093,7 @@ BOOL AppCommandProc(DWORD id) {
                                         &archiveStatus](libheirloom::CancellationToken cancellationToken) {
                     libwinfile::createZipArchive(
                         std::filesystem::path(zipPathStr), selectedFiles, std::filesystem::path(currentDirStr),
-                        &archiveStatus);
+                        &archiveStatus, cancellationToken);
                 };
 
                 ArchiveProgressDialog progressDialog(createZipLambda, &archiveStatus);
@@ -1178,7 +1178,7 @@ BOOL AppCommandProc(DWORD id) {
                                         &archiveStatus](libheirloom::CancellationToken cancellationToken) {
                     libwinfile::createZipArchive(
                         std::filesystem::path(zipPathStr), selectedFiles, std::filesystem::path(currentDirStr),
-                        &archiveStatus);
+                        &archiveStatus, cancellationToken);
                 };
 
                 ArchiveProgressDialog progressDialog(createZipLambda, &archiveStatus);

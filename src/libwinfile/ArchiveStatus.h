@@ -12,6 +12,8 @@ class ArchiveStatus {
     std::wstring operationText_;
     std::wstring operationFilePath_;
     bool dirty_;
+    double progressPercentage_;
+    bool hasProgressPercentage_;
 
    public:
     ArchiveStatus();
@@ -23,7 +25,20 @@ class ArchiveStatus {
         const std::wstring& operationText,
         const std::wstring& operationFilePath);
 
+    void updateWithProgress(
+        const std::wstring& archiveFilePath,
+        const std::wstring& operationText,
+        const std::wstring& operationFilePath,
+        double progressPercentage);
+
     void read(std::wstring* archiveFilePath, std::wstring* operationText, std::wstring* operationFilePath);
+
+    void readWithProgress(
+        std::wstring* archiveFilePath,
+        std::wstring* operationText,
+        std::wstring* operationFilePath,
+        double* progressPercentage,
+        bool* hasProgressPercentage);
 };
 
 }  // namespace libwinfile

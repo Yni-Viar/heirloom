@@ -235,10 +235,14 @@ Frame Window (FrameWndProc) - hwndFrame
 - **libheirloom** - Shared library providing cancellation token support for background operations
 - **libwinfile** - Static library providing shared functionality for winfile
   - **ArchiveStatus** - Thread-safe status class for archive operations with mutex-protected UI updates
+    - **Progress Support** - Enhanced with progress percentage tracking via updateWithProgress() and readWithProgress() methods
+    - **Finalization Progress** - Displays real-time percentage completion during ZIP finalization with detailed progress indicators
   - **ZipArchive** - Core ZIP archive functionality with createZipArchive() and extractZipArchive() functions
     - **createZipArchive()** - Creates ZIP archives from files and directories with recursive support and relative path handling
       - **Optimized Processing** - Files are added to ZIP as they are encountered during directory traversal, eliminating upfront file enumeration delays
       - **Real-time Progress** - Progress reporting shows current file being processed without total file counts
+      - **Finalization Progress** - Uses libzip progress callbacks to show percentage completion during zip_close() operations
+      - **Cancellation Support** - Supports cancellation during zip_close() operations via libzip cancel callbacks
     - **extractZipArchive()** - Extracts ZIP archives to target folders with directory structure preservation
       - **Automatic Overwrite** - Existing files are automatically overwritten without user prompts by ensuring write permissions
       - **Robust File Creation** - Uses std::ios::trunc flag to ensure proper file overwriting
