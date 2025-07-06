@@ -13,6 +13,7 @@ alwaysApply: true
 - Never use the pImpl pattern.
 - Documentation available in `context/` and by codebase search:
     - `context/libzip/` - libzip library documentation
+- If you get `error C3859: Failed to create virtual memory for PCH` or `error C1076: compiler limit: internal heap limit reached`, just run the build again. This is not a problem with your code.
 
 ## File Manager (winfile)
 - Codebase documentation: `context/winfile-overview.md`. Important: Keep this updated as you modify the codebase!
