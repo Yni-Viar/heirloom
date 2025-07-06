@@ -54,6 +54,53 @@ void collectFilesRecursive(
     }
 }
 
+// Add files to zip as we encounter them during directory traversal
+void addToZipRecursive(
+    zip_t* archive,
+    const std::filesystem::path& path,
+    const std::filesystem::path& relativeToPath,
+    ArchiveStatus* status,
+    const std::wstring& zipFilePath) {
+    if (std::filesystem::is_directory(path)) {
+        // Add directory entry
+        auto relativePath = std::filesystem::relative(path, relativeToPath);
+        std::string zipEntryName = pathToUtf8(relativePath);
+        // Ensure directory names end with '/'
+        if (!zipEntryName.empty() && zipEntryName.back() != '/') {
+            zipEntryName += '/';
+        }
+
+        status->update(zipFilePath, L"Compressing folder:", path.wstring());
+        zip_int64_t idx = zip_dir_add(archive, zipEntryName.c_str(), ZIP_FL_ENC_UTF_8);
+        if (idx < 0) {
+            throw std::runtime_error("Failed to add directory to zip: " + zipEntryName);
+        }
+
+        // Recursively process directory contents
+        for (const auto& entry : std::filesystem::directory_iterator(path)) {
+            addToZipRecursive(archive, entry.path(), relativeToPath, status, zipFilePath);
+        }
+    } else if (std::filesystem::is_regular_file(path)) {
+        // Add file entry
+        auto relativePath = std::filesystem::relative(path, relativeToPath);
+        std::string zipEntryName = pathToUtf8(relativePath);
+
+        status->update(zipFilePath, L"Compressing file:", path.wstring());
+
+        zip_source_t* source = zip_source_file(archive, pathToUtf8(path).c_str(), 0, ZIP_LENGTH_TO_END);
+        if (!source) {
+            throw std::runtime_error("Failed to create source for file: " + pathToUtf8(path));
+        }
+
+        zip_int64_t idx = zip_file_add(archive, zipEntryName.c_str(), source, ZIP_FL_ENC_UTF_8);
+        if (idx < 0) {
+            zip_source_free(source);
+            throw std::runtime_error("Failed to add file to zip: " + zipEntryName);
+        }
+        // Note: source is managed by libzip after successful zip_file_add
+    }
+}
+
 }  // anonymous namespace
 
 void createZipArchive(
@@ -63,12 +110,6 @@ void createZipArchive(
     ArchiveStatus* status) {
     if (!status) {
         throw std::invalid_argument("status parameter cannot be null");
-    }
-
-    // Collect all files and directories
-    std::vector<std::pair<std::filesystem::path, std::string>> fileEntries;
-    for (const auto& path : addFileOrFolderPaths) {
-        collectFilesRecursive(path, relativeToPath, fileEntries);
     }
 
     // Create zip archive
@@ -85,34 +126,9 @@ void createZipArchive(
     try {
         status->update(zipFilePath.wstring(), L"Starting compression...", L"");
 
-        for (size_t i = 0; i < fileEntries.size(); ++i) {
-            const auto& [filePath, zipEntryName] = fileEntries[i];
-
-            // Update progress
-            std::wstring progressText =
-                L"Compressing file: (" + std::to_wstring(i + 1) + L"/" + std::to_wstring(fileEntries.size()) + L")";
-            status->update(zipFilePath.wstring(), progressText, filePath.wstring());
-
-            if (std::filesystem::is_directory(filePath)) {
-                // Add directory entry
-                zip_int64_t idx = zip_dir_add(archive, zipEntryName.c_str(), ZIP_FL_ENC_UTF_8);
-                if (idx < 0) {
-                    throw std::runtime_error("Failed to add directory to zip: " + zipEntryName);
-                }
-            } else {
-                // Add file entry
-                zip_source_t* source = zip_source_file(archive, pathToUtf8(filePath).c_str(), 0, ZIP_LENGTH_TO_END);
-                if (!source) {
-                    throw std::runtime_error("Failed to create source for file: " + pathToUtf8(filePath));
-                }
-
-                zip_int64_t idx = zip_file_add(archive, zipEntryName.c_str(), source, ZIP_FL_ENC_UTF_8);
-                if (idx < 0) {
-                    zip_source_free(source);
-                    throw std::runtime_error("Failed to add file to zip: " + zipEntryName);
-                }
-                // Note: source is managed by libzip after successful zip_file_add
-            }
+        // Process files as we encounter them instead of collecting them first
+        for (const auto& path : addFileOrFolderPaths) {
+            addToZipRecursive(archive, path, relativeToPath, status, zipFilePath.wstring());
         }
 
         // Close archive (this writes the zip file)
@@ -191,8 +207,14 @@ void extractZipArchive(
                 }
 
                 try {
+                    // Ensure we can overwrite the file if it exists
+                    if (std::filesystem::exists(entryPath)) {
+                        std::filesystem::permissions(
+                            entryPath, std::filesystem::perms::owner_write, std::filesystem::perm_options::add);
+                    }
+
                     // Create output file
-                    std::ofstream outFile(entryPath, std::ios::binary);
+                    std::ofstream outFile(entryPath, std::ios::binary | std::ios::trunc);
                     if (!outFile.is_open()) {
                         throw std::runtime_error("Failed to create output file: " + pathToUtf8(entryPath));
                     }

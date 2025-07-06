@@ -1041,7 +1041,20 @@ BOOL AppCommandProc(DWORD id) {
             SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szCurrentDir), (LPARAM)szCurrentDir);
 
             // Get folder name from current directory
-            std::wstring folderName = std::filesystem::path(szCurrentDir).filename().wstring();
+            std::filesystem::path currentPath(szCurrentDir);
+            std::wstring folderName = currentPath.filename().wstring();
+
+            // If filename is empty (e.g., for root paths like C:\), use the parent directory name
+            if (folderName.empty()) {
+                folderName = currentPath.parent_path().filename().wstring();
+            }
+
+            // If still empty, try to get the stem (drive letter for root paths)
+            if (folderName.empty()) {
+                folderName = currentPath.stem().wstring();
+            }
+
+            // Last resort fallback
             if (folderName.empty()) {
                 folderName = L"Archive";
             }

@@ -101,6 +101,7 @@ Frame Window (FrameWndProc) - hwndFrame
 - **Menu State Management** - Enable/disable states based on current selection
 - **Extension Support** - Third-party menu extension integration
 - **ZIP Archive Submenu** - Archive creation and extraction commands with selection-based enabling
+  - **Smart Naming** - "Add to Zip" command uses improved logic to name archives after the containing folder, with fallback handling for root paths
 
 #### Drag and Drop (`wfdrop.cpp`, `wfdragsrc.cpp`)
 - **OLE Drag/Drop** - COM-based drag and drop implementation
@@ -236,7 +237,11 @@ Frame Window (FrameWndProc) - hwndFrame
   - **ArchiveStatus** - Thread-safe status class for archive operations with mutex-protected UI updates
   - **ZipArchive** - Core ZIP archive functionality with createZipArchive() and extractZipArchive() functions
     - **createZipArchive()** - Creates ZIP archives from files and directories with recursive support and relative path handling
+      - **Optimized Processing** - Files are added to ZIP as they are encountered during directory traversal, eliminating upfront file enumeration delays
+      - **Real-time Progress** - Progress reporting shows current file being processed without total file counts
     - **extractZipArchive()** - Extracts ZIP archives to target folders with directory structure preservation
+      - **Automatic Overwrite** - Existing files are automatically overwritten without user prompts by ensuring write permissions
+      - **Robust File Creation** - Uses std::ios::trunc flag to ensure proper file overwriting
     - **Progress Reporting** - Both functions integrate with ArchiveStatus for thread-safe UI progress updates
     - **Error Handling** - Comprehensive exception handling with detailed error messages
     - **Cross-Platform Paths** - Proper UTF-8 path handling and Windows path conversion
