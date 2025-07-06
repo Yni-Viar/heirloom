@@ -103,6 +103,7 @@ Frame Window (FrameWndProc) - hwndFrame
 - **ZIP Archive Submenu** - Archive creation and extraction commands with selection-based enabling
   - **Smart Naming** - "Add to Zip" command uses improved logic to name archives after the containing folder, with fallback handling for root paths
   - **Path Handling** - Proper path construction prevents double backslashes in archive file paths
+  - **Context Menu Integration** - Both File menu and context menu properly enable/disable ZIP archive commands based on current selection
 
 #### Drag and Drop (`wfdrop.cpp`, `wfdragsrc.cpp`)
 - **OLE Drag/Drop** - COM-based drag and drop implementation
