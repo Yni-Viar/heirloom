@@ -29,6 +29,10 @@
 #include <shlobj.h>
 #include <commctrl.h>
 #include <ole2.h>
+#include <commdlg.h>
+#include "archiveprogress.h"
+#include "libwinfile/ZipArchive.h"
+#include "libwinfile/ArchiveStatus.h"
 
 #ifndef HELP_PARTIALKEY
 #define HELP_PARTIALKEY 0x0105L  // call the search engine in winhelp
@@ -1028,26 +1032,389 @@ BOOL AppCommandProc(DWORD id) {
             break;
 
         case IDM_ZIPARCHIVE_ADDTOZIP: {
-            MessageBox(hwndFrame, L"Add to Zip - Feature coming soon!", L"ZIP Archive", MB_OK | MB_ICONINFORMATION);
+            LPWSTR pszFiles = GetSelection(4, NULL);
+            if (!pszFiles) {
+                break;
+            }
+
+            WCHAR szCurrentDir[MAXPATHLEN];
+            SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szCurrentDir), (LPARAM)szCurrentDir);
+
+            // Get folder name from current directory
+            std::wstring folderName = std::filesystem::path(szCurrentDir).filename().wstring();
+            if (folderName.empty()) {
+                folderName = L"Archive";
+            }
+
+            // Create unique zip filename
+            std::wstring zipPath = std::wstring(szCurrentDir) + L"\\" + folderName + L".zip";
+            int counter = 2;
+            while (std::filesystem::exists(zipPath)) {
+                zipPath = std::wstring(szCurrentDir) + L"\\" + folderName + L" (" + std::to_wstring(counter) + L").zip";
+                counter++;
+            }
+
+            // Collect selected files
+            std::vector<std::filesystem::path> selectedFiles;
+            WCHAR szFile[MAXPATHLEN];
+            LPWSTR pFile = pszFiles;
+
+            while ((pFile = GetNextFile(pFile, szFile, COUNTOF(szFile))) != NULL) {
+                selectedFiles.push_back(std::filesystem::path(szFile));
+            }
+
+            LocalFree((HLOCAL)pszFiles);
+
+            if (selectedFiles.empty()) {
+                break;
+            }
+
+            // Create archive with progress dialog
+            libwinfile::ArchiveStatus archiveStatus;
+            std::wstring zipPathStr = zipPath;
+            std::wstring currentDirStr = szCurrentDir;
+
+            try {
+                // Create a lambda that captures everything needed
+                auto createZipLambda = [selectedFiles, zipPathStr, currentDirStr,
+                                        &archiveStatus](libheirloom::CancellationToken cancellationToken) {
+                    libwinfile::createZipArchive(
+                        std::filesystem::path(zipPathStr), selectedFiles, std::filesystem::path(currentDirStr),
+                        &archiveStatus);
+                };
+
+                ArchiveProgressDialog progressDialog(createZipLambda, &archiveStatus);
+                int result = progressDialog.showDialog(hwndFrame);
+
+                if (result == IDABORT) {
+                    // Delete partial file on error
+                    std::filesystem::remove(zipPath);
+                    auto exception = progressDialog.getException();
+                    if (exception) {
+                        try {
+                            std::rethrow_exception(exception);
+                        } catch (const std::exception& e) {
+                            std::string errorMsg = std::string("Error creating archive: ") + e.what();
+                            std::wstring message(errorMsg.begin(), errorMsg.end());
+                            MessageBox(hwndFrame, message.c_str(), L"ZIP Archive Error", MB_OK | MB_ICONERROR);
+                        }
+                    }
+                } else if (result == IDCANCEL) {
+                    // Delete partial file on cancel
+                    std::filesystem::remove(zipPath);
+                }
+            } catch (const std::exception& e) {
+                std::filesystem::remove(zipPath);
+                std::string errorMsg = std::string("Error creating archive: ") + e.what();
+                std::wstring message(errorMsg.begin(), errorMsg.end());
+                MessageBox(hwndFrame, message.c_str(), L"ZIP Archive Error", MB_OK | MB_ICONERROR);
+            }
             break;
         }
 
-        case IDM_ZIPARCHIVE_ADDTO:
-            MessageBox(hwndFrame, L"Add To... - Feature coming soon!", L"ZIP Archive", MB_OK | MB_ICONINFORMATION);
-            break;
+        case IDM_ZIPARCHIVE_ADDTO: {
+            LPWSTR pszFiles = GetSelection(4, NULL);
+            if (!pszFiles) {
+                break;
+            }
 
-        case IDM_ZIPARCHIVE_EXTRACTHERE:
-            MessageBox(hwndFrame, L"Extract Here - Feature coming soon!", L"ZIP Archive", MB_OK | MB_ICONINFORMATION);
-            break;
+            WCHAR szCurrentDir[MAXPATHLEN];
+            SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szCurrentDir), (LPARAM)szCurrentDir);
 
-        case IDM_ZIPARCHIVE_EXTRACTTONEWFOLDER:
-            MessageBox(
-                hwndFrame, L"Extract to New Folder - Feature coming soon!", L"ZIP Archive", MB_OK | MB_ICONINFORMATION);
-            break;
+            // Show save file dialog
+            OPENFILENAME ofn = { 0 };
+            WCHAR szFile[MAXPATHLEN] = L"";
 
-        case IDM_ZIPARCHIVE_EXTRACTTO:
-            MessageBox(hwndFrame, L"Extract To... - Feature coming soon!", L"ZIP Archive", MB_OK | MB_ICONINFORMATION);
+            ofn.lStructSize = sizeof(OPENFILENAME);
+            ofn.hwndOwner = hwndFrame;
+            ofn.lpstrFilter = L"ZIP Files (*.zip)\0*.zip\0All Files (*.*)\0*.*\0";
+            ofn.lpstrFile = szFile;
+            ofn.nMaxFile = COUNTOF(szFile);
+            ofn.lpstrInitialDir = szCurrentDir;
+            ofn.lpstrTitle = L"Create ZIP Archive";
+            ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+            ofn.lpstrDefExt = L"zip";
+
+            if (!GetSaveFileName(&ofn)) {
+                LocalFree((HLOCAL)pszFiles);
+                break;
+            }
+
+            // Collect selected files
+            std::vector<std::filesystem::path> selectedFiles;
+            WCHAR szFileItem[MAXPATHLEN];
+            LPWSTR pFile = pszFiles;
+
+            while ((pFile = GetNextFile(pFile, szFileItem, COUNTOF(szFileItem))) != NULL) {
+                selectedFiles.push_back(std::filesystem::path(szFileItem));
+            }
+
+            LocalFree((HLOCAL)pszFiles);
+
+            if (selectedFiles.empty()) {
+                break;
+            }
+
+            // Create archive with progress dialog
+            libwinfile::ArchiveStatus archiveStatus;
+            std::wstring zipPathStr = szFile;
+            std::wstring currentDirStr = szCurrentDir;
+
+            try {
+                auto createZipLambda = [selectedFiles, zipPathStr, currentDirStr,
+                                        &archiveStatus](libheirloom::CancellationToken cancellationToken) {
+                    libwinfile::createZipArchive(
+                        std::filesystem::path(zipPathStr), selectedFiles, std::filesystem::path(currentDirStr),
+                        &archiveStatus);
+                };
+
+                ArchiveProgressDialog progressDialog(createZipLambda, &archiveStatus);
+                int result = progressDialog.showDialog(hwndFrame);
+
+                if (result == IDABORT) {
+                    // Delete partial file on error
+                    std::filesystem::remove(zipPathStr);
+                    auto exception = progressDialog.getException();
+                    if (exception) {
+                        try {
+                            std::rethrow_exception(exception);
+                        } catch (const std::exception& e) {
+                            std::string errorMsg = std::string("Error creating archive: ") + e.what();
+                            std::wstring message(errorMsg.begin(), errorMsg.end());
+                            MessageBox(hwndFrame, message.c_str(), L"ZIP Archive Error", MB_OK | MB_ICONERROR);
+                        }
+                    }
+                } else if (result == IDCANCEL) {
+                    // Delete partial file on cancel
+                    std::filesystem::remove(zipPathStr);
+                }
+            } catch (const std::exception& e) {
+                std::filesystem::remove(zipPathStr);
+                std::string errorMsg = std::string("Error creating archive: ") + e.what();
+                std::wstring message(errorMsg.begin(), errorMsg.end());
+                MessageBox(hwndFrame, message.c_str(), L"ZIP Archive Error", MB_OK | MB_ICONERROR);
+            }
             break;
+        }
+
+        case IDM_ZIPARCHIVE_EXTRACTHERE: {
+            LPWSTR pszFiles = GetSelection(4, NULL);
+            if (!pszFiles) {
+                break;
+            }
+
+            WCHAR szCurrentDir[MAXPATHLEN];
+            SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szCurrentDir), (LPARAM)szCurrentDir);
+
+            // Collect selected ZIP files
+            std::vector<std::filesystem::path> selectedZips;
+            WCHAR szFile[MAXPATHLEN];
+            LPWSTR pFile = pszFiles;
+
+            while ((pFile = GetNextFile(pFile, szFile, COUNTOF(szFile))) != NULL) {
+                selectedZips.push_back(std::filesystem::path(szFile));
+            }
+
+            LocalFree((HLOCAL)pszFiles);
+
+            if (selectedZips.empty()) {
+                break;
+            }
+
+            // Extract each ZIP file
+            libwinfile::ArchiveStatus archiveStatus;
+            std::wstring targetDirStr = szCurrentDir;
+
+            try {
+                auto extractZipLambda = [selectedZips, targetDirStr,
+                                         &archiveStatus](libheirloom::CancellationToken cancellationToken) {
+                    for (const auto& zipPath : selectedZips) {
+                        if (cancellationToken.isCancellationRequested()) {
+                            break;
+                        }
+                        libwinfile::extractZipArchive(zipPath, std::filesystem::path(targetDirStr), &archiveStatus);
+                    }
+                };
+
+                ArchiveProgressDialog progressDialog(extractZipLambda, &archiveStatus);
+                int result = progressDialog.showDialog(hwndFrame);
+
+                if (result == IDABORT) {
+                    auto exception = progressDialog.getException();
+                    if (exception) {
+                        try {
+                            std::rethrow_exception(exception);
+                        } catch (const std::exception& e) {
+                            std::string errorMsg = std::string("Error extracting archive: ") + e.what();
+                            std::wstring message(errorMsg.begin(), errorMsg.end());
+                            MessageBox(hwndFrame, message.c_str(), L"ZIP Archive Error", MB_OK | MB_ICONERROR);
+                        }
+                    }
+                }
+            } catch (const std::exception& e) {
+                std::string errorMsg = std::string("Error extracting archive: ") + e.what();
+                std::wstring message(errorMsg.begin(), errorMsg.end());
+                MessageBox(hwndFrame, message.c_str(), L"ZIP Archive Error", MB_OK | MB_ICONERROR);
+            }
+            break;
+        }
+
+        case IDM_ZIPARCHIVE_EXTRACTTONEWFOLDER: {
+            LPWSTR pszFiles = GetSelection(4, NULL);
+            if (!pszFiles) {
+                break;
+            }
+
+            WCHAR szCurrentDir[MAXPATHLEN];
+            SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szCurrentDir), (LPARAM)szCurrentDir);
+
+            // Collect selected ZIP files
+            std::vector<std::filesystem::path> selectedZips;
+            WCHAR szFile[MAXPATHLEN];
+            LPWSTR pFile = pszFiles;
+
+            while ((pFile = GetNextFile(pFile, szFile, COUNTOF(szFile))) != NULL) {
+                selectedZips.push_back(std::filesystem::path(szFile));
+            }
+
+            LocalFree((HLOCAL)pszFiles);
+
+            if (selectedZips.empty()) {
+                break;
+            }
+
+            // Extract each ZIP file to its own folder
+            libwinfile::ArchiveStatus archiveStatus;
+            std::wstring baseDirStr = szCurrentDir;
+
+            try {
+                auto extractZipLambda = [selectedZips, baseDirStr,
+                                         &archiveStatus](libheirloom::CancellationToken cancellationToken) {
+                    for (const auto& zipPath : selectedZips) {
+                        if (cancellationToken.isCancellationRequested()) {
+                            break;
+                        }
+
+                        // Create folder named after the ZIP file
+                        std::wstring folderName = zipPath.stem().wstring();
+                        std::filesystem::path targetDir = std::filesystem::path(baseDirStr) / folderName;
+
+                        // Create the directory if it doesn't exist
+                        std::filesystem::create_directories(targetDir);
+
+                        libwinfile::extractZipArchive(zipPath, targetDir, &archiveStatus);
+                    }
+                };
+
+                ArchiveProgressDialog progressDialog(extractZipLambda, &archiveStatus);
+                int result = progressDialog.showDialog(hwndFrame);
+
+                if (result == IDABORT) {
+                    auto exception = progressDialog.getException();
+                    if (exception) {
+                        try {
+                            std::rethrow_exception(exception);
+                        } catch (const std::exception& e) {
+                            std::string errorMsg = std::string("Error extracting archive: ") + e.what();
+                            std::wstring message(errorMsg.begin(), errorMsg.end());
+                            MessageBox(hwndFrame, message.c_str(), L"ZIP Archive Error", MB_OK | MB_ICONERROR);
+                        }
+                    }
+                }
+            } catch (const std::exception& e) {
+                std::string errorMsg = std::string("Error extracting archive: ") + e.what();
+                std::wstring message(errorMsg.begin(), errorMsg.end());
+                MessageBox(hwndFrame, message.c_str(), L"ZIP Archive Error", MB_OK | MB_ICONERROR);
+            }
+            break;
+        }
+
+        case IDM_ZIPARCHIVE_EXTRACTTO: {
+            LPWSTR pszFiles = GetSelection(4, NULL);
+            if (!pszFiles) {
+                break;
+            }
+
+            // Show folder selection dialog
+            BROWSEINFO bi = { 0 };
+            WCHAR szDisplayName[MAXPATHLEN];
+            WCHAR szCurrentDir[MAXPATHLEN];
+
+            SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szCurrentDir), (LPARAM)szCurrentDir);
+
+            bi.hwndOwner = hwndFrame;
+            bi.pszDisplayName = szDisplayName;
+            bi.lpszTitle = L"Select destination folder for extraction";
+            bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+            bi.lpfn = NULL;
+            bi.lParam = 0;
+
+            LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+            if (!pidl) {
+                LocalFree((HLOCAL)pszFiles);
+                break;
+            }
+
+            WCHAR szTargetDir[MAXPATHLEN];
+            if (!SHGetPathFromIDList(pidl, szTargetDir)) {
+                CoTaskMemFree(pidl);
+                LocalFree((HLOCAL)pszFiles);
+                break;
+            }
+            CoTaskMemFree(pidl);
+
+            // Collect selected ZIP files
+            std::vector<std::filesystem::path> selectedZips;
+            WCHAR szFile[MAXPATHLEN];
+            LPWSTR pFile = pszFiles;
+
+            while ((pFile = GetNextFile(pFile, szFile, COUNTOF(szFile))) != NULL) {
+                selectedZips.push_back(std::filesystem::path(szFile));
+            }
+
+            LocalFree((HLOCAL)pszFiles);
+
+            if (selectedZips.empty()) {
+                break;
+            }
+
+            // Extract each ZIP file
+            libwinfile::ArchiveStatus archiveStatus;
+            std::wstring targetDirStr = szTargetDir;
+
+            try {
+                auto extractZipLambda = [selectedZips, targetDirStr,
+                                         &archiveStatus](libheirloom::CancellationToken cancellationToken) {
+                    for (const auto& zipPath : selectedZips) {
+                        if (cancellationToken.isCancellationRequested()) {
+                            break;
+                        }
+                        libwinfile::extractZipArchive(zipPath, std::filesystem::path(targetDirStr), &archiveStatus);
+                    }
+                };
+
+                ArchiveProgressDialog progressDialog(extractZipLambda, &archiveStatus);
+                int result = progressDialog.showDialog(hwndFrame);
+
+                if (result == IDABORT) {
+                    auto exception = progressDialog.getException();
+                    if (exception) {
+                        try {
+                            std::rethrow_exception(exception);
+                        } catch (const std::exception& e) {
+                            std::string errorMsg = std::string("Error extracting archive: ") + e.what();
+                            std::wstring message(errorMsg.begin(), errorMsg.end());
+                            MessageBox(hwndFrame, message.c_str(), L"ZIP Archive Error", MB_OK | MB_ICONERROR);
+                        }
+                    }
+                }
+            } catch (const std::exception& e) {
+                std::string errorMsg = std::string("Error extracting archive: ") + e.what();
+                std::wstring message(errorMsg.begin(), errorMsg.end());
+                MessageBox(hwndFrame, message.c_str(), L"ZIP Archive Error", MB_OK | MB_ICONERROR);
+            }
+            break;
+        }
 
         case IDM_PASTE: {
             IDataObject* pDataObj;

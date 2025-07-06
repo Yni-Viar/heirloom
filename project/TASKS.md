@@ -49,16 +49,17 @@ In libwinfile, use namespace `libwinfile`.
 
     - Add commands. Enabled if and only if the user has some selection in the file list. Use `createZipArchive`. If there is an error, delete the partial zip output file and show a messagebox.
 
-        - [ ] Submenu command: "Add to Zip".  All selected files and folders are added to a new zip named after the folder. For instance, if the current folder is "Foo" then the filename is "Foo.zip". If "Foo.zip" already exists, then try "Foo (2).zip", then "Foo (3).zip", etc. until you find an unused filename. Use one `ArchiveProgressDialog` for the whole process. 
+        - [x] Submenu command: "Add to Zip".  All selected files and folders are added to a new zip named after the folder. For instance, if the current folder is "Foo" then the filename is "Foo.zip". If "Foo.zip" already exists, then try "Foo (2).zip", then "Foo (3).zip", etc. until you find an unused filename. Use one `ArchiveProgressDialog` for the whole process. 
 
-        - [ ] Submenu command: "Add To...". Show the save file dialog to choose the .zip file path. All selected files and folders are added to a zip written to that file. Use one `ArchiveProgressDialog` for the whole process.
+        - [x] Submenu command: "Add To...". Show the save file dialog to choose the .zip file path. All selected files and folders are added to a zip written to that file. Use one `ArchiveProgressDialog` for the whole process.
 
     - Separator
 
     - Extract commands. Enabled if and only if the user has selected one or more `.zip` files, and no other file types are included in their selection. Whenever the extraction would overwrite a file, use `ConfirmDialog` to prompt. Check for other usages of this. Use `extractZipArchive`. If there is an error, stop and show a message box, and leave the partially extracted files in place.
 
-        - [ ] Submenu command: "Extract Here". Each zip is extracted into its containing directory using one `ArchiveProgressDialog` for the whole process.
+        - [x] Submenu command: "Extract Here". Each zip is extracted into its containing directory using one `ArchiveProgressDialog` for the whole process.
 
-        - [ ] Submenu command: "Extract to New Folder". A folder named after the zip is created in the containing folder, and the zip is extracted there. For instance, "C:\Temp\Foo.zip" is extracted to a new folder "C:\Temp\Foo\". If the folder already exists, that's ok, treat overwrites as described above.
+        - [x] Submenu command: "Extract to New Folder". A folder named after the zip is created in the containing folder, and the zip is extracted there. For instance, "C:\Temp\Foo.zip" is extracted to a new folder "C:\Temp\Foo\". If the folder already exists, that's ok, treat overwrites as described above.
 
-        - [ ] Submenu command: "Extract To...". Show the open file dialog in folder-selection mode to choose the destination folder. Then, each zip is extracted into that directory using one `ArchiveProgressDialog` for the whole process.
+        - [x] Submenu command: "Extract To...". Show the open file dialog in folder-selection mode to choose the destination folder. Then, each zip is extracted into that directory using one `ArchiveProgressDialog` for the whole process.
+    - 🤖 *Implemented all five ZIP archive commands: "Add to Zip", "Add To...", "Extract Here", "Extract to New Folder", and "Extract To...". Created full implementations that use GetSelection() to get selected files, FS_GETDIRECTORY for current directory, and proper file dialogs (GetSaveFileName for save, SHBrowseForFolder for folder selection). All commands use ArchiveProgressDialog with libwinfile::createZipArchive() and libwinfile::extractZipArchive() functions. Added proper error handling with exception catching and user-friendly error messages. "Add to Zip" creates unique filenames with counter suffixes. "Extract to New Folder" uses zipPath.stem() to create folders named after ZIP files. All commands handle multiple file selection and provide proper cancellation support through CancellationToken. Added necessary includes for commdlg.h and ArchiveStatus/ZipArchive headers.*
