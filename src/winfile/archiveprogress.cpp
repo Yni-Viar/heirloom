@@ -4,17 +4,20 @@
 #include <atomic>
 #include <memory>
 #include "libheirloom/cancel.h"
+#include "libwinfile/ArchiveStatus.h"
 
 ArchiveProgressDialog::ArchiveProgressDialog(
-    std::function<void(ArchiveProgressDialog*, libheirloom::CancellationToken)> callback)
+    std::function<void(libheirloom::CancellationToken)> callback,
+    libwinfile::ArchiveStatus* status)
     : callback_(std::move(callback)),
       cancellationTokenSource_(std::make_unique<libheirloom::CancellationTokenSource>()),
+      status_(status),
       dialogHandle_(nullptr),
       dialogResult_(0),
       exception_(nullptr),
       workerThreadFinished_(false) {
-    // Initialize UI strings
-    operationText_ = L"Starting...";
+    // Initialize UI strings via the status object
+    status_->update(L"", L"Starting...", L"");
 }
 
 int ArchiveProgressDialog::showDialog(HWND owner) {
@@ -24,21 +27,6 @@ int ArchiveProgressDialog::showDialog(HWND owner) {
         reinterpret_cast<LPARAM>(this)));
 }
 
-void ArchiveProgressDialog::setArchiveFilePath(const std::wstring& path) {
-    std::lock_guard<std::mutex> lock(uiMutex_);
-    archiveFilePath_ = path;
-}
-
-void ArchiveProgressDialog::setOperationText(const std::wstring& text) {
-    std::lock_guard<std::mutex> lock(uiMutex_);
-    operationText_ = text;
-}
-
-void ArchiveProgressDialog::setOperationFilePath(const std::wstring& path) {
-    std::lock_guard<std::mutex> lock(uiMutex_);
-    operationFilePath_ = path;
-}
-
 std::exception_ptr ArchiveProgressDialog::getException() const {
     return exception_;
 }
@@ -46,10 +34,13 @@ std::exception_ptr ArchiveProgressDialog::getException() const {
 BOOL ArchiveProgressDialog::onInitDialog(HWND hDlg) {
     dialogHandle_ = hDlg;
 
-    // Set initial text
-    SetDlgItemTextW(hDlg, IDC_ARCHIVE_PATH, archiveFilePath_.c_str());
-    SetDlgItemTextW(hDlg, IDC_OPERATION_LABEL, operationText_.c_str());
-    SetDlgItemTextW(hDlg, IDC_OPERATION_FILE, operationFilePath_.c_str());
+    // Set initial text from ArchiveStatus
+    std::wstring archiveFilePath, operationText, operationFilePath;
+    status_->read(&archiveFilePath, &operationText, &operationFilePath);
+
+    SetDlgItemTextW(hDlg, IDC_ARCHIVE_PATH, archiveFilePath.c_str());
+    SetDlgItemTextW(hDlg, IDC_OPERATION_LABEL, operationText.c_str());
+    SetDlgItemTextW(hDlg, IDC_OPERATION_FILE, operationFilePath.c_str());
 
     // Start the UI update timer
     SetTimer(hDlg, TIMER_ID, TIMER_INTERVAL, nullptr);
@@ -131,13 +122,17 @@ void ArchiveProgressDialog::startWorkerThread(HWND hDlg) {
 }
 
 void ArchiveProgressDialog::updateUIFromWorkerThread() {
-    std::lock_guard<std::mutex> lock(uiMutex_);
+    // Check if the status has been updated
+    if (status_->dirty()) {
+        std::wstring archiveFilePath, operationText, operationFilePath;
+        status_->read(&archiveFilePath, &operationText, &operationFilePath);
 
-    if (dialogHandle_) {
-        // Update the labels with current values
-        SetDlgItemTextW(dialogHandle_, IDC_ARCHIVE_PATH, archiveFilePath_.c_str());
-        SetDlgItemTextW(dialogHandle_, IDC_OPERATION_LABEL, operationText_.c_str());
-        SetDlgItemTextW(dialogHandle_, IDC_OPERATION_FILE, operationFilePath_.c_str());
+        if (dialogHandle_) {
+            // Update the labels with current values
+            SetDlgItemTextW(dialogHandle_, IDC_ARCHIVE_PATH, archiveFilePath.c_str());
+            SetDlgItemTextW(dialogHandle_, IDC_OPERATION_LABEL, operationText.c_str());
+            SetDlgItemTextW(dialogHandle_, IDC_OPERATION_FILE, operationFilePath.c_str());
+        }
     }
 }
 
@@ -152,7 +147,7 @@ void ArchiveProgressDialog::workerThreadFunction() {
         auto token = cancellationTokenSource_->createToken();
 
         // Call the user's callback
-        callback_(this, token);
+        callback_(token);
 
         // Mark as finished
         workerThreadFinished_ = true;

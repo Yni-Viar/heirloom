@@ -22,7 +22,7 @@ If you need to #include new system headers, add them to `winfile.h`.
         - Member function for setting the private member variables: archive file path string, operation text ("Compressing file:" or "Extracting file:" e.g.), operation file path string. Take the mutex when setting these. This function will be called from a worker thread.
     - 🤖 *Implemented dialog resource `IDD_ARCHIVE_PROGRESS` with IDs 2500-2505, created `ArchiveProgressDialog` class with full thread management, mutex-protected UI updates, cancellation support via libheirloom, and proper exception handling. Added project references to libheirloom and updated winfile documentation.*
 
-- [ ] In libwinfile, create class `ArchiveStatus`.
+- [x] In libwinfile, create class `ArchiveStatus`.
     ```
     std::mutex uiMutex_;
     std::wstring archiveFilePath_;
@@ -30,9 +30,10 @@ If you need to #include new system headers, add them to `winfile.h`.
     std::wstring operationFilePath_;
     bool dirty_;
     ```
-    - [ ] Member function `bool dirty()` accessing `dirty_`
-    - [ ] Member function `void update(const std::wstring& archiveFilePath, const std::wstring& operationText, const std::wstring& operationFilePath)` -- takes mutex and sets fields, sets dirty bit
-    - [ ] Member function `void read(std::wstring* archiveFilePath, std::wstring* operationText, std::wstring* operationFilePath)` -- takes mutex, copies out strings from private fields, clears dirty bit
+    - [x] Member function `bool dirty()` accessing `dirty_`
+    - [x] Member function `void update(const std::wstring& archiveFilePath, const std::wstring& operationText, const std::wstring& operationFilePath)` -- takes mutex and sets fields, sets dirty bit
+    - [x] Member function `void read(std::wstring* archiveFilePath, std::wstring* operationText, std::wstring* operationFilePath)` -- takes mutex, copies out strings from private fields, clears dirty bit
     Instead, `ArchiveProgressDialog`'s ctor will receive a pointer to an `ArchiveStatus` and it will access these values (including the mutex) through it.
-    - [ ] Write unit tests in `libwinfile_tests\test_ArchiveStatus.cpp`.
-    - [ ] Update `ArchiveProgressDialog`. Its ctor will receive `ArchiveStatus*`. It will not have the mutex or the three strings as fields, instead it will keep the status pointer. The timer will check `dirty()` to see if anything has changed, and if so, it calls `read()` to get the updated text.
+    - [x] Write unit tests in `libwinfile_tests\test_ArchiveStatus.cpp`.
+    - [x] Update `ArchiveProgressDialog`. Its ctor will receive `ArchiveStatus*`. It will not have the mutex or the three strings as fields, instead it will keep the status pointer. The timer will check `dirty()` to see if anything has changed, and if so, it calls `read()` to get the updated text.
+    - 🤖 *Implemented ArchiveStatus class in libwinfile with mutex-protected fields and dirty bit tracking. Created comprehensive unit tests covering all functionality including thread safety, null pointer handling, and edge cases. Updated ArchiveProgressDialog to use ArchiveStatus for thread-safe UI updates with dirty bit checking in the timer. All tests pass successfully.*

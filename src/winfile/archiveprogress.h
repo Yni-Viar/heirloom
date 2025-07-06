@@ -3,7 +3,6 @@
 #include <windows.h>
 #include <functional>
 #include <string>
-#include <mutex>
 #include <memory>
 #include <thread>
 #include <atomic>
@@ -16,6 +15,11 @@ class CancellationToken;
 class CancellationTokenSource;
 }  // namespace libheirloom
 
+// Forward declaration of ArchiveStatus to avoid including libwinfile headers
+namespace libwinfile {
+class ArchiveStatus;
+}  // namespace libwinfile
+
 // Archive Progress dialog for zip/unzip operations.
 // Shows the current archive file path, operation type, and current file being processed.
 // Supports cancellation via CancellationTokenSource.
@@ -23,16 +27,13 @@ class ArchiveProgressDialog {
    public:
     // Constructor takes a callback function that will be called on a worker thread.
     // The callback receives the dialog instance and a cancellation token.
-    ArchiveProgressDialog(std::function<void(ArchiveProgressDialog*, libheirloom::CancellationToken)> callback);
+    ArchiveProgressDialog(
+        std::function<void(libheirloom::CancellationToken)> callback,
+        libwinfile::ArchiveStatus* status);
 
     // Shows the dialog modal to the owner window.
     // Returns IDOK if operation succeeded, IDCANCEL if cancelled, IDABORT if exception occurred.
     int showDialog(HWND owner);
-
-    // Thread-safe methods to update the UI from the worker thread.
-    void setArchiveFilePath(const std::wstring& path);
-    void setOperationText(const std::wstring& text);
-    void setOperationFilePath(const std::wstring& path);
 
     // Gets the exception that occurred during the callback, if any.
     std::exception_ptr getException() const;
@@ -56,7 +57,7 @@ class ArchiveProgressDialog {
     void workerThreadFunction();
 
     // Callback function to execute
-    std::function<void(ArchiveProgressDialog*, libheirloom::CancellationToken)> callback_;
+    std::function<void(libheirloom::CancellationToken)> callback_;
 
     // Cancellation support (using opaque pointer to avoid header dependency)
     std::unique_ptr<libheirloom::CancellationTokenSource> cancellationTokenSource_;
@@ -64,11 +65,8 @@ class ArchiveProgressDialog {
     // Worker thread
     std::unique_ptr<std::thread> workerThread_;
 
-    // UI state (protected by mutex)
-    std::mutex uiMutex_;
-    std::wstring archiveFilePath_;
-    std::wstring operationText_;
-    std::wstring operationFilePath_;
+    // Archive status (not owned by this class)
+    libwinfile::ArchiveStatus* status_;
 
     // Dialog state
     HWND dialogHandle_;

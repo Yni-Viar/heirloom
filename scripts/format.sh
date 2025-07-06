@@ -53,6 +53,8 @@ format_project() {
 }
 
 format_project "winfile"
+format_project "libwinfile"
+format_project "libwinfile_tests"
 format_project "libprogman"
 format_project "libprogman_tests"
 format_project "progman"

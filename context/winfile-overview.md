@@ -114,6 +114,7 @@ Frame Window (FrameWndProc) - hwndFrame
 - **Worker Thread Management** - Background operation execution with UI updates
 - **Exception Handling** - Proper error capture and reporting from background operations
 - **Timer-Based Updates** - 100ms interval UI refresh from worker thread data
+- **ArchiveStatus Integration** - Uses libwinfile's ArchiveStatus class for thread-safe UI updates
 
 ## Key Data Structures
 
@@ -231,6 +232,8 @@ Frame Window (FrameWndProc) - hwndFrame
 - **Graphics Subsystem** - GDI for custom drawing and PNG support
 - **COM/OLE** - Drag and drop operations and shell integration
 - **libheirloom** - Shared library providing cancellation token support for background operations
+- **libwinfile** - Static library providing shared functionality for winfile
+  - **ArchiveStatus** - Thread-safe status class for archive operations with mutex-protected UI updates
 - **libzip** - Library for ZIP archive creation and extraction
 
 ## Build System
