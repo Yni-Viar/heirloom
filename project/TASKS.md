@@ -95,3 +95,5 @@ In libwinfile, use namespace `libwinfile`.
 
 - [x] `ArchiveProgressDialog` / `IDM_ARCHIVE_PROGRESS`: Add a progressbar to the bottom, spanning from the left of the dialog to the left of the Cancel button, with some margin. Use your `readWithProgress` to read the progress percentage. Hide or show the progress bar control based on `hasProgressPercentage`.
     - 🤖 *Added progress bar control (IDC_ARCHIVE_PROGRESS) to dialog resource with proper positioning. Enhanced ArchiveProgressDialog to initialize, show/hide, and update progress bar based on hasProgressPercentage flag from ArchiveStatus. Progress bar displays 0-100% completion and is hidden when no progress percentage is available.*
+
+- [ ] Bug fix: The archive commands on the File menu are enabled/disabled correctly. But the same commands in the _context_ menu are always enabled. The enable/disable logic doesn't seem to be kicking in for the context menu commands.
