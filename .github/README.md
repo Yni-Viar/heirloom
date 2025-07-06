@@ -4,16 +4,17 @@
 
 <p align="center"><img src="screenshot.png" width=659></p>
 
-### Heirloom Program Manager
-An alternative to the Start menu for launching shortcuts with the mouse. This is a reimplementation of the classic Program Manager.
+### <img src="progman.png" width=24 align="top"> Heirloom Program Manager
+An alternative to the Start menu for launching shortcuts. This is a reimplementation of the classic Program Manager.
 
-### Heirloom File Manager
+### <img src="winfile.png" width=24 align="top"> Heirloom File Manager
 Browse, organize, and manipulate files. An alternative to File Explorer for basic tasks. This direct derivative of the [classic Windows File Manager](https://github.com/microsoft/winfile) adds the following features:
 
 - High-DPI screen support
 - Recycle Bin
 - Bookmarks
-- Drag-and-drop into external applications
+- Drag and drop
+- Create and extract zip archives
 
 ## Licenses
 
