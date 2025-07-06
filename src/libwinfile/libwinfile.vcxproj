@@ -28,12 +28,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ArchiveStatus.cpp" />
+    <ClCompile Include="ZipArchive.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArchiveStatus.h" />
+    <ClInclude Include="ZipArchive.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="windows10.h" />
   </ItemGroup>

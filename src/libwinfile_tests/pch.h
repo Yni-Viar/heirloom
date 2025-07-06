@@ -8,5 +8,10 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
+#include <filesystem>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <sstream>
 
 #endif  // PCH_H
