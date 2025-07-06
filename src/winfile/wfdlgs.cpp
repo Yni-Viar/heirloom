@@ -695,47 +695,6 @@ void ActivateCommonContextMenu(HWND hwnd, HWND hwndLB, LPARAM lParam) {
     auto gitBashPath = GetGitBashPath();
     EnableMenuItem(hMenu, IDM_STARTBASHSHELL, MF_BYCOMMAND | (gitBashPath.has_value() ? MF_ENABLED : MF_GRAYED));
 
-    // Enable or disable ZIP archive commands based on file selection
-    {
-        BOOL bDir = FALSE;
-        LPWSTR pSel = (LPWSTR)SendMessage(hwnd, FS_GETSELECTION, 5, (LPARAM)&bDir);
-
-        BOOL bHasSelection = (pSel != NULL);
-        BOOL bHasZipFilesOnly = FALSE;
-
-        if (bHasSelection) {
-            // Check if all selected files are ZIP files
-            bHasZipFilesOnly = TRUE;
-            LPWSTR pCurrent = pSel;
-            WCHAR szFile[MAXPATHLEN];
-
-            while (pCurrent = GetNextFile(pCurrent, szFile, COUNTOF(szFile))) {
-                // Check if this file has a .zip extension
-                LPWSTR pExt = wcsrchr(szFile, L'.');
-                if (!pExt || _wcsicmp(pExt, L".zip") != 0) {
-                    bHasZipFilesOnly = FALSE;
-                    break;
-                }
-            }
-
-            // If there are no files or if not all are ZIP files, disable ZIP-only commands
-            if (!bHasZipFilesOnly) {
-                bHasZipFilesOnly = FALSE;
-            }
-        }
-
-        // Enable "Add to Zip" and "Add To..." if there are any selected files
-        UINT uMenuFlags = bHasSelection ? MF_BYCOMMAND : MF_BYCOMMAND | MF_GRAYED;
-        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_ADDTOZIP, uMenuFlags);
-        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_ADDTO, uMenuFlags);
-
-        // Enable extract commands only if all selected files are ZIP files
-        uMenuFlags = bHasZipFilesOnly ? MF_BYCOMMAND : MF_BYCOMMAND | MF_GRAYED;
-        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_EXTRACTHERE, uMenuFlags);
-        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_EXTRACTTONEWFOLDER, uMenuFlags);
-        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_EXTRACTTO, uMenuFlags);
-    }
-
     if (lParam == -1) {
         RECT rect;
 
@@ -786,6 +745,48 @@ void ActivateCommonContextMenu(HWND hwnd, HWND hwndLB, LPARAM lParam) {
                 }
             }
         }
+    }
+
+    // Enable or disable ZIP archive commands based on file selection
+    // This must be done after the selection is updated above
+    {
+        BOOL bDir = FALSE;
+        LPWSTR pSel = (LPWSTR)SendMessage(hwnd, FS_GETSELECTION, 5, (LPARAM)&bDir);
+
+        BOOL bHasSelection = (pSel != NULL);
+        BOOL bHasZipFilesOnly = FALSE;
+
+        if (bHasSelection) {
+            // Check if all selected files are ZIP files
+            bHasZipFilesOnly = TRUE;
+            LPWSTR pCurrent = pSel;
+            WCHAR szFile[MAXPATHLEN];
+
+            while (pCurrent = GetNextFile(pCurrent, szFile, COUNTOF(szFile))) {
+                // Check if this file has a .zip extension
+                LPWSTR pExt = wcsrchr(szFile, L'.');
+                if (!pExt || _wcsicmp(pExt, L".zip") != 0) {
+                    bHasZipFilesOnly = FALSE;
+                    break;
+                }
+            }
+
+            // If there are no files or if not all are ZIP files, disable ZIP-only commands
+            if (!bHasZipFilesOnly) {
+                bHasZipFilesOnly = FALSE;
+            }
+        }
+
+        // Enable "Add to Zip" and "Add To..." if there are any selected files
+        UINT uMenuFlags = bHasSelection ? MF_BYCOMMAND : MF_BYCOMMAND | MF_GRAYED;
+        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_ADDTOZIP, uMenuFlags);
+        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_ADDTO, uMenuFlags);
+
+        // Enable extract commands only if all selected files are ZIP files
+        uMenuFlags = bHasZipFilesOnly ? MF_BYCOMMAND : MF_BYCOMMAND | MF_GRAYED;
+        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_EXTRACTHERE, uMenuFlags);
+        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_EXTRACTTONEWFOLDER, uMenuFlags);
+        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_EXTRACTTO, uMenuFlags);
     }
 
     cmd = TrackPopupMenu(
