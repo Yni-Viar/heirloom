@@ -65,7 +65,7 @@
       <PreprocessorDefinitions>LFN;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;gdi32.lib;user32.lib;advapi32.lib;oleaut32.lib;ole32.lib;shell32.lib;shlwapi.lib;comctl32.lib;version.lib;windowscodecs.lib;msimg32.lib;mpr.lib;comdlg32.lib;zip.lib;libheirloom.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;gdi32.lib;user32.lib;advapi32.lib;oleaut32.lib;ole32.lib;shell32.lib;shlwapi.lib;comctl32.lib;version.lib;windowscodecs.lib;msimg32.lib;mpr.lib;comdlg32.lib;zip.lib;libheirloom.lib;libwinfile.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>15000000</StackReserveSize>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -199,11 +199,11 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
-    <VcpkgEnableManifest>true</VcpkgEnableManifest>  
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' == 'ARM64'">
     <VcpkgTriplet>arm64-windows</VcpkgTriplet>
-  </PropertyGroup>  
+  </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="archiveprogress.h" />
     <ClInclude Include="bookmark.h" />
@@ -306,6 +306,9 @@
   <ItemGroup>
     <ProjectReference Include="..\libheirloom\libheirloom.vcxproj">
       <Project>{e91f1f9b-fa84-4994-82c7-41c9a78e6bee}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\libwinfile\libwinfile.vcxproj">
+      <Project>{ab2baa29-33c1-4bb3-876b-5265c142f127}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
