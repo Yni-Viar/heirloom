@@ -42,6 +42,12 @@
 #include "wfmem.h"
 #include "res.h"
 
+#include <string>
+#include <vector>
+#include <filesystem>
+#include <system_error>
+#include "libheirloom/cancel.h"
+
 #define STKCHK()
 
 #ifdef atoi
@@ -166,7 +172,6 @@ int atoiW(LPCWSTR sz);
 #define DRIVESET(str, drive) (str[0] = CHAR_A + (drive))
 #define COUNTOF(x) (sizeof(x) / sizeof(*x))
 #define ByteCountOf(x) ((x) * sizeof(WCHAR))
-#define abs(x) (((x) < 0) ? -(x) : (x))
 
 #define DRIVEID(path) ((path[0] - CHAR_A) & 31)
 
