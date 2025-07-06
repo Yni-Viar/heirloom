@@ -33,7 +33,7 @@ struct ZipCloseCallbackState {
 void zipProgressCallback(zip_t* /*archive*/, double progress, void* userData) {
     ZipCloseCallbackState* state = static_cast<ZipCloseCallbackState*>(userData);
     if (state && state->status) {
-        state->status->updateWithProgress(state->zipFilePath, L"Finalizing archive...", L"", progress);
+        state->status->updateWithProgress(state->zipFilePath, L"Compressing...", L"", progress);
     }
 }
 
@@ -104,7 +104,7 @@ void addToZipRecursive(
             zipEntryName += '/';
         }
 
-        status->update(zipFilePath, L"Compressing folder:", path.wstring());
+        status->update(zipFilePath, L"Scanning folder:", path.wstring());
         zip_int64_t idx = zip_dir_add(archive, zipEntryName.c_str(), ZIP_FL_ENC_UTF_8);
         if (idx < 0) {
             throw std::runtime_error("Failed to add directory to zip: " + zipEntryName);
@@ -119,7 +119,7 @@ void addToZipRecursive(
         auto relativePath = std::filesystem::relative(path, relativeToPath);
         std::string zipEntryName = pathToUtf8(relativePath);
 
-        status->update(zipFilePath, L"Compressing file:", path.wstring());
+        status->update(zipFilePath, L"Scanning file:", path.wstring());
 
         zip_source_t* source = zip_source_file(archive, pathToUtf8(path).c_str(), 0, ZIP_LENGTH_TO_END);
         if (!source) {
@@ -167,7 +167,7 @@ void createZipArchive(
         }
 
         // Close archive (this writes the zip file)
-        status->update(zipFilePath.wstring(), L"Finalizing archive...", L"");
+        status->update(zipFilePath.wstring(), L"Compressing...", L"");
 
         // Set up callbacks for progress and cancellation during zip_close
         std::atomic<bool> cancelRequested{ false };
@@ -305,11 +305,11 @@ void extractZipArchive(
                     }
 
                     // Copy data
-                    constexpr size_t bufferSize = 8192;
-                    char buffer[bufferSize];
+                    constexpr size_t bufferSize = 1048576;
+                    std::array<char, bufferSize> buffer;
                     zip_int64_t bytesRead;
-                    while ((bytesRead = zip_fread(file, buffer, bufferSize)) > 0) {
-                        outFile.write(buffer, bytesRead);
+                    while ((bytesRead = zip_fread(file, buffer.data(), bufferSize)) > 0) {
+                        outFile.write(buffer.data(), bytesRead);
                         if (outFile.fail()) {
                             throw std::runtime_error("Failed to write to output file: " + pathToUtf8(entryPath));
                         }

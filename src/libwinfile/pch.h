@@ -6,6 +6,7 @@
 #include "windows10.h"
 
 // C++ Standard Library
+#include <array>
 #include <filesystem>
 #include <vector>
 #include <string>
