@@ -232,6 +232,42 @@ BOOL InitPopupMenu(const std::wstring& popupName, HMENU hMenu, HWND hwndActive) 
         uMenuFlags = IsRecycleBinEmpty() ? MF_BYCOMMAND | MF_GRAYED : MF_BYCOMMAND;
         EnableMenuItem(hMenu, IDM_EMPTYRECYCLE, uMenuFlags);
 
+        // Set the ZIP Archive menu state based on file selection
+        BOOL bHasSelection = (pSel != NULL);
+        BOOL bHasZipFilesOnly = FALSE;
+
+        if (bHasSelection) {
+            // Check if all selected files are ZIP files
+            bHasZipFilesOnly = TRUE;
+            LPWSTR pCurrent = pSel;
+            WCHAR szFile[MAXPATHLEN];
+
+            while (pCurrent = GetNextFile(pCurrent, szFile, COUNTOF(szFile))) {
+                // Check if this file has a .zip extension
+                LPWSTR pExt = wcsrchr(szFile, L'.');
+                if (!pExt || _wcsicmp(pExt, L".zip") != 0) {
+                    bHasZipFilesOnly = FALSE;
+                    break;
+                }
+            }
+
+            // If there are no files or if not all are ZIP files, disable ZIP-only commands
+            if (!bHasZipFilesOnly) {
+                bHasZipFilesOnly = FALSE;
+            }
+        }
+
+        // Enable "Add to Zip" and "Add To..." if there are any selected files
+        uMenuFlags = bHasSelection ? MF_BYCOMMAND : MF_BYCOMMAND | MF_GRAYED;
+        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_ADDTOZIP, uMenuFlags);
+        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_ADDTO, uMenuFlags);
+
+        // Enable extract commands only if all selected files are ZIP files
+        uMenuFlags = bHasZipFilesOnly ? MF_BYCOMMAND : MF_BYCOMMAND | MF_GRAYED;
+        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_EXTRACTHERE, uMenuFlags);
+        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_EXTRACTTONEWFOLDER, uMenuFlags);
+        EnableMenuItem(hMenu, IDM_ZIPARCHIVE_EXTRACTTO, uMenuFlags);
+
         uMenuFlags = MF_BYCOMMAND;
     } else if (popupName == L"&View") {
         if (hwndActive == hwndSearch || IsIconic(hwndActive))

@@ -1027,6 +1027,28 @@ BOOL AppCommandProc(DWORD id) {
             DialogBox(hAppInstance, (LPWSTR)MAKEINTRESOURCE(MOVECOPYDLG), hwndFrame, SuperDlgProc);
             break;
 
+        case IDM_ZIPARCHIVE_ADDTOZIP: {
+            MessageBox(hwndFrame, L"Add to Zip - Feature coming soon!", L"ZIP Archive", MB_OK | MB_ICONINFORMATION);
+            break;
+        }
+
+        case IDM_ZIPARCHIVE_ADDTO:
+            MessageBox(hwndFrame, L"Add To... - Feature coming soon!", L"ZIP Archive", MB_OK | MB_ICONINFORMATION);
+            break;
+
+        case IDM_ZIPARCHIVE_EXTRACTHERE:
+            MessageBox(hwndFrame, L"Extract Here - Feature coming soon!", L"ZIP Archive", MB_OK | MB_ICONINFORMATION);
+            break;
+
+        case IDM_ZIPARCHIVE_EXTRACTTONEWFOLDER:
+            MessageBox(
+                hwndFrame, L"Extract to New Folder - Feature coming soon!", L"ZIP Archive", MB_OK | MB_ICONINFORMATION);
+            break;
+
+        case IDM_ZIPARCHIVE_EXTRACTTO:
+            MessageBox(hwndFrame, L"Extract To... - Feature coming soon!", L"ZIP Archive", MB_OK | MB_ICONINFORMATION);
+            break;
+
         case IDM_PASTE: {
             IDataObject* pDataObj;
             FORMATETC fmtetcDrop = { 0, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };

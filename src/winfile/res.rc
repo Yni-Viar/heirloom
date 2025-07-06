@@ -175,6 +175,15 @@ BEGIN
     MENUITEM    "&Copy...\tF8",     IDM_COPY
     MENUITEM    "S&ymlink...\tF11", IDM_SYMLINK
     MENUITEM    "Hardlin&k...\tShift+F11", IDM_HARDLINK
+    POPUP       "&Zip Archive"
+    BEGIN
+        MENUITEM    "Add to &Zip",           IDM_ZIPARCHIVE_ADDTOZIP
+        MENUITEM    "Add &To...",            IDM_ZIPARCHIVE_ADDTO
+        MENUITEM    SEPARATOR
+        MENUITEM    "Extract &Here",         IDM_ZIPARCHIVE_EXTRACTHERE
+        MENUITEM    "Extract to &New Folder", IDM_ZIPARCHIVE_EXTRACTTONEWFOLDER
+        MENUITEM    "Extract T&o...",        IDM_ZIPARCHIVE_EXTRACTTO
+    END
     MENUITEM    SEPARATOR
     MENUITEM    "&Delete...\tDel",  IDM_DELETE
     MENUITEM    "Re&name...\tF2",   IDM_RENAME
@@ -277,6 +286,15 @@ BEGIN
     MENUITEM    "&Copy...\tF8",     IDM_COPY
     MENUITEM    "S&ymlink...\tF11", IDM_SYMLINK
     MENUITEM    "Hardlin&k...\tShift+F11", IDM_HARDLINK
+    POPUP       "&Zip Archive"
+    BEGIN
+        MENUITEM    "Add to &Zip",           IDM_ZIPARCHIVE_ADDTOZIP
+        MENUITEM    "Add &To...",            IDM_ZIPARCHIVE_ADDTO
+        MENUITEM    SEPARATOR
+        MENUITEM    "Extract &Here",         IDM_ZIPARCHIVE_EXTRACTHERE
+        MENUITEM    "Extract to &New Folder", IDM_ZIPARCHIVE_EXTRACTTONEWFOLDER
+        MENUITEM    "Extract T&o...",        IDM_ZIPARCHIVE_EXTRACTTO
+    END
     MENUITEM    SEPARATOR
     MENUITEM    "Copy to Clip&board\tCtrl+C", IDM_COPYTOCLIPBOARD
     MENUITEM    "Cut to Clipboard\tCtrl+X", IDM_CUTTOCLIPBOARD

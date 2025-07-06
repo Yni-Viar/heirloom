@@ -21,7 +21,8 @@ Search the libzip docs in `context/libzip/` for guidance on library usage.
         - Member function for setting the private member variables: archive file path string, operation text ("Compressing file:" or "Extracting file:" e.g.), operation file path string. Take the mutex when setting these. This function will be called from a worker thread.
     - 🤖 *Implemented dialog resource `IDD_ARCHIVE_PROGRESS` with IDs 2500-2505, created `ArchiveProgressDialog` class with full thread management, mutex-protected UI updates, cancellation support via libheirloom, and proper exception handling. Added project references to libheirloom and updated winfile documentation.*
 
-- [ ] New submenu "Zip Archive" right after "Hardlin&k..." in the File menu and context menu.
+- [x] New submenu "Zip Archive" right after "Hardlin&k..." in the File menu and context menu.
+    - 🤖 *Implemented ZIP Archive submenu with five commands: "Add to Zip", "Add To...", "Extract Here", "Extract to New Folder", and "Extract To...". Added menu structure to both File menu and context menu with proper resource IDs (IDM_ZIPARCHIVE_\*). Implemented menu enable/disable logic based on file selection - Add commands enabled when files are selected, Extract commands enabled only when ZIP files are selected. Added command handlers in AppCommandProc that currently show placeholder messages. Menu logic properly detects .zip file extensions using case-insensitive comparison.*
 
     - Add commands. Enabled if and only if the user has some selection in the file list. If there is an error, delete the partial zip output file and show a messagebox. 
 

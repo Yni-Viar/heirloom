@@ -100,6 +100,7 @@ Frame Window (FrameWndProc) - hwndFrame
 - **Accelerator Keys** - Keyboard shortcut handling and conflicts
 - **Menu State Management** - Enable/disable states based on current selection
 - **Extension Support** - Third-party menu extension integration
+- **ZIP Archive Submenu** - Archive creation and extraction commands with selection-based enabling
 
 #### Drag and Drop (`wfdrop.cpp`, `wfdragsrc.cpp`)
 - **OLE Drag/Drop** - COM-based drag and drop implementation
@@ -137,6 +138,7 @@ Frame Window (FrameWndProc) - hwndFrame
 ### File System Operations
 - **File Management** - Copy, move, delete, rename with confirmation dialogs
 - **Directory Operations** - Create, delete, navigate with tree synchronization
+- **Archive Operations** - ZIP archive creation and extraction with "Add to Zip", "Add To...", "Extract Here", "Extract to New Folder", and "Extract To..." commands
 - **Attribute Handling** - Read-only, hidden, system, compressed, encrypted file support
 - **Long Filename Support** - Windows 95+ LFN with legacy 8.3 compatibility
 - **Network File Support** - UNC paths, mapped drives, and remote operations
