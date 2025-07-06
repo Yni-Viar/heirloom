@@ -33,6 +33,7 @@
 #include "archiveprogress.h"
 #include "libwinfile/ZipArchive.h"
 #include "libwinfile/ArchiveStatus.h"
+#include "libheirloom/cancel.h"
 
 #ifndef HELP_PARTIALKEY
 #define HELP_PARTIALKEY 0x0105L  // call the search engine in winhelp
@@ -1040,18 +1041,33 @@ BOOL AppCommandProc(DWORD id) {
             WCHAR szCurrentDir[MAXPATHLEN];
             SendMessage(hwndActive, FS_GETDIRECTORY, COUNTOF(szCurrentDir), (LPARAM)szCurrentDir);
 
-            // Get folder name from current directory
-            std::filesystem::path currentPath(szCurrentDir);
-            std::wstring folderName = currentPath.filename().wstring();
+            // Collect selected files first
+            std::vector<std::filesystem::path> selectedFiles;
+            WCHAR szFile[MAXPATHLEN];
+            LPWSTR pFile = pszFiles;
 
-            // If filename is empty (e.g., for root paths like C:\), use the parent directory name
-            if (folderName.empty()) {
-                folderName = currentPath.parent_path().filename().wstring();
+            while ((pFile = GetNextFile(pFile, szFile, COUNTOF(szFile))) != NULL) {
+                selectedFiles.push_back(std::filesystem::path(szFile));
             }
 
-            // If still empty, try to get the stem (drive letter for root paths)
-            if (folderName.empty()) {
-                folderName = currentPath.stem().wstring();
+            // Special case: if the user selected a single folder, use that folder's name
+            std::wstring folderName;
+            if (selectedFiles.size() == 1 && std::filesystem::is_directory(selectedFiles[0])) {
+                folderName = selectedFiles[0].filename().wstring();
+            } else {
+                // Get folder name from current directory
+                std::filesystem::path currentPath(szCurrentDir);
+                folderName = currentPath.filename().wstring();
+
+                // If filename is empty (e.g., for root paths like C:\), use the parent directory name
+                if (folderName.empty()) {
+                    folderName = currentPath.parent_path().filename().wstring();
+                }
+
+                // If still empty, try to get the stem (drive letter for root paths)
+                if (folderName.empty()) {
+                    folderName = currentPath.stem().wstring();
+                }
             }
 
             // Last resort fallback
@@ -1065,15 +1081,6 @@ BOOL AppCommandProc(DWORD id) {
             while (std::filesystem::exists(zipPath)) {
                 zipPath = std::wstring(szCurrentDir) + L"\\" + folderName + L" (" + std::to_wstring(counter) + L").zip";
                 counter++;
-            }
-
-            // Collect selected files
-            std::vector<std::filesystem::path> selectedFiles;
-            WCHAR szFile[MAXPATHLEN];
-            LPWSTR pFile = pszFiles;
-
-            while ((pFile = GetNextFile(pFile, szFile, COUNTOF(szFile))) != NULL) {
-                selectedFiles.push_back(std::filesystem::path(szFile));
             }
 
             LocalFree((HLOCAL)pszFiles);
@@ -1106,6 +1113,8 @@ BOOL AppCommandProc(DWORD id) {
                     if (exception) {
                         try {
                             std::rethrow_exception(exception);
+                        } catch (const libheirloom::OperationCanceledException&) {
+                            // Don't show error message for cancellation
                         } catch (const std::exception& e) {
                             std::string errorMsg = std::string("Error creating archive: ") + e.what();
                             std::wstring message(errorMsg.begin(), errorMsg.end());
@@ -1116,6 +1125,9 @@ BOOL AppCommandProc(DWORD id) {
                     // Delete partial file on cancel
                     std::filesystem::remove(zipPath);
                 }
+            } catch (const libheirloom::OperationCanceledException&) {
+                // Don't show error message for cancellation
+                std::filesystem::remove(zipPath);
             } catch (const std::exception& e) {
                 std::filesystem::remove(zipPath);
                 std::string errorMsg = std::string("Error creating archive: ") + e.what();
@@ -1191,6 +1203,8 @@ BOOL AppCommandProc(DWORD id) {
                     if (exception) {
                         try {
                             std::rethrow_exception(exception);
+                        } catch (const libheirloom::OperationCanceledException&) {
+                            // Don't show error message for cancellation
                         } catch (const std::exception& e) {
                             std::string errorMsg = std::string("Error creating archive: ") + e.what();
                             std::wstring message(errorMsg.begin(), errorMsg.end());
@@ -1201,6 +1215,9 @@ BOOL AppCommandProc(DWORD id) {
                     // Delete partial file on cancel
                     std::filesystem::remove(zipPathStr);
                 }
+            } catch (const libheirloom::OperationCanceledException&) {
+                // Don't show error message for cancellation
+                std::filesystem::remove(zipPathStr);
             } catch (const std::exception& e) {
                 std::filesystem::remove(zipPathStr);
                 std::string errorMsg = std::string("Error creating archive: ") + e.what();
@@ -1257,6 +1274,8 @@ BOOL AppCommandProc(DWORD id) {
                     if (exception) {
                         try {
                             std::rethrow_exception(exception);
+                        } catch (const libheirloom::OperationCanceledException&) {
+                            // Don't show error message for cancellation
                         } catch (const std::exception& e) {
                             std::string errorMsg = std::string("Error extracting archive: ") + e.what();
                             std::wstring message(errorMsg.begin(), errorMsg.end());
@@ -1264,6 +1283,8 @@ BOOL AppCommandProc(DWORD id) {
                         }
                     }
                 }
+            } catch (const libheirloom::OperationCanceledException&) {
+                // Don't show error message for cancellation
             } catch (const std::exception& e) {
                 std::string errorMsg = std::string("Error extracting archive: ") + e.what();
                 std::wstring message(errorMsg.begin(), errorMsg.end());
@@ -1327,6 +1348,8 @@ BOOL AppCommandProc(DWORD id) {
                     if (exception) {
                         try {
                             std::rethrow_exception(exception);
+                        } catch (const libheirloom::OperationCanceledException&) {
+                            // Don't show error message for cancellation
                         } catch (const std::exception& e) {
                             std::string errorMsg = std::string("Error extracting archive: ") + e.what();
                             std::wstring message(errorMsg.begin(), errorMsg.end());
@@ -1334,6 +1357,8 @@ BOOL AppCommandProc(DWORD id) {
                         }
                     }
                 }
+            } catch (const libheirloom::OperationCanceledException&) {
+                // Don't show error message for cancellation
             } catch (const std::exception& e) {
                 std::string errorMsg = std::string("Error extracting archive: ") + e.what();
                 std::wstring message(errorMsg.begin(), errorMsg.end());
@@ -1414,6 +1439,8 @@ BOOL AppCommandProc(DWORD id) {
                     if (exception) {
                         try {
                             std::rethrow_exception(exception);
+                        } catch (const libheirloom::OperationCanceledException&) {
+                            // Don't show error message for cancellation
                         } catch (const std::exception& e) {
                             std::string errorMsg = std::string("Error extracting archive: ") + e.what();
                             std::wstring message(errorMsg.begin(), errorMsg.end());
@@ -1421,6 +1448,8 @@ BOOL AppCommandProc(DWORD id) {
                         }
                     }
                 }
+            } catch (const libheirloom::OperationCanceledException&) {
+                // Don't show error message for cancellation
             } catch (const std::exception& e) {
                 std::string errorMsg = std::string("Error extracting archive: ") + e.what();
                 std::wstring message(errorMsg.begin(), errorMsg.end());

@@ -248,7 +248,10 @@ Frame Window (FrameWndProc) - hwndFrame
       - **Robust File Creation** - Uses std::ios::trunc flag to ensure proper file overwriting
     - **Progress Reporting** - Both functions integrate with ArchiveStatus for thread-safe UI progress updates
     - **Error Handling** - Comprehensive exception handling with detailed error messages
+      - **Cancellation-Aware** - Exceptions during cancellation are filtered out to prevent spurious error messages
+      - **Compression Cancellation** - Cancellation checks are performed before processing each file/folder during compression
     - **Cross-Platform Paths** - Proper UTF-8 path handling and Windows path conversion
+    - **Smart Naming** - "Add to Zip" command uses intelligent naming: when creating an archive from a single folder, the archive is named after the selected folder rather than the containing directory
 - **libzip** - Library for ZIP archive creation and extraction
 
 ## Build System

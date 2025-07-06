@@ -90,7 +90,11 @@ void addToZipRecursive(
     const std::filesystem::path& path,
     const std::filesystem::path& relativeToPath,
     ArchiveStatus* status,
-    const std::wstring& zipFilePath) {
+    const std::wstring& zipFilePath,
+    const libheirloom::CancellationToken& cancellationToken) {
+    // Check for cancellation before processing each item
+    cancellationToken.throwIfCancellationRequested();
+
     if (std::filesystem::is_directory(path)) {
         // Add directory entry
         auto relativePath = std::filesystem::relative(path, relativeToPath);
@@ -108,7 +112,7 @@ void addToZipRecursive(
 
         // Recursively process directory contents
         for (const auto& entry : std::filesystem::directory_iterator(path)) {
-            addToZipRecursive(archive, entry.path(), relativeToPath, status, zipFilePath);
+            addToZipRecursive(archive, entry.path(), relativeToPath, status, zipFilePath, cancellationToken);
         }
     } else if (std::filesystem::is_regular_file(path)) {
         // Add file entry
@@ -159,7 +163,7 @@ void createZipArchive(
 
         // Process files as we encounter them instead of collecting them first
         for (const auto& path : addFileOrFolderPaths) {
-            addToZipRecursive(archive, path, relativeToPath, status, zipFilePath.wstring());
+            addToZipRecursive(archive, path, relativeToPath, status, zipFilePath.wstring(), cancellationToken);
         }
 
         // Close archive (this writes the zip file)
@@ -207,9 +211,21 @@ void createZipArchive(
         }
 
         status->update(zipFilePath.wstring(), L"Compression complete.", L"");
+    } catch (const libheirloom::OperationCanceledException&) {
+        // Clean up on cancellation - ignore the exception if cancellation was requested
+        zip_discard(archive);
+        if (cancellationToken.isCancellationRequested()) {
+            throw;  // Re-throw the cancellation exception
+        }
+        // If cancellation wasn't requested, treat it as a regular error
+        throw;
     } catch (...) {
         // Clean up on error
         zip_discard(archive);
+        // If cancellation was requested, ignore other exceptions as they're likely related to cancellation
+        if (cancellationToken.isCancellationRequested()) {
+            throw libheirloom::OperationCanceledException();
+        }
         throw;
     }
 }
