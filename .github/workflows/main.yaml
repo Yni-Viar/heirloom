@@ -71,9 +71,12 @@ jobs:
           New-Item -ItemType Directory -Path stage -Name ${{ matrix.arch }} | Out-Null
 
           Copy-Item src\progman\LICENSE stage\${{ matrix.arch }}\LICENSE-progman.txt
-          Copy-Item src\${{ matrix.arch }}\Release\progman.exe stage\${{ matrix.arch }}\progman.exe
           Copy-Item src\winfile\LICENSE stage\${{ matrix.arch }}\LICENSE-winfile.txt
-          Copy-Item src\${{ matrix.arch }}\Release\winfile.exe stage\${{ matrix.arch }}\winfile.exe
+          Copy-Item src\${{ matrix.arch }}\Release\bz2.dll stage\${{ matrix.arch }}\
+          Copy-Item src\${{ matrix.arch }}\Release\progman.exe stage\${{ matrix.arch }}\
+          Copy-Item src\${{ matrix.arch }}\Release\winfile.exe stage\${{ matrix.arch }}\
+          Copy-Item src\${{ matrix.arch }}\Release\zip.dll stage\${{ matrix.arch }}\
+          Copy-Item src\${{ matrix.arch }}\Release\zlib1.dll stage\${{ matrix.arch }}\
 
       - name: Upload
         uses: actions/upload-artifact@v4
