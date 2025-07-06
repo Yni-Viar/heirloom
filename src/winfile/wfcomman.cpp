@@ -1076,10 +1076,15 @@ BOOL AppCommandProc(DWORD id) {
             }
 
             // Create unique zip filename
-            std::wstring zipPath = std::wstring(szCurrentDir) + L"\\" + folderName + L".zip";
+            std::wstring baseDir = szCurrentDir;
+            // Remove trailing backslash if present to avoid double backslash
+            if (!baseDir.empty() && baseDir.back() == L'\\') {
+                baseDir.pop_back();
+            }
+            std::wstring zipPath = baseDir + L"\\" + folderName + L".zip";
             int counter = 2;
             while (std::filesystem::exists(zipPath)) {
-                zipPath = std::wstring(szCurrentDir) + L"\\" + folderName + L" (" + std::to_wstring(counter) + L").zip";
+                zipPath = baseDir + L"\\" + folderName + L" (" + std::to_wstring(counter) + L").zip";
                 counter++;
             }
 

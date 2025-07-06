@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <atomic>
 #include <memory>
+#include <commctrl.h>
 #include "libheirloom/cancel.h"
 #include "libwinfile/ArchiveStatus.h"
 
@@ -41,6 +42,14 @@ BOOL ArchiveProgressDialog::onInitDialog(HWND hDlg) {
     SetDlgItemTextW(hDlg, IDC_ARCHIVE_PATH, archiveFilePath.c_str());
     SetDlgItemTextW(hDlg, IDC_OPERATION_LABEL, operationText.c_str());
     SetDlgItemTextW(hDlg, IDC_OPERATION_FILE, operationFilePath.c_str());
+
+    // Initialize progress bar
+    HWND progressBar = GetDlgItem(hDlg, IDC_ARCHIVE_PROGRESS);
+    if (progressBar) {
+        SendMessage(progressBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
+        SendMessage(progressBar, PBM_SETPOS, 0, 0);
+        ShowWindow(progressBar, SW_HIDE);  // Initially hidden
+    }
 
     // Start the UI update timer
     SetTimer(hDlg, TIMER_ID, TIMER_INTERVAL, nullptr);
@@ -142,6 +151,18 @@ void ArchiveProgressDialog::updateUIFromWorkerThread() {
             SetDlgItemTextW(dialogHandle_, IDC_OPERATION_LABEL, displayText.c_str());
 
             SetDlgItemTextW(dialogHandle_, IDC_OPERATION_FILE, operationFilePath.c_str());
+
+            // Update progress bar visibility and position
+            HWND progressBar = GetDlgItem(dialogHandle_, IDC_ARCHIVE_PROGRESS);
+            if (progressBar) {
+                if (hasProgressPercentage) {
+                    ShowWindow(progressBar, SW_SHOW);
+                    int progressPos = static_cast<int>(progressPercentage * 100);
+                    SendMessage(progressBar, PBM_SETPOS, progressPos, 0);
+                } else {
+                    ShowWindow(progressBar, SW_HIDE);
+                }
+            }
         }
     }
 }

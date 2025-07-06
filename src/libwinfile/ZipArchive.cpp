@@ -272,10 +272,10 @@ void extractZipArchive(
             std::string entryName = stat.name;
             std::filesystem::path entryPath = targetFolder / utf8ToPath(entryName);
 
-            // Update progress
-            std::wstring progressText =
-                L"Extracting file: (" + std::to_wstring(i + 1) + L"/" + std::to_wstring(numEntries) + L")";
-            status->update(zipFilePath.wstring(), progressText, entryPath.wstring());
+            // Update progress with percentage
+            double progress = static_cast<double>(i) / static_cast<double>(numEntries);
+            std::wstring progressText = L"Extracting file:";
+            status->updateWithProgress(zipFilePath.wstring(), progressText, entryPath.wstring(), progress);
 
             // Check if it's a directory (ends with '/')
             if (!entryName.empty() && entryName.back() == '/') {
