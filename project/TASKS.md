@@ -1,6 +1,7 @@
 # Zip integration using libzip (winfile)
 
 Search the libzip docs in `context/libzip/` for guidance on library usage.
+If you need to #include new system headers, add them to `winfile.h`.
 
 - [x] Prepare a dialog resource `IDM_ARCHIVE_PROGRESS` and a C++ class `ArchiveProgressDialog` for a zip/unzip operation progress dialog, following the example of `IDD_BOOKMARK_EDIT`.
     - Dialog resource
